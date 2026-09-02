@@ -10,6 +10,8 @@ import java.util.Map;
 import com.google.inject.Provides;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import javax.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
@@ -94,6 +96,22 @@ public class QuestpathPlugin extends Plugin
 	 * reference safely publishes everything in it.
 	 */
 	private volatile SyncStatus lastSyncOutcome;
+
+	/**
+	 * The account's declared limits, as questpath last reported them.
+	 *
+	 * Written from an OkHttp callback and read on the client thread, so it is
+	 * volatile and always replaced wholesale rather than mutated. Empty until
+	 * the first accepted push: the plugin has no other way to learn them, and
+	 * inventing a default set would be inventing someone's build.
+	 */
+	private volatile List<BuildRule> buildRules = Collections.emptyList();
+
+	/**
+	 * Quest names this plugin sent that questpath could not resolve. A real
+	 * disagreement between the two, worth showing rather than counting.
+	 */
+	private volatile List<String> unmatchedQuests = Collections.emptyList();
 
 	/**
 	 * How often a push may be sent for experience alone, with no quest or
@@ -202,6 +220,10 @@ public class QuestpathPlugin extends Plugin
 			// be mistaken for "unchanged since last push".
 			haveSent = false;
 			lastSyncOutcome = null;
+			// The next login may be another account with different limits.
+			// Showing the previous one's would be worse than showing none.
+			buildRules = Collections.emptyList();
+			unmatchedQuests = Collections.emptyList();
 			// The next login may be another account, whose bank is not this
 			// one. Reporting the previous account's items would be worse than
 			// reporting none.
@@ -216,7 +238,7 @@ public class QuestpathPlugin extends Plugin
 			panel.showLoggedOut();
 			return;
 		}
-		panel.update(currentStats(), currentXp(), syncStatus());
+		panel.update(currentStats(), currentXp(), syncStatus(), buildRules, unmatchedQuests);
 	}
 
 	/**
@@ -291,14 +313,18 @@ public class QuestpathPlugin extends Plugin
 			{
 				return;
 			}
-				if (sender.send(config.serverUrl(), config.pairingToken(), payload, outcome ->
-			{
-				lastSyncOutcome = outcome;
-				// The panel is not repainted from here: the next game event
-				// refreshes it, and repainting from a network callback would
-				// mean a Swing hop for a line of text nobody is looking at
-				// during a request that failed.
-			}))
+				if (sender.send(config.serverUrl(), config.pairingToken(), payload,
+				outcome -> lastSyncOutcome = outcome,
+				accepted ->
+				{
+					// questpath owns the build rules; this is the only place
+					// the plugin learns them. The panel is not repainted from
+					// here -- the next game event does that, and a Swing hop
+					// from a network callback for a panel nobody may be
+					// looking at is work for nothing.
+					buildRules = BuildRule.ordered(accepted.buildRules());
+					unmatchedQuests = accepted.unmatched();
+				}))
 			{
 				// Recorded on dispatch rather than on a successful response:
 				// a questpath that is not running would otherwise mean a

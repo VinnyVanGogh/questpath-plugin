@@ -140,9 +140,10 @@ class QuestpathPanel extends PluginPanel
 	 * thread: it hops to the EDT itself, because Swing state must only be
 	 * touched there and every caller here is a game event.
 	 */
-	void update(CombatStats stats, SkillXp xp, SyncStatus sync)
+	void update(CombatStats stats, SkillXp xp, SyncStatus sync,
+		List<BuildRule> rules, List<String> unmatchedQuests)
 	{
-		SwingUtilities.invokeLater(() -> render(stats, xp, sync));
+		SwingUtilities.invokeLater(() -> render(stats, xp, sync, rules, unmatchedQuests));
 	}
 
 	/**
@@ -166,7 +167,8 @@ class QuestpathPanel extends PluginPanel
 		});
 	}
 
-	private void render(CombatStats stats, SkillXp xp, SyncStatus sync)
+	private void render(CombatStats stats, SkillXp xp, SyncStatus sync,
+		List<BuildRule> rules, List<String> unmatchedQuests)
 	{
 		clearBodies();
 
@@ -184,7 +186,23 @@ class QuestpathPanel extends PluginPanel
 
 		JPanel syncBody = tabBodies.get(PanelSections.Tab.SYNC);
 		syncBody.add(heading(PanelSections.SYNC.title()));
-		syncBody.add(syncBlock(sync));
+		syncBody.add(syncBlock(sync, unmatchedQuests));
+
+		JPanel build = tabBodies.get(PanelSections.Tab.BUILD);
+		build.add(heading(PanelSections.BUILD_RULES.title()));
+		if (rules.isEmpty())
+		{
+			// Not "you have no rules". The plugin has no way to learn them
+			// except from a push, so an empty list here means it has not been
+			// told -- and telling someone their build is unconstrained when
+			// nobody has asked would be the worst thing this tab could say.
+			build.add(muted("Not received yet. questpath sends these when a"
+				+ " push is accepted, so turn on sync and log in."));
+		}
+		else
+		{
+			build.add(buildRulesBlock(stats, rules));
+		}
 
 		renderPlannedSections();
 		repaintAll();
@@ -398,7 +416,7 @@ class QuestpathPanel extends PluginPanel
 	 * three are things only the player can fix, and neither is discoverable
 	 * without being told.
 	 */
-	private static JPanel syncBlock(SyncStatus sync)
+	private static JPanel syncBlock(SyncStatus sync, List<String> unmatchedQuests)
 	{
 		JPanel panel = column();
 
@@ -415,7 +433,102 @@ class QuestpathPanel extends PluginPanel
 			hint.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
 			panel.add(hint);
 		}
+
+		// A quest name this plugin sends that questpath cannot resolve is a
+		// real disagreement between the two. Counting them would hide which,
+		// and which is the only part that leads anywhere.
+		if (!unmatchedQuests.isEmpty())
+		{
+			panel.add(Box.createVerticalStrut(6));
+			JLabel header = new JLabel(wrap(unmatchedQuests.size()
+				+ " quest names questpath did not recognise:"));
+			header.setFont(FontManager.getRunescapeSmallFont());
+			header.setForeground(ColorScheme.PROGRESS_INPROGRESS_COLOR);
+			panel.add(header);
+			for (String name : unmatchedQuests)
+			{
+				JLabel row = new JLabel(wrap(name));
+				row.setFont(FontManager.getRunescapeSmallFont());
+				row.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
+				panel.add(row);
+			}
+		}
 		return panel;
+	}
+
+	/**
+	 * The account's declared limits, and how close each one is.
+	 *
+	 * The headroom is the point. "Defence: no xp at all" is a rule; "Defence 1
+	 * — no xp at all" is a rule you are currently obeying, and one is far more
+	 * useful than the other while deciding what to train.
+	 *
+	 * Blocking rules are drawn as warnings and informational ones are not.
+	 * Colouring a goal like a cap would turn "approaching a target" into
+	 * "about to ruin your account", and the second warning stops meaning
+	 * anything once it fires for the first.
+	 */
+	private static JPanel buildRulesBlock(CombatStats stats, List<BuildRule> rules)
+	{
+		JPanel panel = column();
+		JPanel grid = grid();
+
+		for (BuildRule rule : rules)
+		{
+			Skill skill = rule.skill();
+			String label = skillNameOf(rule, skill);
+			int level = skill == null ? -1 : stats.get(skill);
+			if (level >= 0)
+			{
+				label = label + " " + level;
+			}
+			addRow(grid, label, rule.describe(), ruleColor(rule, level));
+		}
+
+		panel.add(grid);
+		return panel;
+	}
+
+	/**
+	 * Amber once a blocking rule is one level away, red once it is reached.
+	 *
+	 * Only for rules that actually block, and only for the seven combat skills
+	 * this panel knows a level for — everything else is neutral rather than
+	 * guessed at.
+	 */
+	private static Color ruleColor(BuildRule rule, int level)
+	{
+		if (!rule.blocking())
+		{
+			return ColorScheme.LIGHT_GRAY_COLOR;
+		}
+		if (level < 0 || !rule.hasValue())
+		{
+			// NO_XP, or a skill outside the combat seven. It blocks, but there
+			// is no distance to render.
+			return ColorScheme.PROGRESS_INPROGRESS_COLOR;
+		}
+		if (level >= rule.value())
+		{
+			return ColorScheme.PROGRESS_ERROR_COLOR;
+		}
+		if (level >= rule.value() - 1)
+		{
+			return ColorScheme.PROGRESS_INPROGRESS_COLOR;
+		}
+		return ColorScheme.PROGRESS_COMPLETE_COLOR;
+	}
+
+	/**
+	 * The rule's skill name, falling back to whatever questpath called it.
+	 *
+	 * A skill questpath knows and this client does not is a real
+	 * disagreement, and the rule is shown under questpath's name rather than
+	 * dropped -- it might be the one ending the build.
+	 */
+	private static String skillNameOf(BuildRule rule, Skill skill)
+	{
+		return skill == null ? rule.skillName() : skillName(skill);
 	}
 
 	/**

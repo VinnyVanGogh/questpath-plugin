@@ -48,9 +48,8 @@ enum PanelSections
 	BUILD_RULES(
 		Tab.BUILD,
 		"Build rules",
-		Status.NOT_BUILT,
-		"Your caps and off-limits skills, and a warning when a stat is one level from breaking one. "
-			+ "Needs the rules from questpath; the plugin does not read them back yet."),
+		Status.LIVE,
+		null),
 
 	NEXT_QUEST(
 		Tab.QUESTS,

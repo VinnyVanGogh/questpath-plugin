@@ -17,6 +17,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import okhttp3.ResponseBody;
 
 /**
  * Posts account state to a self-hosted questpath instance.
@@ -53,7 +54,8 @@ class AccountStateSender
 	 *
 	 * @return whether a request was actually started
 	 */
-	boolean send(String serverUrl, String token, Map<String, Object> payload, Consumer<SyncStatus> onOutcome)
+	boolean send(String serverUrl, String token, Map<String, Object> payload,
+		Consumer<SyncStatus> onOutcome, Consumer<PushResponse> onAccepted)
 	{
 		HttpUrl url = endpoint(serverUrl);
 		if (url == null || token == null || token.isEmpty())
@@ -95,6 +97,7 @@ class AccountStateSender
 					if (closed.isSuccessful())
 					{
 						onOutcome.accept(SyncStatus.accepted(Instant.now()));
+						readBody(closed, onAccepted);
 						log.debug("questpath sync: accepted");
 					}
 					else
@@ -114,6 +117,36 @@ class AccountStateSender
 			}
 		});
 		return true;
+	}
+
+	/**
+	 * Parses what questpath answered, so the panel can show the account's
+	 * build rules.
+	 *
+	 * A body that will not parse is not a failed push: the state was accepted,
+	 * which is what the request was for. The panel simply keeps whatever rules
+	 * it already had rather than blanking them on a response questpath may
+	 * have changed the shape of.
+	 */
+	private void readBody(Response response, Consumer<PushResponse> onAccepted)
+	{
+		try
+		{
+			ResponseBody body = response.body();
+			if (body == null)
+			{
+				return;
+			}
+			PushResponse parsed = gson.fromJson(body.charStream(), PushResponse.class);
+			if (parsed != null)
+			{
+				onAccepted.accept(parsed);
+			}
+		}
+		catch (Exception e)
+		{
+			log.debug("questpath sync: response not understood", e);
+		}
 	}
 
 	/**
