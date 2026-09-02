@@ -7,6 +7,8 @@ import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.util.EnumMap;
 import java.util.Map;
+import com.google.inject.Provides;
+import java.util.Map;
 import javax.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
@@ -14,6 +16,9 @@ import net.runelite.api.GameState;
 import net.runelite.api.Skill;
 import net.runelite.api.events.GameStateChanged;
 import net.runelite.api.events.StatChanged;
+import net.runelite.api.events.VarbitChanged;
+import net.runelite.client.callback.ClientThread;
+import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
@@ -46,8 +51,25 @@ public class QuestpathPlugin extends Plugin
 	@Inject
 	private ClientToolbar clientToolbar;
 
+	@Inject
+	private ClientThread clientThread;
+
+	@Inject
+	private QuestpathConfig config;
+
+	@Inject
+	private AccountStateSender sender;
+
 	private QuestpathPanel panel;
 	private NavigationButton navButton;
+
+	/**
+	 * Fingerprint of the last state sent, so an unchanged account is not
+	 * pushed again. Reset on logout because the next login may be a different
+	 * account, and its state must not be mistaken for unchanged.
+	 */
+	private int lastSentFingerprint;
+	private boolean haveSent;
 
 	@Override
 	protected void startUp()
@@ -73,6 +95,7 @@ public class QuestpathPlugin extends Plugin
 		clientToolbar.removeNavigation(navButton);
 		navButton = null;
 		panel = null;
+		haveSent = false;
 		log.debug("questpath stopped");
 	}
 
@@ -86,6 +109,20 @@ public class QuestpathPlugin extends Plugin
 	public void onStatChanged(StatChanged event)
 	{
 		refresh();
+		maybeSync();
+	}
+
+	/**
+	 * Quest completion moves varbits, so this is where a finished quest is
+	 * noticed. There is no "quest completed" event to subscribe to.
+	 *
+	 * Every varbit in the game arrives here, which is why the push is gated on
+	 * the payload actually differing rather than on the event firing.
+	 */
+	@Subscribe
+	public void onVarbitChanged(VarbitChanged event)
+	{
+		maybeSync();
 	}
 
 	@Subscribe
@@ -94,6 +131,7 @@ public class QuestpathPlugin extends Plugin
 		if (event.getGameState() == GameState.LOGGED_IN)
 		{
 			refresh();
+			maybeSync();
 			return;
 		}
 		if (event.getGameState() == GameState.LOGIN_SCREEN)
@@ -102,6 +140,9 @@ public class QuestpathPlugin extends Plugin
 			// render as a confident "combat 3" for an account that is nothing
 			// of the sort.
 			panel.showLoggedOut();
+			// The next login may be a different account, whose state must not
+			// be mistaken for "unchanged since last push".
+			haveSent = false;
 		}
 	}
 
@@ -151,6 +192,56 @@ public class QuestpathPlugin extends Plugin
 			xp.put(skill, client.getSkillExperience(skill));
 		}
 		return SkillXp.of(levels, xp);
+	}
+
+	/**
+	 * Pushes account state to questpath when it has actually changed.
+	 *
+	 * The gate is the payload, not the event. onVarbitChanged fires for every
+	 * varbit in the game and StatChanged for every experience drop, so a push
+	 * per event would be a request per tick while training. Comparing what
+	 * would be sent means the request happens exactly when something the
+	 * server cares about moved — a quest finishing, a level going up.
+	 *
+	 * Reading the state must happen on the client thread (quest varbits), and
+	 * the request must not, which is why the read is wrapped and the send is
+	 * an enqueue inside it.
+	 */
+	private void maybeSync()
+	{
+		if (!config.syncEnabled() || client.getGameState() != GameState.LOGGED_IN)
+		{
+			return;
+		}
+
+		clientThread.invokeLater(() ->
+		{
+			if (client.getGameState() != GameState.LOGGED_IN)
+			{
+				return;
+			}
+			Map<String, Object> payload = AccountState.read(client);
+			int fingerprint = AccountState.fingerprint(payload);
+			if (haveSent && fingerprint == lastSentFingerprint)
+			{
+				return;
+			}
+			if (sender.send(config.serverUrl(), config.pairingToken(), payload))
+			{
+				// Recorded on dispatch rather than on a successful response:
+				// a questpath that is not running would otherwise mean a
+				// retry on every varbit for as long as it stays down. The
+				// next real change re-sends anyway.
+				lastSentFingerprint = fingerprint;
+				haveSent = true;
+			}
+		});
+	}
+
+	@Provides
+	QuestpathConfig provideConfig(ConfigManager configManager)
+	{
+		return configManager.getConfig(QuestpathConfig.class);
 	}
 
 	/**
