@@ -340,6 +340,13 @@ public class QuestpathPlugin extends Plugin
 				return;
 			}
 			Map<String, Object> payload = AccountState.read(client, owned);
+			if (payload == null)
+			{
+				// LOGGED_IN without a local player yet. Nothing here can be
+				// attributed to a character, and questpath refuses an
+				// unattributed push anyway -- see AccountState.read.
+				return;
+			}
 			int structural = AccountState.fingerprint(payload);
 			int experience = AccountState.experienceFingerprint(payload);
 
@@ -348,7 +355,27 @@ public class QuestpathPlugin extends Plugin
 				return;
 			}
 				if (sender.send(config.serverUrl(), config.pairingToken(), payload,
-				outcome -> lastSyncOutcome = outcome,
+				outcome ->
+				{
+					lastSyncOutcome = outcome;
+					// A refusal means questpath is not confirming this
+					// account's state, so anything still on the Build tab is
+					// unconfirmed at best and another account's at worst --
+					// which is exactly what a 409 says it is. Holding it on
+					// screen next to this account's live levels is the most
+					// convincing way to be wrong available to this panel, so
+					// the rules go and the status line says why.
+					//
+					// Unreachable deliberately does not clear: a questpath
+					// that is not running says nothing about whether the
+					// rules already in hand belong to this account.
+					if (outcome.state() == SyncStatus.State.REJECTED)
+					{
+						buildRules = Collections.emptyList();
+						unmatchedQuests = Collections.emptyList();
+						clientThread.invokeLater(this::refresh);
+					}
+				},
 				accepted ->
 				{
 					// questpath owns the build rules; this is the only place

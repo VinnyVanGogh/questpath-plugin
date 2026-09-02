@@ -1,5 +1,6 @@
 package com.vinnyvangogh.questpath;
 
+import com.google.common.base.Strings;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import net.runelite.api.Client;
@@ -44,6 +45,19 @@ final class AccountState
 	 */
 	static Map<String, Object> read(Client client, OwnedItems owned)
 	{
+		// No local player means no character to attribute this state to, and
+		// an unattributed push is one questpath cannot check against the
+		// account its pairing token names. It used to send anyway with an
+		// empty name; three such pushes wrote one character's 211 quest
+		// states over a different account before anyone noticed, because
+		// every one of them looked like a perfectly ordinary sync in the log.
+		// Returning null means "nothing to say right now", which is the
+		// truth, and the caller skips the push.
+		if (client.getLocalPlayer() == null || Strings.isNullOrEmpty(client.getLocalPlayer().getName()))
+		{
+			return null;
+		}
+
 		Map<String, Integer> quests = new LinkedHashMap<>();
 		for (Quest quest : Quest.values())
 		{
@@ -67,7 +81,10 @@ final class AccountState
 		}
 
 		Map<String, Object> payload = new LinkedHashMap<>();
-		payload.put("username", client.getLocalPlayer() == null ? "" : client.getLocalPlayer().getName());
+		// Never empty: read() returns null above rather than reaching here
+		// without a local player, so questpath always gets a name to check
+		// its pairing token against.
+		payload.put("username", client.getLocalPlayer().getName());
 		payload.put("quests", quests);
 		payload.put("levels", levels);
 		// Experience is the plugin's own addition to WikiSync's document,
