@@ -8,6 +8,7 @@ import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -63,9 +64,9 @@ class QuestpathPanel extends PluginPanel
 	 * thread: it hops to the EDT itself, because Swing state must only be
 	 * touched there and every caller here is a game event.
 	 */
-	void update(CombatStats stats, SkillXp xp)
+	void update(CombatStats stats, SkillXp xp, SyncStatus sync)
 	{
-		SwingUtilities.invokeLater(() -> render(stats, xp));
+		SwingUtilities.invokeLater(() -> render(stats, xp, sync));
 	}
 
 	/**
@@ -85,7 +86,7 @@ class QuestpathPanel extends PluginPanel
 		});
 	}
 
-	private void render(CombatStats stats, SkillXp xp)
+	private void render(CombatStats stats, SkillXp xp, SyncStatus sync)
 	{
 		body.removeAll();
 
@@ -93,16 +94,36 @@ class QuestpathPanel extends PluginPanel
 		int strength = stats.get(Skill.STRENGTH);
 		int ceiling = CombatMath.freeRangedCeiling(attack, strength);
 
-		body.add(heading("Combat"));
+		body.add(heading(PanelSections.COMBAT.title()));
 		body.add(combatBlock(stats));
 		body.add(Box.createVerticalStrut(14));
 
-		body.add(heading("Free Ranged / Magic"));
+		body.add(heading(PanelSections.CEILING.title()));
 		body.add(ceilingBlock(stats, xp, ceiling));
 		body.add(Box.createVerticalStrut(14));
 
-		body.add(heading("Cost of the next combat level"));
+		body.add(heading(PanelSections.COST.title()));
 		body.add(costBlock(stats, xp));
+		body.add(Box.createVerticalStrut(14));
+
+		body.add(heading(PanelSections.SYNC.title()));
+		body.add(syncBlock(sync));
+
+		// Everything still to be built, named and explained rather than left
+		// out. A section that silently does not exist reads as a tool that
+		// does less than it does; one that says what it will show reads as a
+		// tool being built. Neither is allowed to look like an empty state,
+		// which would mean questpath had looked and found nothing.
+		for (PanelSections section : PanelSections.values())
+		{
+			if (section.status() != PanelSections.Status.NOT_BUILT)
+			{
+				continue;
+			}
+			body.add(Box.createVerticalStrut(14));
+			body.add(heading(section.title()));
+			body.add(notBuiltBlock(section));
+		}
 
 		body.revalidate();
 		body.repaint();
@@ -261,6 +282,79 @@ class QuestpathPanel extends PluginPanel
 		return "  ·  " + XpTable.format(cost) + " xp";
 	}
 
+
+	/**
+	 * Whether the account-state push is working, in the words that tell the
+	 * difference between the ways it can fail.
+	 *
+	 * The push is deliberately silent in game, which leaves no way to tell
+	 * "working" from "wrong token" from "questpath is closed". Two of those
+	 * three are things only the player can fix, and neither is discoverable
+	 * without being told.
+	 */
+	private static JPanel syncBlock(SyncStatus sync)
+	{
+		JPanel panel = column();
+
+		JLabel line = new JLabel(sync.describe(Instant.now()));
+		line.setForeground(sync.needsAttention()
+			? ColorScheme.PROGRESS_ERROR_COLOR
+			: ColorScheme.LIGHT_GRAY_COLOR);
+		panel.add(line);
+
+		if (sync.state() == SyncStatus.State.NO_TOKEN)
+		{
+			JLabel hint = new JLabel("Run: questpath -plugin-token");
+			hint.setFont(FontManager.getRunescapeSmallFont());
+			hint.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
+			panel.add(hint);
+		}
+		return panel;
+	}
+
+	/**
+	 * A section that does not exist yet, saying so and saying what it will be.
+	 *
+	 * Not an empty state and not a spinner. "questpath looked and found
+	 * nothing" and "questpath cannot answer this yet" are different claims,
+	 * and only one of them is true here.
+	 */
+	private static JPanel notBuiltBlock(PanelSections section)
+	{
+		JPanel panel = column();
+
+		JLabel badge = new JLabel("Not built yet");
+		badge.setFont(FontManager.getRunescapeSmallFont().deriveFont(Font.BOLD));
+		badge.setForeground(ColorScheme.BRAND_ORANGE.darker());
+		panel.add(badge);
+
+		JLabel plan = new JLabel(wrap(section.plan()));
+		plan.setFont(FontManager.getRunescapeSmallFont());
+		plan.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
+		panel.add(plan);
+
+		return panel;
+	}
+
+	/**
+	 * Swing labels do not wrap, and the sidebar is narrow. HTML is the
+	 * supported way to get a multi-line label, with the width pinned so it
+	 * does not grow the panel wider than the sidebar allows.
+	 */
+	private static String wrap(String text)
+	{
+		return "<html><body style='width:150px'>" + escape(text) + "</body></html>";
+	}
+
+	/**
+	 * These strings are ours, not user input, but a stray angle bracket in one
+	 * would be swallowed as markup by the HTML label above and quietly delete
+	 * the rest of the sentence.
+	 */
+	private static String escape(String text)
+	{
+		return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
+	}
 
 	/**
 	 * A stat one level from costing a combat level is the warning a pure

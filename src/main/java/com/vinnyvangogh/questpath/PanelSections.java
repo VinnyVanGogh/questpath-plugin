@@ -1,0 +1,108 @@
+package com.vinnyvangogh.questpath;
+
+/**
+ * Every section the sidebar will carry, and what is behind each one today.
+ *
+ * The panel shows all of them from the start rather than growing one at a
+ * time. A section that is not built yet says so in those words — not "no
+ * data", not an empty list, and never a plausible-looking placeholder number.
+ * Someone reading this panel has to be able to tell "questpath does not know"
+ * from "questpath has not been taught this yet", because the first is
+ * something to fix in the app and the second is something to wait for.
+ *
+ * The blocked ones are all blocked on the same thing: the quest graph. Those
+ * answers need every quest's requirements, rewards and prerequisites, which
+ * questpath ingests from the wiki and the plugin does not carry yet. The plan
+ * for getting it here is docs/questpath-plugin-plan.md in the Go repo — a
+ * bundled export, plus the planner ported to Java against generated golden
+ * vectors.
+ */
+enum PanelSections
+{
+	COMBAT(
+		"Combat",
+		Status.LIVE,
+		null),
+
+	CEILING(
+		"Free Ranged / Magic",
+		Status.LIVE,
+		null),
+
+	COST(
+		"Cost of the next combat level",
+		Status.LIVE,
+		null),
+
+	SYNC(
+		"questpath sync",
+		Status.LIVE,
+		null),
+
+	BUILD_RULES(
+		"Build rules",
+		Status.NOT_BUILT,
+		"Your caps and off-limits skills, and a warning when a stat is one level from breaking one. "
+			+ "Needs the rules from questpath; the plugin does not read them back yet."),
+
+	NEXT_QUEST(
+		"Next on your route",
+		Status.NOT_BUILT,
+		"The next quest on your saved route, with what it needs and whether you can do it now. "
+			+ "Needs the quest graph."),
+
+	QUEST_VERDICT(
+		"Can I do this quest?",
+		Status.NOT_BUILT,
+		"Eligible, skill-blocked, or permanently off the table because a prerequisite grants xp your "
+			+ "build refuses. This is the question questpath exists to answer, and the largest piece "
+			+ "of work: the planner has to be ported to Java against generated test vectors."),
+
+	ITEMS(
+		"Quest items",
+		Status.NOT_BUILT,
+		"What the next quest needs, ticked off against what is actually in your bank. The client can "
+			+ "see your bank, which is the one thing no external quest tool can — so this is the "
+			+ "feature the plugin exists for."),
+
+	QUEST_BROWSER(
+		"Quest browser",
+		Status.NOT_BUILT,
+		"Browse and filter every quest by what your build can legally reach. Quest Helper already does "
+			+ "the walkthrough better than this ever would; the point here is the verdict, not the steps.");
+
+	enum Status
+	{
+		/** Built, showing real data. */
+		LIVE,
+		/** Planned, not written. Says so rather than rendering an empty state. */
+		NOT_BUILT
+	}
+
+	private final String title;
+	private final Status status;
+	private final String plan;
+
+	PanelSections(String title, Status status, String plan)
+	{
+		this.title = title;
+		this.status = status;
+		this.plan = plan;
+	}
+
+	String title()
+	{
+		return title;
+	}
+
+	Status status()
+	{
+		return status;
+	}
+
+	/** What this section will show once it exists, or null when it already does. */
+	String plan()
+	{
+		return plan;
+	}
+}

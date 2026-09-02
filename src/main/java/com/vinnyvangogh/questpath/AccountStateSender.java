@@ -2,8 +2,10 @@ package com.vinnyvangogh.questpath;
 
 import com.google.gson.Gson;
 import java.io.IOException;
+import java.time.Instant;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
@@ -51,7 +53,7 @@ class AccountStateSender
 	 *
 	 * @return whether a request was actually started
 	 */
-	boolean send(String serverUrl, String token, Map<String, Object> payload)
+	boolean send(String serverUrl, String token, Map<String, Object> payload, Consumer<SyncStatus> onOutcome)
 	{
 		HttpUrl url = endpoint(serverUrl);
 		if (url == null || token == null || token.isEmpty())
@@ -78,6 +80,7 @@ class AccountStateSender
 			public void onFailure(Call call, IOException e)
 			{
 				inFlight.set(false);
+				onOutcome.accept(SyncStatus.unreachable(Instant.now()));
 				// Debug, not error: questpath not running is the normal state
 				// for anyone who has the toggle on and the app closed, and
 				// this fires on every push.
@@ -91,14 +94,16 @@ class AccountStateSender
 				{
 					if (closed.isSuccessful())
 					{
+						onOutcome.accept(SyncStatus.accepted(Instant.now()));
 						log.debug("questpath sync: accepted");
 					}
 					else
 					{
 						// A 401 here means the token is wrong, which the user
-						// can only fix if they are told. Still debug -- an
-						// error log for a misconfiguration would be noise in
-						// everyone else's client -- but named specifically.
+						// can only fix if they are told -- and a debug log is
+						// not where they will look, which is why the outcome
+						// goes to the panel as well.
+						onOutcome.accept(SyncStatus.rejected(Instant.now(), closed.code()));
 						log.debug("questpath sync: rejected with {}", closed.code());
 					}
 				}

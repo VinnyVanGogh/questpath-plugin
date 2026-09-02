@@ -56,10 +56,17 @@ public class AccountStateSenderTest
 
 	private static Map<String, Object> payload(Map<String, Integer> quests, Map<String, Integer> levels)
 	{
+		return payload(quests, levels, one("Strength", 2_673_114));
+	}
+
+	private static Map<String, Object> payload(Map<String, Integer> quests, Map<String, Integer> levels,
+		Map<String, Integer> experience)
+	{
 		Map<String, Object> m = new LinkedHashMap<>();
 		m.put("username", "its chyl");
 		m.put("quests", quests);
 		m.put("levels", levels);
+		m.put("experience", experience);
 		return m;
 	}
 
@@ -71,8 +78,10 @@ public class AccountStateSenderTest
 	}
 
 	/**
-	 * The fingerprint is what stops a push per varbit while training. It must
-	 * ignore what the server does not act on, and notice what it does.
+	 * The structural fingerprint is what earns an immediate push. It must
+	 * ignore what the server does not act on, notice what it does, and -- the
+	 * part that matters -- ignore experience, which moves every few seconds
+	 * while training and has its own timer.
 	 */
 	@Test
 	public void fingerprintIgnoresTheUsernameButNoticesQuestsAndLevels()
@@ -93,6 +102,30 @@ public class AccountStateSenderTest
 		assertNotEquals("a level up must push",
 			AccountState.fingerprint(payload(quests, levels)),
 			AccountState.fingerprint(payload(quests, one("Strength", 84))));
+
+		assertEquals("experience alone must not earn an immediate push",
+			AccountState.fingerprint(payload(quests, levels, one("Strength", 1))),
+			AccountState.fingerprint(payload(quests, levels, one("Strength", 999_999))));
+	}
+
+	/**
+	 * Experience gets its own fingerprint so it can be sent on a timer: often
+	 * enough that questpath's stored xp is never far behind, rarely enough
+	 * that training is not a request per tick.
+	 */
+	@Test
+	public void experienceFingerprintNoticesExperienceAndNothingElse()
+	{
+		Map<String, Integer> quests = one("Cook's Assistant", 2);
+		Map<String, Integer> levels = one("Strength", 83);
+
+		assertNotEquals("an xp drop must be visible to the timer",
+			AccountState.experienceFingerprint(payload(quests, levels, one("Strength", 1))),
+			AccountState.experienceFingerprint(payload(quests, levels, one("Strength", 2))));
+
+		assertEquals("a quest finishing is not an experience change",
+			AccountState.experienceFingerprint(payload(quests, levels)),
+			AccountState.experienceFingerprint(payload(one("Cook's Assistant", 1), levels)));
 	}
 
 	@Test

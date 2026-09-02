@@ -59,15 +59,24 @@ final class AccountState
 		}
 
 		Map<String, Integer> levels = new LinkedHashMap<>();
+		Map<String, Integer> experience = new LinkedHashMap<>();
 		for (Skill skill : Skill.values())
 		{
 			levels.put(skill.getName(), client.getRealSkillLevel(skill));
+			experience.put(skill.getName(), client.getSkillExperience(skill));
 		}
 
 		Map<String, Object> payload = new LinkedHashMap<>();
 		payload.put("username", client.getLocalPlayer() == null ? "" : client.getLocalPlayer().getName());
 		payload.put("quests", quests);
 		payload.put("levels", levels);
+		// Experience is the plugin's own addition to WikiSync's document,
+		// which carries levels and no xp. questpath stores snapshots, and a
+		// level alone cannot say how far into it an account is -- which is
+		// the difference between "Strength 83" and "Strength 83, 4k from 84".
+		// questpath derives the level from this rather than from the levels
+		// block above, so the two can never disagree in its database.
+		payload.put("experience", experience);
 		return payload;
 	}
 
@@ -85,13 +94,12 @@ final class AccountState
 	}
 
 	/**
-	 * A cheap identity for a payload, so an unchanged account is not pushed
-	 * repeatedly.
+	 * A cheap identity for the parts of a payload that change rarely: quest
+	 * states and levels.
 	 *
-	 * Quest state changes are rare and level-ups are not much more frequent,
-	 * but the events that would trigger a push are not rare at all. Comparing
-	 * what would be sent is more honest than a timer: it pushes exactly when
-	 * something the server cares about actually moved.
+	 * A change here is worth a push immediately — a quest finished, a level
+	 * landed. The username is excluded because a display name is not state
+	 * the server acts on.
 	 */
 	static int fingerprint(Map<String, Object> payload)
 	{
@@ -99,5 +107,23 @@ final class AccountState
 		Object levels = payload.get("levels");
 		return (quests == null ? 0 : quests.hashCode()) * 31
 			+ (levels == null ? 0 : levels.hashCode());
+	}
+
+	/**
+	 * A cheap identity for experience alone, which changes constantly.
+	 *
+	 * Kept separate from {@link #fingerprint} on purpose. Folding xp into the
+	 * structural fingerprint would mean a request on every experience drop —
+	 * one every few seconds while training — which is the request-per-tick
+	 * problem the gate exists to prevent. Folding it out entirely would mean
+	 * questpath's stored xp only moved on level-up, so an account four hours
+	 * into a grind would look untouched.
+	 *
+	 * So xp gets its own comparison on a timer; see QuestpathPlugin.
+	 */
+	static int experienceFingerprint(Map<String, Object> payload)
+	{
+		Object experience = payload.get("experience");
+		return experience == null ? 0 : experience.hashCode();
 	}
 }

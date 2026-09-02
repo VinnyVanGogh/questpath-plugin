@@ -8,6 +8,8 @@ import java.awt.image.BufferedImage;
 import java.util.EnumMap;
 import java.util.Map;
 import com.google.inject.Provides;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Map;
 import javax.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
@@ -64,12 +66,35 @@ public class QuestpathPlugin extends Plugin
 	private NavigationButton navButton;
 
 	/**
-	 * Fingerprint of the last state sent, so an unchanged account is not
-	 * pushed again. Reset on logout because the next login may be a different
-	 * account, and its state must not be mistaken for unchanged.
+	 * What was last sent, so an unchanged account is not pushed again. Reset
+	 * on logout because the next login may be a different account, and its
+	 * state must not be mistaken for unchanged.
 	 */
-	private int lastSentFingerprint;
+	private int lastStructural;
+	private int lastExperience;
+	private Instant lastPushAt = Instant.EPOCH;
 	private boolean haveSent;
+
+	/**
+	 * The last thing the push did, for the panel to report.
+	 *
+	 * Written from an OkHttp callback thread and read from the client thread,
+	 * so it is volatile. A SyncStatus is immutable, so publishing the
+	 * reference safely publishes everything in it.
+	 */
+	private volatile SyncStatus lastSyncOutcome;
+
+	/**
+	 * How often a push may be sent for experience alone, with no quest or
+	 * level change behind it.
+	 *
+	 * Deliberately shorter than the five minutes questpath treats a push as
+	 * live for. While the game is open the plugin has to keep re-asserting
+	 * itself, or that window lapses and questpath falls back to polling
+	 * WikiSync -- which would overwrite the plugin's own fresher data with an
+	 * older upload, the exact problem the freshness window exists to stop.
+	 */
+	private static final Duration EXPERIENCE_PUSH_INTERVAL = Duration.ofMinutes(2);
 
 	@Override
 	protected void startUp()
@@ -143,6 +168,7 @@ public class QuestpathPlugin extends Plugin
 			// The next login may be a different account, whose state must not
 			// be mistaken for "unchanged since last push".
 			haveSent = false;
+			lastSyncOutcome = null;
 		}
 	}
 
@@ -153,7 +179,7 @@ public class QuestpathPlugin extends Plugin
 			panel.showLoggedOut();
 			return;
 		}
-		panel.update(currentStats(), currentXp());
+		panel.update(currentStats(), currentXp(), syncStatus());
 	}
 
 	/**
@@ -221,21 +247,80 @@ public class QuestpathPlugin extends Plugin
 				return;
 			}
 			Map<String, Object> payload = AccountState.read(client);
-			int fingerprint = AccountState.fingerprint(payload);
-			if (haveSent && fingerprint == lastSentFingerprint)
+			int structural = AccountState.fingerprint(payload);
+			int experience = AccountState.experienceFingerprint(payload);
+
+			if (!shouldSend(structural, experience))
 			{
 				return;
 			}
-			if (sender.send(config.serverUrl(), config.pairingToken(), payload))
+				if (sender.send(config.serverUrl(), config.pairingToken(), payload, outcome ->
+			{
+				lastSyncOutcome = outcome;
+				// The panel is not repainted from here: the next game event
+				// refreshes it, and repainting from a network callback would
+				// mean a Swing hop for a line of text nobody is looking at
+				// during a request that failed.
+			}))
 			{
 				// Recorded on dispatch rather than on a successful response:
 				// a questpath that is not running would otherwise mean a
 				// retry on every varbit for as long as it stays down. The
 				// next real change re-sends anyway.
-				lastSentFingerprint = fingerprint;
+				lastStructural = structural;
+				lastExperience = experience;
+				lastPushAt = Instant.now();
 				haveSent = true;
 			}
 		});
+	}
+
+	/**
+	 * Whether this reading is worth a request.
+	 *
+	 * Two rules, because the payload has two tempos. A quest finishing or a
+	 * level landing is rare and worth sending the instant it happens.
+	 * Experience moves every few seconds while training, so it is sent on a
+	 * timer instead — often enough that questpath's stored xp is never far
+	 * behind and its freshness window never lapses, rarely enough that
+	 * training is not a request per tick.
+	 */
+	private boolean shouldSend(int structural, int experience)
+	{
+		if (!haveSent)
+		{
+			return true;
+		}
+		if (structural != lastStructural)
+		{
+			return true;
+		}
+		if (experience == lastExperience)
+		{
+			return false;
+		}
+		return Duration.between(lastPushAt, Instant.now()).compareTo(EXPERIENCE_PUSH_INTERVAL) >= 0;
+	}
+
+	/**
+	 * What the sidebar says about the push.
+	 *
+	 * Configuration states are computed fresh each time rather than cached,
+	 * because a token pasted into settings must show as fixed on the next
+	 * render rather than on the next successful request.
+	 */
+	private SyncStatus syncStatus()
+	{
+		if (!config.syncEnabled())
+		{
+			return SyncStatus.of(SyncStatus.State.DISABLED);
+		}
+		if (config.pairingToken() == null || config.pairingToken().isEmpty())
+		{
+			return SyncStatus.of(SyncStatus.State.NO_TOKEN);
+		}
+		SyncStatus outcome = lastSyncOutcome;
+		return outcome == null ? SyncStatus.of(SyncStatus.State.WAITING) : outcome;
 	}
 
 	@Provides
