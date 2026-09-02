@@ -17,6 +17,7 @@ import net.runelite.api.Client;
 import net.runelite.api.GameState;
 import net.runelite.api.Skill;
 import net.runelite.api.events.GameStateChanged;
+import net.runelite.api.events.ItemContainerChanged;
 import net.runelite.api.events.StatChanged;
 import net.runelite.api.events.VarbitChanged;
 import net.runelite.client.callback.ClientThread;
@@ -64,6 +65,12 @@ public class QuestpathPlugin extends Plugin
 
 	private QuestpathPanel panel;
 	private NavigationButton navButton;
+
+	/**
+	 * The bank, inventory and equipment as last seen. Not re-read on demand:
+	 * the client does not hold the bank's contents until it has been opened.
+	 */
+	private final OwnedItems owned = new OwnedItems();
 
 	/**
 	 * What was last sent, so an unchanged account is not pushed again. Reset
@@ -121,6 +128,7 @@ public class QuestpathPlugin extends Plugin
 		navButton = null;
 		panel = null;
 		haveSent = false;
+		owned.clear();
 		log.debug("questpath stopped");
 	}
 
@@ -150,6 +158,27 @@ public class QuestpathPlugin extends Plugin
 		maybeSync();
 	}
 
+	/**
+	 * The bank, inventory and equipment as the client reports them.
+	 *
+	 * This is the event the whole plugin exists for: nothing outside the
+	 * client can see a bank, which is why questpath's item guide has been
+	 * ticked by hand.
+	 *
+	 * Already on the client thread, so the container is read here rather than
+	 * deferred -- an ItemContainer read later is a read of whatever it holds
+	 * later.
+	 */
+	@Subscribe
+	public void onItemContainerChanged(ItemContainerChanged event)
+	{
+		if (!owned.record(client, event.getItemContainer()))
+		{
+			return;
+		}
+		maybeSync();
+	}
+
 	@Subscribe
 	public void onGameStateChanged(GameStateChanged event)
 	{
@@ -169,6 +198,10 @@ public class QuestpathPlugin extends Plugin
 			// be mistaken for "unchanged since last push".
 			haveSent = false;
 			lastSyncOutcome = null;
+			// The next login may be another account, whose bank is not this
+			// one. Reporting the previous account's items would be worse than
+			// reporting none.
+			owned.clear();
 		}
 	}
 
@@ -246,7 +279,7 @@ public class QuestpathPlugin extends Plugin
 			{
 				return;
 			}
-			Map<String, Object> payload = AccountState.read(client);
+			Map<String, Object> payload = AccountState.read(client, owned);
 			int structural = AccountState.fingerprint(payload);
 			int experience = AccountState.experienceFingerprint(payload);
 

@@ -42,7 +42,7 @@ final class AccountState
 	 * needs handling should be handled in the one place that already handles
 	 * WikiSync's, not in two.
 	 */
-	static Map<String, Object> read(Client client)
+	static Map<String, Object> read(Client client, OwnedItems owned)
 	{
 		Map<String, Integer> quests = new LinkedHashMap<>();
 		for (Quest quest : Quest.values())
@@ -77,6 +77,13 @@ final class AccountState
 		// questpath derives the level from this rather than from the levels
 		// block above, so the two can never disagree in its database.
 		payload.put("experience", experience);
+		// Only containers actually seen. A bank that has never been opened is
+		// omitted rather than sent empty: questpath treats an empty list as
+		// "this really is empty" and would wipe what it already had.
+		if (!owned.isEmpty())
+		{
+			payload.put("items", owned.forPayload());
+		}
 		return payload;
 	}
 
@@ -105,8 +112,9 @@ final class AccountState
 	{
 		Object quests = payload.get("quests");
 		Object levels = payload.get("levels");
-		return (quests == null ? 0 : quests.hashCode()) * 31
-			+ (levels == null ? 0 : levels.hashCode());
+		return ((quests == null ? 0 : quests.hashCode()) * 31
+			+ (levels == null ? 0 : levels.hashCode())) * 31
+			+ itemsFingerprint(payload);
 	}
 
 	/**
@@ -125,5 +133,18 @@ final class AccountState
 	{
 		Object experience = payload.get("experience");
 		return experience == null ? 0 : experience.hashCode();
+	}
+
+	/**
+	 * A cheap identity for what the account holds.
+	 *
+	 * Folded into the structural fingerprint rather than given its own timer:
+	 * a bank changes when you deposit, which is a deliberate act and not the
+	 * per-tick drip experience is. Opening the bank once is one push.
+	 */
+	static int itemsFingerprint(Map<String, Object> payload)
+	{
+		Object items = payload.get("items");
+		return items == null ? 0 : items.hashCode();
 	}
 }

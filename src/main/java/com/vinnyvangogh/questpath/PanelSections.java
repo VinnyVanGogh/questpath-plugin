@@ -61,9 +61,9 @@ enum PanelSections
 	ITEMS(
 		"Quest items",
 		Status.NOT_BUILT,
-		"What the next quest needs, ticked off against what is actually in your bank. The client can "
-			+ "see your bank, which is the one thing no external quest tool can — so this is the "
-			+ "feature the plugin exists for."),
+		"What the next quest needs, ticked off against what is actually in your bank. The bank half "
+			+ "is done — questpath is being sent your bank, inventory and equipment — but matching "
+			+ "them to a quest's requirements needs the quest graph, which is not here yet."),
 
 	QUEST_BROWSER(
 		"Quest browser",
