@@ -17,6 +17,7 @@ class QuestItems
 {
 	private final List<QuestNeeds> quests = new ArrayList<>();
 	private final List<Total> totals = new ArrayList<>();
+	private final List<Pickup> pickups = new ArrayList<>();
 	private boolean bankSeen;
 
 	/** One quest's item list, each line ticked against what is held. */
@@ -151,7 +152,49 @@ class QuestItems
 	 * @param held quantities by lowercased item name, from the client's own
 	 *     bank, inventory and equipment
 	 */
+	/** One thing to grab while you are already inside a quest. */
+	static class Pickup
+	{
+		private final String questName;
+		private final String itemName;
+		private final int alsoWantedBy;
+
+		Pickup(String questName, String itemName, int alsoWantedBy)
+		{
+			this.questName = questName;
+			this.itemName = itemName;
+			this.alsoWantedBy = alsoWantedBy;
+		}
+
+		String questName()
+		{
+			return questName;
+		}
+
+		String itemName()
+		{
+			return itemName;
+		}
+
+		/** How many other quests on the list want it. */
+		int alsoWantedBy()
+		{
+			return alsoWantedBy;
+		}
+	}
+
 	static QuestItems of(QuestGraph graph, PlayerState account, Map<String, Long> held, boolean bankSeen)
+	{
+		return of(graph, account, held, bankSeen, java.util.Collections.emptySet());
+	}
+
+	/**
+	 * @param inProgress names of quests the client reports as started but not
+	 *     finished, so the list can say what is worth grabbing while you are
+	 *     already in one
+	 */
+	static QuestItems of(QuestGraph graph, PlayerState account, Map<String, Long> held, boolean bankSeen,
+		java.util.Set<String> inProgress)
 	{
 		QuestItems out = new QuestItems();
 		out.bankSeen = bankSeen;
@@ -174,6 +217,72 @@ class QuestItems
 		}
 
 		out.totals.addAll(totalsOf(out.quests, held));
+		out.pickups.addAll(pickupsIn(graph, inProgress, out.totals));
+		return out;
+	}
+
+	/**
+	 * Things you can pick up inside a quest you are already doing, that
+	 * something else on the list also wants.
+	 *
+	 * Only worth knowing while you are actually there, which is why it is
+	 * driven by the quests the client reports as started. Quest Helper's own
+	 * selected quest would be the more precise signal and is not readable:
+	 * it lives in memory in another plugin, with no config key, no event, and
+	 * no shared class to reach it through. What the game itself calls "in
+	 * progress" is the honest substitute, and is arguably the better question
+	 * anyway -- it is where you are, not where a panel is pointed.
+	 */
+	private static List<Pickup> pickupsIn(QuestGraph graph, java.util.Set<String> inProgress, List<Total> totals)
+	{
+		List<Pickup> out = new ArrayList<>();
+		if (inProgress == null || inProgress.isEmpty())
+		{
+			return out;
+		}
+
+		Map<String, Total> wanted = new LinkedHashMap<>();
+		for (Total total : totals)
+		{
+			if (!total.satisfied())
+			{
+				wanted.put(total.name().toLowerCase(), total);
+			}
+		}
+		if (wanted.isEmpty())
+		{
+			return out;
+		}
+
+		java.util.Set<String> lowerInProgress = new java.util.HashSet<>();
+		for (String name : inProgress)
+		{
+			if (name != null)
+			{
+				lowerInProgress.add(name.toLowerCase());
+			}
+		}
+
+		for (QuestGraph.Quest quest : graph.quests())
+		{
+			if (!lowerInProgress.contains(quest.name().toLowerCase()))
+			{
+				continue;
+			}
+			for (QuestGraph.Item item : quest.items())
+			{
+				if (!item.obtainable())
+				{
+					continue;
+				}
+				Total total = wanted.get(item.name().toLowerCase());
+				if (total == null)
+				{
+					continue;
+				}
+				out.add(new Pickup(quest.name(), item.name(), total.quests()));
+			}
+		}
 		return out;
 	}
 
@@ -330,6 +439,12 @@ class QuestItems
 		return totals;
 	}
 
+	/** Things worth grabbing inside a quest already under way. */
+	List<Pickup> pickups()
+	{
+		return pickups;
+	}
+
 	/**
 	 * A cheap identity for what is rendered, so an unchanged list is not
 	 * rebuilt.
@@ -340,7 +455,7 @@ class QuestItems
 	 */
 	int signature()
 	{
-		int hash = bankSeen ? 1 : 0;
+		int hash = (bankSeen ? 1 : 0) * 31 + pickups.size();
 		for (QuestNeeds needs : quests)
 		{
 			hash = hash * 31 + needs.questName().hashCode();

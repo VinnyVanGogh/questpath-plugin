@@ -8,6 +8,7 @@ import java.util.Map;
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -265,5 +266,83 @@ public class QuestItemsTest
 				assertFalse("an unsatisfied total must not sit below a satisfied one", seenSatisfied);
 			}
 		}
+	}
+
+	/**
+	 * The pickup list is only worth anything while you are inside the quest,
+	 * so it is driven by what the client calls in progress -- not by Quest
+	 * Helper's selection, which lives in another plugin's memory with no
+	 * config key, no event and no shared class to reach it through.
+	 */
+	@Test
+	public void nothingToGrabWhenNoQuestIsUnderWay() throws Exception
+	{
+		QuestItems items = QuestItems.of(graph(), freshAccount(), Collections.emptyMap(), true,
+			Collections.emptySet());
+		assertTrue(items.pickups().isEmpty());
+	}
+
+	/**
+	 * Something you can pick up inside a quest you are doing, that another
+	 * quest on the list also wants, is the one thing worth interrupting the
+	 * shopping list for.
+	 */
+	@Test
+	public void aQuestUnderWaySurfacesWhatItCanSupply() throws Exception
+	{
+		QuestGraph graph = graph();
+
+		// Find a quest with an obtainable item that something else wants.
+		String questName = null;
+		for (QuestGraph.Quest quest : graph.quests())
+		{
+			for (QuestGraph.Item item : quest.items())
+			{
+				if (item.obtainable())
+				{
+					questName = quest.name();
+					break;
+				}
+			}
+			if (questName != null)
+			{
+				break;
+			}
+		}
+		assertNotNull("the bundled graph carries no obtainable items at all", questName);
+
+		QuestItems items = QuestItems.of(graph, freshAccount(), Collections.emptyMap(), true,
+			Collections.singleton(questName));
+
+		for (QuestItems.Pickup pickup : items.pickups())
+		{
+			assertEquals(questName, pickup.questName());
+			assertFalse(pickup.itemName().isEmpty());
+			assertTrue("a pickup nobody wants is noise", pickup.alsoWantedBy() >= 1);
+		}
+	}
+
+	/** An item already held is not worth a detour. */
+	@Test
+	public void nothingSatisfiedIsSuggestedAsAPickup() throws Exception
+	{
+		QuestGraph graph = graph();
+		Map<String, Long> stocked = new HashMap<>();
+		for (QuestGraph.Quest quest : graph.quests())
+		{
+			for (QuestGraph.Item item : quest.items())
+			{
+				stocked.put(item.name().toLowerCase(), 10_000L);
+			}
+		}
+
+		java.util.Set<String> everything = new java.util.HashSet<>();
+		for (QuestGraph.Quest quest : graph.quests())
+		{
+			everything.add(quest.name());
+		}
+
+		QuestItems items = QuestItems.of(graph, freshAccount(), stocked, true, everything);
+		assertTrue("with a full bank there is nothing to detour for", items.pickups().isEmpty());
 	}
 }

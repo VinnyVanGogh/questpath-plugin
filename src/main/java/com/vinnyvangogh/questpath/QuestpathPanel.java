@@ -86,6 +86,10 @@ class QuestpathPanel extends PluginPanel
 	private final JPanel questResults = new JPanel();
 	private QuestVerdicts lastVerdicts;
 
+	private final JTextField itemSearch = new JTextField();
+	private final JPanel itemResults = new JPanel();
+	private QuestItems lastItems;
+
 	QuestpathPanel(SkillIconManager skillIcons)
 	{
 		setLayout(new BorderLayout());
@@ -119,7 +123,10 @@ class QuestpathPanel extends PluginPanel
 
 		questResults.setLayout(new BoxLayout(questResults, BoxLayout.Y_AXIS));
 		questResults.setAlignmentX(Component.LEFT_ALIGNMENT);
-		buildQuestSearch();
+		itemResults.setLayout(new BoxLayout(itemResults, BoxLayout.Y_AXIS));
+		itemResults.setAlignmentX(Component.LEFT_ALIGNMENT);
+		styleSearch(questSearch, "Filter the quests below by name", this::refilterQuests);
+		styleSearch(itemSearch, "Filter the items below by name", this::refilterItems);
 
 		add(tabGroup, BorderLayout.NORTH);
 		add(display, BorderLayout.CENTER);
@@ -138,46 +145,46 @@ class QuestpathPanel extends PluginPanel
 	 * are the expensive part and they do not depend on the text. Typing is
 	 * therefore a relayout, not a graph walk.
 	 */
-	private void buildQuestSearch()
+	private void styleSearch(JTextField field, String tooltip, Runnable onChange)
 	{
-		questSearch.setToolTipText("Filter the quests below by name");
-		questSearch.setBackground(ColorScheme.DARKER_GRAY_COLOR);
-		questSearch.setForeground(Color.WHITE);
-		questSearch.setBorder(BorderFactory.createCompoundBorder(
+		field.setToolTipText(tooltip);
+		field.setBackground(ColorScheme.DARKER_GRAY_COLOR);
+		field.setForeground(Color.WHITE);
+		field.setBorder(BorderFactory.createCompoundBorder(
 			BorderFactory.createLineBorder(ColorScheme.DARK_GRAY_COLOR),
 			BorderFactory.createEmptyBorder(2, 4, 2, 4)));
-		questSearch.setMaximumSize(new Dimension(Integer.MAX_VALUE, 22));
-		questSearch.setAlignmentX(Component.LEFT_ALIGNMENT);
+		field.setMaximumSize(new Dimension(Integer.MAX_VALUE, 22));
+		field.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-		questSearch.getDocument().addDocumentListener(new DocumentListener()
+		field.getDocument().addDocumentListener(new DocumentListener()
 		{
 			@Override
 			public void insertUpdate(DocumentEvent e)
 			{
-				refilter();
+				onChange.run();
 			}
 
 			@Override
 			public void removeUpdate(DocumentEvent e)
 			{
-				refilter();
+				onChange.run();
 			}
 
 			@Override
 			public void changedUpdate(DocumentEvent e)
 			{
-				refilter();
+				onChange.run();
 			}
 		});
 	}
 
 	/**
-	 * Redraws the quest list for the current filter.
+	 * Redraws a list for its current filter.
 	 *
-	 * Called from the search box's document listener, which is already on the
+	 * Called from a search box's document listener, which is already on the
 	 * EDT, so there is no hop here.
 	 */
-	private void refilter()
+	private void refilterQuests()
 	{
 		if (lastVerdicts == null)
 		{
@@ -186,6 +193,17 @@ class QuestpathPanel extends PluginPanel
 		fillQuestResults(lastVerdicts);
 		questResults.revalidate();
 		questResults.repaint();
+	}
+
+	private void refilterItems()
+	{
+		if (lastItems == null)
+		{
+			return;
+		}
+		fillItemResults(lastItems);
+		itemResults.revalidate();
+		itemResults.repaint();
 	}
 
 	/**
@@ -316,13 +334,20 @@ class QuestpathPanel extends PluginPanel
 			lastVerdictSignature = verdictSignature;
 		}
 
+		lastItems = items;
 		Integer itemsSignature = items == null ? null : items.signature();
 		if (!java.util.Objects.equals(itemsSignature, lastItemsSignature))
 		{
 			clearBodies(PanelSections.Tab.ITEMS);
 			JPanel itemsBody = tabBodies.get(PanelSections.Tab.ITEMS);
 			itemsBody.add(heading(PanelSections.ITEMS.title()));
-			itemsBody.add(itemsBlock(items));
+			if (items != null && !items.isEmpty())
+			{
+				itemsBody.add(itemSearch);
+				itemsBody.add(Box.createVerticalStrut(6));
+			}
+			itemsBody.add(itemResults);
+			fillItemResults(items);
 			renderPlannedSectionsFor(PanelSections.Tab.ITEMS);
 			lastItemsSignature = itemsSignature;
 		}
@@ -338,7 +363,13 @@ class QuestpathPanel extends PluginPanel
 	 * bank, so nothing outside the client can tell you that you already have
 	 * four of the five things.
 	 */
-	private static JPanel itemsBlock(QuestItems items)
+	private void fillItemResults(QuestItems items)
+	{
+		itemResults.removeAll();
+		itemResults.add(itemsBlock(items, itemSearch.getText()));
+	}
+
+	private static JPanel itemsBlock(QuestItems items, String filter)
 	{
 		JPanel panel = column();
 
@@ -370,6 +401,32 @@ class QuestpathPanel extends PluginPanel
 			return panel;
 		}
 
+		String needle = filter == null ? "" : filter.trim().toLowerCase();
+		boolean filtering = !needle.isEmpty();
+
+		// What is worth grabbing inside a quest already under way, before the
+		// shopping list -- it is the only part that stops being useful the
+		// moment you leave.
+		if (!filtering && !items.pickups().isEmpty())
+		{
+			JLabel pickupHeading = new JLabel("GET WHILE YOU ARE HERE");
+			pickupHeading.setFont(FontManager.getRunescapeSmallFont().deriveFont(Font.BOLD));
+			pickupHeading.setForeground(ColorScheme.PROGRESS_COMPLETE_COLOR);
+			panel.add(pickupHeading);
+
+			for (QuestItems.Pickup pickup : items.pickups())
+			{
+				JLabel row = new JLabel(wrap(pickup.itemName() + " — in " + pickup.questName()));
+				row.setFont(FontManager.getRunescapeSmallFont());
+				row.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
+				row.setToolTipText("You are partway through " + pickup.questName()
+					+ ", the wiki says this can be picked up during it, and "
+					+ pickup.alsoWantedBy() + " quest(s) on your list want it.");
+				panel.add(row);
+			}
+			panel.add(Box.createVerticalStrut(12));
+		}
+
 		// One shopping list first, the per-quest breakdown after. Coins wanted
 		// by two quests is one trip to the bank for the sum, not two lines to
 		// add up in your head.
@@ -379,8 +436,14 @@ class QuestpathPanel extends PluginPanel
 		panel.add(totalsHeading);
 
 		JPanel totalsGrid = grid();
+		int shownTotals = 0;
 		for (QuestItems.Total total : items.totals())
 		{
+			if (filtering && !total.name().toLowerCase().contains(needle))
+			{
+				continue;
+			}
+			shownTotals++;
 			// The count of quests goes in the tooltip, not the label. "Ball of
 			// wool x3" beside "5 / 24" read as a multiplication rather than as
 			// "three quests want this", which is what it meant.
@@ -392,6 +455,10 @@ class QuestpathPanel extends PluginPanel
 				: ColorScheme.LIGHT_GRAY_COLOR, tip);
 		}
 		panel.add(totalsGrid);
+		if (filtering && shownTotals == 0)
+		{
+			panel.add(muted("No item matches that."));
+		}
 
 		panel.add(Box.createVerticalStrut(12));
 		JLabel perQuest = new JLabel("BY QUEST  ·  " + items.quests().size());
@@ -403,6 +470,21 @@ class QuestpathPanel extends PluginPanel
 		boolean first = true;
 		for (QuestItems.QuestNeeds needs : items.quests())
 		{
+			// A filter searches items, so a quest survives it by wanting one.
+			// Filtering on the quest name instead would make searching "bones"
+			// hide the very quest that needs them.
+			List<QuestItems.Line> shownLines = new ArrayList<>();
+			for (QuestItems.Line line : needs.lines())
+			{
+				if (!filtering || line.name().toLowerCase().contains(needle))
+				{
+					shownLines.add(line);
+				}
+			}
+			if (shownLines.isEmpty())
+			{
+				continue;
+			}
 			if (!first)
 			{
 				panel.add(Box.createVerticalStrut(10));
@@ -418,7 +500,7 @@ class QuestpathPanel extends PluginPanel
 			panel.add(title);
 
 			JPanel grid = grid();
-			for (QuestItems.Line line : needs.lines())
+			for (QuestItems.Line line : shownLines)
 			{
 				String label = line.optional() ? line.name() + " (optional)" : line.name();
 				addRow(grid, label, line.describe(), line.held()

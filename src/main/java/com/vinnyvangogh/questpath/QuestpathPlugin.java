@@ -500,6 +500,29 @@ public class QuestpathPlugin extends Plugin
 		return completed;
 	}
 
+	/**
+	 * Quests the client reports as started but not finished.
+	 *
+	 * This is what "the quest you are doing" resolves to. Quest Helper's own
+	 * selected quest would be more precise and is not readable from here --
+	 * it lives in memory in another plugin, with no config key, no event and
+	 * no shared class to reach it through, and reflection is forbidden.
+	 *
+	 * Must run on the client thread.
+	 */
+	private Set<String> inProgressQuestNames()
+	{
+		Set<String> started = new HashSet<>();
+		for (Quest quest : Quest.values())
+		{
+			if (quest.getState(client) == QuestState.IN_PROGRESS)
+			{
+				started.add(quest.getName());
+			}
+		}
+		return started;
+	}
+
 	private QuestItems questItems()
 	{
 		if (questGraph == null || client.getGameState() != GameState.LOGGED_IN || owned.isEmpty())
@@ -523,7 +546,7 @@ public class QuestpathPlugin extends Plugin
 
 		return QuestItems.of(questGraph,
 			new PlayerState(levels, experience, completed, buildRules),
-			owned.heldByName(), owned.bankSeen());
+			owned.heldByName(), owned.bankSeen(), inProgressQuestNames());
 	}
 
 	@Provides

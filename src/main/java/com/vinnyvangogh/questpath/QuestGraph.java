@@ -121,6 +121,9 @@ class QuestGraph
 		@SerializedName("optional")
 		private boolean optional;
 
+		@SerializedName("obtainable")
+		private boolean obtainable;
+
 		String name()
 		{
 			return name == null ? "" : name;
@@ -141,6 +144,12 @@ class QuestGraph
 		boolean optional()
 		{
 			return optional;
+		}
+
+		/** Whether the wiki says this can be picked up during the quest itself. */
+		boolean obtainable()
+		{
+			return obtainable;
 		}
 	}
 
