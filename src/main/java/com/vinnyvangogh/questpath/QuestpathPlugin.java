@@ -271,7 +271,8 @@ public class QuestpathPlugin extends Plugin
 			panel.showLoggedOut();
 			return;
 		}
-		panel.update(currentStats(), currentXp(), syncStatus(), buildRules, unmatchedQuests, verdicts());
+		panel.update(currentStats(), currentXp(), syncStatus(), buildRules, unmatchedQuests,
+			verdicts(), questItems());
 	}
 
 	/**
@@ -465,6 +466,47 @@ public class QuestpathPlugin extends Plugin
 		}
 
 		return QuestVerdicts.of(questGraph, new PlayerState(levels, experience, completed, buildRules));
+	}
+
+	/**
+	 * What the doable quests need, against what is in the bank.
+	 *
+	 * Null when the graph is missing, the client has not loaded, or no
+	 * container has been opened yet -- all of which are "cannot answer", not
+	 * "you need nothing".
+	 *
+	 * Runs on the client thread: it classifies, which reads quest varbits.
+	 */
+	private QuestItems questItems()
+	{
+		if (questGraph == null || client.getGameState() != GameState.LOGGED_IN || owned.isEmpty())
+		{
+			return null;
+		}
+
+		Set<Long> completed = new HashSet<>();
+		for (Quest quest : Quest.values())
+		{
+			if (quest.getState(client) == QuestState.FINISHED)
+			{
+				completed.add((long) quest.getId());
+			}
+		}
+
+		Map<String, Integer> levels = new HashMap<>();
+		Map<String, Long> experience = new HashMap<>();
+		for (Skill skill : Skill.values())
+		{
+			if (skill.getName() == null)
+			{
+				continue;
+			}
+			levels.put(skill.getName(), client.getRealSkillLevel(skill));
+			experience.put(skill.getName(), (long) client.getSkillExperience(skill));
+		}
+
+		return QuestItems.of(questGraph,
+			new PlayerState(levels, experience, completed, buildRules), owned.heldByName());
 	}
 
 	@Provides

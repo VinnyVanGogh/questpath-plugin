@@ -67,10 +67,8 @@ enum PanelSections
 	ITEMS(
 		Tab.ITEMS,
 		"Quest items",
-		Status.NOT_BUILT,
-		"What the next quest needs, ticked off against what is actually in your bank. The bank half "
-			+ "is done — questpath is being sent your bank, inventory and equipment — but matching "
-			+ "them to a quest's requirements needs the quest graph, which is not here yet."),
+		Status.LIVE,
+		null),
 
 	QUEST_BROWSER(
 		Tab.QUESTS,

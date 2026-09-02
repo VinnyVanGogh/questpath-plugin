@@ -11,19 +11,53 @@
           "skill": "cooking",
           "xp": 300
         }
+      ],
+      "items": [
+        {
+          "name": "Bucket",
+          "optional": true
+        },
+        {
+          "name": "Bucket of milk"
+        },
+        {
+          "name": "Egg"
+        },
+        {
+          "name": "Pot",
+          "optional": true
+        },
+        {
+          "name": "Pot of flour"
+        }
       ]
     },
     {
       "id": 2,
       "slug": "romeo_juliet",
       "name": "Romeo \u0026 Juliet",
-      "members": false
+      "members": false,
+      "items": [
+        {
+          "name": "Cadava berries"
+        }
+      ]
     },
     {
       "id": 3,
       "slug": "demon_slayer",
       "name": "Demon Slayer",
-      "members": false
+      "members": false,
+      "items": [
+        {
+          "name": "Bones",
+          "quantity": 25
+        },
+        {
+          "name": "Coins",
+          "quantity": 1
+        }
+      ]
     },
     {
       "id": 4,
@@ -40,6 +74,12 @@
         {
           "skill": "crafting",
           "xp": 150
+        }
+      ],
+      "items": [
+        {
+          "name": "Ball of wool",
+          "quantity": 20
         }
       ]
     },
@@ -59,7 +99,18 @@
       "id": 7,
       "slug": "ernest_the_chicken",
       "name": "Ernest the Chicken",
-      "members": false
+      "members": false,
+      "items": [
+        {
+          "name": "Fish food"
+        },
+        {
+          "name": "Poison"
+        },
+        {
+          "name": "Spade"
+        }
+      ]
     },
     {
       "id": 8,
@@ -70,6 +121,17 @@
         {
           "skill": "attack",
           "xp": 4825
+        }
+      ],
+      "items": [
+        {
+          "name": "Beer"
+        },
+        {
+          "name": "Hammer"
+        },
+        {
+          "name": "Stake"
         }
       ]
     },
@@ -83,13 +145,64 @@
           "skill": "magic",
           "xp": 875
         }
+      ],
+      "items": [
+        {
+          "name": "Black bead"
+        },
+        {
+          "name": "Red bead"
+        },
+        {
+          "name": "White bead"
+        },
+        {
+          "name": "Yellow bead"
+        }
       ]
     },
     {
       "id": 10,
       "slug": "prince_ali_rescue",
       "name": "Prince Ali Rescue",
-      "members": false
+      "members": false,
+      "items": [
+        {
+          "name": "Ashes"
+        },
+        {
+          "name": "Ball of wool",
+          "quantity": 3
+        },
+        {
+          "name": "Beer",
+          "quantity": 3
+        },
+        {
+          "name": "Bronze bar"
+        },
+        {
+          "name": "Bucket of water"
+        },
+        {
+          "name": "Pink skirt"
+        },
+        {
+          "name": "Pot of flour"
+        },
+        {
+          "name": "Redberries"
+        },
+        {
+          "name": "Rope"
+        },
+        {
+          "name": "Soft clay"
+        },
+        {
+          "name": "Yellow dye"
+        }
+      ]
     },
     {
       "id": 11,
@@ -101,13 +214,35 @@
           "skill": "mining",
           "xp": 1300
         }
+      ],
+      "items": [
+        {
+          "name": "Clay",
+          "quantity": 6
+        },
+        {
+          "name": "Copper ore",
+          "quantity": 4
+        },
+        {
+          "name": "Iron ore",
+          "quantity": 2
+        }
       ]
     },
     {
       "id": 12,
       "slug": "black_knights_fortress",
       "name": "Black Knights' Fortress",
-      "members": false
+      "members": false,
+      "items": [
+        {
+          "name": "Cabbage"
+        },
+        {
+          "name": "Iron chainbody"
+        }
+      ]
     },
     {
       "id": 13,
@@ -118,6 +253,20 @@
         {
           "skill": "magic",
           "xp": 325
+        }
+      ],
+      "items": [
+        {
+          "name": "Burnt meat"
+        },
+        {
+          "name": "Eye of newt"
+        },
+        {
+          "name": "Onion"
+        },
+        {
+          "name": "Rat's tail"
         }
       ]
     },
@@ -138,6 +287,11 @@
           "skill": "smithing",
           "xp": 12725
         }
+      ],
+      "items": [
+        {
+          "name": "Redberry pie"
+        }
       ]
     },
     {
@@ -150,13 +304,46 @@
           "skill": "crafting",
           "xp": 200
         }
+      ],
+      "items": [
+        {
+          "name": "Blue dye",
+          "quantity": 1
+        },
+        {
+          "name": "Red dye",
+          "quantity": 1
+        },
+        {
+          "name": "Yellow dye",
+          "quantity": 1
+        }
       ]
     },
     {
       "id": 16,
       "slug": "pirates_treasure",
       "name": "Pirate's Treasure",
-      "members": false
+      "members": false,
+      "items": [
+        {
+          "name": "Banana",
+          "quantity": 10
+        },
+        {
+          "name": "Coins",
+          "quantity": 60
+        },
+        {
+          "name": "Karamjan rum"
+        },
+        {
+          "name": "Spade"
+        },
+        {
+          "name": "White apron"
+        }
+      ]
     },
     {
       "id": 17,
@@ -176,6 +363,38 @@
           "skill": "strength",
           "xp": 18650
         }
+      ],
+      "items": [
+        {
+          "name": "Anti-dragon shield"
+        },
+        {
+          "name": "Coins",
+          "quantity": 2000
+        },
+        {
+          "name": "Hammer"
+        },
+        {
+          "name": "Lobster pot"
+        },
+        {
+          "name": "Plank",
+          "quantity": 3
+        },
+        {
+          "name": "Silk"
+        },
+        {
+          "name": "Steel nails",
+          "quantity": 90
+        },
+        {
+          "name": "Unfired bowl"
+        },
+        {
+          "name": "Wizard's mind bomb"
+        }
       ]
     },
     {
@@ -187,6 +406,20 @@
         {
           "skill": "herblore",
           "xp": 250
+        }
+      ],
+      "items": [
+        {
+          "name": "Raw bear meat"
+        },
+        {
+          "name": "Raw beef"
+        },
+        {
+          "name": "Raw chicken"
+        },
+        {
+          "name": "Raw rat meat"
         }
       ]
     },
@@ -206,6 +439,11 @@
           "level": 36,
           "boostable": true
         }
+      ],
+      "items": [
+        {
+          "name": "Knife"
+        }
       ]
     },
     {
@@ -218,13 +456,35 @@
           "skill": "hitpoints",
           "xp": 6325
         }
+      ],
+      "items": [
+        {
+          "name": "Cheese"
+        },
+        {
+          "name": "Leather gloves"
+        }
       ]
     },
     {
       "id": 21,
       "slug": "merlins_crystal",
       "name": "Merlin's Crystal",
-      "members": true
+      "members": true,
+      "items": [
+        {
+          "name": "Bat bones"
+        },
+        {
+          "name": "Bread"
+        },
+        {
+          "name": "Bucket of wax"
+        },
+        {
+          "name": "Tinderbox"
+        }
+      ]
     },
     {
       "id": 22,
@@ -308,6 +568,30 @@
           "skill": "woodcutting",
           "xp": 1575
         }
+      ],
+      "items": [
+        {
+          "name": "Black full helm"
+        },
+        {
+          "name": "Black platebody"
+        },
+        {
+          "name": "Black platelegs"
+        },
+        {
+          "name": "Dusty key",
+          "optional": true
+        },
+        {
+          "name": "Fishing bait"
+        },
+        {
+          "name": "Fishing rod"
+        },
+        {
+          "name": "Ice gloves"
+        }
       ]
     },
     {
@@ -328,6 +612,11 @@
         {
           "skill": "strength",
           "xp": 6625
+        }
+      ],
+      "items": [
+        {
+          "name": "Dusty key"
         }
       ]
     },
@@ -357,6 +646,29 @@
           "level": 40,
           "boostable": true
         }
+      ],
+      "items": [
+        {
+          "name": "Bass"
+        },
+        {
+          "name": "Necklace mould"
+        },
+        {
+          "name": "Ring mould"
+        },
+        {
+          "name": "Salmon"
+        },
+        {
+          "name": "Shrimps"
+        },
+        {
+          "name": "Swordfish"
+        },
+        {
+          "name": "Tuna"
+        }
       ]
     },
     {
@@ -374,6 +686,24 @@
         {
           "skill": "fishing",
           "xp": 2437
+        }
+      ],
+      "items": [
+        {
+          "name": "Coins",
+          "quantity": 5
+        },
+        {
+          "name": "Fishing rod"
+        },
+        {
+          "name": "Garlic"
+        },
+        {
+          "name": "Red vine worm"
+        },
+        {
+          "name": "Spade"
         }
       ]
     },
@@ -406,6 +736,14 @@
           "skill": "woodcutting",
           "xp": 2000
         }
+      ],
+      "items": [
+        {
+          "name": "Jug of water"
+        },
+        {
+          "name": "Logs"
+        }
       ]
     },
     {
@@ -433,13 +771,30 @@
           "skill": "ranged",
           "xp": 10500
         }
+      ],
+      "items": [
+        {
+          "name": "Boots of lightness"
+        },
+        {
+          "name": "Limpwurt root",
+          "quantity": 20
+        }
       ]
     },
     {
       "id": 29,
       "slug": "clock_tower",
       "name": "Clock Tower",
-      "members": true
+      "members": true,
+      "items": [
+        {
+          "name": "Bucket of water"
+        },
+        {
+          "name": "Smiths gloves"
+        }
+      ]
     },
     {
       "id": 30,
@@ -464,6 +819,11 @@
           "skill": "prayer",
           "xp": 11000
         }
+      ],
+      "items": [
+        {
+          "name": "Excalibur"
+        }
       ]
     },
     {
@@ -475,6 +835,12 @@
         {
           "skill": "attack",
           "xp": 11450
+        }
+      ],
+      "items": [
+        {
+          "name": "Logs",
+          "quantity": 6
         }
       ]
     },
@@ -491,6 +857,12 @@
         {
           "skill": "thieving",
           "xp": 2175
+        }
+      ],
+      "items": [
+        {
+          "name": "Coins",
+          "quantity": 5
         }
       ]
     },
@@ -510,7 +882,13 @@
       "id": 34,
       "slug": "sheep_herder",
       "name": "Sheep Herder",
-      "members": true
+      "members": true,
+      "items": [
+        {
+          "name": "Coins",
+          "quantity": 100
+        }
+      ]
     },
     {
       "id": 35,
@@ -521,6 +899,32 @@
         {
           "skill": "mining",
           "xp": 2425
+        }
+      ],
+      "items": [
+        {
+          "name": "Bucket of milk"
+        },
+        {
+          "name": "Chocolate bar"
+        },
+        {
+          "name": "Chocolate dust"
+        },
+        {
+          "name": "Dwellberries"
+        },
+        {
+          "name": "Knife"
+        },
+        {
+          "name": "Rope"
+        },
+        {
+          "name": "Snape grass"
+        },
+        {
+          "name": "Spade"
         }
       ]
     },
@@ -541,6 +945,11 @@
           "skill": "fishing",
           "xp": 7175
         }
+      ],
+      "items": [
+        {
+          "name": "Swamp paste"
+        }
       ]
     },
     {
@@ -556,6 +965,23 @@
         {
           "skill": "strength",
           "xp": 13750
+        }
+      ],
+      "items": [
+        {
+          "name": "Air rune",
+          "quantity": 6
+        },
+        {
+          "name": "Earth rune",
+          "quantity": 6
+        },
+        {
+          "name": "Rope"
+        },
+        {
+          "name": "Water rune",
+          "quantity": 6
         }
       ]
     },
@@ -632,6 +1058,20 @@
           "skill": "attack",
           "xp": 3000
         }
+      ],
+      "items": [
+        {
+          "name": "Bucket"
+        },
+        {
+          "name": "Rope"
+        },
+        {
+          "name": "Spade"
+        },
+        {
+          "name": "Tinderbox"
+        }
       ]
     },
     {
@@ -643,6 +1083,18 @@
         {
           "skill": "crafting",
           "xp": 2250
+        }
+      ],
+      "items": [
+        {
+          "name": "Bronze bar"
+        },
+        {
+          "name": "Molten glass"
+        },
+        {
+          "name": "Plank",
+          "quantity": 3
         }
       ]
     },
@@ -667,6 +1119,17 @@
         {
           "skill": "sailing",
           "xp": 50
+        }
+      ],
+      "items": [
+        {
+          "name": "Bronze bar"
+        },
+        {
+          "name": "Hammer"
+        },
+        {
+          "name": "Pharaoh's sceptre"
         }
       ]
     },
@@ -707,6 +1170,40 @@
           "skill": "magic",
           "xp": 15250
         }
+      ],
+      "items": [
+        {
+          "name": "Bat bones"
+        },
+        {
+          "name": "Coins",
+          "quantity": 20
+        },
+        {
+          "name": "Death rune"
+        },
+        {
+          "name": "Dragon bones"
+        },
+        {
+          "name": "Gold bar"
+        },
+        {
+          "name": "Guam potion (unf)"
+        },
+        {
+          "name": "Jangerberries"
+        },
+        {
+          "name": "Pestle and mortar"
+        },
+        {
+          "name": "Rope",
+          "quantity": 2
+        },
+        {
+          "name": "Tinderbox"
+        }
       ]
     },
     {
@@ -719,6 +1216,11 @@
           "skill": "crafting",
           "xp": 750
         }
+      ],
+      "items": [
+        {
+          "name": "Hammer"
+        }
       ]
     },
     {
@@ -730,6 +1232,11 @@
         {
           "skill": "crafting",
           "xp": 1406
+        }
+      ],
+      "items": [
+        {
+          "name": "Pot"
         }
       ]
     },
@@ -764,6 +1271,42 @@
           "skill": "mining",
           "xp": 15300
         }
+      ],
+      "items": [
+        {
+          "name": "Charcoal"
+        },
+        {
+          "name": "Cup of tea"
+        },
+        {
+          "name": "Opal"
+        },
+        {
+          "name": "Panning tray"
+        },
+        {
+          "name": "Pestle and mortar"
+        },
+        {
+          "name": "Rope",
+          "quantity": 2
+        },
+        {
+          "name": "Specimen brush"
+        },
+        {
+          "name": "Specimen jar"
+        },
+        {
+          "name": "Tinderbox"
+        },
+        {
+          "name": "Trowel"
+        },
+        {
+          "name": "Vial"
+        }
       ]
     },
     {
@@ -775,6 +1318,21 @@
         {
           "skill": "cooking",
           "xp": 1525
+        }
+      ],
+      "items": [
+        {
+          "name": "Bucket of milk"
+        },
+        {
+          "name": "Coins",
+          "quantity": 100
+        },
+        {
+          "name": "Doogle leaves"
+        },
+        {
+          "name": "Raw sardine"
         }
       ]
     },
@@ -841,6 +1399,77 @@
           "level": 50,
           "boostable": true
         }
+      ],
+      "items": [
+        {
+          "name": "Ardrigal"
+        },
+        {
+          "name": "Charcoal"
+        },
+        {
+          "name": "Diamond"
+        },
+        {
+          "name": "Earth rune"
+        },
+        {
+          "name": "Emerald"
+        },
+        {
+          "name": "Gold bar",
+          "quantity": 2
+        },
+        {
+          "name": "Hammer"
+        },
+        {
+          "name": "Infernal axe"
+        },
+        {
+          "name": "Jade"
+        },
+        {
+          "name": "Law rune",
+          "quantity": 2
+        },
+        {
+          "name": "Lockpick"
+        },
+        {
+          "name": "Machete"
+        },
+        {
+          "name": "Mind rune"
+        },
+        {
+          "name": "Opal"
+        },
+        {
+          "name": "Papyrus",
+          "quantity": 3
+        },
+        {
+          "name": "Red topaz"
+        },
+        {
+          "name": "Rope"
+        },
+        {
+          "name": "Ruby"
+        },
+        {
+          "name": "Sapphire"
+        },
+        {
+          "name": "Snake weed"
+        },
+        {
+          "name": "Soul rune"
+        },
+        {
+          "name": "Vial of water"
+        }
       ]
     },
     {
@@ -852,13 +1481,28 @@
         50,
         74,
         77
+      ],
+      "items": [
+        {
+          "name": "Coins",
+          "quantity": 100
+        },
+        {
+          "name": "Wool",
+          "quantity": 3
+        }
       ]
     },
     {
       "id": 50,
       "slug": "rune_mysteries",
       "name": "Rune Mysteries",
-      "members": false
+      "members": false,
+      "items": [
+        {
+          "name": "Air talisman"
+        }
+      ]
     },
     {
       "id": 51,
@@ -869,6 +1513,22 @@
         {
           "skill": "attack",
           "xp": 3000
+        }
+      ],
+      "items": [
+        {
+          "name": "Asgarnian ale"
+        },
+        {
+          "name": "Bread",
+          "quantity": 10
+        },
+        {
+          "name": "Coins",
+          "quantity": 60
+        },
+        {
+          "name": "Iron bar"
         }
       ]
     },
@@ -892,6 +1552,35 @@
         {
           "skill": "herblore",
           "xp": 11000
+        }
+      ],
+      "items": [
+        {
+          "name": "Climbing boots"
+        },
+        {
+          "name": "Grain",
+          "quantity": 10
+        },
+        {
+          "name": "Logs",
+          "quantity": 1
+        },
+        {
+          "name": "Pestle and mortar"
+        },
+        {
+          "name": "Pineapple chunks"
+        },
+        {
+          "name": "Ranarr potion (unf)"
+        },
+        {
+          "name": "Raw chicken",
+          "quantity": 5
+        },
+        {
+          "name": "Vodka"
         }
       ]
     },
@@ -929,6 +1618,39 @@
           "skill": "ranged",
           "xp": 735
         }
+      ],
+      "items": [
+        {
+          "name": "Cabbage"
+        },
+        {
+          "name": "Chisel"
+        },
+        {
+          "name": "Doogle leaves"
+        },
+        {
+          "name": "Equa leaves"
+        },
+        {
+          "name": "Feather"
+        },
+        {
+          "name": "Knife"
+        },
+        {
+          "name": "Onion"
+        },
+        {
+          "name": "Potato"
+        },
+        {
+          "name": "Tomato"
+        },
+        {
+          "name": "Wolf bones",
+          "quantity": 4
+        }
       ]
     },
     {
@@ -962,6 +1684,27 @@
           "skill": "smithing",
           "xp": 5000
         }
+      ],
+      "items": [
+        {
+          "name": "Coal",
+          "quantity": 4
+        },
+        {
+          "name": "Hammer"
+        },
+        {
+          "name": "Knife"
+        },
+        {
+          "name": "Leather"
+        },
+        {
+          "name": "Needle"
+        },
+        {
+          "name": "Thread"
+        }
       ]
     },
     {
@@ -986,6 +1729,14 @@
           "skill": "hitpoints",
           "xp": 2000
         }
+      ],
+      "items": [
+        {
+          "name": "Ghostspeak amulet"
+        },
+        {
+          "name": "Silver sickle"
+        }
       ]
     },
     {
@@ -997,6 +1748,15 @@
         {
           "skill": "prayer",
           "xp": 1406
+        }
+      ],
+      "items": [
+        {
+          "name": "Bucket"
+        },
+        {
+          "name": "Rune essence",
+          "quantity": 50
         }
       ]
     },
@@ -1023,6 +1783,30 @@
         {
           "skill": "agility",
           "xp": 13750
+        }
+      ],
+      "items": [
+        {
+          "name": "Cooked rabbit"
+        },
+        {
+          "name": "Pestle and mortar"
+        },
+        {
+          "name": "Pot"
+        },
+        {
+          "name": "Rope",
+          "quantity": 2
+        },
+        {
+          "name": "Spade"
+        },
+        {
+          "name": "Strip of cloth"
+        },
+        {
+          "name": "Tinderbox"
         }
       ]
     },
@@ -1067,6 +1851,34 @@
           "skill": "strength",
           "xp": 2500
         }
+      ],
+      "items": [
+        {
+          "name": "Jogre bones"
+        },
+        {
+          "name": "Karamjan rum",
+          "optional": true
+        },
+        {
+          "name": "Knife"
+        },
+        {
+          "name": "Pestle and mortar"
+        },
+        {
+          "name": "Seaweed"
+        },
+        {
+          "name": "Sliced banana"
+        },
+        {
+          "name": "Small fishing net"
+        },
+        {
+          "name": "Tinderbox",
+          "optional": true
+        }
       ]
     },
     {
@@ -1082,6 +1894,11 @@
           "skill": "agility",
           "level": 15,
           "boostable": true
+        }
+      ],
+      "items": [
+        {
+          "name": "Climbing boots"
         }
       ]
     },
@@ -1118,6 +1935,26 @@
         {
           "skill": "herblore",
           "xp": 2000
+        }
+      ],
+      "items": [
+        {
+          "name": "Ashes",
+          "quantity": 2
+        },
+        {
+          "name": "Coins",
+          "quantity": 1000
+        },
+        {
+          "name": "Hammer",
+          "quantity": 1
+        },
+        {
+          "name": "Logs"
+        },
+        {
+          "name": "Tinderbox"
         }
       ]
     },
@@ -1167,6 +2004,33 @@
           "skill": "woodcutting",
           "xp": 2812.4
         }
+      ],
+      "items": [
+        {
+          "name": "Beer tankard"
+        },
+        {
+          "name": "Cabbage"
+        },
+        {
+          "name": "Coins",
+          "quantity": 5252
+        },
+        {
+          "name": "Knife"
+        },
+        {
+          "name": "Onion"
+        },
+        {
+          "name": "Potato"
+        },
+        {
+          "name": "Raw sea turtle"
+        },
+        {
+          "name": "Tinderbox"
+        }
       ]
     },
     {
@@ -1197,6 +2061,43 @@
           "skill": "strength",
           "xp": 4662.5
         }
+      ],
+      "items": [
+        {
+          "name": "Air rune"
+        },
+        {
+          "name": "Earth rune"
+        },
+        {
+          "name": "Fire rune"
+        },
+        {
+          "name": "Hammer"
+        },
+        {
+          "name": "Molten glass"
+        },
+        {
+          "name": "Plank",
+          "quantity": 2
+        },
+        {
+          "name": "Steel nails",
+          "quantity": 60
+        },
+        {
+          "name": "Swamp tar"
+        },
+        {
+          "name": "Sword"
+        },
+        {
+          "name": "Tinderbox"
+        },
+        {
+          "name": "Water rune"
+        }
       ]
     },
     {
@@ -1207,6 +2108,17 @@
       "prerequisites": [
         22,
         61
+      ],
+      "items": [
+        {
+          "name": "Harpoon"
+        },
+        {
+          "name": "Iron bar"
+        },
+        {
+          "name": "Logs"
+        }
       ]
     },
     {
@@ -1217,6 +2129,20 @@
       "prerequisites": [
         31,
         39
+      ],
+      "items": [
+        {
+          "name": "Ball of wool"
+        },
+        {
+          "name": "Banana"
+        },
+        {
+          "name": "Gold bar"
+        },
+        {
+          "name": "Monkey bones"
+        }
       ]
     },
     {
@@ -1238,6 +2164,11 @@
         {
           "skill": "strength",
           "xp": 22000
+        }
+      ],
+      "items": [
+        {
+          "name": "Chisel"
         }
       ]
     },
@@ -1264,6 +2195,32 @@
         {
           "skill": "strength",
           "xp": 4000
+        }
+      ],
+      "items": [
+        {
+          "name": "Bucket of wax"
+        },
+        {
+          "name": "Cake tin"
+        },
+        {
+          "name": "Climbing boots"
+        },
+        {
+          "name": "Iron bar"
+        },
+        {
+          "name": "Rope"
+        },
+        {
+          "name": "Swamp tar"
+        },
+        {
+          "name": "Wax"
+        },
+        {
+          "name": "Yew logs"
         }
       ]
     },
@@ -1303,6 +2260,43 @@
           "skill": "strength",
           "xp": 600
         }
+      ],
+      "items": [
+        {
+          "name": "Coins",
+          "quantity": 10
+        },
+        {
+          "name": "Hammer"
+        },
+        {
+          "name": "Mort myre fungus",
+          "quantity": 6
+        },
+        {
+          "name": "Plank",
+          "quantity": 6
+        },
+        {
+          "name": "Steel dagger"
+        },
+        {
+          "name": "Steel longsword"
+        },
+        {
+          "name": "Steel mace"
+        },
+        {
+          "name": "Steel nails",
+          "quantity": 225
+        },
+        {
+          "name": "Steel sword",
+          "quantity": 2
+        },
+        {
+          "name": "Steel warhammer"
+        }
       ]
     },
     {
@@ -1331,6 +2325,32 @@
           "skill": "thieving",
           "xp": 1000
         }
+      ],
+      "items": [
+        {
+          "name": "Bronze wire",
+          "quantity": 3
+        },
+        {
+          "name": "Coins",
+          "quantity": 50
+        },
+        {
+          "name": "Ghostspeak amulet"
+        },
+        {
+          "name": "Needle"
+        },
+        {
+          "name": "Silver bar"
+        },
+        {
+          "name": "Spade"
+        },
+        {
+          "name": "Thread",
+          "quantity": 5
+        }
       ]
     },
     {
@@ -1353,6 +2373,20 @@
         {
           "skill": "strength",
           "xp": 10000
+        }
+      ],
+      "items": [
+        {
+          "name": "Glarial's pebble"
+        },
+        {
+          "name": "Key"
+        },
+        {
+          "name": "Rope"
+        },
+        {
+          "name": "Spade"
         }
       ]
     },
@@ -1377,6 +2411,43 @@
         {
           "skill": "prayer",
           "xp": 2400
+        }
+      ],
+      "items": [
+        {
+          "name": "Bowl of water"
+        },
+        {
+          "name": "Bucket of milk"
+        },
+        {
+          "name": "Coins",
+          "quantity": 400
+        },
+        {
+          "name": "Costume needle"
+        },
+        {
+          "name": "Ecto-token",
+          "quantity": 31
+        },
+        {
+          "name": "Ghostspeak amulet"
+        },
+        {
+          "name": "Knife"
+        },
+        {
+          "name": "Nettles"
+        },
+        {
+          "name": "Oak longbow"
+        },
+        {
+          "name": "Silk"
+        },
+        {
+          "name": "Spade"
         }
       ]
     },
@@ -1410,6 +2481,56 @@
           "level": 30,
           "boostable": true
         }
+      ],
+      "items": [
+        {
+          "name": "Bronze bar"
+        },
+        {
+          "name": "Cup of hot water"
+        },
+        {
+          "name": "Guam leaf",
+          "quantity": 2
+        },
+        {
+          "name": "Hammer"
+        },
+        {
+          "name": "Harralander"
+        },
+        {
+          "name": "Iron bar"
+        },
+        {
+          "name": "Jade"
+        },
+        {
+          "name": "Marrentill"
+        },
+        {
+          "name": "Opal"
+        },
+        {
+          "name": "Pigeon cage",
+          "quantity": 5
+        },
+        {
+          "name": "Pot"
+        },
+        {
+          "name": "Red topaz"
+        },
+        {
+          "name": "Sapphire"
+        },
+        {
+          "name": "Soft clay"
+        },
+        {
+          "name": "Steel bar",
+          "quantity": 4
+        }
       ]
     },
     {
@@ -1432,6 +2553,17 @@
         {
           "skill": "prayer",
           "xp": 2000
+        }
+      ],
+      "items": [
+        {
+          "name": "Plank"
+        },
+        {
+          "name": "Rope"
+        },
+        {
+          "name": "Staff"
         }
       ]
     },
@@ -1474,6 +2606,22 @@
           "skill": "smithing",
           "xp": 5000
         }
+      ],
+      "items": [
+        {
+          "name": "Ammo mould"
+        },
+        {
+          "name": "Coins",
+          "quantity": 830
+        },
+        {
+          "name": "Gold bar",
+          "quantity": 4
+        },
+        {
+          "name": "Hammer"
+        }
       ]
     },
     {
@@ -1491,6 +2639,31 @@
         {
           "skill": "thieving",
           "xp": 15000
+        }
+      ],
+      "items": [
+        {
+          "name": "Beer",
+          "quantity": 3
+        },
+        {
+          "name": "Bucket"
+        },
+        {
+          "name": "Coins",
+          "quantity": 501
+        },
+        {
+          "name": "Fake beard"
+        },
+        {
+          "name": "Kharidian headpiece"
+        },
+        {
+          "name": "Snake basket"
+        },
+        {
+          "name": "Snake charm"
         }
       ]
     },
@@ -1519,6 +2692,24 @@
         {
           "skill": "thieving",
           "xp": 1000
+        }
+      ],
+      "items": [
+        {
+          "name": "Papyrus"
+        },
+        {
+          "name": "Pestle and mortar"
+        },
+        {
+          "name": "Phoenix feather"
+        },
+        {
+          "name": "Soft clay",
+          "quantity": 4
+        },
+        {
+          "name": "Vial"
         }
       ]
     },
@@ -1559,6 +2750,63 @@
           "skill": "magic",
           "xp": 20006.9
         }
+      ],
+      "items": [
+        {
+          "name": "Ashes"
+        },
+        {
+          "name": "Blood rune",
+          "quantity": 1
+        },
+        {
+          "name": "Bones"
+        },
+        {
+          "name": "Charcoal"
+        },
+        {
+          "name": "Climbing boots",
+          "optional": true
+        },
+        {
+          "name": "Coins",
+          "quantity": 650
+        },
+        {
+          "name": "Garlic powder"
+        },
+        {
+          "name": "Gas mask"
+        },
+        {
+          "name": "Magic logs",
+          "quantity": 12
+        },
+        {
+          "name": "Molten glass",
+          "quantity": 6
+        },
+        {
+          "name": "Shantay pass",
+          "quantity": 10
+        },
+        {
+          "name": "Silver bar"
+        },
+        {
+          "name": "Spice"
+        },
+        {
+          "name": "Spiked boots"
+        },
+        {
+          "name": "Steel bar",
+          "quantity": 6
+        },
+        {
+          "name": "Tinderbox"
+        }
       ]
     },
     {
@@ -1581,6 +2829,23 @@
         {
           "skill": "woodcutting",
           "xp": 4000
+        }
+      ],
+      "items": [
+        {
+          "name": "Bag of salt"
+        },
+        {
+          "name": "Bucket of sap"
+        },
+        {
+          "name": "Linen"
+        },
+        {
+          "name": "Tinderbox"
+        },
+        {
+          "name": "Willow logs"
         }
       ]
     },
@@ -1610,6 +2875,21 @@
         {
           "skill": "crafting",
           "xp": 1000
+        }
+      ],
+      "items": [
+        {
+          "name": "Bullseye lantern"
+        },
+        {
+          "name": "Chisel"
+        },
+        {
+          "name": "Rope",
+          "optional": true
+        },
+        {
+          "name": "Tinderbox"
         }
       ]
     },
@@ -1698,6 +2978,23 @@
           "skill": "thieving",
           "xp": 1500
         }
+      ],
+      "items": [
+        {
+          "name": "Coal"
+        },
+        {
+          "name": "Iron bar"
+        },
+        {
+          "name": "Logs"
+        },
+        {
+          "name": "Redberry pie"
+        },
+        {
+          "name": "Tinderbox"
+        }
       ]
     },
     {
@@ -1753,6 +3050,39 @@
           "skill": "thieving",
           "xp": 40000
         }
+      ],
+      "items": [
+        {
+          "name": "Barrel of naphtha"
+        },
+        {
+          "name": "Bear fur"
+        },
+        {
+          "name": "Bucket of water"
+        },
+        {
+          "name": "Feather"
+        },
+        {
+          "name": "Leather"
+        },
+        {
+          "name": "Magic logs"
+        },
+        {
+          "name": "Ogre bellows"
+        },
+        {
+          "name": "Rotten apple"
+        },
+        {
+          "name": "Silk",
+          "quantity": 2
+        },
+        {
+          "name": "Toad crunchies"
+        }
       ]
     },
     {
@@ -1785,6 +3115,39 @@
           "skill": "farming",
           "xp": 5000
         }
+      ],
+      "items": [
+        {
+          "name": "Ale yeast"
+        },
+        {
+          "name": "Barley malt",
+          "quantity": 2
+        },
+        {
+          "name": "Beer",
+          "quantity": 2
+        },
+        {
+          "name": "Beer glass"
+        },
+        {
+          "name": "Bucket of water",
+          "quantity": 2
+        },
+        {
+          "name": "Coins",
+          "quantity": 400
+        },
+        {
+          "name": "Kebab"
+        },
+        {
+          "name": "Rake"
+        },
+        {
+          "name": "Seed dibber"
+        }
       ]
     },
     {
@@ -1806,6 +3169,53 @@
           "skill": "farming",
           "xp": 5000
         }
+      ],
+      "items": [
+        {
+          "name": "Cabbage seed",
+          "quantity": 3
+        },
+        {
+          "name": "Filled plant pot"
+        },
+        {
+          "name": "Gardening trowel"
+        },
+        {
+          "name": "Hammer"
+        },
+        {
+          "name": "Marigold seed"
+        },
+        {
+          "name": "Onion seed",
+          "quantity": 3
+        },
+        {
+          "name": "Pestle and mortar"
+        },
+        {
+          "name": "Plant cure",
+          "quantity": 2
+        },
+        {
+          "name": "Rake"
+        },
+        {
+          "name": "Ring of Charos"
+        },
+        {
+          "name": "Secateurs"
+        },
+        {
+          "name": "Seed dibber"
+        },
+        {
+          "name": "Spade"
+        },
+        {
+          "name": "Watering can"
+        }
       ]
     },
     {
@@ -1815,6 +3225,49 @@
       "members": true,
       "prerequisites": [
         77
+      ],
+      "items": [
+        {
+          "name": "Bucket of milk"
+        },
+        {
+          "name": "Catspeak amulet"
+        },
+        {
+          "name": "Chocolate cake"
+        },
+        {
+          "name": "Death rune",
+          "quantity": 5
+        },
+        {
+          "name": "Desert robe"
+        },
+        {
+          "name": "Desert shirt"
+        },
+        {
+          "name": "Logs"
+        },
+        {
+          "name": "Potato seed",
+          "quantity": 4
+        },
+        {
+          "name": "Rake"
+        },
+        {
+          "name": "Seed dibber"
+        },
+        {
+          "name": "Shears"
+        },
+        {
+          "name": "Tinderbox"
+        },
+        {
+          "name": "Vial of water"
+        }
       ]
     },
     {
@@ -1833,6 +3286,21 @@
           "skill": "slayer",
           "xp": 5000
         }
+      ],
+      "items": [
+        {
+          "name": "Enchanted gem"
+        },
+        {
+          "name": "Law rune"
+        },
+        {
+          "name": "Molten glass"
+        },
+        {
+          "name": "Pure essence",
+          "quantity": 20
+        }
       ]
     },
     {
@@ -1847,6 +3315,14 @@
         {
           "skill": "agility",
           "xp": 60000
+        }
+      ],
+      "items": [
+        {
+          "name": "Chisel"
+        },
+        {
+          "name": "Rope"
         }
       ]
     },
@@ -1898,6 +3374,17 @@
           "skill": "prayer",
           "xp": 7000
         }
+      ],
+      "items": [
+        {
+          "name": "Bucket"
+        },
+        {
+          "name": "Rake"
+        },
+        {
+          "name": "Seed dibber"
+        }
       ]
     },
     {
@@ -1914,6 +3401,20 @@
           "skill": "crafting",
           "level": 30,
           "boostable": true
+        }
+      ],
+      "items": [
+        {
+          "name": "Black dye"
+        },
+        {
+          "name": "Silver bar"
+        },
+        {
+          "name": "Silverlight"
+        },
+        {
+          "name": "Strange implement"
         }
       ]
     },
@@ -1935,6 +3436,17 @@
           "skill": "prayer",
           "xp": 1000
         }
+      ],
+      "items": [
+        {
+          "name": "Ghostspeak amulet"
+        },
+        {
+          "name": "Sapphire amulet"
+        },
+        {
+          "name": "Spade"
+        }
       ]
     },
     {
@@ -1949,6 +3461,37 @@
         {
           "skill": "thieving",
           "xp": 4500
+        }
+      ],
+      "items": [
+        {
+          "name": "Bucket of milk"
+        },
+        {
+          "name": "Cheese",
+          "quantity": 4
+        },
+        {
+          "name": "Coins",
+          "quantity": 101
+        },
+        {
+          "name": "Empty vial"
+        },
+        {
+          "name": "Pot of weeds"
+        },
+        {
+          "name": "Red spiders' eggs"
+        },
+        {
+          "name": "Snake charm"
+        },
+        {
+          "name": "Tinderbox"
+        },
+        {
+          "name": "Unicorn horn dust"
         }
       ]
     },
@@ -1992,6 +3535,17 @@
           "skill": "thieving",
           "xp": 1000
         }
+      ],
+      "items": [
+        {
+          "name": "Knife"
+        },
+        {
+          "name": "Needle"
+        },
+        {
+          "name": "Rope"
+        }
       ]
     },
     {
@@ -2033,6 +3587,17 @@
           "skill": "smithing",
           "xp": 6500
         }
+      ],
+      "items": [
+        {
+          "name": "Bow string"
+        },
+        {
+          "name": "Colossal pouch"
+        },
+        {
+          "name": "Mithril 2h sword"
+        }
       ]
     },
     {
@@ -2058,6 +3623,35 @@
         {
           "skill": "thieving",
           "xp": 1000
+        }
+      ],
+      "items": [
+        {
+          "name": "Beer"
+        },
+        {
+          "name": "Bucket of sand"
+        },
+        {
+          "name": "Coins",
+          "quantity": 150
+        },
+        {
+          "name": "Earth rune",
+          "quantity": 5
+        },
+        {
+          "name": "Empty vial",
+          "quantity": 1
+        },
+        {
+          "name": "Lantern lens"
+        },
+        {
+          "name": "Redberries"
+        },
+        {
+          "name": "White berries"
         }
       ]
     },
@@ -2102,6 +3696,35 @@
         {
           "skill": "mining",
           "xp": 7000
+        }
+      ],
+      "items": [
+        {
+          "name": "Candle"
+        },
+        {
+          "name": "Chisel"
+        },
+        {
+          "name": "Coal"
+        },
+        {
+          "name": "Logs"
+        },
+        {
+          "name": "Maple logs"
+        },
+        {
+          "name": "Oak logs"
+        },
+        {
+          "name": "Soft clay"
+        },
+        {
+          "name": "Tinderbox"
+        },
+        {
+          "name": "Willow logs"
         }
       ]
     },
@@ -2168,6 +3791,23 @@
         {
           "skill": "magic",
           "xp": 1000
+        }
+      ],
+      "items": [
+        {
+          "name": "Dramen staff"
+        },
+        {
+          "name": "Draynor skull"
+        },
+        {
+          "name": "Ghostspeak amulet"
+        },
+        {
+          "name": "Secateurs"
+        },
+        {
+          "name": "Spade"
         }
       ]
     },
@@ -2247,6 +3887,129 @@
           "level": 36,
           "boostable": true
         }
+      ],
+      "items": [
+        {
+          "name": "Asgarnian ale",
+          "quantity": 4
+        },
+        {
+          "name": "Ashes"
+        },
+        {
+          "name": "Ball of wool"
+        },
+        {
+          "name": "Banana"
+        },
+        {
+          "name": "Bowl of water"
+        },
+        {
+          "name": "Bread",
+          "quantity": 2
+        },
+        {
+          "name": "Bronze wire",
+          "quantity": 3
+        },
+        {
+          "name": "Bucket of milk",
+          "quantity": 3
+        },
+        {
+          "name": "Bucket of water"
+        },
+        {
+          "name": "Cake tin"
+        },
+        {
+          "name": "Charcoal"
+        },
+        {
+          "name": "Coins",
+          "quantity": 320
+        },
+        {
+          "name": "Egg",
+          "quantity": 2
+        },
+        {
+          "name": "Eye of newt"
+        },
+        {
+          "name": "Fishbowl"
+        },
+        {
+          "name": "Fishing bait"
+        },
+        {
+          "name": "Greenman's ale"
+        },
+        {
+          "name": "Iron spit"
+        },
+        {
+          "name": "Knife"
+        },
+        {
+          "name": "Logs"
+        },
+        {
+          "name": "M'speak amulet"
+        },
+        {
+          "name": "Machete"
+        },
+        {
+          "name": "Monkey nuts"
+        },
+        {
+          "name": "Needle"
+        },
+        {
+          "name": "Ogre bellows"
+        },
+        {
+          "name": "Orange"
+        },
+        {
+          "name": "Orange"
+        },
+        {
+          "name": "Pestle and mortar"
+        },
+        {
+          "name": "Pot of cornflour"
+        },
+        {
+          "name": "Pot of cream"
+        },
+        {
+          "name": "Pot of flour",
+          "quantity": 2
+        },
+        {
+          "name": "Raw chicken"
+        },
+        {
+          "name": "Raw chompy"
+        },
+        {
+          "name": "Raw cod"
+        },
+        {
+          "name": "Rope"
+        },
+        {
+          "name": "Rotten tomato"
+        },
+        {
+          "name": "Spice"
+        },
+        {
+          "name": "Tinderbox"
+        }
       ]
     },
     {
@@ -2298,6 +4061,82 @@
           "skill": "strength",
           "xp": 2000
         }
+      ],
+      "items": [
+        {
+          "name": "Blessed axe"
+        },
+        {
+          "name": "Bronze axe",
+          "quantity": 10
+        },
+        {
+          "name": "Coal"
+        },
+        {
+          "name": "Cosmic rune"
+        },
+        {
+          "name": "Emberlight"
+        },
+        {
+          "name": "Hammer"
+        },
+        {
+          "name": "Mithril bar"
+        },
+        {
+          "name": "Plank",
+          "quantity": 11
+        },
+        {
+          "name": "Raw mackerel",
+          "quantity": 10
+        },
+        {
+          "name": "Rope"
+        },
+        {
+          "name": "Sapphire"
+        },
+        {
+          "name": "Silver bar"
+        },
+        {
+          "name": "Silver sickle"
+        },
+        {
+          "name": "Silver sickle"
+        },
+        {
+          "name": "Soft clay"
+        },
+        {
+          "name": "Spade"
+        },
+        {
+          "name": "Steel bar",
+          "quantity": 2
+        },
+        {
+          "name": "Steel chainbody"
+        },
+        {
+          "name": "Steel med helm"
+        },
+        {
+          "name": "Steel platelegs"
+        },
+        {
+          "name": "Swamp paste"
+        },
+        {
+          "name": "Tinderbox",
+          "quantity": 4
+        },
+        {
+          "name": "Water rune"
+        }
       ]
     },
     {
@@ -2314,6 +4153,11 @@
           "skill": "hitpoints",
           "xp": 500
         }
+      ],
+      "items": [
+        {
+          "name": "Rope"
+        }
       ]
     },
     {
@@ -2329,6 +4173,15 @@
         {
           "skill": "prayer",
           "xp": 500
+        }
+      ],
+      "items": [
+        {
+          "name": "Pot",
+          "quantity": 8
+        },
+        {
+          "name": "Tinderbox"
         }
       ]
     },
@@ -2386,6 +4239,36 @@
           "skill": "prayer",
           "xp": 10000
         }
+      ],
+      "items": [
+        {
+          "name": "Blood rune",
+          "quantity": 5
+        },
+        {
+          "name": "Bones",
+          "quantity": 7
+        },
+        {
+          "name": "Brown apron"
+        },
+        {
+          "name": "Hammer"
+        },
+        {
+          "name": "Lava rune",
+          "quantity": 10
+        },
+        {
+          "name": "Mist rune",
+          "quantity": 10
+        },
+        {
+          "name": "Small fishing net"
+        },
+        {
+          "name": "Tinderbox"
+        }
       ]
     },
     {
@@ -2424,6 +4307,20 @@
         {
           "skill": "slayer",
           "xp": 5000
+        }
+      ],
+      "items": [
+        {
+          "name": "Coal",
+          "quantity": 5
+        },
+        {
+          "name": "Plank",
+          "quantity": 1
+        },
+        {
+          "name": "Rope",
+          "quantity": 2
         }
       ]
     },
@@ -2491,6 +4388,20 @@
           "skill": "thieving",
           "xp": 2500
         }
+      ],
+      "items": [
+        {
+          "name": "Lunar staff"
+        },
+        {
+          "name": "Nuff's certificate"
+        },
+        {
+          "name": "Pestle and mortar"
+        },
+        {
+          "name": "Vial of water"
+        }
       ]
     },
     {
@@ -2543,6 +4454,29 @@
           "skill": "runecraft",
           "xp": 5000
         }
+      ],
+      "items": [
+        {
+          "name": "Dramen staff"
+        },
+        {
+          "name": "Guam leaf"
+        },
+        {
+          "name": "Hammer"
+        },
+        {
+          "name": "Marrentill"
+        },
+        {
+          "name": "Pestle and mortar"
+        },
+        {
+          "name": "Spade"
+        },
+        {
+          "name": "Tinderbox"
+        }
       ]
     },
     {
@@ -2576,6 +4510,30 @@
         {
           "skill": "woodcutting",
           "xp": 2500
+        }
+      ],
+      "items": [
+        {
+          "name": "Bucket of sap",
+          "optional": true
+        },
+        {
+          "name": "Hammer"
+        },
+        {
+          "name": "Maple logs"
+        },
+        {
+          "name": "Mud rune"
+        },
+        {
+          "name": "Oak logs"
+        },
+        {
+          "name": "Pestle and mortar"
+        },
+        {
+          "name": "Saw"
         }
       ]
     },
@@ -2633,6 +4591,18 @@
           "skill": "thieving",
           "xp": 6000
         }
+      ],
+      "items": [
+        {
+          "name": "Hammer"
+        },
+        {
+          "name": "Knife"
+        },
+        {
+          "name": "Plank",
+          "quantity": 2
+        }
       ]
     },
     {
@@ -2675,6 +4645,26 @@
           "skill": "thieving",
           "xp": 3500
         }
+      ],
+      "items": [
+        {
+          "name": "Chisel"
+        },
+        {
+          "name": "Commorb"
+        },
+        {
+          "name": "Dead sea slug"
+        },
+        {
+          "name": "Elemental talisman"
+        },
+        {
+          "name": "Mind talisman"
+        },
+        {
+          "name": "Swamp paste"
+        }
       ]
     },
     {
@@ -2705,6 +4695,19 @@
         {
           "skill": "smithing",
           "xp": 7500
+        }
+      ],
+      "items": [
+        {
+          "name": "Coal",
+          "quantity": 8
+        },
+        {
+          "name": "Elemental ore",
+          "quantity": 2
+        },
+        {
+          "name": "Hammer"
         }
       ]
     },
@@ -2737,6 +4740,32 @@
         {
           "skill": "herblore",
           "xp": 10000
+        }
+      ],
+      "items": [
+        {
+          "name": "Bucket"
+        },
+        {
+          "name": "Climbing boots"
+        },
+        {
+          "name": "Plant cure"
+        },
+        {
+          "name": "Rake"
+        },
+        {
+          "name": "Red hot sauce"
+        },
+        {
+          "name": "Seed dibber"
+        },
+        {
+          "name": "Spade"
+        },
+        {
+          "name": "Spade"
         }
       ]
     },
@@ -2779,6 +4808,56 @@
           "skill": "woodcutting",
           "xp": 1500
         }
+      ],
+      "items": [
+        {
+          "name": "Ball of wool",
+          "quantity": 1
+        },
+        {
+          "name": "Black candle",
+          "quantity": 1
+        },
+        {
+          "name": "Bowl"
+        },
+        {
+          "name": "Logs",
+          "quantity": 10
+        },
+        {
+          "name": "Papyrus",
+          "quantity": 3
+        },
+        {
+          "name": "Rake",
+          "optional": true
+        },
+        {
+          "name": "Red dye"
+        },
+        {
+          "name": "Secateurs",
+          "optional": true
+        },
+        {
+          "name": "Silk",
+          "quantity": 10
+        },
+        {
+          "name": "Spade",
+          "optional": true
+        },
+        {
+          "name": "Tinderbox"
+        },
+        {
+          "name": "Willow branch",
+          "quantity": 12
+        },
+        {
+          "name": "Yellow dye"
+        }
       ]
     },
     {
@@ -2797,6 +4876,18 @@
         {
           "skill": "hunter",
           "xp": 2500
+        }
+      ],
+      "items": [
+        {
+          "name": "Coins",
+          "quantity": 50
+        },
+        {
+          "name": "Swamp tar"
+        },
+        {
+          "name": "Yellow dye"
         }
       ]
     },
@@ -2844,6 +4935,30 @@
         {
           "skill": "woodcutting",
           "xp": 2500
+        }
+      ],
+      "items": [
+        {
+          "name": "Ecto-token",
+          "quantity": 20
+        },
+        {
+          "name": "Ghostspeak amulet"
+        },
+        {
+          "name": "Hammer"
+        },
+        {
+          "name": "Hard leather"
+        },
+        {
+          "name": "Holy symbol"
+        },
+        {
+          "name": "Mithril axe"
+        },
+        {
+          "name": "Polished buttons"
         }
       ]
     },
@@ -2903,6 +5018,50 @@
           "skill": "crafting",
           "xp": 2000
         }
+      ],
+      "items": [
+        {
+          "name": "Clockwork"
+        },
+        {
+          "name": "Cowbells"
+        },
+        {
+          "name": "Feather",
+          "quantity": 5
+        },
+        {
+          "name": "Hammer"
+        },
+        {
+          "name": "Leather"
+        },
+        {
+          "name": "Mahogany plank"
+        },
+        {
+          "name": "Oak plank",
+          "quantity": 10
+        },
+        {
+          "name": "Plank"
+        },
+        {
+          "name": "Raw cod"
+        },
+        {
+          "name": "Silk"
+        },
+        {
+          "name": "Spade"
+        },
+        {
+          "name": "Steel nails",
+          "quantity": 10
+        },
+        {
+          "name": "Swamp tar"
+        }
       ]
     },
     {
@@ -2932,6 +5091,29 @@
         {
           "skill": "woodcutting",
           "xp": 10000
+        }
+      ],
+      "items": [
+        {
+          "name": "Coins",
+          "quantity": 5000
+        },
+        {
+          "name": "Knife"
+        },
+        {
+          "name": "Neitiznot shield"
+        },
+        {
+          "name": "Raw tuna"
+        },
+        {
+          "name": "Rope",
+          "quantity": 9
+        },
+        {
+          "name": "Split log",
+          "quantity": 8
         }
       ]
     },
@@ -2967,6 +5149,35 @@
           "skill": "prayer",
           "xp": 6000
         }
+      ],
+      "items": [
+        {
+          "name": "Grey wolf fur",
+          "quantity": 10,
+          "optional": true
+        },
+        {
+          "name": "Hammer"
+        },
+        {
+          "name": "Holy symbol"
+        },
+        {
+          "name": "Medallion of the Deep"
+        },
+        {
+          "name": "Plank",
+          "quantity": 10,
+          "optional": true
+        },
+        {
+          "name": "Plank",
+          "quantity": 8
+        },
+        {
+          "name": "Ring of Charos",
+          "optional": true
+        }
       ]
     },
     {
@@ -2991,6 +5202,12 @@
         {
           "skill": "runecraft",
           "xp": 8000
+        }
+      ],
+      "items": [
+        {
+          "name": "Chaos rune",
+          "quantity": 15
         }
       ]
     },
@@ -3018,6 +5235,18 @@
         {
           "skill": "defence",
           "xp": 12000
+        }
+      ],
+      "items": [
+        {
+          "name": "Rope",
+          "quantity": 6
+        },
+        {
+          "name": "Spade"
+        },
+        {
+          "name": "Tinderbox"
         }
       ]
     },
@@ -3050,6 +5279,14 @@
           "skill": "prayer",
           "xp": 3000
         }
+      ],
+      "items": [
+        {
+          "name": "Specimen brush"
+        },
+        {
+          "name": "Trowel"
+        }
       ]
     },
     {
@@ -3069,6 +5306,26 @@
         {
           "skill": "magic",
           "xp": 10000
+        }
+      ],
+      "items": [
+        {
+          "name": "Astral rune"
+        },
+        {
+          "name": "Goutweed"
+        },
+        {
+          "name": "Hammer"
+        },
+        {
+          "name": "Pestle and mortar"
+        },
+        {
+          "name": "Seal of passage"
+        },
+        {
+          "name": "Tinderbox"
         }
       ]
     },
@@ -3132,6 +5389,11 @@
           "skill": "woodcutting",
           "xp": 60000
         }
+      ],
+      "items": [
+        {
+          "name": "Leather gloves"
+        }
       ]
     },
     {
@@ -3164,6 +5426,14 @@
           "skill": "magic",
           "xp": 5000
         }
+      ],
+      "items": [
+        {
+          "name": "Bronze med helm"
+        },
+        {
+          "name": "Iron chainbody"
+        }
       ]
     },
     {
@@ -3191,6 +5461,24 @@
           "skill": "crafting",
           "xp": 3875
         }
+      ],
+      "items": [
+        {
+          "name": "Bones",
+          "quantity": 3
+        },
+        {
+          "name": "Bronze wire"
+        },
+        {
+          "name": "Chisel"
+        },
+        {
+          "name": "Rope"
+        },
+        {
+          "name": "Spade"
+        }
       ]
     },
     {
@@ -3205,6 +5493,11 @@
         {
           "skill": "thieving",
           "xp": 1250
+        }
+      ],
+      "items": [
+        {
+          "name": "Gas mask"
         }
       ]
     },
@@ -3238,6 +5531,18 @@
         {
           "skill": "slayer",
           "xp": 2000
+        }
+      ],
+      "items": [
+        {
+          "name": "Coins",
+          "quantity": 40
+        },
+        {
+          "name": "Ghostspeak amulet"
+        },
+        {
+          "name": "Ring of visibility"
         }
       ]
     },
@@ -3283,6 +5588,35 @@
           "skill": "strength",
           "level": 35
         }
+      ],
+      "items": [
+        {
+          "name": "Caviar"
+        },
+        {
+          "name": "Fishing bait"
+        },
+        {
+          "name": "Hammer"
+        },
+        {
+          "name": "Knife"
+        },
+        {
+          "name": "Oak logs"
+        },
+        {
+          "name": "Roe"
+        },
+        {
+          "name": "Signed oak bow"
+        },
+        {
+          "name": "Spade"
+        },
+        {
+          "name": "Tinderbox"
+        }
       ]
     },
     {
@@ -3295,6 +5629,38 @@
           "skill": "cooking",
           "level": 20,
           "boostable": true
+        }
+      ],
+      "items": [
+        {
+          "name": "Bowl of water"
+        },
+        {
+          "name": "Bucket of milk"
+        },
+        {
+          "name": "Bucket of water"
+        },
+        {
+          "name": "Chocolate bar"
+        },
+        {
+          "name": "Chocolate dust"
+        },
+        {
+          "name": "Knife"
+        },
+        {
+          "name": "Nettle tea"
+        },
+        {
+          "name": "Nettle-water"
+        },
+        {
+          "name": "Nettles"
+        },
+        {
+          "name": "Snape grass"
         }
       ]
     },
@@ -3311,6 +5677,14 @@
         {
           "skill": "thieving",
           "level": 53
+        }
+      ],
+      "items": [
+        {
+          "name": "Ghostspeak amulet"
+        },
+        {
+          "name": "Ring of visibility"
         }
       ]
     },
@@ -3338,6 +5712,17 @@
           "skill": "thieving",
           "xp": 500
         }
+      ],
+      "items": [
+        {
+          "name": "Beer"
+        },
+        {
+          "name": "Hammer"
+        },
+        {
+          "name": "Saw"
+        }
       ]
     },
     {
@@ -3363,6 +5748,32 @@
         {
           "skill": "prayer",
           "xp": 5000
+        }
+      ],
+      "items": [
+        {
+          "name": "Dusty key",
+          "optional": true
+        },
+        {
+          "name": "Ice cooler"
+        },
+        {
+          "name": "Jug of vinegar",
+          "quantity": 27
+        },
+        {
+          "name": "Mirror shield"
+        },
+        {
+          "name": "Pot",
+          "quantity": 27
+        },
+        {
+          "name": "Rope"
+        },
+        {
+          "name": "Tinderbox"
         }
       ]
     },
@@ -3409,6 +5820,39 @@
         {
           "skill": "thieving",
           "xp": 8000
+        }
+      ],
+      "items": [
+        {
+          "name": "Black dye"
+        },
+        {
+          "name": "Blue dye"
+        },
+        {
+          "name": "Coins",
+          "quantity": 5
+        },
+        {
+          "name": "Fishing rod"
+        },
+        {
+          "name": "Goblin mail"
+        },
+        {
+          "name": "Orange dye"
+        },
+        {
+          "name": "Purple dye"
+        },
+        {
+          "name": "Raw slimy eel"
+        },
+        {
+          "name": "Toadflax potion (unf)"
+        },
+        {
+          "name": "Yellow dye"
         }
       ]
     },
@@ -3484,6 +5928,42 @@
           "skill": "thieving",
           "xp": 80000
         }
+      ],
+      "items": [
+        {
+          "name": "Bronze med helm"
+        },
+        {
+          "name": "Iron chainbody"
+        },
+        {
+          "name": "Knife"
+        },
+        {
+          "name": "Lantern lens"
+        },
+        {
+          "name": "Mort myre fungus"
+        },
+        {
+          "name": "Pink dye"
+        },
+        {
+          "name": "Ring of Charos"
+        },
+        {
+          "name": "Sapphire lantern"
+        },
+        {
+          "name": "Seed dibber",
+          "optional": true
+        },
+        {
+          "name": "Snapdragon seed"
+        },
+        {
+          "name": "Unpowered orb"
+        }
       ]
     },
     {
@@ -3523,6 +6003,11 @@
         {
           "skill": "ranged",
           "xp": 2000
+        }
+      ],
+      "items": [
+        {
+          "name": "Knife"
         }
       ]
     },
@@ -3611,19 +6096,64 @@
           "skill": "thieving",
           "xp": 50000
         }
+      ],
+      "items": [
+        {
+          "name": "Chisel"
+        },
+        {
+          "name": "Grapes"
+        },
+        {
+          "name": "Hammer"
+        },
+        {
+          "name": "Lemon"
+        },
+        {
+          "name": "Logs"
+        },
+        {
+          "name": "M'speak amulet"
+        },
+        {
+          "name": "Monkey talisman"
+        },
+        {
+          "name": "Ninja monkey greegree"
+        },
+        {
+          "name": "Pestle and mortar"
+        }
       ]
     },
     {
       "id": 141,
       "slug": "bear_your_soul",
       "name": "Bear Your Soul",
-      "members": true
+      "members": true,
+      "items": [
+        {
+          "name": "Dusty key"
+        },
+        {
+          "name": "Spade"
+        }
+      ]
     },
     {
       "id": 142,
       "slug": "the_enchanted_key",
       "name": "The Enchanted Key",
-      "members": true
+      "members": true,
+      "items": [
+        {
+          "name": "Enchanted key"
+        },
+        {
+          "name": "Spade"
+        }
+      ]
     },
     {
       "id": 143,
@@ -3635,6 +6165,11 @@
           "skill": "magic",
           "level": 60
         }
+      ],
+      "items": [
+        {
+          "name": "Run"
+        }
       ]
     },
     {
@@ -3644,6 +6179,12 @@
       "members": true,
       "prerequisites": [
         24
+      ],
+      "items": [
+        {
+          "name": "Coins",
+          "quantity": 500000
+        }
       ]
     },
     {
@@ -3656,6 +6197,17 @@
           "skill": "crafting",
           "xp": 600
         }
+      ],
+      "items": [
+        {
+          "name": "Bucket"
+        },
+        {
+          "name": "Knife"
+        },
+        {
+          "name": "Tinderbox"
+        }
       ]
     },
     {
@@ -3665,6 +6217,11 @@
       "members": true,
       "prerequisites": [
         170
+      ],
+      "items": [
+        {
+          "name": "Feather"
+        }
       ]
     },
     {
@@ -3686,6 +6243,11 @@
           "skill": "thieving",
           "xp": 2000
         }
+      ],
+      "items": [
+        {
+          "name": "Stew"
+        }
       ]
     },
     {
@@ -3695,6 +6257,15 @@
       "members": true,
       "prerequisites": [
         46
+      ],
+      "items": [
+        {
+          "name": "Marrentill potion (unf)"
+        },
+        {
+          "name": "Vodka",
+          "quantity": 2
+        }
       ]
     },
     {
@@ -3762,6 +6333,56 @@
           "skill": "thieving",
           "xp": 50000
         }
+      ],
+      "items": [
+        {
+          "name": "Astral rune"
+        },
+        {
+          "name": "Catspeak amulet"
+        },
+        {
+          "name": "Ghostspeak amulet"
+        },
+        {
+          "name": "Glassblowing pipe"
+        },
+        {
+          "name": "Goutweed"
+        },
+        {
+          "name": "Hammer"
+        },
+        {
+          "name": "Machete"
+        },
+        {
+          "name": "Molten glass",
+          "quantity": 2
+        },
+        {
+          "name": "Oak plank",
+          "quantity": 8
+        },
+        {
+          "name": "Pestle and mortar"
+        },
+        {
+          "name": "Saw"
+        },
+        {
+          "name": "Seal of passage"
+        },
+        {
+          "name": "Spade"
+        },
+        {
+          "name": "Swamp paste",
+          "quantity": 10
+        },
+        {
+          "name": "Tinderbox"
+        }
       ]
     },
     {
@@ -3798,6 +6419,20 @@
           "skill": "cooking",
           "level": 10
         }
+      ],
+      "items": [
+        {
+          "name": "Ashes"
+        },
+        {
+          "name": "Eye of newt"
+        },
+        {
+          "name": "Greenman's ale"
+        },
+        {
+          "name": "Rotten tomato"
+        }
       ]
     },
     {
@@ -3822,6 +6457,29 @@
           "skill": "farming",
           "xp": 1000
         }
+      ],
+      "items": [
+        {
+          "name": "Bread"
+        },
+        {
+          "name": "Bucket of water"
+        },
+        {
+          "name": "Charcoal"
+        },
+        {
+          "name": "Fishing bait"
+        },
+        {
+          "name": "Orange slices"
+        },
+        {
+          "name": "Purple dye"
+        },
+        {
+          "name": "Spice"
+        }
       ]
     },
     {
@@ -3841,6 +6499,28 @@
         {
           "skill": "slayer",
           "xp": 1000
+        }
+      ],
+      "items": [
+        {
+          "name": "Asgarnian ale",
+          "quantity": 4
+        },
+        {
+          "name": "Bowl of water"
+        },
+        {
+          "name": "Bucket of milk"
+        },
+        {
+          "name": "Coins",
+          "quantity": 306
+        },
+        {
+          "name": "Egg"
+        },
+        {
+          "name": "Pot of flour"
         }
       ]
     },
@@ -3893,6 +6573,30 @@
           "skill": "smithing",
           "xp": 1000
         }
+      ],
+      "items": [
+        {
+          "name": "Bread"
+        },
+        {
+          "name": "Bronze wire",
+          "quantity": 3
+        },
+        {
+          "name": "Fishbowl"
+        },
+        {
+          "name": "Knife"
+        },
+        {
+          "name": "Needle"
+        },
+        {
+          "name": "Pestle and mortar"
+        },
+        {
+          "name": "Raw cod"
+        }
       ]
     },
     {
@@ -3925,6 +6629,20 @@
           "skill": "magic",
           "xp": 2500
         }
+      ],
+      "items": [
+        {
+          "name": "Bucket of milk"
+        },
+        {
+          "name": "Cake tin"
+        },
+        {
+          "name": "Egg"
+        },
+        {
+          "name": "Pot of flour"
+        }
       ]
     },
     {
@@ -3948,6 +6666,32 @@
         {
           "skill": "hitpoints",
           "xp": 4000
+        }
+      ],
+      "items": [
+        {
+          "name": "Bucket of milk"
+        },
+        {
+          "name": "Dramen staff"
+        },
+        {
+          "name": "Machete"
+        },
+        {
+          "name": "Pestle and mortar"
+        },
+        {
+          "name": "Pot of cornflour"
+        },
+        {
+          "name": "Pot of cream"
+        },
+        {
+          "name": "Raw chicken"
+        },
+        {
+          "name": "Sweetcorn"
         }
       ]
     },
@@ -3979,6 +6723,29 @@
         {
           "skill": "cooking",
           "xp": 10000
+        }
+      ],
+      "items": [
+        {
+          "name": "Banana"
+        },
+        {
+          "name": "Karamjan monkey greegree"
+        },
+        {
+          "name": "Knife"
+        },
+        {
+          "name": "M'speak amulet"
+        },
+        {
+          "name": "Monkey nuts"
+        },
+        {
+          "name": "Pestle and mortar"
+        },
+        {
+          "name": "Rope"
         }
       ]
     },
@@ -4020,6 +6787,29 @@
           "skill": "woodcutting",
           "xp": 1500
         }
+      ],
+      "items": [
+        {
+          "name": "Ball of wool"
+        },
+        {
+          "name": "Iron spit"
+        },
+        {
+          "name": "Logs"
+        },
+        {
+          "name": "Ogre bellows"
+        },
+        {
+          "name": "Ogre bow"
+        },
+        {
+          "name": "Raw chompy"
+        },
+        {
+          "name": "Tinderbox"
+        }
       ]
     },
     {
@@ -4041,7 +6831,15 @@
       "id": 161,
       "slug": "the_corsair_curse",
       "name": "The Corsair Curse",
-      "members": false
+      "members": false,
+      "items": [
+        {
+          "name": "Spade"
+        },
+        {
+          "name": "Tinderbox"
+        }
+      ]
     },
     {
       "id": 162,
@@ -4072,6 +6870,27 @@
           "skill": "slayer",
           "level": 38
         }
+      ],
+      "items": [
+        {
+          "name": "Chisel"
+        },
+        {
+          "name": "Coins",
+          "quantity": 1000
+        },
+        {
+          "name": "Emerald"
+        },
+        {
+          "name": "Knife"
+        },
+        {
+          "name": "Pestle and mortar"
+        },
+        {
+          "name": "Vial of water"
+        }
       ]
     },
     {
@@ -4090,6 +6909,11 @@
         {
           "skill": "strength",
           "level": 16
+        }
+      ],
+      "items": [
+        {
+          "name": "Rope"
         }
       ]
     },
@@ -4141,6 +6965,34 @@
         {
           "skill": "mining",
           "xp": 50000
+        }
+      ],
+      "items": [
+        {
+          "name": "Bolt of cloth"
+        },
+        {
+          "name": "Bucket of water"
+        },
+        {
+          "name": "Cadava berries"
+        },
+        {
+          "name": "Climbing boots",
+          "optional": true
+        },
+        {
+          "name": "Hammer"
+        },
+        {
+          "name": "Mahogany plank",
+          "quantity": 5
+        },
+        {
+          "name": "Rope"
+        },
+        {
+          "name": "Saw"
         }
       ]
     },
@@ -4239,6 +7091,74 @@
           "skill": "woodcutting",
           "xp": 40000
         }
+      ],
+      "items": [
+        {
+          "name": "Adamant chainbody"
+        },
+        {
+          "name": "Adamant seeds"
+        },
+        {
+          "name": "Black knife"
+        },
+        {
+          "name": "Cabbage"
+        },
+        {
+          "name": "Cadantine seed"
+        },
+        {
+          "name": "Hammer"
+        },
+        {
+          "name": "Nature rune"
+        },
+        {
+          "name": "Pestle and mortar"
+        },
+        {
+          "name": "Purple dye"
+        },
+        {
+          "name": "Red dye"
+        },
+        {
+          "name": "Rope"
+        },
+        {
+          "name": "Runite bar"
+        },
+        {
+          "name": "Saw"
+        },
+        {
+          "name": "Seed dibber"
+        },
+        {
+          "name": "Silk"
+        },
+        {
+          "name": "Spade"
+        },
+        {
+          "name": "Steel full helm"
+        },
+        {
+          "name": "Steel platebody"
+        },
+        {
+          "name": "Steel platelegs"
+        },
+        {
+          "name": "Tinderbox"
+        },
+        {
+          "name": "Vial of water"
+        },
+        {
+          "name": "Wine of Zamorak"
+        }
       ]
     },
     {
@@ -4282,6 +7202,11 @@
         {
           "skill": "smithing",
           "xp": 500
+        }
+      ],
+      "items": [
+        {
+          "name": "Tinderbox"
         }
       ]
     },
@@ -4336,13 +7261,58 @@
           "skill": "slayer",
           "xp": 50000
         }
+      ],
+      "items": [
+        {
+          "name": "Astral rune",
+          "quantity": 100
+        },
+        {
+          "name": "Fremennik shield"
+        },
+        {
+          "name": "Glassblowing pipe"
+        },
+        {
+          "name": "Hammer"
+        },
+        {
+          "name": "Ice gloves"
+        },
+        {
+          "name": "Keg of beer",
+          "quantity": 2
+        },
+        {
+          "name": "Lunar bar",
+          "quantity": 3
+        },
+        {
+          "name": "Mirror shield"
+        },
+        {
+          "name": "Molten glass",
+          "quantity": 1
+        },
+        {
+          "name": "Pet rock"
+        },
+        {
+          "name": "Seal of passage",
+          "optional": true
+        }
       ]
     },
     {
       "id": 170,
       "slug": "x_marks_the_spot",
       "name": "X Marks the Spot",
-      "members": false
+      "members": false,
+      "items": [
+        {
+          "name": "Spade"
+        }
+      ]
     },
     {
       "id": 171,
@@ -4392,6 +7362,24 @@
           "skill": "thieving",
           "xp": 40000
         }
+      ],
+      "items": [
+        {
+          "name": "Crossbow"
+        },
+        {
+          "name": "Dwellberries",
+          "quantity": 3
+        },
+        {
+          "name": "Insulated boots"
+        },
+        {
+          "name": "Mith grapple"
+        },
+        {
+          "name": "Ring of life"
+        }
       ]
     },
     {
@@ -4427,6 +7415,14 @@
         {
           "skill": "smithing",
           "xp": 15000
+        }
+      ],
+      "items": [
+        {
+          "name": "Barronite deposit"
+        },
+        {
+          "name": "Chaos core"
         }
       ]
     },
@@ -4474,6 +7470,20 @@
           "skill": "woodcutting",
           "level": 62
         }
+      ],
+      "items": [
+        {
+          "name": "Chisel"
+        },
+        {
+          "name": "Ivandis flail"
+        },
+        {
+          "name": "Knife"
+        },
+        {
+          "name": "Ruby"
+        }
       ]
     },
     {
@@ -4517,6 +7527,17 @@
           "skill": "woodcutting",
           "level": 52
         }
+      ],
+      "items": [
+        {
+          "name": "Dark essence block"
+        },
+        {
+          "name": "Molten glass"
+        },
+        {
+          "name": "Volcanic sulphur"
+        }
       ]
     },
     {
@@ -4533,6 +7554,22 @@
           "skill": "construction",
           "xp": 544
         }
+      ],
+      "items": [
+        {
+          "name": "Bolt of cloth",
+          "quantity": 5
+        },
+        {
+          "name": "Hammer"
+        },
+        {
+          "name": "Plank",
+          "quantity": 10
+        },
+        {
+          "name": "Saw"
+        }
       ]
     },
     {
@@ -4544,6 +7581,14 @@
         {
           "skill": "slayer",
           "xp": 1000
+        }
+      ],
+      "items": [
+        {
+          "name": "Knife"
+        },
+        {
+          "name": "Rope"
         }
       ]
     },
@@ -4571,13 +7616,60 @@
           "skill": "crafting",
           "xp": 4000
         }
+      ],
+      "items": [
+        {
+          "name": "Fur"
+        },
+        {
+          "name": "Hammer"
+        },
+        {
+          "name": "Knife"
+        },
+        {
+          "name": "Needle"
+        },
+        {
+          "name": "Plank",
+          "quantity": 2
+        },
+        {
+          "name": "Pot of flour"
+        },
+        {
+          "name": "Red dye"
+        },
+        {
+          "name": "Saw"
+        },
+        {
+          "name": "Soft clay"
+        }
       ]
     },
     {
       "id": 179,
       "slug": "below_ice_mountain",
       "name": "Below Ice Mountain",
-      "members": false
+      "members": false,
+      "items": [
+        {
+          "name": "Beer"
+        },
+        {
+          "name": "Bread"
+        },
+        {
+          "name": "Cooked meat"
+        },
+        {
+          "name": "Knife"
+        },
+        {
+          "name": "Wizard's mind bomb"
+        }
+      ]
     },
     {
       "id": 180,
@@ -4586,6 +7678,17 @@
       "members": true,
       "prerequisites": [
         162
+      ],
+      "items": [
+        {
+          "name": "Ghostspeak amulet"
+        },
+        {
+          "name": "Ivandis flail"
+        },
+        {
+          "name": "Saw"
+        }
       ]
     },
     {
@@ -4615,6 +7718,20 @@
           "skill": "agility",
           "xp": 50000
         }
+      ],
+      "items": [
+        {
+          "name": "Coal"
+        },
+        {
+          "name": "Iron bar"
+        },
+        {
+          "name": "Spade"
+        },
+        {
+          "name": "Tinderbox"
+        }
       ]
     },
     {
@@ -4643,6 +7760,17 @@
           "skill": "strength",
           "level": 70
         }
+      ],
+      "items": [
+        {
+          "name": "Crossbow"
+        },
+        {
+          "name": "Hammer"
+        },
+        {
+          "name": "Mith grapple"
+        }
       ]
     },
     {
@@ -4659,6 +7787,17 @@
         {
           "skill": "prayer",
           "level": 50
+        }
+      ],
+      "items": [
+        {
+          "name": "Ghostspeak amulet"
+        },
+        {
+          "name": "Lunar staff"
+        },
+        {
+          "name": "Ring of visibility"
         }
       ]
     },
@@ -4680,6 +7819,14 @@
         {
           "skill": "runecraft",
           "xp": 5000
+        }
+      ],
+      "items": [
+        {
+          "name": "Bucket of water"
+        },
+        {
+          "name": "Chisel"
         }
       ]
     },
@@ -4732,6 +7879,14 @@
           "skill": "thieving",
           "xp": 5000
         }
+      ],
+      "items": [
+        {
+          "name": "Crossbow"
+        },
+        {
+          "name": "Mith grapple"
+        }
       ]
     },
     {
@@ -4749,6 +7904,26 @@
         {
           "skill": "smithing",
           "xp": 6000
+        }
+      ],
+      "items": [
+        {
+          "name": "Bucket of water",
+          "quantity": 1
+        },
+        {
+          "name": "Chisel"
+        },
+        {
+          "name": "Hammer"
+        },
+        {
+          "name": "Oak logs",
+          "quantity": 3
+        },
+        {
+          "name": "Wool",
+          "quantity": 1
         }
       ]
     },
@@ -4776,6 +7951,11 @@
         {
           "skill": "farming",
           "xp": 10000
+        }
+      ],
+      "items": [
+        {
+          "name": "Secateurs"
         }
       ]
     },
@@ -4818,6 +7998,48 @@
           "skill": "thieving",
           "level": 70
         }
+      ],
+      "items": [
+        {
+          "name": "Air rune",
+          "quantity": 3
+        },
+        {
+          "name": "Blood rune",
+          "quantity": 2
+        },
+        {
+          "name": "Chaos rune",
+          "quantity": 16
+        },
+        {
+          "name": "Death rune",
+          "quantity": 8
+        },
+        {
+          "name": "Facemask"
+        },
+        {
+          "name": "Fire rune",
+          "quantity": 2
+        },
+        {
+          "name": "Pestle and mortar"
+        },
+        {
+          "name": "Ring of visibility"
+        },
+        {
+          "name": "Soul rune",
+          "quantity": 2
+        },
+        {
+          "name": "Tinderbox"
+        },
+        {
+          "name": "Water rune",
+          "quantity": 4
+        }
       ]
     },
     {
@@ -4858,13 +8080,30 @@
           "skill": "thieving",
           "xp": 50000
         }
+      ],
+      "items": [
+        {
+          "name": "Coins",
+          "quantity": 100
+        },
+        {
+          "name": "Lockpick"
+        },
+        {
+          "name": "Tinderbox"
+        }
       ]
     },
     {
       "id": 191,
       "slug": "his_faithful_servants",
       "name": "His Faithful Servants",
-      "members": true
+      "members": true,
+      "items": [
+        {
+          "name": "Spade"
+        }
+      ]
     },
     {
       "id": 192,
@@ -4918,6 +8157,20 @@
         {
           "skill": "slayer",
           "xp": 40000
+        }
+      ],
+      "items": [
+        {
+          "name": "Big fishing net"
+        },
+        {
+          "name": "Knife"
+        },
+        {
+          "name": "Pestle and mortar"
+        },
+        {
+          "name": "Rope"
         }
       ]
     },
@@ -4993,6 +8246,21 @@
           "skill": "hunter",
           "xp": 4500
         }
+      ],
+      "items": [
+        {
+          "name": "Box trap"
+        },
+        {
+          "name": "Hammer"
+        },
+        {
+          "name": "Jerboa tail",
+          "quantity": 2
+        },
+        {
+          "name": "Needle"
+        }
       ]
     },
     {
@@ -5037,6 +8305,12 @@
         {
           "skill": "thieving",
           "xp": 8000
+        }
+      ],
+      "items": [
+        {
+          "name": "Coins",
+          "quantity": 30
         }
       ]
     },
@@ -5160,6 +8434,26 @@
           "skill": "woodcutting",
           "level": 74
         }
+      ],
+      "items": [
+        {
+          "name": "Blisterwood flail"
+        },
+        {
+          "name": "Blisterwood logs"
+        },
+        {
+          "name": "Chisel"
+        },
+        {
+          "name": "Hammer"
+        },
+        {
+          "name": "Knife"
+        },
+        {
+          "name": "Tinderbox"
+        }
       ]
     },
     {
@@ -5198,6 +8492,14 @@
           "skill": "thieving",
           "xp": 55000
         }
+      ],
+      "items": [
+        {
+          "name": "Beer"
+        },
+        {
+          "name": "Knife"
+        }
       ]
     },
     {
@@ -5213,6 +8515,14 @@
         {
           "skill": "sailing",
           "xp": 300
+        }
+      ],
+      "items": [
+        {
+          "name": "Hammer"
+        },
+        {
+          "name": "Saw"
         }
       ]
     },
@@ -5244,6 +8554,20 @@
           "skill": "smithing",
           "xp": 1000
         }
+      ],
+      "items": [
+        {
+          "name": "Captain's log"
+        },
+        {
+          "name": "Hammer"
+        },
+        {
+          "name": "Redberry pie"
+        },
+        {
+          "name": "Steel bar"
+        }
       ]
     },
     {
@@ -5272,6 +8596,15 @@
         {
           "skill": "sailing",
           "xp": 1400
+        }
+      ],
+      "items": [
+        {
+          "name": "Charcoal"
+        },
+        {
+          "name": "Coins",
+          "quantity": 50
         }
       ]
     },
@@ -5317,6 +8650,14 @@
         {
           "skill": "slayer",
           "xp": 8000
+        }
+      ],
+      "items": [
+        {
+          "name": "Hammer"
+        },
+        {
+          "name": "Saw"
         }
       ]
     },
@@ -5392,6 +8733,22 @@
           "skill": "slayer",
           "xp": 10000
         }
+      ],
+      "items": [
+        {
+          "name": "Fishing rod"
+        },
+        {
+          "name": "Hammer"
+        },
+        {
+          "name": "Maple logs",
+          "quantity": 4
+        },
+        {
+          "name": "Willow longbow",
+          "quantity": 4
+        }
       ]
     },
     {
@@ -5429,6 +8786,21 @@
           "skill": "smithing",
           "xp": 5000
         }
+      ],
+      "items": [
+        {
+          "name": "Bowl of water"
+        },
+        {
+          "name": "Hammer"
+        },
+        {
+          "name": "Plank",
+          "quantity": 2
+        },
+        {
+          "name": "Saw"
+        }
       ]
     },
     {
@@ -5441,13 +8813,32 @@
           "skill": "fletching",
           "level": 20
         }
+      ],
+      "items": [
+        {
+          "name": "Knife"
+        },
+        {
+          "name": "Oak logs"
+        }
       ]
     },
     {
       "id": 211,
       "slug": "spirit_of_adventure",
       "name": "Spirit of Adventure",
-      "members": false
+      "members": false,
+      "items": [
+        {
+          "name": "Ghostspeak amulet"
+        },
+        {
+          "name": "Logs"
+        },
+        {
+          "name": "Tinderbox"
+        }
+      ]
     },
     {
       "id": 212,
@@ -5556,6 +8947,11 @@
         {
           "skill": "sailing",
           "xp": 12500
+        }
+      ],
+      "items": [
+        {
+          "name": "Chisel"
         }
       ]
     },

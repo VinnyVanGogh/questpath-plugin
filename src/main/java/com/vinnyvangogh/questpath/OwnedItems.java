@@ -122,6 +122,34 @@ class OwnedItems
 	}
 
 	/**
+	 * Everything held, totalled by lowercased item name across all three
+	 * containers.
+	 *
+	 * Totalled because "do I have three buckets" does not care which of the
+	 * three places they are in. Keyed by name because the quest graph names
+	 * items and carries no Jagex ids.
+	 */
+	Map<String, Long> heldByName()
+	{
+		Map<String, Long> out = new LinkedHashMap<>();
+		for (List<Map<String, Object>> stacks : seen.values())
+		{
+			for (Map<String, Object> stack : stacks)
+			{
+				Object name = stack.get("name");
+				Object quantity = stack.get("quantity");
+				if (!(name instanceof String) || !(quantity instanceof Number))
+				{
+					continue;
+				}
+				String key = ((String) name).toLowerCase();
+				out.merge(key, ((Number) quantity).longValue(), Long::sum);
+			}
+		}
+		return out;
+	}
+
+	/**
 	 * A cheap identity for what is held, so a bank that has not changed does
 	 * not earn a push.
 	 */

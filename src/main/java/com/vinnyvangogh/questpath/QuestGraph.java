@@ -65,6 +65,9 @@ class QuestGraph
 		@SerializedName("rewards")
 		private List<Reward> rewards;
 
+		@SerializedName("items")
+		private List<Item> items;
+
 		long id()
 		{
 			return id;
@@ -98,6 +101,46 @@ class QuestGraph
 		List<Reward> rewards()
 		{
 			return rewards == null ? Collections.emptyList() : rewards;
+		}
+
+		List<Item> items()
+		{
+			return items == null ? Collections.emptyList() : items;
+		}
+	}
+
+	/** One thing a quest needs, already resolved to a catalogue item name. */
+	static class Item
+	{
+		@SerializedName("name")
+		private String name;
+
+		@SerializedName("quantity")
+		private int quantity;
+
+		@SerializedName("optional")
+		private boolean optional;
+
+		String name()
+		{
+			return name == null ? "" : name;
+		}
+
+		/**
+		 * The count the wiki stated, or 0 when it stated none.
+		 *
+		 * Zero is not one. Plenty of lines name a thing without saying how
+		 * many, and defaulting to one would invent a number the wiki did not
+		 * give.
+		 */
+		int quantity()
+		{
+			return quantity;
+		}
+
+		boolean optional()
+		{
+			return optional;
 		}
 	}
 

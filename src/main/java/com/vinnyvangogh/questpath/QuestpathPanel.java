@@ -141,9 +141,9 @@ class QuestpathPanel extends PluginPanel
 	 * touched there and every caller here is a game event.
 	 */
 	void update(CombatStats stats, SkillXp xp, SyncStatus sync,
-		List<BuildRule> rules, List<String> unmatchedQuests, QuestVerdicts verdicts)
+		List<BuildRule> rules, List<String> unmatchedQuests, QuestVerdicts verdicts, QuestItems items)
 	{
-		SwingUtilities.invokeLater(() -> render(stats, xp, sync, rules, unmatchedQuests, verdicts));
+		SwingUtilities.invokeLater(() -> render(stats, xp, sync, rules, unmatchedQuests, verdicts, items));
 	}
 
 	/**
@@ -163,13 +163,14 @@ class QuestpathPanel extends PluginPanel
 			tabBodies.get(PanelSections.Tab.COMBAT).add(muted("Log in to see your levels."));
 			tabBodies.get(PanelSections.Tab.SYNC).add(muted("Log in to sync."));
 			tabBodies.get(PanelSections.Tab.QUESTS).add(muted("Log in to judge your quests."));
+			tabBodies.get(PanelSections.Tab.ITEMS).add(muted("Log in to check your bank."));
 			renderPlannedSections();
 			repaintAll();
 		});
 	}
 
 	private void render(CombatStats stats, SkillXp xp, SyncStatus sync,
-		List<BuildRule> rules, List<String> unmatchedQuests, QuestVerdicts verdicts)
+		List<BuildRule> rules, List<String> unmatchedQuests, QuestVerdicts verdicts, QuestItems items)
 	{
 		clearBodies();
 
@@ -209,8 +210,67 @@ class QuestpathPanel extends PluginPanel
 		quests.add(heading(PanelSections.QUEST_VERDICT.title()));
 		quests.add(verdictBlock(verdicts));
 
+		JPanel itemsBody = tabBodies.get(PanelSections.Tab.ITEMS);
+		itemsBody.add(heading(PanelSections.ITEMS.title()));
+		itemsBody.add(itemsBlock(items));
+
 		renderPlannedSections();
 		repaintAll();
+	}
+
+	/**
+	 * What the next doable quests need, ticked against the bank.
+	 *
+	 * The plugin's whole reason to exist: nothing outside the client can see a
+	 * bank, so nothing outside the client can tell you that you already have
+	 * four of the five things.
+	 */
+	private static JPanel itemsBlock(QuestItems items)
+	{
+		JPanel panel = column();
+
+		if (items == null)
+		{
+			// Not "you need nothing". A missing bundle, a client still
+			// loading, and a bank nobody has opened are all "cannot answer".
+			panel.add(muted("Open your bank once so the client can see it, and"
+				+ " this will fill in."));
+			return panel;
+		}
+		if (items.isEmpty())
+		{
+			panel.add(muted("No doable quest has an item list."));
+			return panel;
+		}
+
+		boolean first = true;
+		for (QuestItems.QuestNeeds needs : items.quests())
+		{
+			if (!first)
+			{
+				panel.add(Box.createVerticalStrut(10));
+			}
+			first = false;
+
+			JLabel title = new JLabel(wrap(needs.questName()
+				+ "  ·  " + needs.have() + "/" + needs.needed()));
+			title.setFont(FontManager.getRunescapeSmallFont().deriveFont(Font.BOLD));
+			title.setForeground(needs.ready()
+				? ColorScheme.PROGRESS_COMPLETE_COLOR
+				: ColorScheme.BRAND_ORANGE);
+			panel.add(title);
+
+			JPanel grid = grid();
+			for (QuestItems.Line line : needs.lines())
+			{
+				String label = line.optional() ? line.name() + " (optional)" : line.name();
+				addRow(grid, label, line.describe(), line.held()
+					? ColorScheme.PROGRESS_COMPLETE_COLOR
+					: ColorScheme.LIGHT_GRAY_COLOR);
+			}
+			panel.add(grid);
+		}
+		return panel;
 	}
 
 	/**
