@@ -135,4 +135,47 @@ public final class CombatMath
 		}
 		return s.get(skill) + delta;
 	}
+
+	/**
+	 * The next Strength level that raises the free Ranged / Magic ceiling, and
+	 * what it raises it to.
+	 *
+	 * The ceiling moves every two or three Strength levels, and knowing where
+	 * the next step is turns "train Strength" into "two more Strength buys two
+	 * more free Ranged levels". Null when no level at or below 99 moves it.
+	 *
+	 * Strength rather than Attack because the melee term is their sum and a
+	 * pure is training one of them; pass the Attack you actually have.
+	 */
+	public static CeilingStep nextCeilingStep(int attack, int strength)
+	{
+		int current = freeRangedCeiling(attack, strength);
+		for (int s = strength + 1; s <= CombatStats.MAX_LEVEL; s++)
+		{
+			int ceiling = freeRangedCeiling(attack, s);
+			if (ceiling > current)
+			{
+				return new CeilingStep(s, ceiling, ceiling - current);
+			}
+		}
+		return null;
+	}
+
+	/** Where the free ceiling next moves, and by how much. */
+	public static final class CeilingStep
+	{
+		/** The Strength level that moves it. */
+		public final int atStrength;
+		/** The ceiling once it has moved. */
+		public final int ceiling;
+		/** How many free levels that step is worth. */
+		public final int gained;
+
+		CeilingStep(int atStrength, int ceiling, int gained)
+		{
+			this.atStrength = atStrength;
+			this.ceiling = ceiling;
+			this.gained = gained;
+		}
+	}
 }

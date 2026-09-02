@@ -147,6 +147,62 @@ public class CombatMathTest
 		assertEquals(83, CombatMath.nextCombatLevelAt(LIVE, Skill.STRENGTH));
 	}
 
+	/**
+	 * The ceiling moves in steps as Strength grows, and the step must be the
+	 * *next* one — the first Strength level that moves it at all, not some
+	 * later one.
+	 */
+	@Test
+	public void nextCeilingStepFindsTheFirstStrengthThatMovesIt()
+	{
+		// At 1 attack / 82 strength the ceiling is 55. 83 takes it to 56.
+		CombatMath.CeilingStep step = CombatMath.nextCeilingStep(1, 82);
+		assertEquals(83, step.atStrength);
+		assertEquals(56, step.ceiling);
+		assertEquals(1, step.gained);
+
+		// From 83 the ceiling is 56 and 84 takes it to 57. The Go suite asserts
+		// 85 -> 57 and 86 -> 58, and an earlier version of this test read that
+		// as "it holds until 86". It does not: 84 already moves it, and 85
+		// merely holds what 84 gained. Extrapolating between two vectors is
+		// how you get a confidently wrong number.
+		CombatMath.CeilingStep fromEightyThree = CombatMath.nextCeilingStep(1, 83);
+		assertEquals(84, fromEightyThree.atStrength);
+		assertEquals(57, fromEightyThree.ceiling);
+		assertEquals(1, fromEightyThree.gained);
+	}
+
+	/**
+	 * Whatever the step reports must agree with freeRangedCeiling itself, at
+	 * the reported level and one below it. Two functions disagreeing about the
+	 * same ceiling is exactly the drift this suite exists to catch.
+	 */
+	@Test
+	public void nextCeilingStepAgreesWithTheCeilingFunction()
+	{
+		for (int strength = 1; strength < CombatStats.MAX_LEVEL; strength++)
+		{
+			CombatMath.CeilingStep step = CombatMath.nextCeilingStep(1, strength);
+			if (step == null)
+			{
+				continue;
+			}
+			assertEquals("strength " + strength + ": the step's ceiling must be the real one",
+				step.ceiling, CombatMath.freeRangedCeiling(1, step.atStrength));
+			assertEquals("strength " + strength + ": one level earlier must not have moved yet",
+				CombatMath.freeRangedCeiling(1, strength),
+				CombatMath.freeRangedCeiling(1, step.atStrength - 1));
+		}
+	}
+
+	@Test
+	public void nextCeilingStepIsNullWhenNothingMovesIt()
+	{
+		// A maxed melee already puts the ceiling at 99.
+		assertEquals(99, CombatMath.freeRangedCeiling(99, 99));
+		assertEquals(null, CombatMath.nextCeilingStep(99, 99));
+	}
+
 	@Test
 	public void combatProgressStaysWithinTheCurrentLevel()
 	{
