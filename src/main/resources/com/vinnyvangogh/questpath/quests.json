@@ -1,0 +1,5607 @@
+{
+  "version": 1,
+  "quests": [
+    {
+      "id": 1,
+      "slug": "cooks_assistant",
+      "name": "Cook's Assistant",
+      "members": false,
+      "rewards": [
+        {
+          "skill": "cooking",
+          "xp": 300
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "slug": "romeo_juliet",
+      "name": "Romeo \u0026 Juliet",
+      "members": false
+    },
+    {
+      "id": 3,
+      "slug": "demon_slayer",
+      "name": "Demon Slayer",
+      "members": false
+    },
+    {
+      "id": 4,
+      "slug": "shield_of_arrav",
+      "name": "Shield of Arrav",
+      "members": false
+    },
+    {
+      "id": 5,
+      "slug": "sheep_shearer",
+      "name": "Sheep Shearer",
+      "members": false,
+      "rewards": [
+        {
+          "skill": "crafting",
+          "xp": 150
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "slug": "the_restless_ghost",
+      "name": "The Restless Ghost",
+      "members": false,
+      "rewards": [
+        {
+          "skill": "prayer",
+          "xp": 1125
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "slug": "ernest_the_chicken",
+      "name": "Ernest the Chicken",
+      "members": false
+    },
+    {
+      "id": 8,
+      "slug": "vampyre_slayer",
+      "name": "Vampyre Slayer",
+      "members": false,
+      "rewards": [
+        {
+          "skill": "attack",
+          "xp": 4825
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "slug": "imp_catcher",
+      "name": "Imp Catcher",
+      "members": false,
+      "rewards": [
+        {
+          "skill": "magic",
+          "xp": 875
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "slug": "prince_ali_rescue",
+      "name": "Prince Ali Rescue",
+      "members": false
+    },
+    {
+      "id": 11,
+      "slug": "dorics_quest",
+      "name": "Doric's Quest",
+      "members": false,
+      "rewards": [
+        {
+          "skill": "mining",
+          "xp": 1300
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "slug": "black_knights_fortress",
+      "name": "Black Knights' Fortress",
+      "members": false
+    },
+    {
+      "id": 13,
+      "slug": "witchs_potion",
+      "name": "Witch's Potion",
+      "members": false,
+      "rewards": [
+        {
+          "skill": "magic",
+          "xp": 325
+        }
+      ]
+    },
+    {
+      "id": 14,
+      "slug": "the_knights_sword",
+      "name": "The Knight's Sword",
+      "members": false,
+      "requirements": [
+        {
+          "skill": "mining",
+          "level": 10,
+          "boostable": true
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "smithing",
+          "xp": 12725
+        }
+      ]
+    },
+    {
+      "id": 15,
+      "slug": "goblin_diplomacy",
+      "name": "Goblin Diplomacy",
+      "members": false,
+      "rewards": [
+        {
+          "skill": "crafting",
+          "xp": 200
+        }
+      ]
+    },
+    {
+      "id": 16,
+      "slug": "pirates_treasure",
+      "name": "Pirate's Treasure",
+      "members": false
+    },
+    {
+      "id": 17,
+      "slug": "dragon_slayer_i",
+      "name": "Dragon Slayer I",
+      "members": false,
+      "rewards": [
+        {
+          "skill": "defence",
+          "xp": 18650
+        },
+        {
+          "skill": "sailing",
+          "xp": 60
+        },
+        {
+          "skill": "strength",
+          "xp": 18650
+        }
+      ]
+    },
+    {
+      "id": 18,
+      "slug": "druidic_ritual",
+      "name": "Druidic Ritual",
+      "members": true,
+      "rewards": [
+        {
+          "skill": "herblore",
+          "xp": 250
+        }
+      ]
+    },
+    {
+      "id": 19,
+      "slug": "lost_city",
+      "name": "Lost City",
+      "members": true,
+      "requirements": [
+        {
+          "skill": "crafting",
+          "level": 31,
+          "boostable": true
+        },
+        {
+          "skill": "woodcutting",
+          "level": 36,
+          "boostable": true
+        }
+      ]
+    },
+    {
+      "id": 20,
+      "slug": "witchs_house",
+      "name": "Witch's House",
+      "members": true,
+      "rewards": [
+        {
+          "skill": "hitpoints",
+          "xp": 6325
+        }
+      ]
+    },
+    {
+      "id": 21,
+      "slug": "merlins_crystal",
+      "name": "Merlin's Crystal",
+      "members": true
+    },
+    {
+      "id": 22,
+      "slug": "heroes_quest",
+      "name": "Heroes' Quest",
+      "members": true,
+      "prerequisites": [
+        4,
+        17,
+        19,
+        21
+      ],
+      "requirements": [
+        {
+          "skill": "cooking",
+          "level": 53,
+          "boostable": true
+        },
+        {
+          "skill": "fishing",
+          "level": 53,
+          "boostable": true
+        },
+        {
+          "skill": "herblore",
+          "level": 25,
+          "boostable": true
+        },
+        {
+          "skill": "mining",
+          "level": 50,
+          "boostable": true
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "attack",
+          "xp": 3075
+        },
+        {
+          "skill": "cooking",
+          "xp": 2825
+        },
+        {
+          "skill": "defence",
+          "xp": 3075
+        },
+        {
+          "skill": "firemaking",
+          "xp": 1575
+        },
+        {
+          "skill": "fishing",
+          "xp": 2725
+        },
+        {
+          "skill": "herblore",
+          "xp": 1325
+        },
+        {
+          "skill": "hitpoints",
+          "xp": 3075
+        },
+        {
+          "skill": "mining",
+          "xp": 2575
+        },
+        {
+          "skill": "ranged",
+          "xp": 2075
+        },
+        {
+          "skill": "smithing",
+          "xp": 2275
+        },
+        {
+          "skill": "strength",
+          "xp": 3075
+        },
+        {
+          "skill": "woodcutting",
+          "xp": 1575
+        }
+      ]
+    },
+    {
+      "id": 23,
+      "slug": "scorpion_catcher",
+      "name": "Scorpion Catcher",
+      "members": true,
+      "prerequisites": [
+        127
+      ],
+      "requirements": [
+        {
+          "skill": "prayer",
+          "level": 31
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "strength",
+          "xp": 6625
+        }
+      ]
+    },
+    {
+      "id": 24,
+      "slug": "family_crest",
+      "name": "Family Crest",
+      "members": true,
+      "requirements": [
+        {
+          "skill": "crafting",
+          "level": 40,
+          "boostable": true
+        },
+        {
+          "skill": "magic",
+          "level": 59,
+          "boostable": true
+        },
+        {
+          "skill": "mining",
+          "level": 40,
+          "boostable": true
+        },
+        {
+          "skill": "smithing",
+          "level": 40,
+          "boostable": true
+        }
+      ]
+    },
+    {
+      "id": 25,
+      "slug": "fishing_contest",
+      "name": "Fishing Contest",
+      "members": true,
+      "requirements": [
+        {
+          "skill": "fishing",
+          "level": 10
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "fishing",
+          "xp": 2437
+        }
+      ]
+    },
+    {
+      "id": 26,
+      "slug": "tribal_totem",
+      "name": "Tribal Totem",
+      "members": true,
+      "requirements": [
+        {
+          "skill": "thieving",
+          "level": 21,
+          "boostable": true
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "thieving",
+          "xp": 1775
+        }
+      ]
+    },
+    {
+      "id": 27,
+      "slug": "monks_friend",
+      "name": "Monk's Friend",
+      "members": true,
+      "rewards": [
+        {
+          "skill": "woodcutting",
+          "xp": 2000
+        }
+      ]
+    },
+    {
+      "id": 28,
+      "slug": "temple_of_ikov",
+      "name": "Temple of Ikov",
+      "members": true,
+      "requirements": [
+        {
+          "skill": "ranged",
+          "level": 40
+        },
+        {
+          "skill": "thieving",
+          "level": 42,
+          "boostable": true
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "fletching",
+          "xp": 8000
+        },
+        {
+          "skill": "ranged",
+          "xp": 10500
+        }
+      ]
+    },
+    {
+      "id": 29,
+      "slug": "clock_tower",
+      "name": "Clock Tower",
+      "members": true
+    },
+    {
+      "id": 30,
+      "slug": "holy_grail",
+      "name": "Holy Grail",
+      "members": true,
+      "prerequisites": [
+        21
+      ],
+      "requirements": [
+        {
+          "skill": "attack",
+          "level": 20
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "defence",
+          "xp": 15300
+        },
+        {
+          "skill": "prayer",
+          "xp": 11000
+        }
+      ]
+    },
+    {
+      "id": 31,
+      "slug": "tree_gnome_village",
+      "name": "Tree Gnome Village",
+      "members": true,
+      "rewards": [
+        {
+          "skill": "attack",
+          "xp": 11450
+        }
+      ]
+    },
+    {
+      "id": 32,
+      "slug": "fight_arena",
+      "name": "Fight Arena",
+      "members": true,
+      "rewards": [
+        {
+          "skill": "attack",
+          "xp": 12175
+        },
+        {
+          "skill": "thieving",
+          "xp": 2175
+        }
+      ]
+    },
+    {
+      "id": 33,
+      "slug": "hazeel_cult",
+      "name": "Hazeel Cult",
+      "members": true,
+      "rewards": [
+        {
+          "skill": "thieving",
+          "xp": 1500
+        }
+      ]
+    },
+    {
+      "id": 34,
+      "slug": "sheep_herder",
+      "name": "Sheep Herder",
+      "members": true
+    },
+    {
+      "id": 35,
+      "slug": "plague_city",
+      "name": "Plague City",
+      "members": true,
+      "rewards": [
+        {
+          "skill": "mining",
+          "xp": 2425
+        }
+      ]
+    },
+    {
+      "id": 36,
+      "slug": "sea_slug",
+      "name": "Sea Slug",
+      "members": true,
+      "requirements": [
+        {
+          "skill": "firemaking",
+          "level": 30,
+          "boostable": true
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "fishing",
+          "xp": 7175
+        }
+      ]
+    },
+    {
+      "id": 37,
+      "slug": "waterfall_quest",
+      "name": "Waterfall Quest",
+      "members": true,
+      "rewards": [
+        {
+          "skill": "attack",
+          "xp": 13750
+        },
+        {
+          "skill": "strength",
+          "xp": 13750
+        }
+      ]
+    },
+    {
+      "id": 38,
+      "slug": "jungle_potion",
+      "name": "Jungle Potion",
+      "members": true,
+      "prerequisites": [
+        18
+      ],
+      "requirements": [
+        {
+          "skill": "herblore",
+          "level": 3,
+          "boostable": true
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "herblore",
+          "xp": 775
+        }
+      ]
+    },
+    {
+      "id": 39,
+      "slug": "the_grand_tree",
+      "name": "The Grand Tree",
+      "members": true,
+      "requirements": [
+        {
+          "skill": "agility",
+          "level": 25,
+          "boostable": true
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "agility",
+          "xp": 7900
+        },
+        {
+          "skill": "attack",
+          "xp": 18400
+        },
+        {
+          "skill": "magic",
+          "xp": 2150
+        }
+      ]
+    },
+    {
+      "id": 40,
+      "slug": "underground_pass",
+      "name": "Underground Pass",
+      "members": true,
+      "prerequisites": [
+        126
+      ],
+      "requirements": [
+        {
+          "skill": "ranged",
+          "level": 25,
+          "boostable": true
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "agility",
+          "xp": 3000
+        },
+        {
+          "skill": "attack",
+          "xp": 3000
+        }
+      ]
+    },
+    {
+      "id": 41,
+      "slug": "observatory_quest",
+      "name": "Observatory Quest",
+      "members": true,
+      "rewards": [
+        {
+          "skill": "crafting",
+          "xp": 2250
+        }
+      ]
+    },
+    {
+      "id": 42,
+      "slug": "the_tourist_trap",
+      "name": "The Tourist Trap",
+      "members": true,
+      "requirements": [
+        {
+          "skill": "fletching",
+          "level": 10,
+          "boostable": true
+        },
+        {
+          "skill": "smithing",
+          "level": 20,
+          "boostable": true
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "sailing",
+          "xp": 50
+        }
+      ]
+    },
+    {
+      "id": 43,
+      "slug": "watchtower",
+      "name": "Watchtower",
+      "members": true,
+      "requirements": [
+        {
+          "skill": "agility",
+          "level": 25,
+          "boostable": true
+        },
+        {
+          "skill": "herblore",
+          "level": 14,
+          "boostable": true
+        },
+        {
+          "skill": "magic",
+          "level": 14,
+          "boostable": true
+        },
+        {
+          "skill": "mining",
+          "level": 40,
+          "boostable": true
+        },
+        {
+          "skill": "thieving",
+          "level": 15,
+          "boostable": true
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "magic",
+          "xp": 15250
+        }
+      ]
+    },
+    {
+      "id": 44,
+      "slug": "dwarf_cannon",
+      "name": "Dwarf Cannon",
+      "members": true,
+      "rewards": [
+        {
+          "skill": "crafting",
+          "xp": 750
+        }
+      ]
+    },
+    {
+      "id": 45,
+      "slug": "murder_mystery",
+      "name": "Murder Mystery",
+      "members": true,
+      "rewards": [
+        {
+          "skill": "crafting",
+          "xp": 1406
+        }
+      ]
+    },
+    {
+      "id": 46,
+      "slug": "the_dig_site",
+      "name": "The Dig Site",
+      "members": true,
+      "requirements": [
+        {
+          "skill": "agility",
+          "level": 10,
+          "boostable": true
+        },
+        {
+          "skill": "herblore",
+          "level": 10,
+          "boostable": true
+        },
+        {
+          "skill": "thieving",
+          "level": 25,
+          "boostable": true
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "herblore",
+          "xp": 2000
+        },
+        {
+          "skill": "mining",
+          "xp": 15300
+        }
+      ]
+    },
+    {
+      "id": 47,
+      "slug": "gertrudes_cat",
+      "name": "Gertrude's Cat",
+      "members": true,
+      "rewards": [
+        {
+          "skill": "cooking",
+          "xp": 1525
+        }
+      ]
+    },
+    {
+      "id": 48,
+      "slug": "legends_quest",
+      "name": "Legends' Quest",
+      "members": true,
+      "prerequisites": [
+        22,
+        24,
+        37,
+        40,
+        125
+      ],
+      "requirements": [
+        {
+          "skill": "agility",
+          "level": 50,
+          "boostable": true
+        },
+        {
+          "skill": "crafting",
+          "level": 50,
+          "boostable": true
+        },
+        {
+          "skill": "herblore",
+          "level": 45,
+          "boostable": true
+        },
+        {
+          "skill": "magic",
+          "level": 56,
+          "boostable": true
+        },
+        {
+          "skill": "mining",
+          "level": 52,
+          "boostable": true
+        },
+        {
+          "skill": "prayer",
+          "level": 42,
+          "boostable": true
+        },
+        {
+          "skill": "smithing",
+          "level": 50,
+          "boostable": true
+        },
+        {
+          "skill": "strength",
+          "level": 50,
+          "boostable": true
+        },
+        {
+          "skill": "thieving",
+          "level": 50,
+          "boostable": true
+        },
+        {
+          "skill": "woodcutting",
+          "level": 50,
+          "boostable": true
+        }
+      ]
+    },
+    {
+      "id": 49,
+      "slug": "rogue_trader",
+      "name": "Rogue Trader",
+      "members": false,
+      "prerequisites": [
+        50,
+        74,
+        77
+      ]
+    },
+    {
+      "id": 50,
+      "slug": "rune_mysteries",
+      "name": "Rune Mysteries",
+      "members": false
+    },
+    {
+      "id": 51,
+      "slug": "death_plateau",
+      "name": "Death Plateau",
+      "members": true,
+      "rewards": [
+        {
+          "skill": "attack",
+          "xp": 3000
+        }
+      ]
+    },
+    {
+      "id": 52,
+      "slug": "eadgars_ruse",
+      "name": "Eadgar's Ruse",
+      "members": true,
+      "prerequisites": [
+        18,
+        59
+      ],
+      "requirements": [
+        {
+          "skill": "herblore",
+          "level": 31,
+          "boostable": true
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "herblore",
+          "xp": 11000
+        }
+      ]
+    },
+    {
+      "id": 53,
+      "slug": "big_chompy_bird_hunting",
+      "name": "Big Chompy Bird Hunting",
+      "members": true,
+      "requirements": [
+        {
+          "skill": "cooking",
+          "level": 30,
+          "boostable": true
+        },
+        {
+          "skill": "fletching",
+          "level": 5,
+          "boostable": true
+        },
+        {
+          "skill": "ranged",
+          "level": 30
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "cooking",
+          "xp": 1470
+        },
+        {
+          "skill": "fletching",
+          "xp": 262
+        },
+        {
+          "skill": "ranged",
+          "xp": 735
+        }
+      ]
+    },
+    {
+      "id": 54,
+      "slug": "elemental_workshop_i",
+      "name": "Elemental Workshop I",
+      "members": true,
+      "requirements": [
+        {
+          "skill": "crafting",
+          "level": 20,
+          "boostable": true
+        },
+        {
+          "skill": "mining",
+          "level": 20,
+          "boostable": true
+        },
+        {
+          "skill": "smithing",
+          "level": 20,
+          "boostable": true
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "crafting",
+          "xp": 5000
+        },
+        {
+          "skill": "smithing",
+          "xp": 5000
+        }
+      ]
+    },
+    {
+      "id": 55,
+      "slug": "nature_spirit",
+      "name": "Nature Spirit",
+      "members": true,
+      "prerequisites": [
+        6,
+        56
+      ],
+      "rewards": [
+        {
+          "skill": "crafting",
+          "xp": 3000
+        },
+        {
+          "skill": "defence",
+          "xp": 2000
+        },
+        {
+          "skill": "hitpoints",
+          "xp": 2000
+        }
+      ]
+    },
+    {
+      "id": 56,
+      "slug": "priest_in_peril",
+      "name": "Priest in Peril",
+      "members": true,
+      "rewards": [
+        {
+          "skill": "prayer",
+          "xp": 1406
+        }
+      ]
+    },
+    {
+      "id": 57,
+      "slug": "regicide",
+      "name": "Regicide",
+      "members": true,
+      "prerequisites": [
+        40
+      ],
+      "requirements": [
+        {
+          "skill": "agility",
+          "level": 56,
+          "boostable": true
+        },
+        {
+          "skill": "crafting",
+          "level": 10
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "agility",
+          "xp": 13750
+        }
+      ]
+    },
+    {
+      "id": 58,
+      "slug": "tai_bwo_wannai_trio",
+      "name": "Tai Bwo Wannai Trio",
+      "members": true,
+      "prerequisites": [
+        38
+      ],
+      "requirements": [
+        {
+          "skill": "agility",
+          "level": 15,
+          "boostable": true
+        },
+        {
+          "skill": "cooking",
+          "level": 30
+        },
+        {
+          "skill": "fishing",
+          "level": 5,
+          "boostable": true
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "attack",
+          "xp": 2500
+        },
+        {
+          "skill": "cooking",
+          "xp": 5000
+        },
+        {
+          "skill": "fishing",
+          "xp": 5000
+        },
+        {
+          "skill": "strength",
+          "xp": 2500
+        }
+      ]
+    },
+    {
+      "id": 59,
+      "slug": "troll_stronghold",
+      "name": "Troll Stronghold",
+      "members": true,
+      "prerequisites": [
+        51
+      ],
+      "requirements": [
+        {
+          "skill": "agility",
+          "level": 15,
+          "boostable": true
+        }
+      ]
+    },
+    {
+      "id": 60,
+      "slug": "shades_of_mortton",
+      "name": "Shades of Mort'ton",
+      "members": true,
+      "prerequisites": [
+        56
+      ],
+      "requirements": [
+        {
+          "skill": "crafting",
+          "level": 20,
+          "boostable": true
+        },
+        {
+          "skill": "firemaking",
+          "level": 5,
+          "boostable": true
+        },
+        {
+          "skill": "herblore",
+          "level": 15,
+          "boostable": true
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "crafting",
+          "xp": 2000
+        },
+        {
+          "skill": "herblore",
+          "xp": 2000
+        }
+      ]
+    },
+    {
+      "id": 61,
+      "slug": "the_fremennik_trials",
+      "name": "The Fremennik Trials",
+      "members": true,
+      "rewards": [
+        {
+          "skill": "agility",
+          "xp": 2812.4
+        },
+        {
+          "skill": "attack",
+          "xp": 2812.4
+        },
+        {
+          "skill": "crafting",
+          "xp": 2812.4
+        },
+        {
+          "skill": "defence",
+          "xp": 2812.4
+        },
+        {
+          "skill": "fishing",
+          "xp": 2812.4
+        },
+        {
+          "skill": "fletching",
+          "xp": 2812.4
+        },
+        {
+          "skill": "hitpoints",
+          "xp": 2812.4
+        },
+        {
+          "skill": "strength",
+          "xp": 2812.4
+        },
+        {
+          "skill": "thieving",
+          "xp": 2812.4
+        },
+        {
+          "skill": "woodcutting",
+          "xp": 2812.4
+        }
+      ]
+    },
+    {
+      "id": 62,
+      "slug": "horror_from_the_deep",
+      "name": "Horror from the Deep",
+      "members": true,
+      "prerequisites": [
+        127
+      ],
+      "requirements": [
+        {
+          "skill": "agility",
+          "level": 35,
+          "boostable": true
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "magic",
+          "xp": 4662.5
+        },
+        {
+          "skill": "ranged",
+          "xp": 4662.5
+        },
+        {
+          "skill": "strength",
+          "xp": 4662.5
+        }
+      ]
+    },
+    {
+      "id": 63,
+      "slug": "throne_of_miscellania",
+      "name": "Throne of Miscellania",
+      "members": true,
+      "prerequisites": [
+        22,
+        61
+      ]
+    },
+    {
+      "id": 64,
+      "slug": "monkey_madness_i",
+      "name": "Monkey Madness I",
+      "members": true,
+      "prerequisites": [
+        31,
+        39
+      ]
+    },
+    {
+      "id": 65,
+      "slug": "haunted_mine",
+      "name": "Haunted Mine",
+      "members": true,
+      "prerequisites": [
+        56
+      ],
+      "requirements": [
+        {
+          "skill": "crafting",
+          "level": 35,
+          "boostable": true
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "strength",
+          "xp": 22000
+        }
+      ]
+    },
+    {
+      "id": 66,
+      "slug": "troll_romance",
+      "name": "Troll Romance",
+      "members": true,
+      "prerequisites": [
+        59
+      ],
+      "requirements": [
+        {
+          "skill": "agility",
+          "level": 28,
+          "boostable": true
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "agility",
+          "xp": 8000
+        },
+        {
+          "skill": "strength",
+          "xp": 4000
+        }
+      ]
+    },
+    {
+      "id": 67,
+      "slug": "in_search_of_the_myreque",
+      "name": "In Search of the Myreque",
+      "members": true,
+      "prerequisites": [
+        55
+      ],
+      "requirements": [
+        {
+          "skill": "agility",
+          "level": 25,
+          "boostable": true
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "attack",
+          "xp": 600
+        },
+        {
+          "skill": "crafting",
+          "xp": 600
+        },
+        {
+          "skill": "defence",
+          "xp": 600
+        },
+        {
+          "skill": "hitpoints",
+          "xp": 600
+        },
+        {
+          "skill": "strength",
+          "xp": 600
+        }
+      ]
+    },
+    {
+      "id": 68,
+      "slug": "creature_of_fenkenstrain",
+      "name": "Creature of Fenkenstrain",
+      "members": true,
+      "prerequisites": [
+        6,
+        56
+      ],
+      "requirements": [
+        {
+          "skill": "crafting",
+          "level": 20,
+          "boostable": true
+        },
+        {
+          "skill": "thieving",
+          "level": 25,
+          "boostable": true
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "thieving",
+          "xp": 1000
+        }
+      ]
+    },
+    {
+      "id": 69,
+      "slug": "roving_elves",
+      "name": "Roving Elves",
+      "members": true,
+      "prerequisites": [
+        37,
+        57
+      ],
+      "requirements": [
+        {
+          "skill": "agility",
+          "level": 56,
+          "boostable": true
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "strength",
+          "xp": 10000
+        }
+      ]
+    },
+    {
+      "id": 70,
+      "slug": "ghosts_ahoy",
+      "name": "Ghosts Ahoy",
+      "members": true,
+      "requirements": [
+        {
+          "skill": "agility",
+          "level": 25,
+          "boostable": true
+        },
+        {
+          "skill": "cooking",
+          "level": 20,
+          "boostable": true
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "prayer",
+          "xp": 2400
+        }
+      ]
+    },
+    {
+      "id": 71,
+      "slug": "one_small_favour",
+      "name": "One Small Favour",
+      "members": true,
+      "prerequisites": [
+        50,
+        125
+      ],
+      "requirements": [
+        {
+          "skill": "agility",
+          "level": 36,
+          "boostable": true
+        },
+        {
+          "skill": "crafting",
+          "level": 25,
+          "boostable": true
+        },
+        {
+          "skill": "herblore",
+          "level": 18,
+          "boostable": true
+        },
+        {
+          "skill": "smithing",
+          "level": 30,
+          "boostable": true
+        }
+      ]
+    },
+    {
+      "id": 72,
+      "slug": "mountain_daughter",
+      "name": "Mountain Daughter",
+      "members": true,
+      "requirements": [
+        {
+          "skill": "agility",
+          "level": 20,
+          "boostable": true
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "attack",
+          "xp": 1000
+        },
+        {
+          "skill": "prayer",
+          "xp": 2000
+        }
+      ]
+    },
+    {
+      "id": 73,
+      "slug": "between_a_rock",
+      "name": "Between a Rock...",
+      "members": true,
+      "prerequisites": [
+        25,
+        44
+      ],
+      "requirements": [
+        {
+          "skill": "defence",
+          "level": 30,
+          "boostable": true
+        },
+        {
+          "skill": "mining",
+          "level": 40,
+          "boostable": true
+        },
+        {
+          "skill": "smithing",
+          "level": 50,
+          "boostable": true
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "defence",
+          "xp": 5000
+        },
+        {
+          "skill": "mining",
+          "xp": 5000
+        },
+        {
+          "skill": "smithing",
+          "xp": 5000
+        }
+      ]
+    },
+    {
+      "id": 74,
+      "slug": "the_feud",
+      "name": "The Feud",
+      "members": true,
+      "requirements": [
+        {
+          "skill": "thieving",
+          "level": 30
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "thieving",
+          "xp": 15000
+        }
+      ]
+    },
+    {
+      "id": 75,
+      "slug": "the_golem",
+      "name": "The Golem",
+      "members": true,
+      "requirements": [
+        {
+          "skill": "crafting",
+          "level": 20,
+          "boostable": true
+        },
+        {
+          "skill": "thieving",
+          "level": 25,
+          "boostable": true
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "crafting",
+          "xp": 1000
+        },
+        {
+          "skill": "thieving",
+          "xp": 1000
+        }
+      ]
+    },
+    {
+      "id": 76,
+      "slug": "desert_treasure_i",
+      "name": "Desert Treasure I",
+      "members": true,
+      "prerequisites": [
+        28,
+        37,
+        42,
+        46,
+        56,
+        59
+      ],
+      "requirements": [
+        {
+          "skill": "firemaking",
+          "level": 50,
+          "boostable": true
+        },
+        {
+          "skill": "magic",
+          "level": 50
+        },
+        {
+          "skill": "slayer",
+          "level": 10
+        },
+        {
+          "skill": "thieving",
+          "level": 53
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "magic",
+          "xp": 20006.9
+        }
+      ]
+    },
+    {
+      "id": 77,
+      "slug": "icthlarins_little_helper",
+      "name": "Icthlarin's Little Helper",
+      "members": true,
+      "prerequisites": [
+        47
+      ],
+      "rewards": [
+        {
+          "skill": "agility",
+          "xp": 4000
+        },
+        {
+          "skill": "thieving",
+          "xp": 4500
+        },
+        {
+          "skill": "woodcutting",
+          "xp": 4000
+        }
+      ]
+    },
+    {
+      "id": 78,
+      "slug": "tears_of_guthix",
+      "name": "Tears of Guthix",
+      "members": true,
+      "requirements": [
+        {
+          "skill": "crafting",
+          "level": 20,
+          "boostable": true
+        },
+        {
+          "skill": "firemaking",
+          "level": 49,
+          "boostable": true
+        },
+        {
+          "skill": "mining",
+          "level": 20,
+          "boostable": true
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "crafting",
+          "xp": 1000
+        }
+      ]
+    },
+    {
+      "id": 79,
+      "slug": "the_lost_tribe",
+      "name": "The Lost Tribe",
+      "members": true,
+      "prerequisites": [
+        15,
+        50
+      ],
+      "requirements": [
+        {
+          "skill": "agility",
+          "level": 13,
+          "boostable": true
+        },
+        {
+          "skill": "mining",
+          "level": 17,
+          "boostable": true
+        },
+        {
+          "skill": "thieving",
+          "level": 13,
+          "boostable": true
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "mining",
+          "xp": 3000
+        }
+      ]
+    },
+    {
+      "id": 80,
+      "slug": "the_giant_dwarf",
+      "name": "The Giant Dwarf",
+      "members": true,
+      "requirements": [
+        {
+          "skill": "crafting",
+          "level": 12,
+          "boostable": true
+        },
+        {
+          "skill": "firemaking",
+          "level": 16,
+          "boostable": true
+        },
+        {
+          "skill": "magic",
+          "level": 33,
+          "boostable": true
+        },
+        {
+          "skill": "thieving",
+          "level": 14,
+          "boostable": true
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "crafting",
+          "xp": 2500
+        },
+        {
+          "skill": "firemaking",
+          "xp": 1500
+        },
+        {
+          "skill": "magic",
+          "xp": 1500
+        },
+        {
+          "skill": "mining",
+          "xp": 2500
+        },
+        {
+          "skill": "smithing",
+          "xp": 2500
+        },
+        {
+          "skill": "thieving",
+          "xp": 1500
+        }
+      ]
+    },
+    {
+      "id": 81,
+      "slug": "recruitment_drive",
+      "name": "Recruitment Drive",
+      "members": true,
+      "prerequisites": [
+        12,
+        18
+      ],
+      "rewards": [
+        {
+          "skill": "agility",
+          "xp": 1000.5
+        },
+        {
+          "skill": "herblore",
+          "xp": 1000.5
+        },
+        {
+          "skill": "prayer",
+          "xp": 1000.5
+        }
+      ]
+    },
+    {
+      "id": 82,
+      "slug": "mournings_end_part_i",
+      "name": "Mourning's End Part I",
+      "members": true,
+      "prerequisites": [
+        34,
+        53,
+        69
+      ],
+      "requirements": [
+        {
+          "skill": "ranged",
+          "level": 60
+        },
+        {
+          "skill": "thieving",
+          "level": 50
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "hitpoints",
+          "xp": 25000
+        },
+        {
+          "skill": "thieving",
+          "xp": 40000
+        }
+      ]
+    },
+    {
+      "id": 83,
+      "slug": "forgettable_tale",
+      "name": "Forgettable Tale...",
+      "members": true,
+      "prerequisites": [
+        25,
+        80
+      ],
+      "requirements": [
+        {
+          "skill": "cooking",
+          "level": 22,
+          "boostable": true
+        },
+        {
+          "skill": "farming",
+          "level": 17,
+          "boostable": true
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "cooking",
+          "xp": 5000
+        },
+        {
+          "skill": "farming",
+          "xp": 5000
+        }
+      ]
+    },
+    {
+      "id": 84,
+      "slug": "garden_of_tranquillity",
+      "name": "Garden of Tranquillity",
+      "members": true,
+      "prerequisites": [
+        68
+      ],
+      "requirements": [
+        {
+          "skill": "farming",
+          "level": 25
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "farming",
+          "xp": 5000
+        }
+      ]
+    },
+    {
+      "id": 85,
+      "slug": "a_tail_of_two_cats",
+      "name": "A Tail of Two Cats",
+      "members": true,
+      "prerequisites": [
+        77
+      ]
+    },
+    {
+      "id": 86,
+      "slug": "wanted",
+      "name": "Wanted!",
+      "members": true,
+      "prerequisites": [
+        56,
+        79,
+        81,
+        128
+      ],
+      "rewards": [
+        {
+          "skill": "slayer",
+          "xp": 5000
+        }
+      ]
+    },
+    {
+      "id": 87,
+      "slug": "mournings_end_part_ii",
+      "name": "Mourning's End Part II",
+      "members": true,
+      "prerequisites": [
+        82
+      ],
+      "rewards": [
+        {
+          "skill": "agility",
+          "xp": 60000
+        }
+      ]
+    },
+    {
+      "id": 88,
+      "slug": "rum_deal",
+      "name": "Rum Deal",
+      "members": true,
+      "prerequisites": [
+        56,
+        137
+      ],
+      "requirements": [
+        {
+          "skill": "crafting",
+          "level": 42,
+          "boostable": true
+        },
+        {
+          "skill": "farming",
+          "level": 40,
+          "boostable": true
+        },
+        {
+          "skill": "fishing",
+          "level": 50,
+          "boostable": true
+        },
+        {
+          "skill": "prayer",
+          "level": 47,
+          "boostable": true
+        },
+        {
+          "skill": "slayer",
+          "level": 42
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "farming",
+          "xp": 7000
+        },
+        {
+          "skill": "fishing",
+          "xp": 7000
+        },
+        {
+          "skill": "prayer",
+          "xp": 7000
+        }
+      ]
+    },
+    {
+      "id": 89,
+      "slug": "shadow_of_the_storm",
+      "name": "Shadow of the Storm",
+      "members": true,
+      "prerequisites": [
+        3,
+        75
+      ],
+      "requirements": [
+        {
+          "skill": "crafting",
+          "level": 30,
+          "boostable": true
+        }
+      ]
+    },
+    {
+      "id": 90,
+      "slug": "making_history",
+      "name": "Making History",
+      "members": true,
+      "prerequisites": [
+        6,
+        56
+      ],
+      "rewards": [
+        {
+          "skill": "crafting",
+          "xp": 1000
+        },
+        {
+          "skill": "prayer",
+          "xp": 1000
+        }
+      ]
+    },
+    {
+      "id": 91,
+      "slug": "ratcatchers",
+      "name": "Ratcatchers",
+      "members": true,
+      "prerequisites": [
+        77
+      ],
+      "rewards": [
+        {
+          "skill": "thieving",
+          "xp": 4500
+        }
+      ]
+    },
+    {
+      "id": 92,
+      "slug": "spirits_of_the_elid",
+      "name": "Spirits of the Elid",
+      "members": true,
+      "requirements": [
+        {
+          "skill": "magic",
+          "level": 33,
+          "boostable": true
+        },
+        {
+          "skill": "mining",
+          "level": 37,
+          "boostable": true
+        },
+        {
+          "skill": "ranged",
+          "level": 37,
+          "boostable": true
+        },
+        {
+          "skill": "thieving",
+          "level": 37,
+          "boostable": true
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "magic",
+          "xp": 1000
+        },
+        {
+          "skill": "prayer",
+          "xp": 8000
+        },
+        {
+          "skill": "thieving",
+          "xp": 1000
+        }
+      ]
+    },
+    {
+      "id": 93,
+      "slug": "devious_minds",
+      "name": "Devious Minds",
+      "members": true,
+      "prerequisites": [
+        11,
+        59,
+        86
+      ],
+      "requirements": [
+        {
+          "skill": "fletching",
+          "level": 50,
+          "boostable": true
+        },
+        {
+          "skill": "runecraft",
+          "level": 50
+        },
+        {
+          "skill": "smithing",
+          "level": 65,
+          "boostable": true
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "fletching",
+          "xp": 5000
+        },
+        {
+          "skill": "runecraft",
+          "xp": 5000
+        },
+        {
+          "skill": "smithing",
+          "xp": 6500
+        }
+      ]
+    },
+    {
+      "id": 94,
+      "slug": "the_hand_in_the_sand",
+      "name": "The Hand in the Sand",
+      "members": true,
+      "requirements": [
+        {
+          "skill": "crafting",
+          "level": 49
+        },
+        {
+          "skill": "thieving",
+          "level": 17
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "crafting",
+          "xp": 9000
+        },
+        {
+          "skill": "thieving",
+          "xp": 1000
+        }
+      ]
+    },
+    {
+      "id": 95,
+      "slug": "enakhras_lament",
+      "name": "Enakhra's Lament",
+      "members": true,
+      "requirements": [
+        {
+          "skill": "crafting",
+          "level": 50
+        },
+        {
+          "skill": "firemaking",
+          "level": 45,
+          "boostable": true
+        },
+        {
+          "skill": "magic",
+          "level": 39,
+          "boostable": true
+        },
+        {
+          "skill": "prayer",
+          "level": 43
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "crafting",
+          "xp": 7000
+        },
+        {
+          "skill": "firemaking",
+          "xp": 7000
+        },
+        {
+          "skill": "magic",
+          "xp": 7000
+        },
+        {
+          "skill": "mining",
+          "xp": 7000
+        }
+      ]
+    },
+    {
+      "id": 96,
+      "slug": "cabin_fever",
+      "name": "Cabin Fever",
+      "members": true,
+      "prerequisites": [
+        16,
+        88
+      ],
+      "requirements": [
+        {
+          "skill": "agility",
+          "level": 42
+        },
+        {
+          "skill": "crafting",
+          "level": 45
+        },
+        {
+          "skill": "ranged",
+          "level": 40
+        },
+        {
+          "skill": "smithing",
+          "level": 50
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "agility",
+          "xp": 7000
+        },
+        {
+          "skill": "crafting",
+          "xp": 7000
+        },
+        {
+          "skill": "smithing",
+          "xp": 7000
+        }
+      ]
+    },
+    {
+      "id": 97,
+      "slug": "fairytale_i_growing_pains",
+      "name": "Fairytale I - Growing Pains",
+      "members": true,
+      "prerequisites": [
+        19,
+        55
+      ],
+      "rewards": [
+        {
+          "skill": "attack",
+          "xp": 2000
+        },
+        {
+          "skill": "farming",
+          "xp": 3500
+        },
+        {
+          "skill": "magic",
+          "xp": 1000
+        }
+      ]
+    },
+    {
+      "id": 98,
+      "slug": "recipe_for_disaster",
+      "name": "Recipe for Disaster",
+      "members": true,
+      "prerequisites": [
+        1
+      ],
+      "requirements": [
+        {
+          "skill": "agility",
+          "level": 48
+        },
+        {
+          "skill": "cooking",
+          "level": 10,
+          "boostable": true
+        },
+        {
+          "skill": "cooking",
+          "level": 70,
+          "boostable": true
+        },
+        {
+          "skill": "crafting",
+          "level": 40,
+          "boostable": true
+        },
+        {
+          "skill": "firemaking",
+          "level": 50,
+          "boostable": true
+        },
+        {
+          "skill": "fishing",
+          "level": 53,
+          "boostable": true
+        },
+        {
+          "skill": "fletching",
+          "level": 10,
+          "boostable": true
+        },
+        {
+          "skill": "herblore",
+          "level": 25,
+          "boostable": true
+        },
+        {
+          "skill": "magic",
+          "level": 59,
+          "boostable": true
+        },
+        {
+          "skill": "mining",
+          "level": 50,
+          "boostable": true
+        },
+        {
+          "skill": "ranged",
+          "level": 40
+        },
+        {
+          "skill": "smithing",
+          "level": 40,
+          "boostable": true
+        },
+        {
+          "skill": "thieving",
+          "level": 53
+        },
+        {
+          "skill": "woodcutting",
+          "level": 36,
+          "boostable": true
+        }
+      ]
+    },
+    {
+      "id": 99,
+      "slug": "in_aid_of_the_myreque",
+      "name": "In Aid of the Myreque",
+      "members": true,
+      "prerequisites": [
+        67
+      ],
+      "requirements": [
+        {
+          "skill": "agility",
+          "level": 25,
+          "boostable": true
+        },
+        {
+          "skill": "crafting",
+          "level": 25
+        },
+        {
+          "skill": "magic",
+          "level": 7,
+          "boostable": true
+        },
+        {
+          "skill": "mining",
+          "level": 15
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "attack",
+          "xp": 2000
+        },
+        {
+          "skill": "crafting",
+          "xp": 2000
+        },
+        {
+          "skill": "defence",
+          "xp": 2000
+        },
+        {
+          "skill": "sailing",
+          "xp": 65
+        },
+        {
+          "skill": "strength",
+          "xp": 2000
+        }
+      ]
+    },
+    {
+      "id": 100,
+      "slug": "a_souls_bane",
+      "name": "A Soul's Bane",
+      "members": true,
+      "rewards": [
+        {
+          "skill": "defence",
+          "xp": 500
+        },
+        {
+          "skill": "hitpoints",
+          "xp": 500
+        }
+      ]
+    },
+    {
+      "id": 101,
+      "slug": "rag_and_bone_man_i",
+      "name": "Rag and Bone Man I",
+      "members": true,
+      "rewards": [
+        {
+          "skill": "cooking",
+          "xp": 500
+        },
+        {
+          "skill": "prayer",
+          "xp": 500
+        }
+      ]
+    },
+    {
+      "id": 102,
+      "slug": "swan_song",
+      "name": "Swan Song",
+      "members": true,
+      "prerequisites": [
+        71,
+        84
+      ],
+      "requirements": [
+        {
+          "skill": "cooking",
+          "level": 62,
+          "boostable": true
+        },
+        {
+          "skill": "crafting",
+          "level": 40,
+          "boostable": true
+        },
+        {
+          "skill": "firemaking",
+          "level": 42,
+          "boostable": true
+        },
+        {
+          "skill": "fishing",
+          "level": 62,
+          "boostable": true
+        },
+        {
+          "skill": "magic",
+          "level": 66,
+          "boostable": true
+        },
+        {
+          "skill": "smithing",
+          "level": 45,
+          "boostable": true
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "fishing",
+          "xp": 50000
+        },
+        {
+          "skill": "magic",
+          "xp": 15000
+        },
+        {
+          "skill": "prayer",
+          "xp": 10000
+        }
+      ]
+    },
+    {
+      "id": 103,
+      "slug": "royal_trouble",
+      "name": "Royal Trouble",
+      "members": true,
+      "prerequisites": [
+        63
+      ],
+      "requirements": [
+        {
+          "skill": "agility",
+          "level": 40,
+          "boostable": true
+        },
+        {
+          "skill": "slayer",
+          "level": 40,
+          "boostable": true
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "agility",
+          "xp": 5000
+        },
+        {
+          "skill": "hitpoints",
+          "xp": 5000
+        },
+        {
+          "skill": "sailing",
+          "xp": 80
+        },
+        {
+          "skill": "slayer",
+          "xp": 5000
+        }
+      ]
+    },
+    {
+      "id": 104,
+      "slug": "death_to_the_dorgeshuun",
+      "name": "Death to the Dorgeshuun",
+      "members": true,
+      "prerequisites": [
+        79
+      ],
+      "requirements": [
+        {
+          "skill": "agility",
+          "level": 23,
+          "boostable": true
+        },
+        {
+          "skill": "thieving",
+          "level": 23,
+          "boostable": true
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "ranged",
+          "xp": 2000
+        },
+        {
+          "skill": "thieving",
+          "xp": 2000
+        }
+      ]
+    },
+    {
+      "id": 105,
+      "slug": "fairytale_ii_cure_a_queen",
+      "name": "Fairytale II - Cure a Queen",
+      "members": true,
+      "prerequisites": [
+        97
+      ],
+      "requirements": [
+        {
+          "skill": "farming",
+          "level": 49,
+          "boostable": true
+        },
+        {
+          "skill": "herblore",
+          "level": 57,
+          "boostable": true
+        },
+        {
+          "skill": "thieving",
+          "level": 40
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "herblore",
+          "xp": 3500
+        },
+        {
+          "skill": "thieving",
+          "xp": 2500
+        }
+      ]
+    },
+    {
+      "id": 106,
+      "slug": "lunar_diplomacy",
+      "name": "Lunar Diplomacy",
+      "members": true,
+      "prerequisites": [
+        19,
+        50,
+        61,
+        125
+      ],
+      "requirements": [
+        {
+          "skill": "crafting",
+          "level": 61
+        },
+        {
+          "skill": "defence",
+          "level": 40
+        },
+        {
+          "skill": "firemaking",
+          "level": 49
+        },
+        {
+          "skill": "herblore",
+          "level": 5
+        },
+        {
+          "skill": "magic",
+          "level": 65
+        },
+        {
+          "skill": "mining",
+          "level": 60
+        },
+        {
+          "skill": "woodcutting",
+          "level": 55
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "magic",
+          "xp": 5000
+        },
+        {
+          "skill": "runecraft",
+          "xp": 5000
+        }
+      ]
+    },
+    {
+      "id": 107,
+      "slug": "the_eyes_of_glouphrie",
+      "name": "The Eyes of Glouphrie",
+      "members": true,
+      "requirements": [
+        {
+          "skill": "construction",
+          "level": 5
+        },
+        {
+          "skill": "magic",
+          "level": 46
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "construction",
+          "xp": 250
+        },
+        {
+          "skill": "magic",
+          "xp": 12000
+        },
+        {
+          "skill": "runecraft",
+          "xp": 6000
+        },
+        {
+          "skill": "woodcutting",
+          "xp": 2500
+        }
+      ]
+    },
+    {
+      "id": 108,
+      "slug": "darkness_of_hallowvale",
+      "name": "Darkness of Hallowvale",
+      "members": true,
+      "prerequisites": [
+        99
+      ],
+      "requirements": [
+        {
+          "skill": "agility",
+          "level": 26,
+          "boostable": true
+        },
+        {
+          "skill": "construction",
+          "level": 5,
+          "boostable": true
+        },
+        {
+          "skill": "crafting",
+          "level": 32
+        },
+        {
+          "skill": "magic",
+          "level": 33,
+          "boostable": true
+        },
+        {
+          "skill": "mining",
+          "level": 20
+        },
+        {
+          "skill": "strength",
+          "level": 40
+        },
+        {
+          "skill": "thieving",
+          "level": 22
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "agility",
+          "xp": 7000
+        },
+        {
+          "skill": "construction",
+          "xp": 2000
+        },
+        {
+          "skill": "thieving",
+          "xp": 6000
+        }
+      ]
+    },
+    {
+      "id": 109,
+      "slug": "the_slug_menace",
+      "name": "The Slug Menace",
+      "members": true,
+      "prerequisites": [
+        36,
+        86
+      ],
+      "requirements": [
+        {
+          "skill": "crafting",
+          "level": 30
+        },
+        {
+          "skill": "runecraft",
+          "level": 30
+        },
+        {
+          "skill": "slayer",
+          "level": 30
+        },
+        {
+          "skill": "thieving",
+          "level": 30
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "crafting",
+          "xp": 3500
+        },
+        {
+          "skill": "runecraft",
+          "xp": 3500
+        },
+        {
+          "skill": "thieving",
+          "xp": 3500
+        }
+      ]
+    },
+    {
+      "id": 110,
+      "slug": "elemental_workshop_ii",
+      "name": "Elemental Workshop II",
+      "members": true,
+      "prerequisites": [
+        54
+      ],
+      "requirements": [
+        {
+          "skill": "magic",
+          "level": 20,
+          "boostable": true
+        },
+        {
+          "skill": "smithing",
+          "level": 30,
+          "boostable": true
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "crafting",
+          "xp": 7500
+        },
+        {
+          "skill": "smithing",
+          "xp": 7500
+        }
+      ]
+    },
+    {
+      "id": 111,
+      "slug": "my_arms_big_adventure",
+      "name": "My Arm's Big Adventure",
+      "members": true,
+      "prerequisites": [
+        38,
+        52,
+        74
+      ],
+      "requirements": [
+        {
+          "skill": "farming",
+          "level": 29,
+          "boostable": true
+        },
+        {
+          "skill": "woodcutting",
+          "level": 10
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "farming",
+          "xp": 5000
+        },
+        {
+          "skill": "herblore",
+          "xp": 10000
+        }
+      ]
+    },
+    {
+      "id": 112,
+      "slug": "enlightened_journey",
+      "name": "Enlightened Journey",
+      "members": true,
+      "requirements": [
+        {
+          "skill": "crafting",
+          "level": 36,
+          "boostable": true
+        },
+        {
+          "skill": "farming",
+          "level": 30,
+          "boostable": true
+        },
+        {
+          "skill": "firemaking",
+          "level": 20,
+          "boostable": true
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "crafting",
+          "xp": 2000
+        },
+        {
+          "skill": "farming",
+          "xp": 3000
+        },
+        {
+          "skill": "firemaking",
+          "xp": 4000
+        },
+        {
+          "skill": "woodcutting",
+          "xp": 1500
+        }
+      ]
+    },
+    {
+      "id": 113,
+      "slug": "eagles_peak",
+      "name": "Eagles' Peak",
+      "members": true,
+      "requirements": [
+        {
+          "skill": "hunter",
+          "level": 27,
+          "boostable": true
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "hunter",
+          "xp": 2500
+        }
+      ]
+    },
+    {
+      "id": 114,
+      "slug": "animal_magnetism",
+      "name": "Animal Magnetism",
+      "members": true,
+      "prerequisites": [
+        6,
+        7,
+        56
+      ],
+      "requirements": [
+        {
+          "skill": "crafting",
+          "level": 19
+        },
+        {
+          "skill": "ranged",
+          "level": 30
+        },
+        {
+          "skill": "slayer",
+          "level": 18
+        },
+        {
+          "skill": "woodcutting",
+          "level": 35
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "crafting",
+          "xp": 1000
+        },
+        {
+          "skill": "fletching",
+          "xp": 1000
+        },
+        {
+          "skill": "slayer",
+          "xp": 1000
+        },
+        {
+          "skill": "woodcutting",
+          "xp": 2500
+        }
+      ]
+    },
+    {
+      "id": 115,
+      "slug": "contact",
+      "name": "Contact!",
+      "members": true,
+      "prerequisites": [
+        10,
+        77
+      ],
+      "rewards": [
+        {
+          "skill": "thieving",
+          "xp": 7000
+        }
+      ]
+    },
+    {
+      "id": 116,
+      "slug": "cold_war",
+      "name": "Cold War",
+      "members": true,
+      "requirements": [
+        {
+          "skill": "agility",
+          "level": 30
+        },
+        {
+          "skill": "construction",
+          "level": 34
+        },
+        {
+          "skill": "crafting",
+          "level": 30
+        },
+        {
+          "skill": "hunter",
+          "level": 10
+        },
+        {
+          "skill": "thieving",
+          "level": 15
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "agility",
+          "xp": 5000
+        },
+        {
+          "skill": "construction",
+          "xp": 1500
+        },
+        {
+          "skill": "crafting",
+          "xp": 2000
+        }
+      ]
+    },
+    {
+      "id": 117,
+      "slug": "the_fremennik_isles",
+      "name": "The Fremennik Isles",
+      "members": true,
+      "prerequisites": [
+        61
+      ],
+      "requirements": [
+        {
+          "skill": "construction",
+          "level": 20,
+          "boostable": true
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "construction",
+          "xp": 5000
+        },
+        {
+          "skill": "crafting",
+          "xp": 5000
+        },
+        {
+          "skill": "woodcutting",
+          "xp": 10000
+        }
+      ]
+    },
+    {
+      "id": 118,
+      "slug": "the_great_brain_robbery",
+      "name": "The Great Brain Robbery",
+      "members": true,
+      "requirements": [
+        {
+          "skill": "construction",
+          "level": 30
+        },
+        {
+          "skill": "crafting",
+          "level": 16
+        },
+        {
+          "skill": "prayer",
+          "level": 50
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "construction",
+          "xp": 2000
+        },
+        {
+          "skill": "crafting",
+          "xp": 3000
+        },
+        {
+          "skill": "prayer",
+          "xp": 6000
+        }
+      ]
+    },
+    {
+      "id": 119,
+      "slug": "what_lies_below",
+      "name": "What Lies Below",
+      "members": true,
+      "prerequisites": [
+        50
+      ],
+      "requirements": [
+        {
+          "skill": "runecraft",
+          "level": 35
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "defence",
+          "xp": 2000
+        },
+        {
+          "skill": "runecraft",
+          "xp": 8000
+        }
+      ]
+    },
+    {
+      "id": 120,
+      "slug": "olafs_quest",
+      "name": "Olaf's Quest",
+      "members": true,
+      "prerequisites": [
+        61
+      ],
+      "requirements": [
+        {
+          "skill": "firemaking",
+          "level": 40,
+          "boostable": true
+        },
+        {
+          "skill": "woodcutting",
+          "level": 50,
+          "boostable": true
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "defence",
+          "xp": 12000
+        }
+      ]
+    },
+    {
+      "id": 121,
+      "slug": "another_slice_of_h_a_m",
+      "name": "Another Slice of H.A.M.",
+      "members": true,
+      "prerequisites": [
+        46,
+        80,
+        104
+      ],
+      "requirements": [
+        {
+          "skill": "attack",
+          "level": 15
+        },
+        {
+          "skill": "prayer",
+          "level": 25
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "mining",
+          "xp": 3000
+        },
+        {
+          "skill": "prayer",
+          "xp": 3000
+        }
+      ]
+    },
+    {
+      "id": 122,
+      "slug": "dream_mentor",
+      "name": "Dream Mentor",
+      "members": true,
+      "prerequisites": [
+        52,
+        106
+      ],
+      "rewards": [
+        {
+          "skill": "hitpoints",
+          "xp": 15000
+        },
+        {
+          "skill": "magic",
+          "xp": 10000
+        }
+      ]
+    },
+    {
+      "id": 123,
+      "slug": "grim_tales",
+      "name": "Grim Tales",
+      "members": true,
+      "prerequisites": [
+        20
+      ],
+      "requirements": [
+        {
+          "skill": "agility",
+          "level": 59,
+          "boostable": true
+        },
+        {
+          "skill": "farming",
+          "level": 45,
+          "boostable": true
+        },
+        {
+          "skill": "herblore",
+          "level": 52,
+          "boostable": true
+        },
+        {
+          "skill": "thieving",
+          "level": 58,
+          "boostable": true
+        },
+        {
+          "skill": "woodcutting",
+          "level": 71,
+          "boostable": true
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "agility",
+          "xp": 25000
+        },
+        {
+          "skill": "farming",
+          "xp": 10000
+        },
+        {
+          "skill": "herblore",
+          "xp": 15000
+        },
+        {
+          "skill": "hitpoints",
+          "xp": 5000
+        },
+        {
+          "skill": "thieving",
+          "xp": 25000
+        },
+        {
+          "skill": "woodcutting",
+          "xp": 60000
+        }
+      ]
+    },
+    {
+      "id": 124,
+      "slug": "kings_ransom",
+      "name": "King's Ransom",
+      "members": true,
+      "prerequisites": [
+        12,
+        30,
+        45,
+        71
+      ],
+      "requirements": [
+        {
+          "skill": "defence",
+          "level": 65
+        },
+        {
+          "skill": "magic",
+          "level": 45
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "defence",
+          "xp": 33000
+        },
+        {
+          "skill": "magic",
+          "xp": 5000
+        }
+      ]
+    },
+    {
+      "id": 125,
+      "slug": "shilo_village",
+      "name": "Shilo Village",
+      "members": true,
+      "prerequisites": [
+        38
+      ],
+      "requirements": [
+        {
+          "skill": "agility",
+          "level": 32,
+          "boostable": true
+        },
+        {
+          "skill": "crafting",
+          "level": 20,
+          "boostable": true
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "crafting",
+          "xp": 3875
+        }
+      ]
+    },
+    {
+      "id": 126,
+      "slug": "biohazard",
+      "name": "Biohazard",
+      "members": true,
+      "prerequisites": [
+        35
+      ],
+      "rewards": [
+        {
+          "skill": "thieving",
+          "xp": 1250
+        }
+      ]
+    },
+    {
+      "id": 127,
+      "slug": "alfred_grimhands_barcrawl",
+      "name": "Alfred Grimhand's Barcrawl",
+      "members": true
+    },
+    {
+      "id": 128,
+      "slug": "enter_the_abyss",
+      "name": "Enter the Abyss",
+      "members": true,
+      "prerequisites": [
+        50
+      ],
+      "rewards": [
+        {
+          "skill": "runecraft",
+          "xp": 1000
+        }
+      ]
+    },
+    {
+      "id": 129,
+      "slug": "the_generals_shadow",
+      "name": "The General's Shadow",
+      "members": true,
+      "rewards": [
+        {
+          "skill": "slayer",
+          "xp": 2000
+        }
+      ]
+    },
+    {
+      "id": 130,
+      "slug": "barbarian_training",
+      "name": "Barbarian Training",
+      "members": true,
+      "prerequisites": [
+        58
+      ],
+      "requirements": [
+        {
+          "skill": "agility",
+          "level": 15
+        },
+        {
+          "skill": "crafting",
+          "level": 11
+        },
+        {
+          "skill": "farming",
+          "level": 15
+        },
+        {
+          "skill": "firemaking",
+          "level": 35
+        },
+        {
+          "skill": "fishing",
+          "level": 55,
+          "boostable": true
+        },
+        {
+          "skill": "herblore",
+          "level": 4
+        },
+        {
+          "skill": "smithing",
+          "level": 5
+        },
+        {
+          "skill": "strength",
+          "level": 35
+        }
+      ]
+    },
+    {
+      "id": 131,
+      "slug": "skippy_and_the_mogres",
+      "name": "Skippy and the Mogres",
+      "members": true,
+      "requirements": [
+        {
+          "skill": "cooking",
+          "level": 20,
+          "boostable": true
+        }
+      ]
+    },
+    {
+      "id": 132,
+      "slug": "curse_of_the_empty_lord",
+      "name": "Curse of the Empty Lord",
+      "members": true,
+      "requirements": [
+        {
+          "skill": "prayer",
+          "level": 31
+        },
+        {
+          "skill": "thieving",
+          "level": 53
+        }
+      ]
+    },
+    {
+      "id": 133,
+      "slug": "tower_of_life",
+      "name": "Tower of Life",
+      "members": true,
+      "requirements": [
+        {
+          "skill": "construction",
+          "level": 10
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "construction",
+          "xp": 1000
+        },
+        {
+          "skill": "crafting",
+          "xp": 500
+        },
+        {
+          "skill": "thieving",
+          "xp": 500
+        }
+      ]
+    },
+    {
+      "id": 134,
+      "slug": "rag_and_bone_man_ii",
+      "name": "Rag and Bone Man II",
+      "members": true,
+      "prerequisites": [
+        68
+      ],
+      "requirements": [
+        {
+          "skill": "defence",
+          "level": 20
+        },
+        {
+          "skill": "slayer",
+          "level": 40,
+          "boostable": true
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "prayer",
+          "xp": 5000
+        }
+      ]
+    },
+    {
+      "id": 135,
+      "slug": "land_of_the_goblins",
+      "name": "Land of the Goblins",
+      "members": true,
+      "prerequisites": [
+        25,
+        121
+      ],
+      "requirements": [
+        {
+          "skill": "agility",
+          "level": 38
+        },
+        {
+          "skill": "fishing",
+          "level": 40
+        },
+        {
+          "skill": "herblore",
+          "level": 48
+        },
+        {
+          "skill": "thieving",
+          "level": 45
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "agility",
+          "xp": 8000
+        },
+        {
+          "skill": "fishing",
+          "xp": 8000
+        },
+        {
+          "skill": "herblore",
+          "xp": 8000
+        },
+        {
+          "skill": "thieving",
+          "xp": 8000
+        }
+      ]
+    },
+    {
+      "id": 136,
+      "slug": "while_guthix_sleeps",
+      "name": "While Guthix Sleeps",
+      "members": true,
+      "prerequisites": [
+        32,
+        55,
+        78,
+        85,
+        86,
+        94,
+        122,
+        172,
+        184,
+        185
+      ],
+      "requirements": [
+        {
+          "skill": "agility",
+          "level": 66
+        },
+        {
+          "skill": "attack",
+          "level": 99
+        },
+        {
+          "skill": "farming",
+          "level": 65
+        },
+        {
+          "skill": "firemaking",
+          "level": 49
+        },
+        {
+          "skill": "herblore",
+          "level": 65
+        },
+        {
+          "skill": "hunter",
+          "level": 62
+        },
+        {
+          "skill": "magic",
+          "level": 67
+        },
+        {
+          "skill": "strength",
+          "level": 99
+        },
+        {
+          "skill": "thieving",
+          "level": 72
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "farming",
+          "xp": 75000
+        },
+        {
+          "skill": "herblore",
+          "xp": 75000
+        },
+        {
+          "skill": "hunter",
+          "xp": 50000
+        },
+        {
+          "skill": "thieving",
+          "xp": 80000
+        }
+      ]
+    },
+    {
+      "id": 137,
+      "slug": "zogre_flesh_eaters",
+      "name": "Zogre Flesh Eaters",
+      "members": true,
+      "prerequisites": [
+        38,
+        53
+      ],
+      "requirements": [
+        {
+          "skill": "herblore",
+          "level": 8,
+          "boostable": true
+        },
+        {
+          "skill": "ranged",
+          "level": 30
+        },
+        {
+          "skill": "smithing",
+          "level": 4,
+          "boostable": true
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "fletching",
+          "xp": 2000
+        },
+        {
+          "skill": "herblore",
+          "xp": 2000
+        },
+        {
+          "skill": "ranged",
+          "xp": 2000
+        }
+      ]
+    },
+    {
+      "id": 138,
+      "slug": "lair_of_tarn_razorlor",
+      "name": "Lair of Tarn Razorlor",
+      "members": true,
+      "requirements": [
+        {
+          "skill": "slayer",
+          "level": 40
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "slayer",
+          "xp": 5000
+        }
+      ]
+    },
+    {
+      "id": 139,
+      "slug": "architectural_alliance",
+      "name": "Architectural Alliance",
+      "members": true,
+      "requirements": [
+        {
+          "skill": "mining",
+          "level": 42
+        }
+      ]
+    },
+    {
+      "id": 140,
+      "slug": "monkey_madness_ii",
+      "name": "Monkey Madness II",
+      "members": true,
+      "prerequisites": [
+        43,
+        59,
+        107,
+        112,
+        158
+      ],
+      "requirements": [
+        {
+          "skill": "agility",
+          "level": 55
+        },
+        {
+          "skill": "crafting",
+          "level": 70
+        },
+        {
+          "skill": "firemaking",
+          "level": 60
+        },
+        {
+          "skill": "hunter",
+          "level": 60
+        },
+        {
+          "skill": "slayer",
+          "level": 69
+        },
+        {
+          "skill": "thieving",
+          "level": 55
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "agility",
+          "xp": 60000
+        },
+        {
+          "skill": "hunter",
+          "xp": 50000
+        },
+        {
+          "skill": "slayer",
+          "xp": 80000
+        },
+        {
+          "skill": "thieving",
+          "xp": 50000
+        }
+      ]
+    },
+    {
+      "id": 141,
+      "slug": "bear_your_soul",
+      "name": "Bear Your Soul",
+      "members": true
+    },
+    {
+      "id": 142,
+      "slug": "the_enchanted_key",
+      "name": "The Enchanted Key",
+      "members": true
+    },
+    {
+      "id": 143,
+      "slug": "mage_arena_i",
+      "name": "Mage Arena I",
+      "members": true,
+      "requirements": [
+        {
+          "skill": "magic",
+          "level": 60
+        }
+      ]
+    },
+    {
+      "id": 144,
+      "slug": "family_pest",
+      "name": "Family Pest",
+      "members": true,
+      "prerequisites": [
+        24
+      ]
+    },
+    {
+      "id": 145,
+      "slug": "misthalin_mystery",
+      "name": "Misthalin Mystery",
+      "members": false,
+      "rewards": [
+        {
+          "skill": "crafting",
+          "xp": 600
+        }
+      ]
+    },
+    {
+      "id": 146,
+      "slug": "client_of_kourend",
+      "name": "Client of Kourend",
+      "members": true,
+      "prerequisites": [
+        170
+      ]
+    },
+    {
+      "id": 147,
+      "slug": "the_queen_of_thieves",
+      "name": "The Queen of Thieves",
+      "members": true,
+      "prerequisites": [
+        146
+      ],
+      "requirements": [
+        {
+          "skill": "thieving",
+          "level": 20
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "thieving",
+          "xp": 2000
+        }
+      ]
+    },
+    {
+      "id": 148,
+      "slug": "bone_voyage",
+      "name": "Bone Voyage",
+      "members": true,
+      "prerequisites": [
+        46
+      ]
+    },
+    {
+      "id": 149,
+      "slug": "dragon_slayer_ii",
+      "name": "Dragon Slayer II",
+      "members": true,
+      "prerequisites": [
+        48,
+        70,
+        85,
+        114,
+        122,
+        146,
+        148
+      ],
+      "requirements": [
+        {
+          "skill": "agility",
+          "level": 60
+        },
+        {
+          "skill": "construction",
+          "level": 50
+        },
+        {
+          "skill": "crafting",
+          "level": 62
+        },
+        {
+          "skill": "hitpoints",
+          "level": 50
+        },
+        {
+          "skill": "magic",
+          "level": 75
+        },
+        {
+          "skill": "mining",
+          "level": 68
+        },
+        {
+          "skill": "smithing",
+          "level": 70
+        },
+        {
+          "skill": "thieving",
+          "level": 60
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "agility",
+          "xp": 50000
+        },
+        {
+          "skill": "mining",
+          "xp": 60000
+        },
+        {
+          "skill": "smithing",
+          "xp": 80000
+        },
+        {
+          "skill": "thieving",
+          "xp": 50000
+        }
+      ]
+    },
+    {
+      "id": 150,
+      "slug": "the_depths_of_despair",
+      "name": "The Depths of Despair",
+      "members": true,
+      "prerequisites": [
+        146
+      ],
+      "requirements": [
+        {
+          "skill": "agility",
+          "level": 18
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "agility",
+          "xp": 1500
+        }
+      ]
+    },
+    {
+      "id": 151,
+      "slug": "recipe_for_disaster_another_cooks_quest",
+      "name": "Recipe for Disaster/Another Cook's Quest",
+      "members": true,
+      "prerequisites": [
+        1
+      ],
+      "requirements": [
+        {
+          "skill": "cooking",
+          "level": 10
+        }
+      ]
+    },
+    {
+      "id": 152,
+      "slug": "recipe_for_disaster_freeing_the_goblin_generals",
+      "name": "Recipe for Disaster/Freeing the Goblin generals",
+      "members": true,
+      "prerequisites": [
+        15,
+        151
+      ],
+      "rewards": [
+        {
+          "skill": "cooking",
+          "xp": 1000
+        },
+        {
+          "skill": "crafting",
+          "xp": 1000
+        },
+        {
+          "skill": "farming",
+          "xp": 1000
+        }
+      ]
+    },
+    {
+      "id": 153,
+      "slug": "recipe_for_disaster_freeing_the_mountain_dwarf",
+      "name": "Recipe for Disaster/Freeing the Mountain Dwarf",
+      "members": true,
+      "prerequisites": [
+        25,
+        151
+      ],
+      "rewards": [
+        {
+          "skill": "cooking",
+          "xp": 1000
+        },
+        {
+          "skill": "slayer",
+          "xp": 1000
+        }
+      ]
+    },
+    {
+      "id": 154,
+      "slug": "recipe_for_disaster_freeing_evil_dave",
+      "name": "Recipe for Disaster/Freeing Evil Dave",
+      "members": true,
+      "prerequisites": [
+        47,
+        89,
+        151
+      ],
+      "rewards": [
+        {
+          "skill": "cooking",
+          "xp": 7000
+        }
+      ]
+    },
+    {
+      "id": 155,
+      "slug": "recipe_for_disaster_freeing_pirate_pete",
+      "name": "Recipe for Disaster/Freeing Pirate Pete",
+      "members": true,
+      "prerequisites": [
+        151
+      ],
+      "requirements": [
+        {
+          "skill": "cooking",
+          "level": 31,
+          "boostable": true
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "cooking",
+          "xp": 1000
+        },
+        {
+          "skill": "crafting",
+          "xp": 1000
+        },
+        {
+          "skill": "fishing",
+          "xp": 1000
+        },
+        {
+          "skill": "smithing",
+          "xp": 1000
+        }
+      ]
+    },
+    {
+      "id": 156,
+      "slug": "recipe_for_disaster_freeing_the_lumbridge_guide",
+      "name": "Recipe for Disaster/Freeing the Lumbridge Guide",
+      "members": true,
+      "prerequisites": [
+        3,
+        20,
+        45,
+        53,
+        55,
+        126,
+        151
+      ],
+      "requirements": [
+        {
+          "skill": "cooking",
+          "level": 40,
+          "boostable": true
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "cooking",
+          "xp": 2500
+        },
+        {
+          "skill": "magic",
+          "xp": 2500
+        }
+      ]
+    },
+    {
+      "id": 157,
+      "slug": "recipe_for_disaster_freeing_sir_amik_varze",
+      "name": "Recipe for Disaster/Freeing Sir Amik Varze",
+      "members": true,
+      "prerequisites": [
+        22,
+        24,
+        37,
+        40,
+        125,
+        151
+      ],
+      "rewards": [
+        {
+          "skill": "cooking",
+          "xp": 4000
+        },
+        {
+          "skill": "hitpoints",
+          "xp": 4000
+        }
+      ]
+    },
+    {
+      "id": 158,
+      "slug": "recipe_for_disaster_freeing_king_awowogei",
+      "name": "Recipe for Disaster/Freeing King Awowogei",
+      "members": true,
+      "prerequisites": [
+        64,
+        151
+      ],
+      "requirements": [
+        {
+          "skill": "agility",
+          "level": 48
+        },
+        {
+          "skill": "cooking",
+          "level": 70,
+          "boostable": true
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "agility",
+          "xp": 10000
+        },
+        {
+          "skill": "cooking",
+          "xp": 10000
+        }
+      ]
+    },
+    {
+      "id": 159,
+      "slug": "recipe_for_disaster_freeing_skrach_uglogwee",
+      "name": "Recipe for Disaster/Freeing Skrach Uglogwee",
+      "members": true,
+      "prerequisites": [
+        53,
+        151
+      ],
+      "requirements": [
+        {
+          "skill": "cooking",
+          "level": 41,
+          "boostable": true
+        },
+        {
+          "skill": "firemaking",
+          "level": 20,
+          "boostable": true
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "cooking",
+          "xp": 1500
+        },
+        {
+          "skill": "crafting",
+          "xp": 1500
+        },
+        {
+          "skill": "ranged",
+          "xp": 1500
+        },
+        {
+          "skill": "woodcutting",
+          "xp": 1500
+        }
+      ]
+    },
+    {
+      "id": 160,
+      "slug": "mage_arena_ii",
+      "name": "Mage Arena II",
+      "members": true,
+      "prerequisites": [
+        143
+      ],
+      "requirements": [
+        {
+          "skill": "magic",
+          "level": 75
+        }
+      ]
+    },
+    {
+      "id": 161,
+      "slug": "the_corsair_curse",
+      "name": "The Corsair Curse",
+      "members": false
+    },
+    {
+      "id": 162,
+      "slug": "a_taste_of_hope",
+      "name": "A Taste of Hope",
+      "members": true,
+      "prerequisites": [
+        108
+      ],
+      "requirements": [
+        {
+          "skill": "agility",
+          "level": 45
+        },
+        {
+          "skill": "attack",
+          "level": 40
+        },
+        {
+          "skill": "crafting",
+          "level": 48
+        },
+        {
+          "skill": "herblore",
+          "level": 40
+        },
+        {
+          "skill": "slayer",
+          "level": 38
+        }
+      ]
+    },
+    {
+      "id": 163,
+      "slug": "tale_of_the_righteous",
+      "name": "Tale of the Righteous",
+      "members": true,
+      "prerequisites": [
+        146
+      ],
+      "requirements": [
+        {
+          "skill": "mining",
+          "level": 10
+        },
+        {
+          "skill": "strength",
+          "level": 16
+        }
+      ]
+    },
+    {
+      "id": 164,
+      "slug": "making_friends_with_my_arm",
+      "name": "Making Friends with My Arm",
+      "members": true,
+      "prerequisites": [
+        2,
+        102,
+        111,
+        116
+      ],
+      "requirements": [
+        {
+          "skill": "agility",
+          "level": 68,
+          "boostable": true
+        },
+        {
+          "skill": "construction",
+          "level": 35,
+          "boostable": true
+        },
+        {
+          "skill": "firemaking",
+          "level": 66
+        },
+        {
+          "skill": "mining",
+          "level": 72,
+          "boostable": true
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "agility",
+          "xp": 50000
+        },
+        {
+          "skill": "construction",
+          "xp": 10000
+        },
+        {
+          "skill": "firemaking",
+          "xp": 40000
+        },
+        {
+          "skill": "mining",
+          "xp": 50000
+        }
+      ]
+    },
+    {
+      "id": 165,
+      "slug": "recipe_for_disaster_defeating_the_culinaromancer",
+      "name": "Recipe for Disaster/Defeating the Culinaromancer",
+      "members": true,
+      "prerequisites": [
+        62,
+        76,
+        152,
+        153,
+        154,
+        155,
+        156,
+        157,
+        158,
+        159
+      ]
+    },
+    {
+      "id": 166,
+      "slug": "song_of_the_elves",
+      "name": "Song of the Elves",
+      "members": true,
+      "prerequisites": [
+        18,
+        87,
+        90
+      ],
+      "requirements": [
+        {
+          "skill": "agility",
+          "level": 70
+        },
+        {
+          "skill": "construction",
+          "level": 70
+        },
+        {
+          "skill": "farming",
+          "level": 70
+        },
+        {
+          "skill": "herblore",
+          "level": 70
+        },
+        {
+          "skill": "hunter",
+          "level": 70
+        },
+        {
+          "skill": "mining",
+          "level": 70
+        },
+        {
+          "skill": "smithing",
+          "level": 70
+        },
+        {
+          "skill": "woodcutting",
+          "level": 70
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "agility",
+          "xp": 40000
+        },
+        {
+          "skill": "construction",
+          "xp": 40000
+        },
+        {
+          "skill": "farming",
+          "xp": 40000
+        },
+        {
+          "skill": "herblore",
+          "xp": 40000
+        },
+        {
+          "skill": "hunter",
+          "xp": 40000
+        },
+        {
+          "skill": "mining",
+          "xp": 40000
+        },
+        {
+          "skill": "smithing",
+          "xp": 40000
+        },
+        {
+          "skill": "woodcutting",
+          "xp": 40000
+        }
+      ]
+    },
+    {
+      "id": 167,
+      "slug": "the_ascent_of_arceuus",
+      "name": "The Ascent of Arceuus",
+      "members": true,
+      "prerequisites": [
+        146
+      ],
+      "requirements": [
+        {
+          "skill": "hunter",
+          "level": 12
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "hunter",
+          "xp": 1500
+        },
+        {
+          "skill": "runecraft",
+          "xp": 500
+        }
+      ]
+    },
+    {
+      "id": 168,
+      "slug": "the_forsaken_tower",
+      "name": "The Forsaken Tower",
+      "members": true,
+      "prerequisites": [
+        146
+      ],
+      "rewards": [
+        {
+          "skill": "mining",
+          "xp": 500
+        },
+        {
+          "skill": "smithing",
+          "xp": 500
+        }
+      ]
+    },
+    {
+      "id": 169,
+      "slug": "the_fremennik_exiles",
+      "name": "The Fremennik Exiles",
+      "members": true,
+      "prerequisites": [
+        22,
+        72,
+        106,
+        117
+      ],
+      "requirements": [
+        {
+          "skill": "crafting",
+          "level": 65
+        },
+        {
+          "skill": "fishing",
+          "level": 60
+        },
+        {
+          "skill": "mining",
+          "level": 60,
+          "boostable": true
+        },
+        {
+          "skill": "runecraft",
+          "level": 55
+        },
+        {
+          "skill": "slayer",
+          "level": 60
+        },
+        {
+          "skill": "smithing",
+          "level": 60
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "crafting",
+          "xp": 50000
+        },
+        {
+          "skill": "runecraft",
+          "xp": 30000
+        },
+        {
+          "skill": "slayer",
+          "xp": 50000
+        }
+      ]
+    },
+    {
+      "id": 170,
+      "slug": "x_marks_the_spot",
+      "name": "X Marks the Spot",
+      "members": false
+    },
+    {
+      "id": 171,
+      "slug": "the_curse_of_arrav",
+      "name": "The Curse of Arrav",
+      "members": true,
+      "prerequisites": [
+        66,
+        172
+      ],
+      "requirements": [
+        {
+          "skill": "agility",
+          "level": 61
+        },
+        {
+          "skill": "mining",
+          "level": 64
+        },
+        {
+          "skill": "ranged",
+          "level": 62
+        },
+        {
+          "skill": "slayer",
+          "level": 37
+        },
+        {
+          "skill": "strength",
+          "level": 58
+        },
+        {
+          "skill": "thieving",
+          "level": 62
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "agility",
+          "xp": 40000
+        },
+        {
+          "skill": "mining",
+          "xp": 40000
+        },
+        {
+          "skill": "thieving",
+          "xp": 40000
+        }
+      ]
+    },
+    {
+      "id": 172,
+      "slug": "defender_of_varrock",
+      "name": "Defender of Varrock",
+      "members": true,
+      "prerequisites": [
+        2,
+        3,
+        4,
+        24,
+        28,
+        84,
+        119,
+        179
+      ],
+      "requirements": [
+        {
+          "skill": "hunter",
+          "level": 52
+        },
+        {
+          "skill": "smithing",
+          "level": 55
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "hunter",
+          "xp": 15000
+        },
+        {
+          "skill": "smithing",
+          "xp": 15000
+        }
+      ]
+    },
+    {
+      "id": 173,
+      "slug": "in_search_of_knowledge",
+      "name": "In Search of Knowledge",
+      "members": true
+    },
+    {
+      "id": 174,
+      "slug": "sins_of_the_father",
+      "name": "Sins of the Father",
+      "members": true,
+      "prerequisites": [
+        8,
+        162
+      ],
+      "requirements": [
+        {
+          "skill": "agility",
+          "level": 52
+        },
+        {
+          "skill": "attack",
+          "level": 50
+        },
+        {
+          "skill": "crafting",
+          "level": 56
+        },
+        {
+          "skill": "fletching",
+          "level": 60
+        },
+        {
+          "skill": "magic",
+          "level": 49
+        },
+        {
+          "skill": "slayer",
+          "level": 50
+        },
+        {
+          "skill": "woodcutting",
+          "level": 62
+        }
+      ]
+    },
+    {
+      "id": 175,
+      "slug": "a_kingdom_divided",
+      "name": "A Kingdom Divided",
+      "members": true,
+      "prerequisites": [
+        147,
+        150,
+        163,
+        167,
+        168
+      ],
+      "requirements": [
+        {
+          "skill": "agility",
+          "level": 54
+        },
+        {
+          "skill": "crafting",
+          "level": 38
+        },
+        {
+          "skill": "herblore",
+          "level": 50
+        },
+        {
+          "skill": "magic",
+          "level": 35
+        },
+        {
+          "skill": "mining",
+          "level": 42
+        },
+        {
+          "skill": "thieving",
+          "level": 52
+        },
+        {
+          "skill": "woodcutting",
+          "level": 52
+        }
+      ]
+    },
+    {
+      "id": 176,
+      "slug": "daddys_home",
+      "name": "Daddy's Home",
+      "members": true,
+      "rewards": [
+        {
+          "skill": "construction",
+          "xp": 400
+        },
+        {
+          "skill": "construction",
+          "xp": 544
+        }
+      ]
+    },
+    {
+      "id": 177,
+      "slug": "a_porcine_of_interest",
+      "name": "A Porcine of Interest",
+      "members": true,
+      "rewards": [
+        {
+          "skill": "slayer",
+          "xp": 1000
+        }
+      ]
+    },
+    {
+      "id": 178,
+      "slug": "getting_ahead",
+      "name": "Getting Ahead",
+      "members": true,
+      "requirements": [
+        {
+          "skill": "construction",
+          "level": 26
+        },
+        {
+          "skill": "crafting",
+          "level": 30
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "construction",
+          "xp": 3200
+        },
+        {
+          "skill": "crafting",
+          "xp": 4000
+        }
+      ]
+    },
+    {
+      "id": 179,
+      "slug": "below_ice_mountain",
+      "name": "Below Ice Mountain",
+      "members": false
+    },
+    {
+      "id": 180,
+      "slug": "a_night_at_the_theatre",
+      "name": "A Night at the Theatre",
+      "members": true,
+      "prerequisites": [
+        162
+      ]
+    },
+    {
+      "id": 181,
+      "slug": "beneath_cursed_sands",
+      "name": "Beneath Cursed Sands",
+      "members": true,
+      "prerequisites": [
+        115
+      ],
+      "requirements": [
+        {
+          "skill": "agility",
+          "level": 62
+        },
+        {
+          "skill": "crafting",
+          "level": 55
+        },
+        {
+          "skill": "firemaking",
+          "level": 55
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "agility",
+          "xp": 50000
+        }
+      ]
+    },
+    {
+      "id": 182,
+      "slug": "the_frozen_door",
+      "name": "The Frozen Door",
+      "members": true,
+      "prerequisites": [
+        76
+      ],
+      "requirements": [
+        {
+          "skill": "agility",
+          "level": 70
+        },
+        {
+          "skill": "hitpoints",
+          "level": 70,
+          "boostable": true
+        },
+        {
+          "skill": "ranged",
+          "level": 70
+        },
+        {
+          "skill": "strength",
+          "level": 70
+        }
+      ]
+    },
+    {
+      "id": 183,
+      "slug": "hopespears_will",
+      "name": "Hopespear's Will",
+      "members": true,
+      "prerequisites": [
+        76,
+        105,
+        135
+      ],
+      "requirements": [
+        {
+          "skill": "prayer",
+          "level": 50
+        }
+      ]
+    },
+    {
+      "id": 184,
+      "slug": "temple_of_the_eye",
+      "name": "Temple of the Eye",
+      "members": true,
+      "prerequisites": [
+        128
+      ],
+      "requirements": [
+        {
+          "skill": "runecraft",
+          "level": 10
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "runecraft",
+          "xp": 5000
+        }
+      ]
+    },
+    {
+      "id": 185,
+      "slug": "the_path_of_glouphrie",
+      "name": "The Path of Glouphrie",
+      "members": true,
+      "prerequisites": [
+        31,
+        37,
+        107
+      ],
+      "requirements": [
+        {
+          "skill": "agility",
+          "level": 45
+        },
+        {
+          "skill": "ranged",
+          "level": 47
+        },
+        {
+          "skill": "slayer",
+          "level": 56
+        },
+        {
+          "skill": "strength",
+          "level": 60
+        },
+        {
+          "skill": "thieving",
+          "level": 56
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "magic",
+          "xp": 5000
+        },
+        {
+          "skill": "slayer",
+          "xp": 20000
+        },
+        {
+          "skill": "strength",
+          "xp": 30000
+        },
+        {
+          "skill": "thieving",
+          "xp": 5000
+        }
+      ]
+    },
+    {
+      "id": 186,
+      "slug": "sleeping_giants",
+      "name": "Sleeping Giants",
+      "members": true,
+      "requirements": [
+        {
+          "skill": "smithing",
+          "level": 15
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "smithing",
+          "xp": 6000
+        }
+      ]
+    },
+    {
+      "id": 187,
+      "slug": "into_the_tombs",
+      "name": "Into the Tombs",
+      "members": true,
+      "prerequisites": [
+        181
+      ]
+    },
+    {
+      "id": 188,
+      "slug": "the_garden_of_death",
+      "name": "The Garden of Death",
+      "members": true,
+      "requirements": [
+        {
+          "skill": "farming",
+          "level": 20
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "farming",
+          "xp": 10000
+        }
+      ]
+    },
+    {
+      "id": 189,
+      "slug": "desert_treasure_ii_the_fallen_empire",
+      "name": "Desert Treasure II - The Fallen Empire",
+      "members": true,
+      "prerequisites": [
+        76,
+        95,
+        179,
+        184,
+        188,
+        190,
+        191
+      ],
+      "requirements": [
+        {
+          "skill": "construction",
+          "level": 60
+        },
+        {
+          "skill": "firemaking",
+          "level": 75
+        },
+        {
+          "skill": "herblore",
+          "level": 62
+        },
+        {
+          "skill": "magic",
+          "level": 75
+        },
+        {
+          "skill": "runecraft",
+          "level": 60
+        },
+        {
+          "skill": "thieving",
+          "level": 70
+        }
+      ]
+    },
+    {
+      "id": 190,
+      "slug": "secrets_of_the_north",
+      "name": "Secrets of the North",
+      "members": true,
+      "prerequisites": [
+        33,
+        93,
+        129,
+        164
+      ],
+      "requirements": [
+        {
+          "skill": "agility",
+          "level": 69
+        },
+        {
+          "skill": "hunter",
+          "level": 56
+        },
+        {
+          "skill": "thieving",
+          "level": 64
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "agility",
+          "xp": 60000
+        },
+        {
+          "skill": "hunter",
+          "xp": 40000
+        },
+        {
+          "skill": "thieving",
+          "xp": 50000
+        }
+      ]
+    },
+    {
+      "id": 191,
+      "slug": "his_faithful_servants",
+      "name": "His Faithful Servants",
+      "members": true
+    },
+    {
+      "id": 192,
+      "slug": "children_of_the_sun",
+      "name": "Children of the Sun",
+      "members": true
+    },
+    {
+      "id": 193,
+      "slug": "perilous_moons",
+      "name": "Perilous Moons",
+      "members": true,
+      "prerequisites": [
+        195
+      ],
+      "requirements": [
+        {
+          "skill": "construction",
+          "level": 10
+        },
+        {
+          "skill": "fishing",
+          "level": 20
+        },
+        {
+          "skill": "hunter",
+          "level": 20
+        },
+        {
+          "skill": "runecraft",
+          "level": 20
+        },
+        {
+          "skill": "slayer",
+          "level": 48
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "fishing",
+          "xp": 5000
+        },
+        {
+          "skill": "hunter",
+          "xp": 5000
+        },
+        {
+          "skill": "runecraft",
+          "xp": 5000
+        },
+        {
+          "skill": "slayer",
+          "xp": 40000
+        }
+      ]
+    },
+    {
+      "id": 194,
+      "slug": "the_ribbiting_tale_of_a_lily_pad_labour_dispute",
+      "name": "The Ribbiting Tale of a Lily Pad Labour Dispute",
+      "members": true,
+      "prerequisites": [
+        192
+      ],
+      "requirements": [
+        {
+          "skill": "woodcutting",
+          "level": 15
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "woodcutting",
+          "xp": 2000
+        }
+      ]
+    },
+    {
+      "id": 195,
+      "slug": "twilights_promise",
+      "name": "Twilight's Promise",
+      "members": true,
+      "prerequisites": [
+        192
+      ],
+      "rewards": [
+        {
+          "skill": "thieving",
+          "xp": 3000
+        }
+      ]
+    },
+    {
+      "id": 196,
+      "slug": "at_first_light",
+      "name": "At First Light",
+      "members": true,
+      "prerequisites": [
+        113,
+        192
+      ],
+      "requirements": [
+        {
+          "skill": "construction",
+          "level": 27
+        },
+        {
+          "skill": "herblore",
+          "level": 30
+        },
+        {
+          "skill": "hunter",
+          "level": 46
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "construction",
+          "xp": 800
+        },
+        {
+          "skill": "herblore",
+          "xp": 500
+        },
+        {
+          "skill": "hunter",
+          "xp": 4500
+        }
+      ]
+    },
+    {
+      "id": 197,
+      "slug": "the_heart_of_darkness",
+      "name": "The Heart of Darkness",
+      "members": true,
+      "prerequisites": [
+        195
+      ],
+      "requirements": [
+        {
+          "skill": "agility",
+          "level": 46
+        },
+        {
+          "skill": "mining",
+          "level": 55
+        },
+        {
+          "skill": "slayer",
+          "level": 48
+        },
+        {
+          "skill": "thieving",
+          "level": 48
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "agility",
+          "xp": 8000
+        },
+        {
+          "skill": "mining",
+          "xp": 8000
+        },
+        {
+          "skill": "slayer",
+          "xp": 8000
+        },
+        {
+          "skill": "thieving",
+          "xp": 8000
+        }
+      ]
+    },
+    {
+      "id": 198,
+      "slug": "death_on_the_isle",
+      "name": "Death on the Isle",
+      "members": true,
+      "prerequisites": [
+        192
+      ],
+      "requirements": [
+        {
+          "skill": "agility",
+          "level": 32
+        },
+        {
+          "skill": "thieving",
+          "level": 34
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "agility",
+          "xp": 7500
+        },
+        {
+          "skill": "crafting",
+          "xp": 5000
+        },
+        {
+          "skill": "thieving",
+          "xp": 10000
+        }
+      ]
+    },
+    {
+      "id": 199,
+      "slug": "meat_and_greet",
+      "name": "Meat and Greet",
+      "members": true,
+      "prerequisites": [
+        192
+      ],
+      "rewards": [
+        {
+          "skill": "cooking",
+          "xp": 8000
+        }
+      ]
+    },
+    {
+      "id": 200,
+      "slug": "ethically_acquired_antiquities",
+      "name": "Ethically Acquired Antiquities",
+      "members": true,
+      "prerequisites": [
+        4,
+        192
+      ],
+      "requirements": [
+        {
+          "skill": "thieving",
+          "level": 25
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "thieving",
+          "xp": 6000
+        }
+      ]
+    },
+    {
+      "id": 201,
+      "slug": "the_blood_moon_rises",
+      "name": "The Blood Moon Rises",
+      "members": true,
+      "prerequisites": [
+        174,
+        180
+      ],
+      "requirements": [
+        {
+          "skill": "cooking",
+          "level": 72
+        },
+        {
+          "skill": "crafting",
+          "level": 64
+        },
+        {
+          "skill": "fletching",
+          "level": 70
+        },
+        {
+          "skill": "herblore",
+          "level": 64
+        },
+        {
+          "skill": "hunter",
+          "level": 65
+        },
+        {
+          "skill": "magic",
+          "level": 57
+        },
+        {
+          "skill": "mining",
+          "level": 66
+        },
+        {
+          "skill": "slayer",
+          "level": 74
+        },
+        {
+          "skill": "smithing",
+          "level": 72
+        },
+        {
+          "skill": "woodcutting",
+          "level": 74
+        }
+      ]
+    },
+    {
+      "id": 202,
+      "slug": "the_final_dawn",
+      "name": "The Final Dawn",
+      "members": true,
+      "prerequisites": [
+        193,
+        197
+      ],
+      "requirements": [
+        {
+          "skill": "fletching",
+          "level": 52
+        },
+        {
+          "skill": "runecraft",
+          "level": 52
+        },
+        {
+          "skill": "thieving",
+          "level": 66
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "fletching",
+          "xp": 25000
+        },
+        {
+          "skill": "runecraft",
+          "xp": 25000
+        },
+        {
+          "skill": "thieving",
+          "xp": 55000
+        }
+      ]
+    },
+    {
+      "id": 203,
+      "slug": "pandemonium",
+      "name": "Pandemonium",
+      "members": true,
+      "rewards": [
+        {
+          "skill": "sailing",
+          "xp": 100
+        },
+        {
+          "skill": "sailing",
+          "xp": 300
+        }
+      ]
+    },
+    {
+      "id": 204,
+      "slug": "prying_times",
+      "name": "Prying Times",
+      "members": true,
+      "prerequisites": [
+        14,
+        203
+      ],
+      "requirements": [
+        {
+          "skill": "sailing",
+          "level": 12
+        },
+        {
+          "skill": "smithing",
+          "level": 30
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "sailing",
+          "xp": 800
+        },
+        {
+          "skill": "smithing",
+          "xp": 1000
+        }
+      ]
+    },
+    {
+      "id": 205,
+      "slug": "current_affairs",
+      "name": "Current Affairs",
+      "members": true,
+      "prerequisites": [
+        203
+      ],
+      "requirements": [
+        {
+          "skill": "fishing",
+          "level": 10
+        },
+        {
+          "skill": "sailing",
+          "level": 22
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "fishing",
+          "xp": 1000
+        },
+        {
+          "skill": "sailing",
+          "xp": 1400
+        }
+      ]
+    },
+    {
+      "id": 206,
+      "slug": "troubled_tortugans",
+      "name": "Troubled Tortugans",
+      "members": true,
+      "prerequisites": [
+        203
+      ],
+      "requirements": [
+        {
+          "skill": "construction",
+          "level": 48
+        },
+        {
+          "skill": "crafting",
+          "level": 34
+        },
+        {
+          "skill": "hunter",
+          "level": 45
+        },
+        {
+          "skill": "sailing",
+          "level": 45
+        },
+        {
+          "skill": "slayer",
+          "level": 51
+        },
+        {
+          "skill": "woodcutting",
+          "level": 40
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "sailing",
+          "xp": 10000
+        },
+        {
+          "skill": "slayer",
+          "xp": 8000
+        }
+      ]
+    },
+    {
+      "id": 207,
+      "slug": "the_red_reef",
+      "name": "The Red Reef",
+      "members": true,
+      "prerequisites": [
+        206
+      ],
+      "requirements": [
+        {
+          "skill": "sailing",
+          "level": 52
+        },
+        {
+          "skill": "smithing",
+          "level": 48
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "sailing",
+          "xp": 15000
+        },
+        {
+          "skill": "smithing",
+          "xp": 5000
+        }
+      ]
+    },
+    {
+      "id": 208,
+      "slug": "shadows_of_custodia",
+      "name": "Shadows of Custodia",
+      "members": true,
+      "prerequisites": [
+        192
+      ],
+      "requirements": [
+        {
+          "skill": "construction",
+          "level": 41
+        },
+        {
+          "skill": "fishing",
+          "level": 45
+        },
+        {
+          "skill": "hunter",
+          "level": 36
+        },
+        {
+          "skill": "slayer",
+          "level": 54
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "construction",
+          "xp": 3000
+        },
+        {
+          "skill": "fishing",
+          "xp": 3000
+        },
+        {
+          "skill": "hunter",
+          "xp": 4000
+        },
+        {
+          "skill": "slayer",
+          "xp": 10000
+        }
+      ]
+    },
+    {
+      "id": 209,
+      "slug": "scrambled",
+      "name": "Scrambled!",
+      "members": true,
+      "prerequisites": [
+        192
+      ],
+      "requirements": [
+        {
+          "skill": "construction",
+          "level": 38
+        },
+        {
+          "skill": "cooking",
+          "level": 36
+        },
+        {
+          "skill": "smithing",
+          "level": 35
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "construction",
+          "xp": 5000
+        },
+        {
+          "skill": "cooking",
+          "xp": 5000
+        },
+        {
+          "skill": "smithing",
+          "xp": 5000
+        }
+      ]
+    },
+    {
+      "id": 210,
+      "slug": "vale_totems_miniquest",
+      "name": "Vale Totems (miniquest)",
+      "members": true,
+      "requirements": [
+        {
+          "skill": "fletching",
+          "level": 20
+        }
+      ]
+    },
+    {
+      "id": 211,
+      "slug": "spirit_of_adventure",
+      "name": "Spirit of Adventure",
+      "members": false
+    },
+    {
+      "id": 212,
+      "slug": "lost_lover",
+      "name": "Lost Lover",
+      "members": false
+    },
+    {
+      "id": 213,
+      "slug": "learning_the_ropes",
+      "name": "Learning the Ropes",
+      "members": false
+    },
+    {
+      "id": 214,
+      "slug": "the_ides_of_milk",
+      "name": "The Ides of Milk",
+      "members": false
+    },
+    {
+      "id": 215,
+      "slug": "the_graveyard",
+      "name": "The Graveyard",
+      "members": true,
+      "prerequisites": [
+        120,
+        169,
+        203
+      ],
+      "requirements": [
+        {
+          "skill": "agility",
+          "level": 65
+        },
+        {
+          "skill": "fletching",
+          "level": 54
+        },
+        {
+          "skill": "sailing",
+          "level": 65
+        },
+        {
+          "skill": "woodcutting",
+          "level": 56
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "agility",
+          "xp": 35000
+        },
+        {
+          "skill": "fletching",
+          "xp": 10000
+        },
+        {
+          "skill": "runecraft",
+          "xp": 15000
+        },
+        {
+          "skill": "sailing",
+          "xp": 35000
+        }
+      ]
+    },
+    {
+      "id": 216,
+      "slug": "fallen_from_grace",
+      "name": "Fallen From Grace",
+      "members": true,
+      "prerequisites": [
+        203
+      ],
+      "requirements": [
+        {
+          "skill": "crafting",
+          "level": 60
+        },
+        {
+          "skill": "mining",
+          "level": 53
+        },
+        {
+          "skill": "runecraft",
+          "level": 47
+        },
+        {
+          "skill": "sailing",
+          "level": 62
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "crafting",
+          "xp": 10000
+        },
+        {
+          "skill": "mining",
+          "xp": 5000
+        },
+        {
+          "skill": "runecraft",
+          "xp": 5000
+        },
+        {
+          "skill": "sailing",
+          "xp": 12500
+        }
+      ]
+    },
+    {
+      "id": 217,
+      "slug": "a_ruff_situation",
+      "name": "A Ruff Situation",
+      "members": true,
+      "requirements": [
+        {
+          "skill": "crafting",
+          "level": 15
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "crafting",
+          "xp": 1000
+        }
+      ]
+    },
+    {
+      "id": 218,
+      "slug": "crab_quest",
+      "name": "Crab Quest",
+      "members": true,
+      "requirements": [
+        {
+          "skill": "fishing",
+          "level": 30
+        },
+        {
+          "skill": "sailing",
+          "level": 40
+        }
+      ],
+      "rewards": [
+        {
+          "skill": "crafting",
+          "xp": 3000
+        },
+        {
+          "skill": "sailing",
+          "xp": 10000
+        }
+      ]
+    }
+  ]
+}

@@ -63,9 +63,20 @@ class BuildRule
 		return value > 0;
 	}
 
+	/**
+	 * Whether crossing this rule ends the build.
+	 *
+	 * Derived from the type as well as read from the wire, and the two are
+	 * OR-ed rather than the field being trusted alone. questpath sends the
+	 * flag on a push response but not in the generated planner vectors, and
+	 * trusting the field alone made every rule in the vectors non-blocking --
+	 * 94 of 218 verdicts silently came back ELIGIBLE for quests that end a
+	 * pure. The type is the fact; the flag is questpath's chance to tell a
+	 * future build that something new also blocks.
+	 */
 	boolean blocking()
 	{
-		return blocking;
+		return blocking || NO_XP.equals(type()) || HARD_CAP.equals(type());
 	}
 
 	String note()
