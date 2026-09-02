@@ -54,6 +54,20 @@ public class PanelSectionsTest
 	 * as a broken plugin, and the strip is built from this enum, so an empty
 	 * one is only ever discovered by clicking it.
 	 */
+	/**
+	 * Every tab needs an icon, since that is what the strip renders. A null
+	 * would drop the tab to its text fallback silently — one word among four
+	 * pictures, which looks like a bug rather than a choice.
+	 */
+	@Test
+	public void everyTabHasAnIcon()
+	{
+		for (PanelSections.Tab tab : PanelSections.Tab.values())
+		{
+			assertNotNull(tab + " has no icon", tab.icon());
+		}
+	}
+
 	@Test
 	public void noTabIsEmpty()
 	{
@@ -69,9 +83,10 @@ public class PanelSectionsTest
 	}
 
 	/**
-	 * Tab labels are one word because five of them share a 225px sidebar.
-	 * A long one does not wrap, it truncates, and a truncated tab is a tab
-	 * nobody can read.
+	 * Tabs show icons, so the label is normally the tooltip — but it is also
+	 * the fallback when an icon cannot be produced, and five text tabs share a
+	 * 225px sidebar. A long one does not wrap, it truncates, and a truncated
+	 * tab is a tab nobody can read.
 	 */
 	@Test
 	public void tabLabelsAreShortEnoughForTheSidebar()

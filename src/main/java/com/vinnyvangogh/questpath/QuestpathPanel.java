@@ -9,6 +9,7 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.Insets;
+import java.awt.image.BufferedImage;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -18,17 +19,20 @@ import java.util.Map;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import net.runelite.api.Skill;
+import net.runelite.client.game.SkillIconManager;
 import net.runelite.client.ui.ColorScheme;
 import net.runelite.client.ui.FontManager;
 import net.runelite.client.ui.PluginPanel;
 import net.runelite.client.ui.components.materialtabs.MaterialTab;
 import net.runelite.client.ui.components.materialtabs.MaterialTabGroup;
+import net.runelite.client.util.ImageUtil;
 
 /**
  * The questpath sidebar.
@@ -46,10 +50,17 @@ import net.runelite.client.ui.components.materialtabs.MaterialTabGroup;
  */
 class QuestpathPanel extends PluginPanel
 {
+	/**
+	 * The skill icons are around 25px; the tab strip has five of them across a
+	 * 225px sidebar, so they are scaled down to leave room for the padding
+	 * between them.
+	 */
+	private static final int TAB_ICON_SIZE = 20;
+
 	private final Map<PanelSections.Tab, JPanel> tabBodies = new EnumMap<>(PanelSections.Tab.class);
 	private final JPanel display = new JPanel(new BorderLayout());
 
-	QuestpathPanel()
+	QuestpathPanel(SkillIconManager skillIcons)
 	{
 		setLayout(new BorderLayout());
 		setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
@@ -72,7 +83,7 @@ class QuestpathPanel extends PluginPanel
 			JPanel wrapper = new JPanel(new BorderLayout());
 			wrapper.add(bodyForTab, BorderLayout.NORTH);
 
-			MaterialTab materialTab = new MaterialTab(tab.label(), tabGroup, wrapper);
+			MaterialTab materialTab = tabFor(skillIcons, tab, tabGroup, wrapper);
 			tabGroup.addTab(materialTab);
 			if (first == null)
 			{
@@ -88,6 +99,40 @@ class QuestpathPanel extends PluginPanel
 			tabGroup.select(first);
 		}
 		showLoggedOut();
+	}
+
+	/**
+	 * One tab, showing the game's own skill-tab art.
+	 *
+	 * Falls back to the text label if the icon cannot be produced. A tab strip
+	 * with a blank tab in it is unusable and undiagnosable — the word is worse
+	 * than the picture and far better than nothing.
+	 *
+	 * The label becomes the tooltip either way: three of the five icons are
+	 * borrowed from skills that have nothing to do with the tab, because the
+	 * concepts they stand for have no skill, and an icon that has to be
+	 * learned needs a way to be learned.
+	 */
+	private static MaterialTab tabFor(SkillIconManager skillIcons, PanelSections.Tab tab,
+		MaterialTabGroup group, JPanel content)
+	{
+		MaterialTab materialTab = null;
+		if (skillIcons != null)
+		{
+			BufferedImage icon = skillIcons.getSkillImage(tab.icon(), true);
+			if (icon != null)
+			{
+				materialTab = new MaterialTab(
+					new ImageIcon(ImageUtil.resizeImage(icon, TAB_ICON_SIZE, TAB_ICON_SIZE)),
+					group, content);
+			}
+		}
+		if (materialTab == null)
+		{
+			materialTab = new MaterialTab(tab.label(), group, content);
+		}
+		materialTab.setToolTipText(tab.label());
+		return materialTab;
 	}
 
 	/**

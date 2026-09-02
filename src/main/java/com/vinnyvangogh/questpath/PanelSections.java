@@ -1,5 +1,7 @@
 package com.vinnyvangogh.questpath;
 
+import net.runelite.api.Skill;
+
 /**
  * Every section the sidebar will carry, and what is behind each one today.
  *
@@ -91,22 +93,47 @@ enum PanelSections
 	 */
 	enum Tab
 	{
-		COMBAT("Combat"),
-		BUILD("Build"),
-		QUESTS("Quests"),
-		ITEMS("Items"),
-		SYNC("Sync");
+		// The icon is the game's own skill-tab art, via SkillIconManager --
+		// no asset to ship, no sprite id to guess wrong, and it already looks
+		// like the rest of the client.
+		//
+		// Two of these are honest metaphors and three are borrowed. A sword
+		// for combat and a hammer for build rules read on sight; a slayer
+		// helm for quests, a needle for items and a rune for sync are the
+		// least-bad skill icons for concepts that have no skill. The label
+		// survives as the tooltip precisely because of that -- an icon that
+		// has to be learned is worse than a word until it is.
+		//
+		// Do not reach for Skill.OVERALL here. It is declared in
+		// net.runelite.api.Skill and is null at runtime in 1.12.37 -- the
+		// field exists for binary compatibility and the static initialiser
+		// never gives it a value. It compiles, and the tab silently drops to
+		// its text fallback. PanelSectionsTest.everyTabHasAnIcon is what
+		// found that, and is what will find it again.
+		COMBAT("Combat", Skill.ATTACK),
+		BUILD("Build", Skill.CONSTRUCTION),
+		QUESTS("Quests", Skill.SLAYER),
+		ITEMS("Items", Skill.CRAFTING),
+		SYNC("Sync", Skill.MAGIC);
 
 		private final String label;
+		private final Skill icon;
 
-		Tab(String label)
+		Tab(String label, Skill icon)
 		{
 			this.label = label;
+			this.icon = icon;
 		}
 
 		String label()
 		{
 			return label;
+		}
+
+		/** The skill whose tab icon stands for this tab. */
+		Skill icon()
+		{
+			return icon;
 		}
 	}
 

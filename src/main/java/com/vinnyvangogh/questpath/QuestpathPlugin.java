@@ -22,6 +22,7 @@ import net.runelite.api.events.StatChanged;
 import net.runelite.api.events.VarbitChanged;
 import net.runelite.client.callback.ClientThread;
 import net.runelite.client.config.ConfigManager;
+import net.runelite.client.game.SkillIconManager;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
@@ -62,6 +63,9 @@ public class QuestpathPlugin extends Plugin
 
 	@Inject
 	private AccountStateSender sender;
+
+	@Inject
+	private SkillIconManager skillIcons;
 
 	private QuestpathPanel panel;
 	private NavigationButton navButton;
@@ -106,7 +110,7 @@ public class QuestpathPlugin extends Plugin
 	@Override
 	protected void startUp()
 	{
-		panel = new QuestpathPanel();
+		panel = new QuestpathPanel(skillIcons);
 		navButton = NavigationButton.builder()
 			.tooltip("questpath")
 			.icon(icon())
