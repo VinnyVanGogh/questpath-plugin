@@ -7,16 +7,23 @@ import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.util.EnumMap;
 import java.util.Map;
+import com.google.gson.Gson;
 import com.google.inject.Provides;
+import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
 import net.runelite.api.GameState;
+import net.runelite.api.Quest;
+import net.runelite.api.QuestState;
 import net.runelite.api.Skill;
 import net.runelite.api.events.GameStateChanged;
 import net.runelite.api.events.ItemContainerChanged;
@@ -68,6 +75,18 @@ public class QuestpathPlugin extends Plugin
 
 	@Inject
 	private SkillIconManager skillIcons;
+
+	@Inject
+	private Gson gson;
+
+	/**
+	 * The bundled quest graph, or null when it could not be loaded.
+	 *
+	 * Null is rendered as a plain failure rather than as an empty quest list:
+	 * a broken bundle and a player with nothing to do look identical
+	 * otherwise, and only one of them is worth telling someone about.
+	 */
+	private QuestGraph questGraph;
 
 	private QuestpathPanel panel;
 	private NavigationButton navButton;
@@ -136,6 +155,20 @@ public class QuestpathPlugin extends Plugin
 			.panel(panel)
 			.build();
 		clientToolbar.addNavigation(navButton);
+
+		try
+		{
+			questGraph = QuestGraph.load(gson);
+			log.debug("questpath: quest graph loaded, {} quests", questGraph.quests().size());
+		}
+		catch (IOException e)
+		{
+			// Not fatal. The combat and sync tabs need no graph, and a plugin
+			// that refuses to start because one tab cannot work is worse than
+			// one tab saying why.
+			questGraph = null;
+			log.warn("questpath: bundled quest graph unavailable; the Quests tab will say so", e);
+		}
 
 		// The plugin can be enabled mid-session, so there may already be a
 		// logged-in account whose StatChanged burst has been and gone.
@@ -238,7 +271,7 @@ public class QuestpathPlugin extends Plugin
 			panel.showLoggedOut();
 			return;
 		}
-		panel.update(currentStats(), currentXp(), syncStatus(), buildRules, unmatchedQuests);
+		panel.update(currentStats(), currentXp(), syncStatus(), buildRules, unmatchedQuests, verdicts());
 	}
 
 	/**
@@ -384,6 +417,54 @@ public class QuestpathPlugin extends Plugin
 		}
 		SyncStatus outcome = lastSyncOutcome;
 		return outcome == null ? SyncStatus.of(SyncStatus.State.WAITING) : outcome;
+	}
+
+	/**
+	 * Judges every quest against this account, or null when it cannot be done.
+	 *
+	 * Null when the graph is missing or the client has not loaded quest states
+	 * yet. The panel distinguishes those from "nothing to do", because a blank
+	 * list is an answer and neither of these is one.
+	 *
+	 * Runs on the client thread: Quest.getState reads varbits.
+	 */
+	private QuestVerdicts verdicts()
+	{
+		if (questGraph == null || client.getGameState() != GameState.LOGGED_IN)
+		{
+			return null;
+		}
+
+		Set<Long> completed = new HashSet<>();
+		for (Quest quest : Quest.values())
+		{
+			if (quest.getState(client) == QuestState.FINISHED)
+			{
+				completed.add((long) quest.getId());
+			}
+		}
+		if (completed.isEmpty() && client.getGameState() == GameState.LOGGED_IN)
+		{
+			// A logged-in account with no finished quests is possible but
+			// rare, and an account whose varbits have not arrived looks
+			// identical. Judging against it would report every quest as
+			// available, which is the confident wrong answer to avoid.
+			return null;
+		}
+
+		Map<String, Integer> levels = new HashMap<>();
+		Map<String, Long> experience = new HashMap<>();
+		for (Skill skill : Skill.values())
+		{
+			if (skill.getName() == null)
+			{
+				continue;
+			}
+			levels.put(skill.getName(), client.getRealSkillLevel(skill));
+			experience.put(skill.getName(), (long) client.getSkillExperience(skill));
+		}
+
+		return QuestVerdicts.of(questGraph, new PlayerState(levels, experience, completed, buildRules));
 	}
 
 	@Provides

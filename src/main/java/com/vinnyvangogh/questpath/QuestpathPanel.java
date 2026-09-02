@@ -141,9 +141,9 @@ class QuestpathPanel extends PluginPanel
 	 * touched there and every caller here is a game event.
 	 */
 	void update(CombatStats stats, SkillXp xp, SyncStatus sync,
-		List<BuildRule> rules, List<String> unmatchedQuests)
+		List<BuildRule> rules, List<String> unmatchedQuests, QuestVerdicts verdicts)
 	{
-		SwingUtilities.invokeLater(() -> render(stats, xp, sync, rules, unmatchedQuests));
+		SwingUtilities.invokeLater(() -> render(stats, xp, sync, rules, unmatchedQuests, verdicts));
 	}
 
 	/**
@@ -162,13 +162,14 @@ class QuestpathPanel extends PluginPanel
 			clearBodies();
 			tabBodies.get(PanelSections.Tab.COMBAT).add(muted("Log in to see your levels."));
 			tabBodies.get(PanelSections.Tab.SYNC).add(muted("Log in to sync."));
+			tabBodies.get(PanelSections.Tab.QUESTS).add(muted("Log in to judge your quests."));
 			renderPlannedSections();
 			repaintAll();
 		});
 	}
 
 	private void render(CombatStats stats, SkillXp xp, SyncStatus sync,
-		List<BuildRule> rules, List<String> unmatchedQuests)
+		List<BuildRule> rules, List<String> unmatchedQuests, QuestVerdicts verdicts)
 	{
 		clearBodies();
 
@@ -204,8 +205,106 @@ class QuestpathPanel extends PluginPanel
 			build.add(buildRulesBlock(stats, rules));
 		}
 
+		JPanel quests = tabBodies.get(PanelSections.Tab.QUESTS);
+		quests.add(heading(PanelSections.QUEST_VERDICT.title()));
+		quests.add(verdictBlock(verdicts));
+
 		renderPlannedSections();
 		repaintAll();
+	}
+
+	/**
+	 * Every quest, judged and grouped by what to do about it.
+	 *
+	 * The groups are the answer. "Do these now", "these need levels" and
+	 * "these are off the table while your build stands" are three different
+	 * actions, and the last is the one no other quest tool gives you.
+	 */
+	private static JPanel verdictBlock(QuestVerdicts verdicts)
+	{
+		JPanel panel = column();
+
+		if (verdicts == null)
+		{
+			// Not an empty list. A missing bundle and a client that has not
+			// loaded quest states are both "cannot answer", and rendering
+			// either as "nothing to do" would be a confident wrong answer.
+			panel.add(muted("Cannot judge quests yet. Log in and let the client"
+				+ " load, or check the log if this persists."));
+			return panel;
+		}
+
+		if (!verdicts.rulesKnown())
+		{
+			// Without rules nothing can be BUILD_BLOCKED, so every verdict
+			// below is "as far as I know". A pure's quest list rendered as a
+			// main's is exactly the mistake this plugin exists to prevent.
+			JLabel warning = new JLabel(wrap("No build rules yet, so nothing can be"
+				+ " judged against them. Turn on sync to get them from questpath."));
+			warning.setFont(FontManager.getRunescapeSmallFont());
+			warning.setForeground(ColorScheme.PROGRESS_ERROR_COLOR);
+			panel.add(warning);
+			panel.add(Box.createVerticalStrut(6));
+		}
+
+		JLabel done = new JLabel(wrap(verdicts.count(QuestStatus.COMPLETE) + " done"));
+		done.setFont(FontManager.getRunescapeSmallFont());
+		done.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
+		panel.add(done);
+
+		for (QuestStatus status : QuestVerdicts.sections())
+		{
+			int count = verdicts.count(status);
+			if (count == 0)
+			{
+				continue;
+			}
+			panel.add(Box.createVerticalStrut(8));
+
+			JLabel groupHeading = new JLabel(QuestVerdicts.label(status) + "  ·  " + count);
+			groupHeading.setFont(FontManager.getRunescapeSmallFont().deriveFont(Font.BOLD));
+			groupHeading.setForeground(statusColor(status));
+			panel.add(groupHeading);
+
+			for (QuestGraph.Quest quest : verdicts.sample(status))
+			{
+				JLabel row = new JLabel(wrap(quest.name()));
+				row.setFont(FontManager.getRunescapeSmallFont());
+				row.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
+				panel.add(row);
+			}
+
+			int hidden = verdicts.hidden(status);
+			if (hidden > 0)
+			{
+				// Said rather than silently truncated: a list that stops at
+				// eight without saying so reads as a complete list of eight.
+				JLabel more = new JLabel(wrap("and " + hidden + " more"));
+				more.setFont(FontManager.getRunescapeSmallFont());
+				more.setForeground(ColorScheme.MEDIUM_GRAY_COLOR);
+				panel.add(more);
+			}
+		}
+
+		return panel;
+	}
+
+	/**
+	 * Green for what can be done, amber for what needs work, red for what the
+	 * build has closed off. The last is the distinction that matters: "go and
+	 * train" and "never, while this build stands" must not look the same.
+	 */
+	private static Color statusColor(QuestStatus status)
+	{
+		if (status.permanent())
+		{
+			return ColorScheme.PROGRESS_ERROR_COLOR;
+		}
+		if (status.doable())
+		{
+			return ColorScheme.PROGRESS_COMPLETE_COLOR;
+		}
+		return ColorScheme.PROGRESS_INPROGRESS_COLOR;
 	}
 
 	private void clearBodies()

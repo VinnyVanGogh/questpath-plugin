@@ -55,16 +55,14 @@ enum PanelSections
 		Tab.QUESTS,
 		"Next on your route",
 		Status.NOT_BUILT,
-		"The next quest on your saved route, with what it needs and whether you can do it now. "
-			+ "Needs the quest graph."),
+		"Your saved route order from questpath, rather than every doable quest at once. The order "
+			+ "lives in questpath and is not sent yet."),
 
 	QUEST_VERDICT(
 		Tab.QUESTS,
 		"Can I do this quest?",
-		Status.NOT_BUILT,
-		"Eligible, skill-blocked, or permanently off the table because a prerequisite grants xp your "
-			+ "build refuses. This is the question questpath exists to answer, and the largest piece "
-			+ "of work: the planner has to be ported to Java against generated test vectors."),
+		Status.LIVE,
+		null),
 
 	ITEMS(
 		Tab.ITEMS,
@@ -78,8 +76,8 @@ enum PanelSections
 		Tab.QUESTS,
 		"Quest browser",
 		Status.NOT_BUILT,
-		"Browse and filter every quest by what your build can legally reach. Quest Helper already does "
-			+ "the walkthrough better than this ever would; the point here is the verdict, not the steps.");
+		"Search and filter the list above, rather than the first eight of each group. Quest Helper "
+			+ "already does walkthroughs better than this ever would; the point here is the verdict.");
 
 	/**
 	 * Which tab a section lives under.
