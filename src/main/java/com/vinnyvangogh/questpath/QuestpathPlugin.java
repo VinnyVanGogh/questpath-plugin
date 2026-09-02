@@ -443,14 +443,7 @@ public class QuestpathPlugin extends Plugin
 			return null;
 		}
 
-		Set<Long> completed = new HashSet<>();
-		for (Quest quest : Quest.values())
-		{
-			if (quest.getState(client) == QuestState.FINISHED)
-			{
-				completed.add((long) quest.getId());
-			}
-		}
+		Set<String> completed = completedQuestNames();
 		if (completed.isEmpty() && client.getGameState() == GameState.LOGGED_IN)
 		{
 			// A logged-in account with no finished quests is possible but
@@ -484,6 +477,29 @@ public class QuestpathPlugin extends Plugin
 	 *
 	 * Runs on the client thread: it classifies, which reads quest varbits.
 	 */
+	/**
+	 * The names of every quest the client reports as finished.
+	 *
+	 * Names, not ids: the client's quest ids are the game's and questpath's
+	 * are its own database rowids, and an earlier version compared the two
+	 * directly. The overlap was coincidence, so quests the account had never
+	 * started were judged COMPLETE and finished ones were not.
+	 *
+	 * Must run on the client thread -- getState reads varbits.
+	 */
+	private Set<String> completedQuestNames()
+	{
+		Set<String> completed = new HashSet<>();
+		for (Quest quest : Quest.values())
+		{
+			if (quest.getState(client) == QuestState.FINISHED)
+			{
+				completed.add(quest.getName());
+			}
+		}
+		return completed;
+	}
+
 	private QuestItems questItems()
 	{
 		if (questGraph == null || client.getGameState() != GameState.LOGGED_IN || owned.isEmpty())
@@ -491,14 +507,7 @@ public class QuestpathPlugin extends Plugin
 			return null;
 		}
 
-		Set<Long> completed = new HashSet<>();
-		for (Quest quest : Quest.values())
-		{
-			if (quest.getState(client) == QuestState.FINISHED)
-			{
-				completed.add((long) quest.getId());
-			}
-		}
+		Set<String> completed = completedQuestNames();
 
 		Map<String, Integer> levels = new HashMap<>();
 		Map<String, Long> experience = new HashMap<>();

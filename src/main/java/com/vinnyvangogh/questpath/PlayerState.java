@@ -24,15 +24,36 @@ class PlayerState
 {
 	private final Map<String, Integer> levels;
 	private final Map<String, Long> experience;
-	private final Set<Long> completed;
+	private final Set<String> completed;
 	private final Map<String, BuildRule> rules;
 
 	PlayerState(Map<String, Integer> levels, Map<String, Long> experience,
-		Set<Long> completed, List<BuildRule> rules)
+		Set<String> completedQuestNames, List<BuildRule> rules)
 	{
 		this.levels = lowerKeys(levels);
 		this.experience = lowerKeys(experience);
-		this.completed = completed == null ? Collections.emptySet() : new HashSet<>(completed);
+
+		// Quest completion is matched by name, not by id.
+		//
+		// The client's Quest enum and questpath's quest table are two id
+		// spaces that have nothing to do with each other -- RuneLite's are the
+		// game's, questpath's are its own SQLite rowids. Comparing them
+		// produced a completed set that was pure coincidence: quests the
+		// account had never touched came back COMPLETE, and quests it had
+		// finished were judged as if it had not. The name is the one identity
+		// both sides genuinely share, and it is already what the state push
+		// and questpath's own matcher use.
+		this.completed = new HashSet<>();
+		if (completedQuestNames != null)
+		{
+			for (String name : completedQuestNames)
+			{
+				if (name != null)
+				{
+					this.completed.add(name.toLowerCase());
+				}
+			}
+		}
 
 		Map<String, BuildRule> bySkill = new HashMap<>();
 		if (rules != null)
@@ -81,9 +102,9 @@ class PlayerState
 		return xp == null ? 0L : xp;
 	}
 
-	boolean isComplete(long questId)
+	boolean isComplete(String questName)
 	{
-		return completed.contains(questId);
+		return questName != null && completed.contains(questName.toLowerCase());
 	}
 
 	/** The account's rule for a skill, or null when it has declared none. */

@@ -86,7 +86,7 @@ class QuestVerdicts
 	}
 
 	/**
-	 * The statuses worth a section, in the order a player acts on them.
+	 * The statuses worth a section when nothing is being searched for.
 	 *
 	 * COMPLETE is omitted: it is the largest group and the least useful, and
 	 * the count is already on the summary line. REFUSED is omitted because
@@ -101,6 +101,27 @@ class QuestVerdicts
 			QuestStatus.QUEST_BLOCKED,
 			QuestStatus.BUILD_BLOCKED,
 			QuestStatus.UNREACHABLE,
+		};
+	}
+
+	/**
+	 * The statuses worth a section while searching.
+	 *
+	 * COMPLETE is included here and only here. Hiding it is right for the
+	 * default view and wrong for a search: typing the name of a quest you have
+	 * finished returned nothing at all, which reads as "no such quest" rather
+	 * than "you did that one".
+	 */
+	static QuestStatus[] searchSections()
+	{
+		return new QuestStatus[]{
+			QuestStatus.ELIGIBLE,
+			QuestStatus.BOOSTABLE,
+			QuestStatus.SKILL_BLOCKED,
+			QuestStatus.QUEST_BLOCKED,
+			QuestStatus.BUILD_BLOCKED,
+			QuestStatus.UNREACHABLE,
+			QuestStatus.COMPLETE,
 		};
 	}
 

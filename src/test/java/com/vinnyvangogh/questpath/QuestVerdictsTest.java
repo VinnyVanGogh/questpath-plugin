@@ -21,7 +21,7 @@ public class QuestVerdictsTest
 	{
 		Map<String, Integer> levels = new HashMap<>();
 		Map<String, Long> experience = new HashMap<>();
-		return new PlayerState(levels, experience, new HashSet<>(), rules);
+		return new PlayerState(levels, experience, new HashSet<String>(), rules);
 	}
 
 	private static QuestGraph graph() throws Exception

@@ -19,7 +19,7 @@ public class QuestItemsTest
 
 	private static PlayerState freshAccount()
 	{
-		return new PlayerState(new HashMap<>(), new HashMap<>(), new HashSet<>(), Collections.emptyList());
+		return new PlayerState(new HashMap<>(), new HashMap<>(), new HashSet<String>(), Collections.emptyList());
 	}
 
 	private static QuestGraph graph() throws Exception
@@ -73,16 +73,20 @@ public class QuestItemsTest
 	 * did not say how many, and inventing a threshold would fail a line for
 	 * missing a number nobody set.
 	 */
+	/**
+	 * A line the wiki gave no count for needs one, and says so. "none" told
+	 * you nothing about whether you were short.
+	 */
 	@Test
 	public void aLineWithNoStatedCountNeedsOnlyOne()
 	{
 		QuestItems.Line unstated = new QuestItems.Line("Bucket", 0, 1, false);
 		assertTrue(unstated.held());
-		assertEquals("1", unstated.describe());
+		assertEquals("1 / 1", unstated.describe());
 
 		QuestItems.Line none = new QuestItems.Line("Bucket", 0, 0, false);
 		assertFalse(none.held());
-		assertEquals("none", none.describe());
+		assertEquals("0 / 1", none.describe());
 	}
 
 	@Test
@@ -159,6 +163,7 @@ public class QuestItemsTest
 		}
 		assertTrue("the total must be the sum of the lines, not one of them",
 			coins.describe().startsWith("0 / " + perQuest));
+		assertTrue(coins.sharedAcrossQuests());
 	}
 
 	/**
@@ -193,11 +198,51 @@ public class QuestItemsTest
 	 * "61+" means at least 61; rounding an unstated line up to 1 would invent
 	 * a number the wiki never gave.
 	 */
+	/**
+	 * The bug that produced "Ghostspeak amulet x3": three quests want one
+	 * amulet, and one is all anybody needs. What the wiki leaves uncounted is
+	 * almost always a tool you keep rather than something you spend, so
+	 * unstated lines contribute one no matter how many quests want them.
+	 */
 	@Test
-	public void anUnstatedLineMakesTheTotalAFloor()
+	public void anUnstatedItemCountsOnceHoweverManyQuestsWantIt()
 	{
-		QuestItems.Total total = new QuestItems.Total("Coins", 0);
-		assertEquals("none", total.describe());
+		QuestItems.Total tool = new QuestItems.Total("Ghostspeak amulet", 0);
+		tool.add(new QuestItems.Line("Ghostspeak amulet", 0, 0, false));
+		tool.add(new QuestItems.Line("Ghostspeak amulet", 0, 0, false));
+		tool.add(new QuestItems.Line("Ghostspeak amulet", 0, 0, false));
+
+		assertEquals("three quests wanting one amulet is one amulet", 1, tool.required());
+		assertEquals("0 / 1", tool.describe());
+		assertTrue(tool.sharedAcrossQuests());
+	}
+
+	/**
+	 * Stated counts do add up. The wiki states a number for what a quest
+	 * consumes, and two quests each spending coins really do want the sum.
+	 */
+	@Test
+	public void statedCountsAddUpAcrossQuests()
+	{
+		QuestItems.Total coins = new QuestItems.Total("Coins", 500);
+		coins.add(new QuestItems.Line("Coins", 60, 500, false));
+		coins.add(new QuestItems.Line("Coins", 1, 500, false));
+
+		assertEquals(61, coins.required());
+		assertEquals("500 / 61", coins.describe());
+		assertTrue(coins.satisfied());
+	}
+
+	/** A mix adds the stated counts and one for the uncounted tool. */
+	@Test
+	public void aMixOfStatedAndUnstatedAddsOneForTheTool()
+	{
+		QuestItems.Total mixed = new QuestItems.Total("Logs", 0);
+		mixed.add(new QuestItems.Line("Logs", 10, 0, false));
+		mixed.add(new QuestItems.Line("Logs", 0, 0, false));
+
+		assertEquals(11, mixed.required());
+		assertEquals("0 / 11", mixed.describe());
 	}
 
 	/** Totals put what you are missing first; a long tail of things you have would bury it. */

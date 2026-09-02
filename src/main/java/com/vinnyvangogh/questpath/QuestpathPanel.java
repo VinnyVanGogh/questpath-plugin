@@ -381,10 +381,15 @@ class QuestpathPanel extends PluginPanel
 		JPanel totalsGrid = grid();
 		for (QuestItems.Total total : items.totals())
 		{
-			String label = total.quests() > 1 ? total.name() + " ×" + total.quests() : total.name();
-			addRow(totalsGrid, label, total.describe(), total.satisfied()
+			// The count of quests goes in the tooltip, not the label. "Ball of
+			// wool x3" beside "5 / 24" read as a multiplication rather than as
+			// "three quests want this", which is what it meant.
+			String tip = total.sharedAcrossQuests()
+				? "Needed by " + total.quests() + " quests you can do"
+				: null;
+			addRow(totalsGrid, total.name(), total.describe(), total.satisfied()
 				? ColorScheme.PROGRESS_COMPLETE_COLOR
-				: ColorScheme.LIGHT_GRAY_COLOR);
+				: ColorScheme.LIGHT_GRAY_COLOR, tip);
 		}
 		panel.add(totalsGrid);
 
@@ -475,7 +480,7 @@ class QuestpathPanel extends PluginPanel
 		panel.add(done);
 
 		int matched = 0;
-		for (QuestStatus status : QuestVerdicts.sections())
+		for (QuestStatus status : filtering ? QuestVerdicts.searchSections() : QuestVerdicts.sections())
 		{
 			List<QuestGraph.Quest> shown = new ArrayList<>();
 			for (QuestGraph.Quest quest : verdicts.quests(status))
@@ -966,6 +971,11 @@ class QuestpathPanel extends PluginPanel
 
 	private static void addRow(JPanel grid, String label, String detail, Color detailColor)
 	{
+		addRow(grid, label, detail, detailColor, null);
+	}
+
+	private static void addRow(JPanel grid, String label, String detail, Color detailColor, String tooltip)
+	{
 		GridBagConstraints c = new GridBagConstraints();
 		c.gridx = 0;
 		c.weightx = 0;
@@ -981,6 +991,11 @@ class QuestpathPanel extends PluginPanel
 		c.fill = GridBagConstraints.HORIZONTAL;
 		JLabel right = new JLabel(detail, SwingConstants.RIGHT);
 		right.setForeground(detailColor);
+		if (tooltip != null)
+		{
+			left.setToolTipText(tooltip);
+			right.setToolTipText(tooltip);
+		}
 		grid.add(right, c);
 	}
 

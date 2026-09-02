@@ -112,25 +112,28 @@ class QuestItems
 		}
 
 		/**
-		 * Whether the account has enough.
+		 * How many are needed. A line the wiki gave no count for needs one.
 		 *
-		 * A line with no stated count is satisfied by holding any at all: the
-		 * wiki did not say how many, and inventing a threshold would fail a
-		 * line for not meeting a number nobody set.
+		 * One is the reading the line itself carries: naming an item without
+		 * a number means bring it, and "bring it" is one. Showing "none" for
+		 * a line like that -- as an earlier version did -- said nothing about
+		 * whether you were short.
 		 */
+		int required()
+		{
+			return Math.max(1, wanted);
+		}
+
+		/** Whether the account has enough. */
 		boolean held()
 		{
-			return wanted > 0 ? owned >= wanted : owned > 0;
+			return owned >= required();
 		}
 
 		/** What to show on the right of the row. */
 		String describe()
 		{
-			if (wanted > 0)
-			{
-				return owned + " / " + wanted;
-			}
-			return owned > 0 ? String.valueOf(owned) : "none";
+			return owned + " / " + required();
 		}
 	}
 
@@ -232,7 +235,21 @@ class QuestItems
 			this.owned = owned;
 		}
 
-		private void add(Line line)
+		/**
+		 * Folds one quest's line into the total.
+		 *
+		 * Stated counts add up; unstated ones do not. That asymmetry is the
+		 * whole point: the wiki states a number for what a quest consumes
+		 * ("25 bones", "10 bananas", "60 coins") and omits it for what a quest
+		 * merely requires you to have ("a spade", "a ghostspeak amulet", "a
+		 * pestle and mortar"). Adding one per quest for the second kind
+		 * produced "Ghostspeak amulet x3" -- three quests want one, and one is
+		 * all anybody needs.
+		 *
+		 * It is a heuristic on the wiki's own habit, not a fact about the
+		 * game, and it will be wrong for a consumable nobody counted.
+		 */
+		void add(Line line)
 		{
 			quests++;
 			if (line.wanted() > 0)
@@ -241,9 +258,6 @@ class QuestItems
 			}
 			else
 			{
-				// The wiki named the item without a count. Adding one would
-				// invent a number, so the total records that it is a floor
-				// rather than quietly rounding up.
 				anyUnstated = true;
 			}
 		}
@@ -263,24 +277,33 @@ class QuestItems
 			return quests;
 		}
 
-		boolean satisfied()
+		/**
+		 * How many to bring: every stated count added up, plus one if any
+		 * quest wants it without saying how many.
+		 *
+		 * The unstated part contributes one no matter how many quests want it,
+		 * because what the wiki leaves uncounted is almost always a tool you
+		 * keep rather than something you spend.
+		 */
+		int required()
 		{
-			return wanted > 0 ? owned >= wanted : owned > 0;
+			return wanted + (anyUnstated ? 1 : 0);
 		}
 
-		/**
-		 * The count, marked as a floor when any contributing line stated none.
-		 *
-		 * "61+" means at least 61: some quest asked for this without saying
-		 * how many, and the honest total is a minimum rather than a guess.
-		 */
+		boolean satisfied()
+		{
+			return owned >= required();
+		}
+
 		String describe()
 		{
-			if (wanted > 0)
-			{
-				return owned + " / " + wanted + (anyUnstated ? "+" : "");
-			}
-			return owned > 0 ? String.valueOf(owned) : "none";
+			return owned + " / " + required();
+		}
+
+		/** Whether more than one quest wants this, for the row's tooltip. */
+		boolean sharedAcrossQuests()
+		{
+			return quests > 1;
 		}
 	}
 

@@ -85,7 +85,7 @@ class QuestClassifier
 
 	private QuestStatus compute(QuestGraph.Quest quest)
 	{
-		if (account.isComplete(quest.id()))
+		if (account.isComplete(quest.name()))
 		{
 			return QuestStatus.COMPLETE;
 		}

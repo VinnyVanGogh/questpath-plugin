@@ -106,8 +106,20 @@ public class PlannerVectorsTest
 			levels.put(skill.skill, skill.level);
 			experience.put(skill.skill, skill.xp);
 		}
-		Set<Long> completed = new HashSet<>(
-			vectors.account.completed == null ? Collections.emptyList() : vectors.account.completed);
+		// The vectors carry questpath's own quest ids; the engine matches by
+		// name, because the client's ids are the game's and comparing the two
+		// spaces is the bug this indirection exists to prevent. Resolving
+		// through the graph is what the plugin does with the client's names.
+		Set<String> completed = new HashSet<>();
+		if (vectors.account.completed != null)
+		{
+			for (Long id : vectors.account.completed)
+			{
+				QuestGraph.Quest quest = graph.get(id);
+				assertNotNull("the vectors mark quest " + id + " complete but the graph lacks it", quest);
+				completed.add(quest.name());
+			}
+		}
 		List<BuildRule> rules = vectors.account.rules == null ? Collections.emptyList() : vectors.account.rules;
 		return new PlayerState(levels, experience, completed, rules);
 	}
