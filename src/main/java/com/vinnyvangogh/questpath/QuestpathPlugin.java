@@ -5,6 +5,8 @@ import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
+import java.util.EnumMap;
+import java.util.Map;
 import javax.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
@@ -110,7 +112,7 @@ public class QuestpathPlugin extends Plugin
 			panel.showLoggedOut();
 			return;
 		}
-		panel.update(currentStats());
+		panel.update(currentStats(), currentXp());
 	}
 
 	/**
@@ -128,6 +130,27 @@ public class QuestpathPlugin extends Plugin
 			client.getRealSkillLevel(Skill.RANGED),
 			client.getRealSkillLevel(Skill.MAGIC),
 			client.getRealSkillLevel(Skill.PRAYER));
+	}
+
+	/**
+	 * Real experience for the combat seven, validated against the levels the
+	 * client reports in the same read.
+	 *
+	 * Reading XP rather than deriving it from level thresholds is what makes
+	 * every figure on the panel exact instead of an upper bound. The
+	 * validation matters because LOGGED_IN can fire before the stats packet
+	 * arrives, and getSkillExperience answers 0 until it does — see SkillXp.
+	 */
+	private SkillXp currentXp()
+	{
+		Map<Skill, Integer> levels = new EnumMap<>(Skill.class);
+		Map<Skill, Integer> xp = new EnumMap<>(Skill.class);
+		for (Skill skill : CombatStats.COMBAT_SKILLS)
+		{
+			levels.put(skill, client.getRealSkillLevel(skill));
+			xp.put(skill, client.getSkillExperience(skill));
+		}
+		return SkillXp.of(levels, xp);
 	}
 
 	/**

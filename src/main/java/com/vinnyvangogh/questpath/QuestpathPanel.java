@@ -63,9 +63,9 @@ class QuestpathPanel extends PluginPanel
 	 * thread: it hops to the EDT itself, because Swing state must only be
 	 * touched there and every caller here is a game event.
 	 */
-	void update(CombatStats stats)
+	void update(CombatStats stats, SkillXp xp)
 	{
-		SwingUtilities.invokeLater(() -> render(stats));
+		SwingUtilities.invokeLater(() -> render(stats, xp));
 	}
 
 	/**
@@ -85,7 +85,7 @@ class QuestpathPanel extends PluginPanel
 		});
 	}
 
-	private void render(CombatStats stats)
+	private void render(CombatStats stats, SkillXp xp)
 	{
 		body.removeAll();
 
@@ -98,11 +98,11 @@ class QuestpathPanel extends PluginPanel
 		body.add(Box.createVerticalStrut(14));
 
 		body.add(heading("Free Ranged / Magic"));
-		body.add(ceilingBlock(stats, ceiling));
+		body.add(ceilingBlock(stats, xp, ceiling));
 		body.add(Box.createVerticalStrut(14));
 
 		body.add(heading("Cost of the next combat level"));
-		body.add(costBlock(stats));
+		body.add(costBlock(stats, xp));
 
 		body.revalidate();
 		body.repaint();
@@ -140,7 +140,7 @@ class QuestpathPanel extends PluginPanel
 	 * zero headroom: it means the account has already spent combat levels on
 	 * that skill, which is the one thing a capped build cannot undo.
 	 */
-	private static JPanel ceilingBlock(CombatStats stats, int ceiling)
+	private static JPanel ceilingBlock(CombatStats stats, SkillXp xp, int ceiling)
 	{
 		JPanel panel = column();
 
@@ -151,8 +151,8 @@ class QuestpathPanel extends PluginPanel
 		panel.add(Box.createVerticalStrut(4));
 
 		JPanel grid = grid();
-		addCeilingRow(grid, "Ranged", stats.get(Skill.RANGED), ceiling);
-		addCeilingRow(grid, "Magic", stats.get(Skill.MAGIC), ceiling);
+		addCeilingRow(grid, xp, Skill.RANGED, stats.get(Skill.RANGED), ceiling);
+		addCeilingRow(grid, xp, Skill.MAGIC, stats.get(Skill.MAGIC), ceiling);
 		panel.add(grid);
 
 		CombatMath.CeilingStep step = CombatMath.nextCeilingStep(stats.get(Skill.ATTACK), stats.get(Skill.STRENGTH));
@@ -168,14 +168,14 @@ class QuestpathPanel extends PluginPanel
 		return panel;
 	}
 
-	private static void addCeilingRow(JPanel grid, String name, int current, int ceiling)
+	private static void addCeilingRow(JPanel grid, SkillXp xp, Skill skill, int current, int ceiling)
 	{
 		int headroom = ceiling - current;
 		String detail;
 		Color color;
 		if (headroom > 0)
 		{
-			detail = "+" + headroom + " free  ·  " + XpTable.format(XpTable.xpBetween(current, ceiling)) + " xp";
+			detail = "+" + headroom + " free" + xpSuffix(xp, skill, ceiling);
 			color = ColorScheme.PROGRESS_COMPLETE_COLOR;
 		}
 		else if (headroom == 0)
@@ -189,7 +189,7 @@ class QuestpathPanel extends PluginPanel
 			color = ColorScheme.PROGRESS_ERROR_COLOR;
 		}
 
-		addRow(grid, name + " " + current, detail, color);
+		addRow(grid, skillName(skill) + " " + current, detail, color);
 	}
 
 	/**
@@ -200,7 +200,7 @@ class QuestpathPanel extends PluginPanel
 	 * this is the whole decision: the cheap ones are the ones that end the
 	 * build.
 	 */
-	private static JPanel costBlock(CombatStats stats)
+	private static JPanel costBlock(CombatStats stats, SkillXp xp)
 	{
 		JPanel panel = column();
 
@@ -213,9 +213,17 @@ class QuestpathPanel extends PluginPanel
 			return panel;
 		}
 
+		// Ordered by what the step actually costs. At a pure's stats almost
+		// everything is "+1 level", which discriminates nothing; the XP is
+		// what separates a Defence level that ends the build from a Strength
+		// level that is a week of work. A skill whose XP is not known yet
+		// sorts last rather than sorting as free.
 		List<Map.Entry<Skill, Integer>> ordered = new ArrayList<>(deltas.entrySet());
-		ordered.sort(Comparator.comparingInt(entry ->
-			(int) Math.min(Integer.MAX_VALUE, xpCost(stats, entry.getKey(), entry.getValue()))));
+		ordered.sort(Comparator.comparingLong(entry ->
+		{
+			long cost = xp.toLevel(entry.getKey(), stats.get(entry.getKey()) + entry.getValue());
+			return cost < 0 ? Long.MAX_VALUE : cost;
+		}));
 
 		JPanel grid = grid();
 		for (Map.Entry<Skill, Integer> entry : ordered)
@@ -225,7 +233,7 @@ class QuestpathPanel extends PluginPanel
 			int target = stats.get(skill) + delta;
 			addRow(grid,
 				skillName(skill) + " " + target,
-				"+" + delta + "  ·  " + XpTable.format(xpCost(stats, skill, delta)) + " xp",
+				"+" + delta + xpSuffix(xp, skill, target),
 				costColor(delta));
 		}
 		panel.add(grid);
@@ -233,19 +241,26 @@ class QuestpathPanel extends PluginPanel
 	}
 
 	/**
-	 * The XP between where the skill is now and the level that buys a combat
-	 * level.
+	 * The experience part of a row, or nothing at all when the client has not
+	 * supplied this skill's XP yet.
 	 *
-	 * This is an upper bound on the real cost: the client reports levels, not
-	 * XP, so it assumes the account is sitting exactly on its current level's
-	 * threshold. Reading real XP would need a StatChanged-driven cache, and
-	 * overstating the grind slightly is the safe direction to be wrong in.
+	 * Nothing, deliberately. The earlier version priced every row from level
+	 * thresholds — xpFor(target) minus xpFor(current) — which is an upper
+	 * bound on the cost, not the cost: someone most of the way through
+	 * Strength 83 was told the next level costs 278.3k. An exact figure is
+	 * available from the client, and where it is not, an omission is honest
+	 * where a bound reads as fact.
 	 */
-	private static long xpCost(CombatStats stats, Skill skill, int delta)
+	private static String xpSuffix(SkillXp xp, Skill skill, int targetLevel)
 	{
-		int current = stats.get(skill);
-		return XpTable.xpBetween(current, current + delta);
+		long cost = xp.toLevel(skill, targetLevel);
+		if (cost < 0)
+		{
+			return "";
+		}
+		return "  ·  " + XpTable.format(cost) + " xp";
 	}
+
 
 	/**
 	 * A stat one level from costing a combat level is the warning a pure
