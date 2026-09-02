@@ -7,8 +7,10 @@ being built to also check whether the quest, or anything it depends on, would
 push a skill past a cap you are holding on purpose — the question a pure or a
 restricted account actually has.
 
-> **Status: v1, in progress.** The panel answers the combat question today. The
-> quest planner follows.
+> **Status: v1, in progress.** The panel answers the combat questions today and
+> can push your account state to a self-hosted questpath. The quest planner
+> follows; the sidebar lists those sections and says plainly that they are not
+> built yet.
 
 ## What it does now
 
@@ -23,7 +25,15 @@ A sidebar panel showing, from your real levels:
   decision: one Strength level is worth having, one Defence level may be the
   end of the build.
 
-No network requests. No configuration. Nothing leaves your client.
+All of that needs no configuration and makes no network requests.
+
+## Optional: sync to your own questpath
+
+Off by default. With it on, the plugin pushes your quest completion, levels and
+experience to a [questpath](https://github.com/VinnyVanGogh) instance you host,
+so it stops polling third-party services for data your own client already has.
+The sidebar says whether the last push was accepted, refused, or never
+answered — a wrong pairing token says so rather than failing quietly.
 
 ## What is coming
 

@@ -46,15 +46,36 @@ is silent — both sides render confidently.
 
 ## State of the code
 
-- `CombatMath` / `CombatStats` — the combat formula. Pure, no client
-  dependency, fully tested.
+- `CombatMath` / `CombatStats` / `XpTable` — the combat formula and the
+  experience curve. Ports of `internal/osrs`, pure, pinned to the same test
+  vectors the Go suite asserts. Keep them pinned.
+- `SkillXp` — real experience read from the client, with "not loaded yet" kept
+  distinct from a real value. Nothing on the panel is priced from level
+  thresholds any more; an upper bound rendered as a fact is the bug this type
+  exists to prevent.
 - `QuestpathPanel` — the sidebar. Rebuilt wholesale on each update, which is
   cheap at this size; revisit if it grows a quest table.
-- `QuestpathPlugin` — nav button, `StatChanged` and `GameStateChanged`.
-- **No config class.** The first real setting is the state-push URL, which
-  arrives with the feature that needs it. Config group must be `questpath`.
+- `PanelSections` — every section the sidebar will carry. Unbuilt ones render
+  "Not built yet" **and what they will show**, never an empty state.
+  `PanelSectionsTest` fails if one carries no explanation. That distinction is
+  the point: "questpath looked and found nothing" and "questpath cannot answer
+  this yet" are different claims.
+- `AccountState` / `AccountStateSender` / `SyncStatus` — the opt-in push. Two
+  fingerprints, deliberately: quests and levels earn an immediate push,
+  experience gets a two-minute timer. Folding xp into the structural
+  fingerprint means a request every few seconds while training; leaving it out
+  means questpath's stored xp only moves on level-up.
 - The nav-button icon is drawn in code, not loaded from a resource. It is a
   placeholder; a real `icon.png` (root, max 48x72) replaces it.
+
+## Two numbers that have to stay in step
+
+The plugin re-pushes for experience every **two minutes**. questpath treats a
+push as live for **five**, and stands its WikiSync poll and hiscores fetch down
+for that long. If the plugin's interval ever exceeds questpath's window, the
+window lapses mid-session and a poll overwrites the plugin's fresher data with
+an older upload — which is exactly what happened on the first real push, before
+either number existed.
 
 ## Verifying
 
