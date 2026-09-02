@@ -50,6 +50,42 @@ public class PanelSectionsTest
 	}
 
 	/**
+	 * Every tab must have something in it. A tab strip with a dead tab reads
+	 * as a broken plugin, and the strip is built from this enum, so an empty
+	 * one is only ever discovered by clicking it.
+	 */
+	@Test
+	public void noTabIsEmpty()
+	{
+		for (PanelSections.Tab tab : PanelSections.Tab.values())
+		{
+			boolean any = false;
+			for (PanelSections section : PanelSections.values())
+			{
+				any |= section.tab() == tab;
+			}
+			assertTrue(tab + " has no sections, so its tab would be blank", any);
+		}
+	}
+
+	/**
+	 * Tab labels are one word because five of them share a 225px sidebar.
+	 * A long one does not wrap, it truncates, and a truncated tab is a tab
+	 * nobody can read.
+	 */
+	@Test
+	public void tabLabelsAreShortEnoughForTheSidebar()
+	{
+		for (PanelSections.Tab tab : PanelSections.Tab.values())
+		{
+			assertNotNull(tab.label());
+			assertFalse(tab.label().trim().isEmpty());
+			assertTrue(tab + " label is too long for a five-tab strip: " + tab.label(),
+				tab.label().length() <= 8);
+		}
+	}
+
+	/**
 	 * If every section were built this enum would be pointless, and if none
 	 * were the panel would be a promise. Both ends are worth failing on.
 	 */

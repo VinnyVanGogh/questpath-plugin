@@ -7,10 +7,12 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.GridLayout;
 import java.awt.Insets;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import javax.swing.BorderFactory;
@@ -25,37 +27,66 @@ import net.runelite.api.Skill;
 import net.runelite.client.ui.ColorScheme;
 import net.runelite.client.ui.FontManager;
 import net.runelite.client.ui.PluginPanel;
+import net.runelite.client.ui.components.materialtabs.MaterialTab;
+import net.runelite.client.ui.components.materialtabs.MaterialTabGroup;
 
 /**
  * The questpath sidebar.
  *
- * Everything here is derived from the account's own levels — no quest data, no
- * bundle, no server. Three questions, in the order a capped account asks them:
+ * <p>Five tabs, because one column of nine sections is a scroll rather than a
+ * readout. They group by the question being asked rather than by what happens
+ * to be built — "what is next", "can I do this quest" and "show me every
+ * quest" are three views of one thing, so they share a tab.
  *
- * <ol>
- *   <li>Where is my combat level, and how close is the next one?</li>
- *   <li>How much free Ranged and Magic do I still have, in levels and in XP?</li>
- *   <li>What would each stat cost me to buy the next combat level?</li>
- * </ol>
- *
- * The panel is rebuilt wholesale on each update. At this size that is cheap
- * and it removes a class of bug where a stale row survives a refresh. When it
- * grows a quest table, that changes.
+ * <p>The tabs are built once, in the constructor, and only their contents are
+ * refilled on update. That is not tidiness: the panel refreshes on every
+ * experience drop, and rebuilding the tab group would snap the selection back
+ * to Combat every few seconds while training — unusable for exactly the player
+ * this is written for.
  */
 class QuestpathPanel extends PluginPanel
 {
-	private final JPanel body = new JPanel();
-	private final JLabel emptyState = new JLabel();
+	private final Map<PanelSections.Tab, JPanel> tabBodies = new EnumMap<>(PanelSections.Tab.class);
+	private final JPanel display = new JPanel(new BorderLayout());
 
 	QuestpathPanel()
 	{
 		setLayout(new BorderLayout());
-		setBorder(BorderFactory.createEmptyBorder(8, 10, 10, 10));
+		setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
 
-		body.setLayout(new BoxLayout(body, BoxLayout.Y_AXIS));
-		emptyState.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
+		MaterialTabGroup tabGroup = new MaterialTabGroup(display);
+		// One row, equal widths. Five labels at the sidebar's 225px is about
+		// six characters each, which is why the tab names are one word.
+		tabGroup.setLayout(new GridLayout(0, PanelSections.Tab.values().length, 2, 2));
+		tabGroup.setBorder(BorderFactory.createEmptyBorder(0, 0, 6, 0));
 
-		add(body, BorderLayout.NORTH);
+		MaterialTab first = null;
+		for (PanelSections.Tab tab : PanelSections.Tab.values())
+		{
+			JPanel bodyForTab = new JPanel();
+			bodyForTab.setLayout(new BoxLayout(bodyForTab, BoxLayout.Y_AXIS));
+			tabBodies.put(tab, bodyForTab);
+
+			// Pinned to NORTH so a short tab's content sits at the top rather
+			// than stretching to fill the panel.
+			JPanel wrapper = new JPanel(new BorderLayout());
+			wrapper.add(bodyForTab, BorderLayout.NORTH);
+
+			MaterialTab materialTab = new MaterialTab(tab.label(), tabGroup, wrapper);
+			tabGroup.addTab(materialTab);
+			if (first == null)
+			{
+				first = materialTab;
+			}
+		}
+
+		add(tabGroup, BorderLayout.NORTH);
+		add(display, BorderLayout.CENTER);
+
+		if (first != null)
+		{
+			tabGroup.select(first);
+		}
 		showLoggedOut();
 	}
 
@@ -73,60 +104,94 @@ class QuestpathPanel extends PluginPanel
 	 * Says there is nothing to show rather than showing a combat level built
 	 * from levels the client has not loaded. A logged-out client reports every
 	 * skill as 1, which renders as a confident, wrong "combat 3".
+	 *
+	 * The unbuilt tabs keep their text: what they say does not depend on being
+	 * logged in, and blanking them would make the plugin look broken rather
+	 * than logged out.
 	 */
 	void showLoggedOut()
 	{
 		SwingUtilities.invokeLater(() ->
 		{
-			body.removeAll();
-			emptyState.setText("Log in to see your levels.");
-			body.add(emptyState);
-			body.revalidate();
-			body.repaint();
+			clearBodies();
+			tabBodies.get(PanelSections.Tab.COMBAT).add(muted("Log in to see your levels."));
+			tabBodies.get(PanelSections.Tab.SYNC).add(muted("Log in to sync."));
+			renderPlannedSections();
+			repaintAll();
 		});
 	}
 
 	private void render(CombatStats stats, SkillXp xp, SyncStatus sync)
 	{
-		body.removeAll();
+		clearBodies();
 
-		int attack = stats.get(Skill.ATTACK);
-		int strength = stats.get(Skill.STRENGTH);
-		int ceiling = CombatMath.freeRangedCeiling(attack, strength);
+		int ceiling = CombatMath.freeRangedCeiling(stats.get(Skill.ATTACK), stats.get(Skill.STRENGTH));
 
-		body.add(heading(PanelSections.COMBAT.title()));
-		body.add(combatBlock(stats));
-		body.add(Box.createVerticalStrut(14));
+		JPanel combat = tabBodies.get(PanelSections.Tab.COMBAT);
+		combat.add(heading(PanelSections.COMBAT.title()));
+		combat.add(combatBlock(stats));
+		combat.add(Box.createVerticalStrut(14));
+		combat.add(heading(PanelSections.CEILING.title()));
+		combat.add(ceilingBlock(stats, xp, ceiling));
+		combat.add(Box.createVerticalStrut(14));
+		combat.add(heading(PanelSections.COST.title()));
+		combat.add(costBlock(stats, xp));
 
-		body.add(heading(PanelSections.CEILING.title()));
-		body.add(ceilingBlock(stats, xp, ceiling));
-		body.add(Box.createVerticalStrut(14));
+		JPanel syncBody = tabBodies.get(PanelSections.Tab.SYNC);
+		syncBody.add(heading(PanelSections.SYNC.title()));
+		syncBody.add(syncBlock(sync));
 
-		body.add(heading(PanelSections.COST.title()));
-		body.add(costBlock(stats, xp));
-		body.add(Box.createVerticalStrut(14));
+		renderPlannedSections();
+		repaintAll();
+	}
 
-		body.add(heading(PanelSections.SYNC.title()));
-		body.add(syncBlock(sync));
-
-		// Everything still to be built, named and explained rather than left
-		// out. A section that silently does not exist reads as a tool that
-		// does less than it does; one that says what it will show reads as a
-		// tool being built. Neither is allowed to look like an empty state,
-		// which would mean questpath had looked and found nothing.
-		for (PanelSections section : PanelSections.values())
+	private void clearBodies()
+	{
+		for (JPanel bodyForTab : tabBodies.values())
 		{
-			if (section.status() != PanelSections.Status.NOT_BUILT)
-			{
-				continue;
-			}
-			body.add(Box.createVerticalStrut(14));
-			body.add(heading(section.title()));
-			body.add(notBuiltBlock(section));
+			bodyForTab.removeAll();
 		}
+	}
 
-		body.revalidate();
-		body.repaint();
+	/**
+	 * Fills every tab's sections that do not exist yet.
+	 *
+	 * Driven off the enum rather than written out per tab, so a section that
+	 * becomes live only has to change its status — it does not also have to be
+	 * deleted from a hand-maintained list here.
+	 */
+	private void renderPlannedSections()
+	{
+		for (PanelSections.Tab tab : PanelSections.Tab.values())
+		{
+			JPanel bodyForTab = tabBodies.get(tab);
+			boolean anyAlready = bodyForTab.getComponentCount() > 0;
+			for (PanelSections section : PanelSections.values())
+			{
+				if (section.tab() != tab || section.status() != PanelSections.Status.NOT_BUILT)
+				{
+					continue;
+				}
+				if (anyAlready)
+				{
+					bodyForTab.add(Box.createVerticalStrut(14));
+				}
+				bodyForTab.add(heading(section.title()));
+				bodyForTab.add(notBuiltBlock(section));
+				anyAlready = true;
+			}
+		}
+	}
+
+	private void repaintAll()
+	{
+		for (JPanel bodyForTab : tabBodies.values())
+		{
+			bodyForTab.revalidate();
+			bodyForTab.repaint();
+		}
+		display.revalidate();
+		display.repaint();
 	}
 
 	/** Combat level, and how far into it the account is. */
@@ -178,10 +243,9 @@ class QuestpathPanel extends PluginPanel
 
 		CombatMath.CeilingStep step = CombatMath.nextCeilingStep(stats.get(Skill.ATTACK), stats.get(Skill.STRENGTH));
 		panel.add(Box.createVerticalStrut(4));
-		JLabel next = new JLabel(step == null
+		JLabel next = new JLabel(wrap(step == null
 			? "No Strength level raises it further."
-			: "Strength " + step.atStrength + " raises it to " + step.ceiling
-				+ " (+" + step.gained + ")");
+			: "Strength " + step.atStrength + " raises it to " + step.ceiling + " (+" + step.gained + ")"));
 		next.setFont(FontManager.getRunescapeSmallFont());
 		next.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
 		panel.add(next);
@@ -228,9 +292,7 @@ class QuestpathPanel extends PluginPanel
 		Map<Skill, Integer> deltas = CombatMath.levelsToNextCombat(stats);
 		if (deltas.isEmpty())
 		{
-			JLabel none = new JLabel("Nothing raises combat at or below 99.");
-			none.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
-			panel.add(none);
+			panel.add(muted("Nothing raises combat at or below 99."));
 			return panel;
 		}
 
@@ -265,7 +327,7 @@ class QuestpathPanel extends PluginPanel
 	 * The experience part of a row, or nothing at all when the client has not
 	 * supplied this skill's XP yet.
 	 *
-	 * Nothing, deliberately. The earlier version priced every row from level
+	 * Nothing, deliberately. An earlier version priced every row from level
 	 * thresholds — xpFor(target) minus xpFor(current) — which is an upper
 	 * bound on the cost, not the cost: someone most of the way through
 	 * Strength 83 was told the next level costs 278.3k. An exact figure is
@@ -282,7 +344,6 @@ class QuestpathPanel extends PluginPanel
 		return "  ·  " + XpTable.format(cost) + " xp";
 	}
 
-
 	/**
 	 * Whether the account-state push is working, in the words that tell the
 	 * difference between the ways it can fail.
@@ -296,7 +357,7 @@ class QuestpathPanel extends PluginPanel
 	{
 		JPanel panel = column();
 
-		JLabel line = new JLabel(sync.describe(Instant.now()));
+		JLabel line = new JLabel(wrap(sync.describe(Instant.now())));
 		line.setForeground(sync.needsAttention()
 			? ColorScheme.PROGRESS_ERROR_COLOR
 			: ColorScheme.LIGHT_GRAY_COLOR);
@@ -304,7 +365,7 @@ class QuestpathPanel extends PluginPanel
 
 		if (sync.state() == SyncStatus.State.NO_TOKEN)
 		{
-			JLabel hint = new JLabel("Run: questpath -plugin-token");
+			JLabel hint = new JLabel(wrap("Run: questpath -plugin-token"));
 			hint.setFont(FontManager.getRunescapeSmallFont());
 			hint.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
 			panel.add(hint);
@@ -398,6 +459,14 @@ class QuestpathPanel extends PluginPanel
 	{
 		String name = skill.getName();
 		return name.substring(0, 1).toUpperCase() + name.substring(1).toLowerCase();
+	}
+
+	private static JLabel muted(String text)
+	{
+		JLabel label = new JLabel(wrap(text));
+		label.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
+		label.setAlignmentX(Component.LEFT_ALIGNMENT);
+		return label;
 	}
 
 	private static JPanel column()

@@ -20,38 +20,45 @@ package com.vinnyvangogh.questpath;
 enum PanelSections
 {
 	COMBAT(
+		Tab.COMBAT,
 		"Combat",
 		Status.LIVE,
 		null),
 
 	CEILING(
+		Tab.COMBAT,
 		"Free Ranged / Magic",
 		Status.LIVE,
 		null),
 
 	COST(
+		Tab.COMBAT,
 		"Cost of the next combat level",
 		Status.LIVE,
 		null),
 
 	SYNC(
+		Tab.SYNC,
 		"questpath sync",
 		Status.LIVE,
 		null),
 
 	BUILD_RULES(
+		Tab.BUILD,
 		"Build rules",
 		Status.NOT_BUILT,
 		"Your caps and off-limits skills, and a warning when a stat is one level from breaking one. "
 			+ "Needs the rules from questpath; the plugin does not read them back yet."),
 
 	NEXT_QUEST(
+		Tab.QUESTS,
 		"Next on your route",
 		Status.NOT_BUILT,
 		"The next quest on your saved route, with what it needs and whether you can do it now. "
 			+ "Needs the quest graph."),
 
 	QUEST_VERDICT(
+		Tab.QUESTS,
 		"Can I do this quest?",
 		Status.NOT_BUILT,
 		"Eligible, skill-blocked, or permanently off the table because a prerequisite grants xp your "
@@ -59,6 +66,7 @@ enum PanelSections
 			+ "of work: the planner has to be ported to Java against generated test vectors."),
 
 	ITEMS(
+		Tab.ITEMS,
 		"Quest items",
 		Status.NOT_BUILT,
 		"What the next quest needs, ticked off against what is actually in your bank. The bank half "
@@ -66,10 +74,41 @@ enum PanelSections
 			+ "them to a quest's requirements needs the quest graph, which is not here yet."),
 
 	QUEST_BROWSER(
+		Tab.QUESTS,
 		"Quest browser",
 		Status.NOT_BUILT,
 		"Browse and filter every quest by what your build can legally reach. Quest Helper already does "
 			+ "the walkthrough better than this ever would; the point here is the verdict, not the steps.");
+
+	/**
+	 * Which tab a section lives under.
+	 *
+	 * Grouped rather than one tab per section: the sidebar is 225px wide, and
+	 * nine tabs would each be four characters of unreadable label. The
+	 * groupings are by the question being asked, not by what happens to be
+	 * built — "can I do this quest", "what is next", and "show me every quest"
+	 * are three views of one thing.
+	 */
+	enum Tab
+	{
+		COMBAT("Combat"),
+		BUILD("Build"),
+		QUESTS("Quests"),
+		ITEMS("Items"),
+		SYNC("Sync");
+
+		private final String label;
+
+		Tab(String label)
+		{
+			this.label = label;
+		}
+
+		String label()
+		{
+			return label;
+		}
+	}
 
 	enum Status
 	{
@@ -79,15 +118,22 @@ enum PanelSections
 		NOT_BUILT
 	}
 
+	private final Tab tab;
 	private final String title;
 	private final Status status;
 	private final String plan;
 
-	PanelSections(String title, Status status, String plan)
+	PanelSections(Tab tab, String title, Status status, String plan)
 	{
+		this.tab = tab;
 		this.title = title;
 		this.status = status;
 		this.plan = plan;
+	}
+
+	Tab tab()
+	{
+		return tab;
 	}
 
 	String title()
