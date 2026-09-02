@@ -23,8 +23,11 @@ import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
+import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import net.runelite.api.Skill;
 import net.runelite.client.game.SkillIconManager;
 import net.runelite.client.ui.ColorScheme;
@@ -71,6 +74,18 @@ class QuestpathPanel extends PluginPanel
 	private Integer lastVerdictSignature;
 	private Integer lastItemsSignature;
 
+	/**
+	 * The quest search box, and the last verdicts it filters.
+	 *
+	 * The box is built once and never cleared, so typing in it survives the
+	 * panel rebuilding underneath -- which happens on every quest completion
+	 * and every build-rule arrival. A search field that lost its text and
+	 * focus mid-type would be worse than no search field.
+	 */
+	private final JTextField questSearch = new JTextField();
+	private final JPanel questResults = new JPanel();
+	private QuestVerdicts lastVerdicts;
+
 	QuestpathPanel(SkillIconManager skillIcons)
 	{
 		setLayout(new BorderLayout());
@@ -102,6 +117,10 @@ class QuestpathPanel extends PluginPanel
 			}
 		}
 
+		questResults.setLayout(new BoxLayout(questResults, BoxLayout.Y_AXIS));
+		questResults.setAlignmentX(Component.LEFT_ALIGNMENT);
+		buildQuestSearch();
+
 		add(tabGroup, BorderLayout.NORTH);
 		add(display, BorderLayout.CENTER);
 
@@ -110,6 +129,63 @@ class QuestpathPanel extends PluginPanel
 			tabGroup.select(first);
 		}
 		showLoggedOut();
+	}
+
+	/**
+	 * The quest search box.
+	 *
+	 * Filters what is already computed rather than reclassifying: the verdicts
+	 * are the expensive part and they do not depend on the text. Typing is
+	 * therefore a relayout, not a graph walk.
+	 */
+	private void buildQuestSearch()
+	{
+		questSearch.setToolTipText("Filter the quests below by name");
+		questSearch.setBackground(ColorScheme.DARKER_GRAY_COLOR);
+		questSearch.setForeground(Color.WHITE);
+		questSearch.setBorder(BorderFactory.createCompoundBorder(
+			BorderFactory.createLineBorder(ColorScheme.DARK_GRAY_COLOR),
+			BorderFactory.createEmptyBorder(2, 4, 2, 4)));
+		questSearch.setMaximumSize(new Dimension(Integer.MAX_VALUE, 22));
+		questSearch.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+		questSearch.getDocument().addDocumentListener(new DocumentListener()
+		{
+			@Override
+			public void insertUpdate(DocumentEvent e)
+			{
+				refilter();
+			}
+
+			@Override
+			public void removeUpdate(DocumentEvent e)
+			{
+				refilter();
+			}
+
+			@Override
+			public void changedUpdate(DocumentEvent e)
+			{
+				refilter();
+			}
+		});
+	}
+
+	/**
+	 * Redraws the quest list for the current filter.
+	 *
+	 * Called from the search box's document listener, which is already on the
+	 * EDT, so there is no hop here.
+	 */
+	private void refilter()
+	{
+		if (lastVerdicts == null)
+		{
+			return;
+		}
+		fillQuestResults(lastVerdicts);
+		questResults.revalidate();
+		questResults.repaint();
 	}
 
 	/**
@@ -222,13 +298,20 @@ class QuestpathPanel extends PluginPanel
 
 		// Rebuilt only when their contents actually changed; see the
 		// signature fields.
+		lastVerdicts = verdicts;
 		Integer verdictSignature = verdicts == null ? null : verdicts.signature();
 		if (!java.util.Objects.equals(verdictSignature, lastVerdictSignature))
 		{
 			clearBodies(PanelSections.Tab.QUESTS);
 			JPanel quests = tabBodies.get(PanelSections.Tab.QUESTS);
 			quests.add(heading(PanelSections.QUEST_VERDICT.title()));
-			quests.add(verdictBlock(verdicts));
+			if (verdicts != null)
+			{
+				quests.add(questSearch);
+				quests.add(Box.createVerticalStrut(6));
+			}
+			quests.add(questResults);
+			fillQuestResults(verdicts);
 			renderPlannedSectionsFor(PanelSections.Tab.QUESTS);
 			lastVerdictSignature = verdictSignature;
 		}
@@ -287,6 +370,31 @@ class QuestpathPanel extends PluginPanel
 			return panel;
 		}
 
+		// One shopping list first, the per-quest breakdown after. Coins wanted
+		// by two quests is one trip to the bank for the sum, not two lines to
+		// add up in your head.
+		JLabel totalsHeading = new JLabel("EVERYTHING YOU NEED");
+		totalsHeading.setFont(FontManager.getRunescapeSmallFont().deriveFont(Font.BOLD));
+		totalsHeading.setForeground(ColorScheme.BRAND_ORANGE);
+		panel.add(totalsHeading);
+
+		JPanel totalsGrid = grid();
+		for (QuestItems.Total total : items.totals())
+		{
+			String label = total.quests() > 1 ? total.name() + " ×" + total.quests() : total.name();
+			addRow(totalsGrid, label, total.describe(), total.satisfied()
+				? ColorScheme.PROGRESS_COMPLETE_COLOR
+				: ColorScheme.LIGHT_GRAY_COLOR);
+		}
+		panel.add(totalsGrid);
+
+		panel.add(Box.createVerticalStrut(12));
+		JLabel perQuest = new JLabel("BY QUEST  ·  " + items.quests().size());
+		perQuest.setFont(FontManager.getRunescapeSmallFont().deriveFont(Font.BOLD));
+		perQuest.setForeground(ColorScheme.BRAND_ORANGE);
+		panel.add(perQuest);
+		panel.add(Box.createVerticalStrut(4));
+
 		boolean first = true;
 		for (QuestItems.QuestNeeds needs : items.quests())
 		{
@@ -315,15 +423,6 @@ class QuestpathPanel extends PluginPanel
 			panel.add(grid);
 		}
 
-		if (items.hiddenQuests() > 0)
-		{
-			panel.add(Box.createVerticalStrut(8));
-			JLabel more = new JLabel(wrap("and " + items.hiddenQuests()
-				+ " more doable quests with item lists"));
-			more.setFont(FontManager.getRunescapeSmallFont());
-			more.setForeground(ColorScheme.MEDIUM_GRAY_COLOR);
-			panel.add(more);
-		}
 		return panel;
 	}
 
@@ -334,7 +433,13 @@ class QuestpathPanel extends PluginPanel
 	 * "these are off the table while your build stands" are three different
 	 * actions, and the last is the one no other quest tool gives you.
 	 */
-	private static JPanel verdictBlock(QuestVerdicts verdicts)
+	private void fillQuestResults(QuestVerdicts verdicts)
+	{
+		questResults.removeAll();
+		questResults.add(verdictBlock(verdicts, questSearch.getText()));
+	}
+
+	private static JPanel verdictBlock(QuestVerdicts verdicts, String filter)
 	{
 		JPanel panel = column();
 
@@ -361,20 +466,38 @@ class QuestpathPanel extends PluginPanel
 			panel.add(Box.createVerticalStrut(6));
 		}
 
+		String needle = filter == null ? "" : filter.trim().toLowerCase();
+		boolean filtering = !needle.isEmpty();
+
 		JLabel done = new JLabel(wrap(verdicts.count(QuestStatus.COMPLETE) + " done"));
 		done.setFont(FontManager.getRunescapeSmallFont());
 		done.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
 		panel.add(done);
 
+		int matched = 0;
 		for (QuestStatus status : QuestVerdicts.sections())
 		{
-			int count = verdicts.count(status);
-			if (count == 0)
+			List<QuestGraph.Quest> shown = new ArrayList<>();
+			for (QuestGraph.Quest quest : verdicts.quests(status))
+			{
+				if (!filtering || quest.name().toLowerCase().contains(needle))
+				{
+					shown.add(quest);
+				}
+			}
+			if (shown.isEmpty())
 			{
 				continue;
 			}
+			matched += shown.size();
 			panel.add(Box.createVerticalStrut(8));
 
+			// The heading shows how many matched out of the group when
+			// filtering, so a filter never makes a group look smaller than it
+			// is.
+			String count = filtering
+				? shown.size() + " of " + verdicts.count(status)
+				: String.valueOf(verdicts.count(status));
 			JLabel groupHeading = new JLabel(QuestVerdicts.label(status) + "  ·  " + count);
 			groupHeading.setFont(FontManager.getRunescapeSmallFont().deriveFont(Font.BOLD));
 			groupHeading.setForeground(statusColor(status));
@@ -384,13 +507,19 @@ class QuestpathPanel extends PluginPanel
 			// more" was a list of 49 things you could not read -- the group
 			// counts already gave the summary, so a truncated list gave
 			// nothing the heading did not.
-			for (QuestGraph.Quest quest : verdicts.quests(status))
+			for (QuestGraph.Quest quest : shown)
 			{
 				JLabel row = new JLabel(wrap(quest.name()));
 				row.setFont(FontManager.getRunescapeSmallFont());
 				row.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
 				panel.add(row);
 			}
+		}
+
+		if (filtering && matched == 0)
+		{
+			panel.add(Box.createVerticalStrut(8));
+			panel.add(muted("No quest matches that."));
 		}
 
 		return panel;

@@ -1,6 +1,7 @@
 package com.vinnyvangogh.questpath;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -14,18 +15,9 @@ import java.util.Map;
  */
 class QuestItems
 {
-	/**
-	 * How many quests to work through.
-	 *
-	 * The panel scrolls, so this is about rebuild cost rather than space:
-	 * every entry is Swing components thrown away and rebuilt whenever the
-	 * account changes. Twelve is a long shopping trip and a cheap rebuild.
-	 */
-	private static final int QUESTS_SHOWN = 12;
-
 	private final List<QuestNeeds> quests = new ArrayList<>();
+	private final List<Total> totals = new ArrayList<>();
 	private boolean bankSeen;
-	private int hiddenQuests;
 
 	/** One quest's item list, each line ticked against what is held. */
 	static class QuestNeeds
@@ -108,6 +100,12 @@ class QuestItems
 			return owned;
 		}
 
+		/** The count the wiki stated, or 0 when it stated none. */
+		int wanted()
+		{
+			return wanted;
+		}
+
 		boolean optional()
 		{
 			return optional;
@@ -162,11 +160,6 @@ class QuestItems
 			{
 				continue;
 			}
-			if (out.quests.size() >= QUESTS_SHOWN)
-			{
-				out.hiddenQuests++;
-				continue;
-			}
 
 			QuestNeeds needs = new QuestNeeds(quest.name());
 			for (QuestGraph.Item item : quest.items())
@@ -176,7 +169,119 @@ class QuestItems
 			}
 			out.quests.add(needs);
 		}
+
+		out.totals.addAll(totalsOf(out.quests, held));
 		return out;
+	}
+
+	/**
+	 * One shopping list across every quest, rather than a list per quest.
+	 *
+	 * Coins wanted by two quests is one trip to the bank for the sum, not two
+	 * separate lines to add up in your head. This is the view you read before
+	 * setting off; the per-quest lists below are what you check when you get
+	 * back.
+	 *
+	 * Optional lines are excluded. They are advice, not shopping, and folding
+	 * them in would inflate every total with things nobody has to bring.
+	 */
+	private static List<Total> totalsOf(List<QuestNeeds> quests, Map<String, Long> held)
+	{
+		Map<String, Total> merged = new LinkedHashMap<>();
+
+		for (QuestNeeds needs : quests)
+		{
+			for (Line line : needs.lines())
+			{
+				if (line.optional())
+				{
+					continue;
+				}
+				Total total = merged.computeIfAbsent(line.name(),
+					name -> new Total(name, held.getOrDefault(name.toLowerCase(), 0L)));
+				total.add(line);
+			}
+		}
+
+		List<Total> out = new ArrayList<>(merged.values());
+		// Short first: what you are missing is the point of the list, and a
+		// long tail of things you already have would bury it.
+		out.sort((a, b) ->
+		{
+			if (a.satisfied() != b.satisfied())
+			{
+				return a.satisfied() ? 1 : -1;
+			}
+			return a.name().compareToIgnoreCase(b.name());
+		});
+		return out;
+	}
+
+	/** One item summed across every doable quest that needs it. */
+	static class Total
+	{
+		private final String name;
+		private final long owned;
+		private int wanted;
+		private int quests;
+		private boolean anyUnstated;
+
+		Total(String name, long owned)
+		{
+			this.name = name;
+			this.owned = owned;
+		}
+
+		private void add(Line line)
+		{
+			quests++;
+			if (line.wanted() > 0)
+			{
+				wanted += line.wanted();
+			}
+			else
+			{
+				// The wiki named the item without a count. Adding one would
+				// invent a number, so the total records that it is a floor
+				// rather than quietly rounding up.
+				anyUnstated = true;
+			}
+		}
+
+		String name()
+		{
+			return name;
+		}
+
+		long owned()
+		{
+			return owned;
+		}
+
+		int quests()
+		{
+			return quests;
+		}
+
+		boolean satisfied()
+		{
+			return wanted > 0 ? owned >= wanted : owned > 0;
+		}
+
+		/**
+		 * The count, marked as a floor when any contributing line stated none.
+		 *
+		 * "61+" means at least 61: some quest asked for this without saying
+		 * how many, and the honest total is a minimum rather than a guess.
+		 */
+		String describe()
+		{
+			if (wanted > 0)
+			{
+				return owned + " / " + wanted + (anyUnstated ? "+" : "");
+			}
+			return owned > 0 ? String.valueOf(owned) : "none";
+		}
 	}
 
 	List<QuestNeeds> quests()
@@ -196,10 +301,10 @@ class QuestItems
 		return bankSeen;
 	}
 
-	/** Doable quests with item lists that did not fit. */
-	int hiddenQuests()
+	/** Every needed item, summed across every doable quest. */
+	List<Total> totals()
 	{
-		return hiddenQuests;
+		return totals;
 	}
 
 	/**
@@ -212,7 +317,7 @@ class QuestItems
 	 */
 	int signature()
 	{
-		int hash = (bankSeen ? 1 : 0) * 31 + hiddenQuests;
+		int hash = bankSeen ? 1 : 0;
 		for (QuestNeeds needs : quests)
 		{
 			hash = hash * 31 + needs.questName().hashCode();

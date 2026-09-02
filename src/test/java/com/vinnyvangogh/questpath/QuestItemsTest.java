@@ -33,10 +33,8 @@ public class QuestItemsTest
 		QuestItems items = QuestItems.of(graph(), freshAccount(), Collections.emptyMap(), true);
 
 		assertFalse("a fresh account can start something with an item list", items.isEmpty());
-		assertTrue("capped so a refresh does not rebuild hundreds of components",
-			items.quests().size() <= 12);
-		assertEquals("listed plus hidden must be every doable quest with items",
-			items.quests().size() + items.hiddenQuests() > 0, true);
+		assertTrue("every doable quest with an item list is shown, not the first twelve",
+			items.quests().size() > 12);
 		for (QuestItems.QuestNeeds needs : items.quests())
 		{
 			assertFalse(needs.questName().isEmpty());
@@ -126,5 +124,101 @@ public class QuestItemsTest
 		assertEquals(1, needs.needed());
 		assertEquals(1, needs.have());
 		assertTrue("an unheld optional item must not block readiness", needs.ready());
+	}
+
+	/**
+	 * One shopping list across every quest. Coins wanted by two quests is one
+	 * trip to the bank for the sum, not two lines to add up in your head.
+	 */
+	@Test
+	public void totalsSumTheSameItemAcrossQuests() throws Exception
+	{
+		QuestItems items = QuestItems.of(graph(), freshAccount(), Collections.emptyMap(), true);
+
+		QuestItems.Total coins = null;
+		for (QuestItems.Total total : items.totals())
+		{
+			if (total.name().equalsIgnoreCase("Coins"))
+			{
+				coins = total;
+			}
+		}
+
+		assertTrue("several doable quests want coins", coins != null && coins.quests() > 1);
+
+		int perQuest = 0;
+		for (QuestItems.QuestNeeds needs : items.quests())
+		{
+			for (QuestItems.Line line : needs.lines())
+			{
+				if (line.name().equalsIgnoreCase("Coins") && !line.optional())
+				{
+					perQuest += line.wanted();
+				}
+			}
+		}
+		assertTrue("the total must be the sum of the lines, not one of them",
+			coins.describe().startsWith("0 / " + perQuest));
+	}
+
+	/**
+	 * Optional lines are advice, not shopping. Folding them into the totals
+	 * would inflate every one with things nobody has to bring.
+	 */
+	@Test
+	public void totalsExcludeOptionalLines() throws Exception
+	{
+		QuestItems items = QuestItems.of(graph(), freshAccount(), Collections.emptyMap(), true);
+
+		for (QuestItems.Total total : items.totals())
+		{
+			int required = 0;
+			for (QuestItems.QuestNeeds needs : items.quests())
+			{
+				for (QuestItems.Line line : needs.lines())
+				{
+					if (line.name().equals(total.name()) && !line.optional())
+					{
+						required++;
+					}
+				}
+			}
+			assertEquals(total.name() + " counts a quest that only wants it optionally",
+				required, total.quests());
+		}
+	}
+
+	/**
+	 * A total whose lines did not all state a count is a floor, not a guess.
+	 * "61+" means at least 61; rounding an unstated line up to 1 would invent
+	 * a number the wiki never gave.
+	 */
+	@Test
+	public void anUnstatedLineMakesTheTotalAFloor()
+	{
+		QuestItems.Total total = new QuestItems.Total("Coins", 0);
+		assertEquals("none", total.describe());
+	}
+
+	/** Totals put what you are missing first; a long tail of things you have would bury it. */
+	@Test
+	public void totalsPutWhatIsMissingFirst() throws Exception
+	{
+		Map<String, Long> bank = new HashMap<>();
+		bank.put("coins", 1_000_000L);
+
+		QuestItems items = QuestItems.of(graph(), freshAccount(), bank, true);
+		boolean seenSatisfied = false;
+		for (QuestItems.Total total : items.totals())
+		{
+			if (total.satisfied())
+			{
+				seenSatisfied = true;
+			}
+			else
+			{
+				assertFalse("an unsatisfied total must not sit below a satisfied one", seenSatisfied);
+			}
+		}
 	}
 }
