@@ -41,9 +41,6 @@ answered — a wrong pairing token says so rather than failing quietly.
   one thing no external quest tool can.
 - Quest verdicts against your own build rules: eligible, skill-blocked, or
   permanently off the table because a prerequisite grants XP you refuse.
-- An opt-in push of your account state to a self-hosted
-  [questpath](https://github.com/VinnyVanGogh) instance, replacing its WikiSync
-  polling. Off by default, and the plugin is fully useful without it.
 
 ## Building
 
