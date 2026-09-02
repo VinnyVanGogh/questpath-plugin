@@ -272,7 +272,7 @@ public class QuestpathPlugin extends Plugin
 			return;
 		}
 		panel.update(currentStats(), currentXp(), syncStatus(), buildRules, unmatchedQuests,
-			verdicts(), questItems());
+			verdicts(), questItems(), SyncSettings.from(config));
 	}
 
 	/**
@@ -352,12 +352,19 @@ public class QuestpathPlugin extends Plugin
 				accepted ->
 				{
 					// questpath owns the build rules; this is the only place
-					// the plugin learns them. The panel is not repainted from
-					// here -- the next game event does that, and a Swing hop
-					// from a network callback for a panel nobody may be
-					// looking at is work for nothing.
+					// the plugin learns them.
 					buildRules = BuildRule.ordered(accepted.buildRules());
 					unmatchedQuests = accepted.unmatched();
+
+					// Repaint now rather than waiting for the next game
+					// event. An earlier version left it to the next
+					// StatChanged, on the reasoning that a Swing hop from a
+					// network callback is work for a panel nobody may be
+					// looking at -- but the first push is the only time rules
+					// arrive, and a player standing still generates no events,
+					// so the Build tab sat on "not received yet" indefinitely
+					// while the rules were already in hand.
+					clientThread.invokeLater(this::refresh);
 				}))
 			{
 				// Recorded on dispatch rather than on a successful response:
@@ -506,7 +513,8 @@ public class QuestpathPlugin extends Plugin
 		}
 
 		return QuestItems.of(questGraph,
-			new PlayerState(levels, experience, completed, buildRules), owned.heldByName());
+			new PlayerState(levels, experience, completed, buildRules),
+			owned.heldByName(), owned.bankSeen());
 	}
 
 	@Provides

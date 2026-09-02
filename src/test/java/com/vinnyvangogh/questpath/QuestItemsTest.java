@@ -30,10 +30,13 @@ public class QuestItemsTest
 	@Test
 	public void listsOnlyQuestsTheAccountCanActuallyStart() throws Exception
 	{
-		QuestItems items = QuestItems.of(graph(), freshAccount(), Collections.emptyMap());
+		QuestItems items = QuestItems.of(graph(), freshAccount(), Collections.emptyMap(), true);
 
 		assertFalse("a fresh account can start something with an item list", items.isEmpty());
-		assertTrue("no more than a screenful of quests", items.quests().size() <= 3);
+		assertTrue("capped so a refresh does not rebuild hundreds of components",
+			items.quests().size() <= 12);
+		assertEquals("listed plus hidden must be every doable quest with items",
+			items.quests().size() + items.hiddenQuests() > 0, true);
 		for (QuestItems.QuestNeeds needs : items.quests())
 		{
 			assertFalse(needs.questName().isEmpty());
@@ -48,7 +51,7 @@ public class QuestItemsTest
 	@Test
 	public void holdingTheItemsChangesTheAnswer() throws Exception
 	{
-		QuestItems empty = QuestItems.of(graph(), freshAccount(), Collections.emptyMap());
+		QuestItems empty = QuestItems.of(graph(), freshAccount(), Collections.emptyMap(), true);
 		QuestItems.QuestNeeds first = empty.quests().get(0);
 		assertEquals("an empty bank satisfies nothing", 0, first.have());
 		assertFalse(first.ready());
@@ -59,7 +62,7 @@ public class QuestItemsTest
 			bank.put(line.name().toLowerCase(), 100L);
 		}
 
-		QuestItems stocked = QuestItems.of(graph(), freshAccount(), bank);
+		QuestItems stocked = QuestItems.of(graph(), freshAccount(), bank, true);
 		QuestItems.QuestNeeds sameQuest = stocked.quests().get(0);
 		assertEquals(first.questName(), sameQuest.questName());
 		assertEquals("a stocked bank satisfies every required line",
@@ -97,6 +100,22 @@ public class QuestItemsTest
 	 * Optional lines are shown but do not count towards readiness. A quest is
 	 * not held up by something the wiki called optional.
 	 */
+	/**
+	 * A bank nobody has opened is unknown, not empty. The client does not hold
+	 * the bank until it has been opened once, so counts taken before that are
+	 * inventory only -- and a row reading "none" would claim you do not own
+	 * something sitting in a bank nobody looked in.
+	 */
+	@Test
+	public void anUnreadBankIsFlaggedRatherThanReportedAsEmpty() throws Exception
+	{
+		QuestItems unread = QuestItems.of(graph(), freshAccount(), Collections.emptyMap(), false);
+		assertFalse(unread.bankSeen());
+
+		QuestItems read = QuestItems.of(graph(), freshAccount(), Collections.emptyMap(), true);
+		assertTrue(read.bankSeen());
+	}
+
 	@Test
 	public void optionalLinesDoNotDecideReadiness()
 	{

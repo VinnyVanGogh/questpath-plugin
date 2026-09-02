@@ -17,9 +17,6 @@ import java.util.Map;
  */
 class QuestVerdicts
 {
-	/** How many quests to name per group before saying how many more there are. */
-	private static final int SHOWN_PER_GROUP = 8;
-
 	private final Map<QuestStatus, List<QuestGraph.Quest>> byStatus = new EnumMap<>(QuestStatus.class);
 	private final boolean rulesKnown;
 
@@ -71,24 +68,21 @@ class QuestVerdicts
 	}
 
 	/**
-	 * The first few quests of a status, for a panel that cannot show 57 of
-	 * them.
-	 */
-	List<QuestGraph.Quest> sample(QuestStatus status)
-	{
-		List<QuestGraph.Quest> all = quests(status);
-		return all.size() <= SHOWN_PER_GROUP ? all : all.subList(0, SHOWN_PER_GROUP);
-	}
-
-	/**
-	 * How many of a status were not shown.
+	 * A cheap identity for what is rendered, so an unchanged list is not
+	 * rebuilt.
 	 *
-	 * Reported rather than silently truncated: a list that stops at eight
-	 * without saying so reads as a complete list of eight.
+	 * The panel refreshes on every experience drop, and every group now lists
+	 * in full -- around 200 labels. Rebuilding those several times a second
+	 * while training is work for a picture that did not change.
 	 */
-	int hidden(QuestStatus status)
+	int signature()
 	{
-		return Math.max(0, count(status) - SHOWN_PER_GROUP);
+		int hash = rulesKnown ? 1 : 0;
+		for (QuestStatus status : QuestStatus.values())
+		{
+			hash = hash * 31 + count(status);
+		}
+		return hash;
 	}
 
 	/**

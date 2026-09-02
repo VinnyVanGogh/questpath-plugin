@@ -85,21 +85,42 @@ public class QuestVerdictsTest
 	}
 
 	/**
-	 * A truncated group must report what it hid. A list that stops at eight
-	 * without saying so reads as a complete list of eight.
+	 * Groups list in full. They used to stop at eight with "and 49 more",
+	 * which named 49 quests you could not read -- the counts in the headings
+	 * already gave the summary, so the truncated list added nothing.
 	 */
 	@Test
-	public void aTruncatedGroupSaysHowManyItHid() throws Exception
+	public void aGroupListsEveryQuestInIt() throws Exception
 	{
 		QuestVerdicts verdicts = QuestVerdicts.of(graph(), freshAccount(Collections.emptyList()));
 
+		int listed = 0;
 		for (QuestStatus status : QuestVerdicts.sections())
 		{
-			int shown = verdicts.sample(status).size();
-			assertEquals(status + ": shown plus hidden must be the whole group",
-				verdicts.count(status), shown + verdicts.hidden(status));
-			assertTrue(status + ": the sample must not exceed what the panel shows", shown <= 8);
+			assertEquals(status + ": the list and the count must agree",
+				verdicts.count(status), verdicts.quests(status).size());
+			listed += verdicts.quests(status).size();
 		}
+		assertTrue("the sections between them must cover most of the graph", listed > 100);
+	}
+
+	/**
+	 * The signature is what stops ~200 labels being rebuilt on every
+	 * experience drop. It has to move when the answer moves and hold still
+	 * when it does not.
+	 */
+	@Test
+	public void theSignatureTracksWhatIsRendered() throws Exception
+	{
+		QuestVerdicts unconstrained = QuestVerdicts.of(graph(), freshAccount(Collections.emptyList()));
+		QuestVerdicts same = QuestVerdicts.of(graph(), freshAccount(Collections.emptyList()));
+		assertEquals("an unchanged account must not force a rebuild",
+			unconstrained.signature(), same.signature());
+
+		QuestVerdicts pure = QuestVerdicts.of(graph(),
+			freshAccount(Collections.singletonList(ruleOf("defence", "NO_XP", 0))));
+		assertTrue("a rule that closes quests must force a rebuild",
+			pure.signature() != unconstrained.signature());
 	}
 
 	@Test

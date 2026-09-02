@@ -105,6 +105,20 @@ class OwnedItems
 	}
 
 	/**
+	 * Whether the bank has been opened this session.
+	 *
+	 * The client does not hold the bank until it has been opened once, so an
+	 * account with 405 buckets in the bank and a closed bank interface looks
+	 * exactly like an account with none. Anything reading heldByName has to be
+	 * able to say which, or it reports "you have none of these" about a bank
+	 * it has never seen.
+	 */
+	boolean bankSeen()
+	{
+		return seen.containsKey(Container.BANK);
+	}
+
+	/**
 	 * The items block for a push, containing only what has actually been seen.
 	 *
 	 * A container that has never been opened is omitted entirely rather than

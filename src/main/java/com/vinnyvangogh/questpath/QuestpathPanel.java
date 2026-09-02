@@ -60,6 +60,17 @@ class QuestpathPanel extends PluginPanel
 	private final Map<PanelSections.Tab, JPanel> tabBodies = new EnumMap<>(PanelSections.Tab.class);
 	private final JPanel display = new JPanel(new BorderLayout());
 
+	/**
+	 * What the Quests and Items tabs last rendered.
+	 *
+	 * They list in full -- around 200 labels between them -- and the panel
+	 * refreshes on every experience drop. Rebuilding them several times a
+	 * second while training is work for a picture that did not change, and it
+	 * throws away scroll position with it.
+	 */
+	private Integer lastVerdictSignature;
+	private Integer lastItemsSignature;
+
 	QuestpathPanel(SkillIconManager skillIcons)
 	{
 		setLayout(new BorderLayout());
@@ -141,9 +152,11 @@ class QuestpathPanel extends PluginPanel
 	 * touched there and every caller here is a game event.
 	 */
 	void update(CombatStats stats, SkillXp xp, SyncStatus sync,
-		List<BuildRule> rules, List<String> unmatchedQuests, QuestVerdicts verdicts, QuestItems items)
+		List<BuildRule> rules, List<String> unmatchedQuests, QuestVerdicts verdicts, QuestItems items,
+		SyncSettings settings)
 	{
-		SwingUtilities.invokeLater(() -> render(stats, xp, sync, rules, unmatchedQuests, verdicts, items));
+		SwingUtilities.invokeLater(() ->
+			render(stats, xp, sync, rules, unmatchedQuests, verdicts, items, settings));
 	}
 
 	/**
@@ -159,7 +172,7 @@ class QuestpathPanel extends PluginPanel
 	{
 		SwingUtilities.invokeLater(() ->
 		{
-			clearBodies();
+			clearAllBodies();
 			tabBodies.get(PanelSections.Tab.COMBAT).add(muted("Log in to see your levels."));
 			tabBodies.get(PanelSections.Tab.SYNC).add(muted("Log in to sync."));
 			tabBodies.get(PanelSections.Tab.QUESTS).add(muted("Log in to judge your quests."));
@@ -170,9 +183,10 @@ class QuestpathPanel extends PluginPanel
 	}
 
 	private void render(CombatStats stats, SkillXp xp, SyncStatus sync,
-		List<BuildRule> rules, List<String> unmatchedQuests, QuestVerdicts verdicts, QuestItems items)
+		List<BuildRule> rules, List<String> unmatchedQuests, QuestVerdicts verdicts, QuestItems items,
+		SyncSettings settings)
 	{
-		clearBodies();
+		clearBodies(PanelSections.Tab.COMBAT, PanelSections.Tab.SYNC, PanelSections.Tab.BUILD);
 
 		int ceiling = CombatMath.freeRangedCeiling(stats.get(Skill.ATTACK), stats.get(Skill.STRENGTH));
 
@@ -188,7 +202,7 @@ class QuestpathPanel extends PluginPanel
 
 		JPanel syncBody = tabBodies.get(PanelSections.Tab.SYNC);
 		syncBody.add(heading(PanelSections.SYNC.title()));
-		syncBody.add(syncBlock(sync, unmatchedQuests));
+		syncBody.add(syncBlock(sync, unmatchedQuests, settings));
 
 		JPanel build = tabBodies.get(PanelSections.Tab.BUILD);
 		build.add(heading(PanelSections.BUILD_RULES.title()));
@@ -206,15 +220,31 @@ class QuestpathPanel extends PluginPanel
 			build.add(buildRulesBlock(stats, rules));
 		}
 
-		JPanel quests = tabBodies.get(PanelSections.Tab.QUESTS);
-		quests.add(heading(PanelSections.QUEST_VERDICT.title()));
-		quests.add(verdictBlock(verdicts));
+		// Rebuilt only when their contents actually changed; see the
+		// signature fields.
+		Integer verdictSignature = verdicts == null ? null : verdicts.signature();
+		if (!java.util.Objects.equals(verdictSignature, lastVerdictSignature))
+		{
+			clearBodies(PanelSections.Tab.QUESTS);
+			JPanel quests = tabBodies.get(PanelSections.Tab.QUESTS);
+			quests.add(heading(PanelSections.QUEST_VERDICT.title()));
+			quests.add(verdictBlock(verdicts));
+			renderPlannedSectionsFor(PanelSections.Tab.QUESTS);
+			lastVerdictSignature = verdictSignature;
+		}
 
-		JPanel itemsBody = tabBodies.get(PanelSections.Tab.ITEMS);
-		itemsBody.add(heading(PanelSections.ITEMS.title()));
-		itemsBody.add(itemsBlock(items));
+		Integer itemsSignature = items == null ? null : items.signature();
+		if (!java.util.Objects.equals(itemsSignature, lastItemsSignature))
+		{
+			clearBodies(PanelSections.Tab.ITEMS);
+			JPanel itemsBody = tabBodies.get(PanelSections.Tab.ITEMS);
+			itemsBody.add(heading(PanelSections.ITEMS.title()));
+			itemsBody.add(itemsBlock(items));
+			renderPlannedSectionsFor(PanelSections.Tab.ITEMS);
+			lastItemsSignature = itemsSignature;
+		}
 
-		renderPlannedSections();
+		renderPlannedSectionsFor(PanelSections.Tab.COMBAT, PanelSections.Tab.SYNC, PanelSections.Tab.BUILD);
 		repaintAll();
 	}
 
@@ -237,6 +267,20 @@ class QuestpathPanel extends PluginPanel
 				+ " this will fill in."));
 			return panel;
 		}
+		if (!items.bankSeen())
+		{
+			// The client does not hold the bank until it has been opened once,
+			// so every count below is inventory and equipment only. Without
+			// saying so, a row reading "none" claims you do not own something
+			// that may be sitting in a bank nobody has looked in.
+			JLabel warning = new JLabel(wrap("Bank not read this session, so these"
+				+ " counts are what you are carrying. Open your bank once."));
+			warning.setFont(FontManager.getRunescapeSmallFont());
+			warning.setForeground(ColorScheme.PROGRESS_INPROGRESS_COLOR);
+			panel.add(warning);
+			panel.add(Box.createVerticalStrut(6));
+		}
+
 		if (items.isEmpty())
 		{
 			panel.add(muted("No doable quest has an item list."));
@@ -269,6 +313,16 @@ class QuestpathPanel extends PluginPanel
 					: ColorScheme.LIGHT_GRAY_COLOR);
 			}
 			panel.add(grid);
+		}
+
+		if (items.hiddenQuests() > 0)
+		{
+			panel.add(Box.createVerticalStrut(8));
+			JLabel more = new JLabel(wrap("and " + items.hiddenQuests()
+				+ " more doable quests with item lists"));
+			more.setFont(FontManager.getRunescapeSmallFont());
+			more.setForeground(ColorScheme.MEDIUM_GRAY_COLOR);
+			panel.add(more);
 		}
 		return panel;
 	}
@@ -326,23 +380,16 @@ class QuestpathPanel extends PluginPanel
 			groupHeading.setForeground(statusColor(status));
 			panel.add(groupHeading);
 
-			for (QuestGraph.Quest quest : verdicts.sample(status))
+			// Every quest, not the first eight. The panel scrolls, and "and 49
+			// more" was a list of 49 things you could not read -- the group
+			// counts already gave the summary, so a truncated list gave
+			// nothing the heading did not.
+			for (QuestGraph.Quest quest : verdicts.quests(status))
 			{
 				JLabel row = new JLabel(wrap(quest.name()));
 				row.setFont(FontManager.getRunescapeSmallFont());
 				row.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
 				panel.add(row);
-			}
-
-			int hidden = verdicts.hidden(status);
-			if (hidden > 0)
-			{
-				// Said rather than silently truncated: a list that stops at
-				// eight without saying so reads as a complete list of eight.
-				JLabel more = new JLabel(wrap("and " + hidden + " more"));
-				more.setFont(FontManager.getRunescapeSmallFont());
-				more.setForeground(ColorScheme.MEDIUM_GRAY_COLOR);
-				panel.add(more);
 			}
 		}
 
@@ -367,12 +414,22 @@ class QuestpathPanel extends PluginPanel
 		return ColorScheme.PROGRESS_INPROGRESS_COLOR;
 	}
 
-	private void clearBodies()
+	private void clearBodies(PanelSections.Tab... tabs)
+	{
+		for (PanelSections.Tab tab : tabs)
+		{
+			tabBodies.get(tab).removeAll();
+		}
+	}
+
+	private void clearAllBodies()
 	{
 		for (JPanel bodyForTab : tabBodies.values())
 		{
 			bodyForTab.removeAll();
 		}
+		lastVerdictSignature = null;
+		lastItemsSignature = null;
 	}
 
 	/**
@@ -384,7 +441,12 @@ class QuestpathPanel extends PluginPanel
 	 */
 	private void renderPlannedSections()
 	{
-		for (PanelSections.Tab tab : PanelSections.Tab.values())
+		renderPlannedSectionsFor(PanelSections.Tab.values());
+	}
+
+	private void renderPlannedSectionsFor(PanelSections.Tab... tabs)
+	{
+		for (PanelSections.Tab tab : tabs)
 		{
 			JPanel bodyForTab = tabBodies.get(tab);
 			boolean anyAlready = bodyForTab.getComponentCount() > 0;
@@ -575,7 +637,7 @@ class QuestpathPanel extends PluginPanel
 	 * three are things only the player can fix, and neither is discoverable
 	 * without being told.
 	 */
-	private static JPanel syncBlock(SyncStatus sync, List<String> unmatchedQuests)
+	private static JPanel syncBlock(SyncStatus sync, List<String> unmatchedQuests, SyncSettings settings)
 	{
 		JPanel panel = column();
 
@@ -591,6 +653,27 @@ class QuestpathPanel extends PluginPanel
 			hint.setFont(FontManager.getRunescapeSmallFont());
 			hint.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
 			panel.add(hint);
+		}
+
+		// The settings themselves, not only their effect. RuneLite's config
+		// panel is several clicks away and behind a different icon, and
+		// "sent 3m ago" does not say which server it went to -- which is the
+		// first thing anyone checks when it went somewhere unexpected.
+		if (settings != null)
+		{
+			panel.add(Box.createVerticalStrut(8));
+			JPanel grid = grid();
+			addRow(grid, "Sending", settings.enabled() ? "on" : "off",
+				settings.enabled() ? ColorScheme.PROGRESS_COMPLETE_COLOR : ColorScheme.LIGHT_GRAY_COLOR);
+			addRow(grid, "Server", settings.serverUrl(), ColorScheme.LIGHT_GRAY_COLOR);
+			addRow(grid, "Token", settings.hasToken() ? "set" : "not set",
+				settings.hasToken() ? ColorScheme.PROGRESS_COMPLETE_COLOR : ColorScheme.PROGRESS_ERROR_COLOR);
+			panel.add(grid);
+
+			JLabel where = new JLabel(wrap("Change these under Settings, questpath."));
+			where.setFont(FontManager.getRunescapeSmallFont());
+			where.setForeground(ColorScheme.MEDIUM_GRAY_COLOR);
+			panel.add(where);
 		}
 
 		// A quest name this plugin sends that questpath cannot resolve is a

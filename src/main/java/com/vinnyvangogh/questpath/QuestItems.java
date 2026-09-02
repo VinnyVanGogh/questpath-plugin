@@ -14,10 +14,18 @@ import java.util.Map;
  */
 class QuestItems
 {
-	/** How many quests to work through. More is a scroll, not an answer. */
-	private static final int QUESTS_SHOWN = 3;
+	/**
+	 * How many quests to work through.
+	 *
+	 * The panel scrolls, so this is about rebuild cost rather than space:
+	 * every entry is Swing components thrown away and rebuilt whenever the
+	 * account changes. Twelve is a long shopping trip and a cheap rebuild.
+	 */
+	private static final int QUESTS_SHOWN = 12;
 
 	private final List<QuestNeeds> quests = new ArrayList<>();
+	private boolean bankSeen;
+	private int hiddenQuests;
 
 	/** One quest's item list, each line ticked against what is held. */
 	static class QuestNeeds
@@ -142,19 +150,21 @@ class QuestItems
 	 * @param held quantities by lowercased item name, from the client's own
 	 *     bank, inventory and equipment
 	 */
-	static QuestItems of(QuestGraph graph, PlayerState account, Map<String, Long> held)
+	static QuestItems of(QuestGraph graph, PlayerState account, Map<String, Long> held, boolean bankSeen)
 	{
 		QuestItems out = new QuestItems();
+		out.bankSeen = bankSeen;
 		QuestClassifier classifier = new QuestClassifier(graph, account);
 
 		for (QuestGraph.Quest quest : graph.quests())
 		{
-			if (out.quests.size() >= QUESTS_SHOWN)
-			{
-				break;
-			}
 			if (!classifier.classify(quest).doable() || quest.items().isEmpty())
 			{
+				continue;
+			}
+			if (out.quests.size() >= QUESTS_SHOWN)
+			{
+				out.hiddenQuests++;
 				continue;
 			}
 
@@ -172,6 +182,47 @@ class QuestItems
 	List<QuestNeeds> quests()
 	{
 		return quests;
+	}
+
+	/**
+	 * Whether the counts can be trusted as "you do not have this".
+	 *
+	 * False means the bank has not been opened this session, so every count
+	 * here is inventory and equipment only -- and a row reading "none" means
+	 * "not on you", which is a different claim from "not owned".
+	 */
+	boolean bankSeen()
+	{
+		return bankSeen;
+	}
+
+	/** Doable quests with item lists that did not fit. */
+	int hiddenQuests()
+	{
+		return hiddenQuests;
+	}
+
+	/**
+	 * A cheap identity for what is rendered, so an unchanged list is not
+	 * rebuilt.
+	 *
+	 * The panel refreshes on every experience drop, and rebuilding a few
+	 * hundred Swing components several times a second while training is work
+	 * for a picture that did not change.
+	 */
+	int signature()
+	{
+		int hash = (bankSeen ? 1 : 0) * 31 + hiddenQuests;
+		for (QuestNeeds needs : quests)
+		{
+			hash = hash * 31 + needs.questName().hashCode();
+			for (Line line : needs.lines())
+			{
+				hash = hash * 31 + line.name().hashCode();
+				hash = hash * 31 + Long.hashCode(line.owned());
+			}
+		}
+		return hash;
 	}
 
 	boolean isEmpty()
