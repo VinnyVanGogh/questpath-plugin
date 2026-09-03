@@ -123,6 +123,16 @@ public class QuestpathPlugin extends Plugin
 	@Inject
 	private net.runelite.client.chat.ChatMessageManager chatMessageManager;
 
+	/** RuneLite's shared scheduler. The watchdog samples on it. */
+	@Inject
+	private java.util.concurrent.ScheduledExecutorService scheduler;
+
+	/**
+	 * Held so shutDown can stop it. A poller nobody can cancel would outlive
+	 * every plugin toggle, one per toggle, for the life of the client.
+	 */
+	private EdtWatchdog watchdog;
+
 	/**
 	 * The five in-game overlays, held so they can be removed again.
 	 *
@@ -290,7 +300,8 @@ public class QuestpathPlugin extends Plugin
 	@Override
 	protected void startUp()
 	{
-		EdtWatchdog.start();
+		watchdog = new EdtWatchdog(scheduler);
+		watchdog.start();
 		panel = new QuestpathPanel(sprites, new OverlaySettingsPanel(config, configManager));
 		navButton = NavigationButton.builder()
 			.tooltip("Quest Path")
@@ -356,6 +367,12 @@ public class QuestpathPlugin extends Plugin
 		}
 		overlayIcons.clear();
 		overlaySnapshot = null;
+
+		if (watchdog != null)
+		{
+			watchdog.stop();
+			watchdog = null;
+		}
 
 		clientToolbar.removeNavigation(navButton);
 		navButton = null;
