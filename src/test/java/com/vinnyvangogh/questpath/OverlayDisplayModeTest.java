@@ -256,12 +256,38 @@ public class OverlayDisplayModeTest
 	@Test
 	public void perPanelWidthFallsBackToTheSharedOne()
 	{
-		assertEquals(OverlayWidth.WIDE.pixels(),
-			OverlayWidth.MATCH_GLOBAL.resolve(OverlayWidth.WIDE));
-		assertEquals(OverlayWidth.COMPACT.pixels(),
-			OverlayWidth.COMPACT.resolve(OverlayWidth.WIDEST));
-		assertTrue(OverlayWidth.MATCH_GLOBAL.resolve(OverlayWidth.MATCH_GLOBAL) > 0);
-		assertTrue(OverlayWidth.MATCH_GLOBAL.resolve(null) > 0);
+		assertEquals(OverlayWidth.WIDE.pixels(), PanelWidth.MATCH_SHARED.resolve(OverlayWidth.WIDE));
+		assertEquals(OverlayWidth.COMPACT.pixels(), PanelWidth.COMPACT.resolve(OverlayWidth.WIDEST));
+		assertTrue(PanelWidth.MATCH_SHARED.resolve(null) > 0);
+	}
+
+	/**
+	 * The shared settings cannot offer to match themselves.
+	 *
+	 * They were one enum with a MATCH member, which put "Match the shared
+	 * setting" in the shared dropdown -- an option that cannot be true, since
+	 * the shared setting is the thing the others match. Two types now: the
+	 * shared one has only real values, and only the per-panel one can defer.
+	 */
+	@Test
+	public void onlyPerPanelSettingsCanDefer()
+	{
+		for (OverlayWidth width : OverlayWidth.values())
+		{
+			assertTrue(width + " is a shared width and must be a real size",
+				width.pixels() > 0);
+		}
+		for (OverlayListLength length : OverlayListLength.values())
+		{
+			assertTrue(length + " is a shared length and must be a real length",
+				length.baseline() > 0);
+		}
+
+		// The per-panel types keep the deferring member, and it is their
+		// default -- a panel that has never been configured follows the
+		// shared setting.
+		assertEquals(PanelWidth.MATCH_SHARED, PanelWidth.values()[0]);
+		assertEquals(PanelListLength.MATCH_SHARED, PanelListLength.values()[0]);
 	}
 
 	/** Each build-rule setting shows exactly the halves its name claims. */
@@ -378,14 +404,9 @@ public class OverlayDisplayModeTest
 	public void perPanelLengthFallsBackToTheSharedOne()
 	{
 		assertEquals(OverlayListLength.EVERYTHING,
-			OverlayListLength.MATCH_SHARED.resolve(OverlayListLength.EVERYTHING));
+			PanelListLength.MATCH_SHARED.resolve(OverlayListLength.EVERYTHING));
 		assertEquals(OverlayListLength.SHORT,
-			OverlayListLength.SHORT.resolve(OverlayListLength.EVERYTHING));
-
-		// A shared setting that is itself MATCH_SHARED would be a cycle, and
-		// a baseline of zero shows nothing at all.
-		assertEquals(OverlayListLength.NORMAL,
-			OverlayListLength.MATCH_SHARED.resolve(OverlayListLength.MATCH_SHARED));
-		assertEquals(OverlayListLength.NORMAL, OverlayListLength.MATCH_SHARED.resolve(null));
+			PanelListLength.SHORT.resolve(OverlayListLength.EVERYTHING));
+		assertEquals(OverlayListLength.NORMAL, PanelListLength.MATCH_SHARED.resolve(null));
 	}
 }

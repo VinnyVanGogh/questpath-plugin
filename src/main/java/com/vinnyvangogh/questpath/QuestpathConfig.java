@@ -32,6 +32,14 @@ public interface QuestpathConfig extends Config
 	String overlaySection = "overlays";
 
 	@ConfigSection(
+		name = "Shops",
+		description = "Mark the things you need while a shop is open",
+		position = 2,
+		closedByDefault = false
+	)
+	String shopSection = "shops";
+
+	@ConfigSection(
 		name = "questpath sync",
 		description = "Push this account's state to your own questpath instance",
 		position = 0,
@@ -123,7 +131,7 @@ public interface QuestpathConfig extends Config
 
 	@ConfigItem(
 		keyName = "overlayListLength",
-		name = "List length",
+		name = "Length",
 		description = "How much of a capped list each overlay draws. \"Everything\" really is"
 			+ " everything, however tall that gets -- a shopping list you can only see the top"
 			+ " of is one you still have to finish somewhere else.",
@@ -177,32 +185,32 @@ public interface QuestpathConfig extends Config
 
 	@ConfigItem(
 		keyName = "overlayNextQuestWidth",
-		name = "Route: width",
+		name = "- width",
 		description = "Width for the route panel alone. Leave it matching the shared setting"
 			+ " unless you want this one narrower or wider than the rest.",
 		section = overlaySection,
 		position = 11
 	)
-	default OverlayWidth overlayNextQuestWidth()
+	default PanelWidth overlayNextQuestWidth()
 	{
-		return OverlayWidth.MATCH_GLOBAL;
+		return PanelWidth.MATCH_SHARED;
 	}
 
 	@ConfigItem(
 		keyName = "overlayNextQuestLength",
-		name = "Route: length",
+		name = "- length",
 		description = "How much of the route preview to list. Short is usually right here -- it answers \"what now\", not \"show me the whole plan\".",
 		section = overlaySection,
 		position = 13
 	)
-	default OverlayListLength overlayNextQuestLength()
+	default PanelListLength overlayNextQuestLength()
 	{
-		return OverlayListLength.MATCH_SHARED;
+		return PanelListLength.MATCH_SHARED;
 	}
 
 	@ConfigItem(
 		keyName = "overlayNextQuestItems",
-		name = "Route: items",
+		name = "- list its items",
 		description = "List the next quest's own items under it, ticked against what you hold."
 			+ " Answers \"can I start this now\" without opening anything.",
 		section = overlaySection,
@@ -227,26 +235,26 @@ public interface QuestpathConfig extends Config
 
 	@ConfigItem(
 		keyName = "overlayPickupsWidth",
-		name = "Pickups: width",
+		name = "- width",
 		description = "Width for the pickups panel alone.",
 		section = overlaySection,
 		position = 21
 	)
-	default OverlayWidth overlayPickupsWidth()
+	default PanelWidth overlayPickupsWidth()
 	{
-		return OverlayWidth.MATCH_GLOBAL;
+		return PanelWidth.MATCH_SHARED;
 	}
 
 	@ConfigItem(
 		keyName = "overlayPickupsLength",
-		name = "Pickups: length",
+		name = "- length",
 		description = "How many pickups to list.",
 		section = overlaySection,
 		position = 22
 	)
-	default OverlayListLength overlayPickupsLength()
+	default PanelListLength overlayPickupsLength()
 	{
-		return OverlayListLength.MATCH_SHARED;
+		return PanelListLength.MATCH_SHARED;
 	}
 
 	@ConfigItem(
@@ -263,32 +271,32 @@ public interface QuestpathConfig extends Config
 
 	@ConfigItem(
 		keyName = "overlayItemsWidth",
-		name = "Items: width",
+		name = "- width",
 		description = "Width for the shopping list alone. This is the panel that most wants"
 			+ " the wider settings -- it is the one with sixty-odd rows in it.",
 		section = overlaySection,
 		position = 31
 	)
-	default OverlayWidth overlayItemsWidth()
+	default PanelWidth overlayItemsWidth()
 	{
-		return OverlayWidth.MATCH_GLOBAL;
+		return PanelWidth.MATCH_SHARED;
 	}
 
 	@ConfigItem(
 		keyName = "overlayItemsLength",
-		name = "Items: length",
+		name = "- length",
 		description = "How much of the shopping list to show. This is the panel that wants Everything: a list you can only see the top of is one you still have to finish elsewhere.",
 		section = overlaySection,
 		position = 33
 	)
-	default OverlayListLength overlayItemsLength()
+	default PanelListLength overlayItemsLength()
 	{
-		return OverlayListLength.MATCH_SHARED;
+		return PanelListLength.MATCH_SHARED;
 	}
 
 	@ConfigItem(
 		keyName = "overlayItemsHideHeld",
-		name = "Items: hide held",
+		name = "- hide what you have",
 		description = "Drop the \"already held\" section, leaving only what you are short of."
 			+ " The running total at the top still counts them, so nothing is hidden without"
 			+ " being accounted for.",
@@ -314,26 +322,26 @@ public interface QuestpathConfig extends Config
 
 	@ConfigItem(
 		keyName = "overlayCombatXpWidth",
-		name = "Combat: width",
+		name = "- width",
 		description = "Width for the combat panel alone.",
 		section = overlaySection,
 		position = 41
 	)
-	default OverlayWidth overlayCombatXpWidth()
+	default PanelWidth overlayCombatXpWidth()
 	{
-		return OverlayWidth.MATCH_GLOBAL;
+		return PanelWidth.MATCH_SHARED;
 	}
 
 	@ConfigItem(
 		keyName = "overlayCombatXpLength",
-		name = "Combat: length",
+		name = "- length",
 		description = "How many stats to price. There are only seven, so this rarely needs changing.",
 		section = overlaySection,
 		position = 42
 	)
-	default OverlayListLength overlayCombatXpLength()
+	default PanelListLength overlayCombatXpLength()
 	{
-		return OverlayListLength.MATCH_SHARED;
+		return PanelListLength.MATCH_SHARED;
 	}
 
 	@ConfigItem(
@@ -350,31 +358,31 @@ public interface QuestpathConfig extends Config
 
 	@ConfigItem(
 		keyName = "overlayBuildRulesWidth",
-		name = "Rules: width",
+		name = "- width",
 		description = "Width for the build rules panel alone.",
 		section = overlaySection,
 		position = 51
 	)
-	default OverlayWidth overlayBuildRulesWidth()
+	default PanelWidth overlayBuildRulesWidth()
 	{
-		return OverlayWidth.MATCH_GLOBAL;
+		return PanelWidth.MATCH_SHARED;
 	}
 
 	@ConfigItem(
 		keyName = "overlayBuildRulesLength",
-		name = "Rules: length",
+		name = "- length",
 		description = "How many rules to list per section.",
 		section = overlaySection,
 		position = 53
 	)
-	default OverlayListLength overlayBuildRulesLength()
+	default PanelListLength overlayBuildRulesLength()
 	{
-		return OverlayListLength.MATCH_SHARED;
+		return PanelListLength.MATCH_SHARED;
 	}
 
 	@ConfigItem(
 		keyName = "overlayBuildRulesSections",
-		name = "Rules: which",
+		name = "- which rules",
 		description = "Blocking rules are walls -- cross one and the build is over."
 			+ " Informational ones are goals and soft caps: worth tracking, never urgent.",
 		section = overlaySection,
@@ -383,5 +391,40 @@ public interface QuestpathConfig extends Config
 	default BuildRuleSections overlayBuildRulesSections()
 	{
 		return BuildRuleSections.BOTH;
+	}
+
+	// ------------------------------------------------------------------
+	// Shops.
+	//
+	// Deliberately independent of the "Everything you need" overlay. The
+	// shopping list answers "what do I need"; this answers "is any of it in
+	// front of me", and someone who does not want a panel on screen all day
+	// may well still want the shop marked when they open one.
+	// ------------------------------------------------------------------
+
+	@ConfigItem(
+		keyName = "shopHighlight",
+		name = "Mark what you need in shops",
+		description = "While a shop is open, outline the items your quests still need and show"
+			+ " how many to buy. Works whether or not the \"Everything you need\" overlay is on.",
+		section = shopSection,
+		position = 1
+	)
+	default boolean shopHighlight()
+	{
+		return true;
+	}
+
+	@ConfigItem(
+		keyName = "shopHighlightCounts",
+		name = "Show how many to buy",
+		description = "Print the outstanding count on the marked item, rather than only"
+			+ " outlining it.",
+		section = shopSection,
+		position = 2
+	)
+	default boolean shopHighlightCounts()
+	{
+		return true;
 	}
 }

@@ -36,13 +36,13 @@ class BuildRulesOverlay extends QuestpathOverlay
 	}
 
 	@Override
-	OverlayWidth width(QuestpathConfig config)
+	PanelWidth width(QuestpathConfig config)
 	{
 		return config.overlayBuildRulesWidth();
 	}
 
 	@Override
-	OverlayListLength length(QuestpathConfig config)
+	PanelListLength length(QuestpathConfig config)
 	{
 		return config.overlayBuildRulesLength();
 	}

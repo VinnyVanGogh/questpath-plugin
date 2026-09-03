@@ -79,7 +79,7 @@ abstract class QuestpathOverlay extends Overlay
 	 * MATCH_GLOBAL so the shared setting keeps working for anyone who does not
 	 * care.
 	 */
-	abstract OverlayWidth width(QuestpathConfig config);
+	abstract PanelWidth width(QuestpathConfig config);
 
 	/**
 	 * This panel's own list-length setting.
@@ -90,7 +90,7 @@ abstract class QuestpathOverlay extends Overlay
 	 * right for the route preview and leaves the shopping list showing five of
 	 * sixty-five. Defaults to matching the shared setting.
 	 */
-	abstract OverlayListLength length(QuestpathConfig config);
+	abstract PanelListLength length(QuestpathConfig config);
 
 	/**
 	 * What to draw, or an empty list for "nothing to say right now".

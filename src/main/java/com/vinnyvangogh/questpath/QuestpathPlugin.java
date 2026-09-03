@@ -88,6 +88,16 @@ public class QuestpathPlugin extends Plugin
 	private OverlayIcons overlayIcons;
 
 	/**
+	 * Used by the settings tab to write config the same way RuneLite's own
+	 * panel does, so the two surfaces cannot disagree about a stored value.
+	 */
+	@Inject
+	private ConfigManager configManager;
+
+	@Inject
+	private net.runelite.client.game.ItemManager itemManager;
+
+	/**
 	 * The five in-game overlays, held so they can be removed again.
 	 *
 	 * All five are registered whatever the config says: an Overlay that is
@@ -106,6 +116,17 @@ public class QuestpathPlugin extends Plugin
 	 * as nothing at all rather than as an empty panel.
 	 */
 	private volatile OverlaySnapshot overlaySnapshot;
+
+	/**
+	 * The shop marker, held separately from the panel overlays.
+	 *
+	 * It is a WidgetItemOverlay rather than a QuestpathOverlay: it draws into
+	 * a game interface's own item slots instead of owning a panel, so it
+	 * shares none of their layout and cannot sit in their list. It also has
+	 * its own toggle deliberately -- someone who wants no panel on screen all
+	 * day may still want the shop marked when they open one.
+	 */
+	private ShopItemOverlay shopOverlay;
 
 	/**
 	 * The bundled quest graph, or null when it could not be loaded.
@@ -190,7 +211,7 @@ public class QuestpathPlugin extends Plugin
 	@Override
 	protected void startUp()
 	{
-		panel = new QuestpathPanel(skillIcons);
+		panel = new QuestpathPanel(skillIcons, new OverlaySettingsPanel(config, configManager));
 		navButton = NavigationButton.builder()
 			.tooltip("questpath")
 			.icon(icon())
@@ -208,6 +229,9 @@ public class QuestpathPlugin extends Plugin
 		{
 			overlayManager.add(overlay);
 		}
+
+		shopOverlay = new ShopItemOverlay(this, config, itemManager);
+		overlayManager.add(shopOverlay);
 
 		try
 		{
@@ -237,6 +261,11 @@ public class QuestpathPlugin extends Plugin
 			overlayManager.remove(overlay);
 		}
 		overlays.clear();
+		if (shopOverlay != null)
+		{
+			overlayManager.remove(shopOverlay);
+			shopOverlay = null;
+		}
 		overlayIcons.clear();
 		overlaySnapshot = null;
 
@@ -292,6 +321,23 @@ public class QuestpathPlugin extends Plugin
 		{
 			return;
 		}
+
+		// Redraw before pushing, not after.
+		//
+		// This used to only sync. Picking up the banana the panel had just
+		// told you to pick up therefore changed nothing on screen: `owned`
+		// knew, and every surface reading it -- the item lists, the pickups
+		// prompt, the shop marks -- was built from a snapshot nobody had
+		// rebuilt. It cleared on the next trip to a bank, because that
+		// happened to fire the events that do refresh, which made the bug
+		// look like it was about banking.
+		//
+		// The cost is a classify pass over 218 quests per container change.
+		// That is a real cost and it is the right one: the whole point of
+		// reading a bank from inside the client is answering "do I have this
+		// yet" the moment it changes, and an answer that lags until you walk
+		// to a bank is the answer the web app already gives.
+		refresh();
 		maybeSync();
 	}
 

@@ -71,6 +71,12 @@ enum PanelSections
 		Tab.QUESTS,
 		"Quest browser",
 		Status.LIVE,
+		null),
+
+	OVERLAY_SETTINGS(
+		Tab.VIEW,
+		"Overlays",
+		Status.LIVE,
 		null);
 
 	/**
@@ -105,7 +111,14 @@ enum PanelSections
 		BUILD("Build", Skill.CONSTRUCTION),
 		QUESTS("Quests", Skill.SLAYER),
 		ITEMS("Items", Skill.CRAFTING),
-		SYNC("Sync", Skill.MAGIC);
+		SYNC("Sync", Skill.MAGIC),
+		// The overlay settings, which used to live only in RuneLite's own
+		// config panel -- a 225px column several clicks away behind a
+		// different icon, where 27 items truncated to "Route:...",
+		// "Pickup..." and "Rules:...". Farming for the icon because these
+		// are the settings that decide what grows on screen, and because
+		// every icon here past the first two is borrowed anyway.
+		VIEW("View", Skill.FARMING);
 
 		private final String label;
 		private final Skill icon;

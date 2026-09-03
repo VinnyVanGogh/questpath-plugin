@@ -34,13 +34,13 @@ class NeededItemsOverlay extends QuestpathOverlay
 	}
 
 	@Override
-	OverlayWidth width(QuestpathConfig config)
+	PanelWidth width(QuestpathConfig config)
 	{
 		return config.overlayItemsWidth();
 	}
 
 	@Override
-	OverlayListLength length(QuestpathConfig config)
+	PanelListLength length(QuestpathConfig config)
 	{
 		return config.overlayItemsLength();
 	}

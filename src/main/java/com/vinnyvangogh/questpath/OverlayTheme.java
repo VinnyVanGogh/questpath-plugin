@@ -31,10 +31,19 @@ final class OverlayTheme
 	{
 	}
 
-	/** The panel ground. Translucent, because an overlay sits over the game. */
-	static final Color GROUND = new Color(18, 16, 13, 218);
+	/**
+	 * The panel ground.
+	 *
+	 * Translucent, because an overlay sits over the game -- but only just. At
+	 * the alpha this started on, standing on bright terrain washed the whole
+	 * panel out and the secondary text stopped being readable: the tokens were
+	 * fine against the ground and the ground was not staying put. Legibility
+	 * over a game you cannot control the background of is worth more than
+	 * seeing the grass through a readout.
+	 */
+	static final Color GROUND = new Color(16, 14, 11, 242);
 	/** A slightly lighter wash across the top, so the panel has a light source. */
-	static final Color GROUND_TOP = new Color(38, 34, 27, 218);
+	static final Color GROUND_TOP = new Color(40, 36, 28, 242);
 	/** The outer edge: the worn gold of an OSRS interface border. */
 	static final Color EDGE = new Color(93, 82, 58);
 	/** The inner edge, one pixel in, which is what gives the border depth. */
@@ -44,15 +53,29 @@ final class OverlayTheme
 	static final Color ACCENT = new Color(224, 138, 30);
 	/** Body text: parchment rather than white, which glares over dark scenery. */
 	static final Color TEXT = new Color(230, 226, 214);
-	/** Secondary text. Present, readable, clearly not the answer. */
-	static final Color MUTED = new Color(154, 147, 132);
+	/**
+	 * Secondary text. Present, readable, clearly not the answer.
+	 *
+	 * Brightened from the grey this started as. It is the colour every
+	 * explanatory line and every "and 58 more" uses, so it is the first thing
+	 * to become unreadable and the last thing anyone would think to blame.
+	 */
+	static final Color MUTED = new Color(178, 171, 154);
 
 	/** Done, held, met. */
 	static final Color GOOD = new Color(76, 195, 128);
 	/** Needs work, but work is possible. */
 	static final Color WARN = new Color(232, 177, 63);
-	/** Off the table, or a cap reached. */
-	static final Color BAD = new Color(224, 79, 79);
+	/**
+	 * Off the table, or a cap reached.
+	 *
+	 * Brightened deliberately. Measured against the panel ground composited
+	 * over sunlit terrain, the original red came out at 3.93:1 -- below WCAG
+	 * AA, and the single most consequential colour in the plugin: it is what
+	 * says a build rule has been crossed. It now measures 5.95:1 in the same
+	 * worst case.
+	 */
+	static final Color BAD = new Color(240, 105, 100);
 
 	/** The empty half of a progress bar. */
 	static final Color BAR_GROUND = new Color(0, 0, 0, 140);

@@ -39,13 +39,13 @@ class CombatXpOverlay extends QuestpathOverlay
 	}
 
 	@Override
-	OverlayWidth width(QuestpathConfig config)
+	PanelWidth width(QuestpathConfig config)
 	{
 		return config.overlayCombatXpWidth();
 	}
 
 	@Override
-	OverlayListLength length(QuestpathConfig config)
+	PanelListLength length(QuestpathConfig config)
 	{
 		return config.overlayCombatXpLength();
 	}

@@ -104,12 +104,16 @@ class QuestpathPanel extends PluginPanel
 	private final JPanel questResults = new JPanel();
 	private QuestVerdicts lastVerdicts;
 
+	/** The overlay settings tab's contents, built once and kept. */
+	private final OverlaySettingsPanel overlaySettings;
+
 	private final JTextField itemSearch = new JTextField();
 	private final JPanel itemResults = new JPanel();
 	private QuestItems lastItems;
 
-	QuestpathPanel(SkillIconManager skillIcons)
+	QuestpathPanel(SkillIconManager skillIcons, OverlaySettingsPanel overlaySettings)
 	{
+		this.overlaySettings = overlaySettings;
 		setLayout(new BorderLayout());
 		setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
 
@@ -146,6 +150,16 @@ class QuestpathPanel extends PluginPanel
 		styleSearch(questSearch, "Filter the quests below by name", this::refilterQuests);
 		styleSearch(itemSearch, "Filter the items below by name", this::refilterItems);
 		styleStatusFilter(questStatusFilter, this::refilterQuests);
+
+		// The settings tab is built once and never refilled: it reads config,
+		// not account state, so nothing an experience drop does can change it.
+		// Adding it here rather than in render() also means a half-typed
+		// interaction survives the panel rebuilding underneath everything
+		// else.
+		if (overlaySettings != null)
+		{
+			tabBodies.get(PanelSections.Tab.VIEW).add(overlaySettings);
+		}
 
 		add(tabGroup, BorderLayout.NORTH);
 		add(display, BorderLayout.CENTER);
@@ -331,6 +345,13 @@ class QuestpathPanel extends PluginPanel
 		SwingUtilities.invokeLater(() ->
 		{
 			clearAllBodies();
+			if (overlaySettings != null)
+			{
+				// Settings are about the client, not the account, so they stay
+				// readable and editable while logged out -- which is exactly
+				// when someone is most likely to be setting them up.
+				tabBodies.get(PanelSections.Tab.VIEW).add(overlaySettings);
+			}
 			tabBodies.get(PanelSections.Tab.COMBAT).add(muted("Log in to see your levels."));
 			tabBodies.get(PanelSections.Tab.SYNC).add(muted("Log in to sync."));
 			tabBodies.get(PanelSections.Tab.QUESTS).add(muted("Log in to judge your quests."));

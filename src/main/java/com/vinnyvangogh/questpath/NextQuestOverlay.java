@@ -41,13 +41,13 @@ class NextQuestOverlay extends QuestpathOverlay
 	}
 
 	@Override
-	OverlayWidth width(QuestpathConfig config)
+	PanelWidth width(QuestpathConfig config)
 	{
 		return config.overlayNextQuestWidth();
 	}
 
 	@Override
-	OverlayListLength length(QuestpathConfig config)
+	PanelListLength length(QuestpathConfig config)
 	{
 		return config.overlayNextQuestLength();
 	}
