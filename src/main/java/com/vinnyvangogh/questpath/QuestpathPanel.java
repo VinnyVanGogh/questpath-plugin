@@ -311,10 +311,10 @@ class QuestpathPanel extends PluginPanel
 	 */
 	void update(CombatStats stats, SkillXp xp, SyncStatus sync,
 		List<BuildRule> rules, List<String> unmatchedQuests, QuestVerdicts verdicts, QuestItems items,
-		NextQuestStatus nextQuest, SyncSettings settings)
+		NextQuestStatus nextQuest, SyncSettings settings, AccountReport report)
 	{
 		SwingUtilities.invokeLater(() ->
-			render(stats, xp, sync, rules, unmatchedQuests, verdicts, items, nextQuest, settings));
+			render(stats, xp, sync, rules, unmatchedQuests, verdicts, items, nextQuest, settings, report));
 	}
 
 	/**
@@ -342,7 +342,7 @@ class QuestpathPanel extends PluginPanel
 
 	private void render(CombatStats stats, SkillXp xp, SyncStatus sync,
 		List<BuildRule> rules, List<String> unmatchedQuests, QuestVerdicts verdicts, QuestItems items,
-		NextQuestStatus nextQuest, SyncSettings settings)
+		NextQuestStatus nextQuest, SyncSettings settings, AccountReport report)
 	{
 		clearBodies(PanelSections.Tab.COMBAT, PanelSections.Tab.SYNC, PanelSections.Tab.BUILD);
 
@@ -360,7 +360,7 @@ class QuestpathPanel extends PluginPanel
 
 		JPanel syncBody = tabBodies.get(PanelSections.Tab.SYNC);
 		syncBody.add(heading(PanelSections.SYNC.title()));
-		syncBody.add(syncBlock(sync, unmatchedQuests, settings));
+		syncBody.add(syncBlock(sync, unmatchedQuests, settings, report));
 
 		JPanel build = tabBodies.get(PanelSections.Tab.BUILD);
 		build.add(heading(PanelSections.BUILD_RULES.title()));
@@ -590,12 +590,19 @@ class QuestpathPanel extends PluginPanel
 	}
 
 	/**
-	 * The saved route's next undone quest, or why there is not one to show.
+	 * The saved route: where the account is on it, and what is left.
 	 *
 	 * Three distinct pictures, not one: a route nobody has saved in
-	 * questpath, a route that is entirely finished, and a route with a real
-	 * next quest on it. Collapsing any two of those into the same message
+	 * questpath, a route that is entirely finished, and a route with real
+	 * work left on it. Collapsing any two of those into the same message
 	 * would tell the player something false about their plan.
+	 *
+	 * The whole route is listed, not only its head. One name answers "what
+	 * now" and nothing else -- not how much is left, not whether the plan is
+	 * nearly done -- and a single line here beside a browser listing 218
+	 * quests read as though the route were one quest long, which is what sent
+	 * someone looking for the list that was not there. The head keeps its own
+	 * prominence because "what now" is still the question asked most often.
 	 */
 	private static JPanel nextQuestBlock(NextQuestStatus next)
 	{
@@ -614,19 +621,103 @@ class QuestpathPanel extends PluginPanel
 		{
 			case NO_ROUTE:
 				panel.add(muted("No route saved in questpath. Save a plan there and it will show up here."));
-				break;
+				return panel;
 			case ALL_DONE:
-				JLabel done = new JLabel(wrap("Nothing left to do — every quest on your route is finished."));
+				JLabel done = new JLabel(wrap("Nothing left to do \u2014 every quest on your route is finished."));
 				done.setFont(FontManager.getRunescapeSmallFont());
 				done.setForeground(ColorScheme.PROGRESS_COMPLETE_COLOR);
 				panel.add(done);
-				break;
+				panel.add(Box.createVerticalStrut(6));
+				panel.add(routeProgress(next));
+				panel.add(routeList(next));
+				return panel;
 			case NEXT:
 				JLabel value = new JLabel(wrap(next.questName()));
 				value.setFont(FontManager.getRunescapeBoldFont());
 				value.setForeground(Color.WHITE);
 				panel.add(value);
-				break;
+				panel.add(Box.createVerticalStrut(6));
+				panel.add(routeProgress(next));
+				panel.add(routeList(next));
+				return panel;
+			default:
+				return panel;
+		}
+	}
+
+	/**
+	 * How far through the plan the account is, as a bar and a count.
+	 *
+	 * The count alone is the number people quote and the bar is what makes it
+	 * mean something at a glance: "4 of 21" and "18 of 21" read identically
+	 * as text and not at all as pictures.
+	 */
+	private static JPanel routeProgress(NextQuestStatus next)
+	{
+		JPanel panel = column();
+
+		JLabel count = new JLabel(wrap(next.doneCount() + " of " + next.size()
+			+ " done  \u00b7  " + next.remaining() + " to go"));
+		count.setFont(FontManager.getRunescapeSmallFont());
+		count.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
+		panel.add(count);
+
+		JProgressBar bar = new JProgressBar(0, Math.max(1, next.size()));
+		bar.setValue(next.doneCount());
+		bar.setForeground(ColorScheme.PROGRESS_COMPLETE_COLOR);
+		bar.setBackground(ColorScheme.DARKER_GRAY_COLOR);
+		bar.setBorderPainted(false);
+		bar.setStringPainted(false);
+		bar.setMaximumSize(new Dimension(Integer.MAX_VALUE, 6));
+		bar.setPreferredSize(new Dimension(0, 6));
+		bar.setAlignmentX(Component.LEFT_ALIGNMENT);
+		panel.add(bar);
+
+		return panel;
+	}
+
+	/**
+	 * Every quest on the route, in the order questpath saved them.
+	 *
+	 * Finished ones are shown rather than filtered out: they are the
+	 * progress, and a route nearly finished would otherwise look identical to
+	 * one nobody has started. They are dimmed and ticked, which is enough to
+	 * make the eye skip them without pretending they were never there.
+	 *
+	 * The next quest is marked in the list as well as named above it, because
+	 * the list is what gets scrolled and the headline scrolls away.
+	 */
+	private static JPanel routeList(NextQuestStatus next)
+	{
+		JPanel panel = column();
+		panel.add(Box.createVerticalStrut(8));
+
+		boolean marked = false;
+		for (NextQuestStatus.Step step : next.route())
+		{
+			String prefix;
+			Color color;
+			if (step.done())
+			{
+				prefix = "\u2713  ";
+				color = ColorScheme.PROGRESS_COMPLETE_COLOR.darker();
+			}
+			else if (!marked)
+			{
+				prefix = "\u25b8  ";
+				color = Color.WHITE;
+				marked = true;
+			}
+			else
+			{
+				prefix = "\u00b7  ";
+				color = ColorScheme.LIGHT_GRAY_COLOR;
+			}
+
+			JLabel row = new JLabel(wrap(prefix + step.questName()));
+			row.setFont(FontManager.getRunescapeSmallFont());
+			row.setForeground(color);
+			panel.add(row);
 		}
 
 		return panel;
@@ -981,7 +1072,8 @@ class QuestpathPanel extends PluginPanel
 	 * three are things only the player can fix, and neither is discoverable
 	 * without being told.
 	 */
-	private static JPanel syncBlock(SyncStatus sync, List<String> unmatchedQuests, SyncSettings settings)
+	private static JPanel syncBlock(SyncStatus sync, List<String> unmatchedQuests,
+		SyncSettings settings, AccountReport report)
 	{
 		JPanel panel = column();
 
@@ -1018,6 +1110,54 @@ class QuestpathPanel extends PluginPanel
 			where.setFont(FontManager.getRunescapeSmallFont());
 			where.setForeground(ColorScheme.MEDIUM_GRAY_COLOR);
 			panel.add(where);
+		}
+
+		// Who is being sent, and what. The tab used to be able to say only
+		// whether the last push worked, which answers "is it on" and nothing
+		// about which account it wrote -- and that is the question that
+		// matters. Three pushes once wrote one character's quest states over
+		// another account's, and every one of them looked like an ordinary
+		// sync from inside the game.
+		if (report != null)
+		{
+			panel.add(Box.createVerticalStrut(10));
+			JLabel who = new JLabel(wrap(report.characterName()));
+			who.setFont(FontManager.getRunescapeBoldFont());
+			who.setForeground(Color.WHITE);
+			panel.add(who);
+
+			JLabel whoNote = new JLabel(wrap("This is the account every push is attributed to."));
+			whoNote.setFont(FontManager.getRunescapeSmallFont());
+			whoNote.setForeground(ColorScheme.MEDIUM_GRAY_COLOR);
+			panel.add(whoNote);
+
+			panel.add(Box.createVerticalStrut(6));
+			JPanel sent = grid();
+			addRow(sent, "Combat", String.valueOf(report.combatLevel()), ColorScheme.LIGHT_GRAY_COLOR);
+			addRow(sent, "Quest points", String.valueOf(report.questPoints()), ColorScheme.LIGHT_GRAY_COLOR);
+			addRow(sent, "Total level", String.valueOf(report.totalLevel()), ColorScheme.LIGHT_GRAY_COLOR);
+			addRow(sent, "Total xp", XpTable.format(report.totalXp()), ColorScheme.LIGHT_GRAY_COLOR);
+			addRow(sent, "Quests done", report.questsComplete() + " of " + report.questsKnown(),
+				ColorScheme.LIGHT_GRAY_COLOR);
+			addRow(sent, "Quests started", String.valueOf(report.questsInProgress()),
+				ColorScheme.LIGHT_GRAY_COLOR);
+			// Two facts, not one. Zero stacks with the bank seen is an empty
+			// bank; zero stacks without it is a bank nobody has opened, and
+			// questpath's item answers are working from an older upload until
+			// they are.
+			addRow(sent, "Item stacks", String.valueOf(report.itemStacks()),
+				report.itemStacks() > 0 ? ColorScheme.LIGHT_GRAY_COLOR : ColorScheme.MEDIUM_GRAY_COLOR);
+			addRow(sent, "Bank", report.bankSeen() ? "seen this session" : "not opened yet",
+				report.bankSeen() ? ColorScheme.PROGRESS_COMPLETE_COLOR : ColorScheme.PROGRESS_INPROGRESS_COLOR);
+			panel.add(sent);
+
+			if (!report.bankSeen())
+			{
+				JLabel hint = new JLabel(wrap("Open your bank once and the item lists fill in."));
+				hint.setFont(FontManager.getRunescapeSmallFont());
+				hint.setForeground(ColorScheme.MEDIUM_GRAY_COLOR);
+				panel.add(hint);
+			}
 		}
 
 		// A quest name this plugin sends that questpath cannot resolve is a

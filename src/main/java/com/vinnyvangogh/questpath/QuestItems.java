@@ -79,14 +79,16 @@ class QuestItems
 	static class Line
 	{
 		private final String name;
+		private final int itemId;
 		private final int wanted;
 		private final long owned;
 		private final boolean optional;
 		private final List<String> sources;
 
-		Line(String name, int wanted, long owned, boolean optional, List<String> sources)
+		Line(String name, int itemId, int wanted, long owned, boolean optional, List<String> sources)
 		{
 			this.name = name;
+			this.itemId = itemId;
 			this.wanted = wanted;
 			this.owned = owned;
 			this.optional = optional;
@@ -96,12 +98,23 @@ class QuestItems
 		/** Convenience for callers that do not care about obtain sources -- mainly tests. */
 		Line(String name, int wanted, long owned, boolean optional)
 		{
-			this(name, wanted, owned, optional, null);
+			this(name, 0, wanted, owned, optional, null);
 		}
 
 		String name()
 		{
 			return name;
+		}
+
+		/**
+		 * The game's own item id, or 0 when questpath holds none.
+		 *
+		 * What the overlays draw the sprite from. Zero means "draw nothing",
+		 * never item 0 -- see QuestGraph.Item.itemId().
+		 */
+		int itemId()
+		{
+			return itemId;
 		}
 
 		/**
@@ -175,13 +188,21 @@ class QuestItems
 	{
 		private final String questName;
 		private final String itemName;
+		private final int itemId;
 		private final int alsoWantedBy;
 
-		Pickup(String questName, String itemName, int alsoWantedBy)
+		Pickup(String questName, String itemName, int itemId, int alsoWantedBy)
 		{
 			this.questName = questName;
 			this.itemName = itemName;
+			this.itemId = itemId;
 			this.alsoWantedBy = alsoWantedBy;
+		}
+
+		/** The game's own item id, or 0 when questpath holds none. */
+		int itemId()
+		{
+			return itemId;
 		}
 
 		String questName()
@@ -229,7 +250,8 @@ class QuestItems
 			for (QuestGraph.Item item : quest.items())
 			{
 				long owned = held.getOrDefault(item.name().toLowerCase(), 0L);
-				needs.lines.add(new Line(item.name(), item.quantity(), owned, item.optional(), item.sources()));
+				needs.lines.add(new Line(item.name(), item.itemId(), item.quantity(), owned,
+					item.optional(), item.sources()));
 			}
 			out.quests.add(needs);
 		}
@@ -298,7 +320,7 @@ class QuestItems
 				{
 					continue;
 				}
-				out.add(new Pickup(quest.name(), item.name(), total.quests()));
+				out.add(new Pickup(quest.name(), item.name(), item.itemId(), total.quests()));
 			}
 		}
 		return out;
@@ -328,7 +350,8 @@ class QuestItems
 					continue;
 				}
 				Total total = merged.computeIfAbsent(line.name(),
-					name -> new Total(name, held.getOrDefault(name.toLowerCase(), 0L), line.sources()));
+					name -> new Total(name, line.itemId(),
+						held.getOrDefault(name.toLowerCase(), 0L), line.sources()));
 				total.add(line);
 			}
 		}
@@ -351,15 +374,17 @@ class QuestItems
 	static class Total
 	{
 		private final String name;
+		private final int itemId;
 		private final long owned;
 		private final List<String> sources;
 		private int wanted;
 		private int quests;
 		private boolean anyUnstated;
 
-		Total(String name, long owned, List<String> sources)
+		Total(String name, int itemId, long owned, List<String> sources)
 		{
 			this.name = name;
+			this.itemId = itemId;
 			this.owned = owned;
 			this.sources = sources;
 		}
@@ -367,7 +392,17 @@ class QuestItems
 		/** Convenience for callers that do not care about obtain sources -- mainly tests. */
 		Total(String name, long owned)
 		{
-			this(name, owned, null);
+			this(name, 0, owned, null);
+		}
+
+		/**
+		 * The game's own item id, or 0 when questpath holds none. Every Line
+		 * folded into a Total shares one item name and therefore one id; this
+		 * is the first one seen.
+		 */
+		int itemId()
+		{
+			return itemId;
 		}
 
 		/**

@@ -119,6 +119,24 @@ class OwnedItems
 	}
 
 	/**
+	 * How many distinct stacks are held across every container seen so far.
+	 *
+	 * The size of the claim a push is making about this account's items,
+	 * which is what the Sync tab reports. Containers never opened contribute
+	 * nothing rather than zero -- the two are the same number here and very
+	 * different facts, and the tab says which separately.
+	 */
+	int stackCount()
+	{
+		int count = 0;
+		for (List<Map<String, Object>> stacks : seen.values())
+		{
+			count += stacks.size();
+		}
+		return count;
+	}
+
+	/**
 	 * The items block for a push, containing only what has actually been seen.
 	 *
 	 * A container that has never been opened is omitted entirely rather than

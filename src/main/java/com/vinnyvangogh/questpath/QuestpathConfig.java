@@ -24,6 +24,14 @@ public interface QuestpathConfig extends Config
 	String GROUP = "questpath";
 
 	@ConfigSection(
+		name = "In-game overlays",
+		description = "Which questpath panels to draw over the game, and how",
+		position = 1,
+		closedByDefault = false
+	)
+	String overlaySection = "overlays";
+
+	@ConfigSection(
 		name = "questpath sync",
 		description = "Push this account's state to your own questpath instance",
 		position = 0,
@@ -73,5 +81,89 @@ public interface QuestpathConfig extends Config
 		// No default. There is no such thing as a sensible shared secret, and
 		// an empty token means the push is off however the toggle is set.
 		return "";
+	}
+
+	// ------------------------------------------------------------------
+	// Overlays.
+	//
+	// Every one is off by default. Five panels appearing over the game the
+	// moment the plugin is installed is a plugin nobody keeps, and each of
+	// these answers a question only some accounts are asking -- a main has no
+	// build rules to watch and someone with no saved route has no route to be
+	// next on. Turning one on is one click; turning four unwanted ones off is
+	// how a plugin gets uninstalled.
+	// ------------------------------------------------------------------
+
+	@ConfigItem(
+		keyName = "overlayDisplayMode",
+		name = "Show",
+		description = "Whether overlay rows carry the item pictures, the words, or both."
+			+ " Rows that have no picture to show keep their text in every mode.",
+		section = overlaySection,
+		position = 1
+	)
+	default OverlayDisplayMode overlayDisplayMode()
+	{
+		return OverlayDisplayMode.TEXT_AND_ICONS;
+	}
+
+	@ConfigItem(
+		keyName = "overlayNextQuest",
+		name = "Next on your route",
+		description = "The next quests on your saved questpath route, and how far through it you are.",
+		section = overlaySection,
+		position = 2
+	)
+	default boolean overlayNextQuest()
+	{
+		return false;
+	}
+
+	@ConfigItem(
+		keyName = "overlayPickups",
+		name = "Get while you're here",
+		description = "Items you can pick up during a quest you are already on, that other quests also want.",
+		section = overlaySection,
+		position = 3
+	)
+	default boolean overlayPickups()
+	{
+		return false;
+	}
+
+	@ConfigItem(
+		keyName = "overlayItems",
+		name = "Everything you need",
+		description = "Every item your doable quests need, ticked against what the client can see you hold.",
+		section = overlaySection,
+		position = 4
+	)
+	default boolean overlayItems()
+	{
+		return false;
+	}
+
+	@ConfigItem(
+		keyName = "overlayCombatXp",
+		name = "Combat XP to next level",
+		description = "What each stat would cost to buy the next combat level, cheapest first.",
+		section = overlaySection,
+		position = 5
+	)
+	default boolean overlayCombatXp()
+	{
+		return false;
+	}
+
+	@ConfigItem(
+		keyName = "overlayBuildRules",
+		name = "Build rules",
+		description = "Your declared caps and no-xp skills, and how much headroom is left in each.",
+		section = overlaySection,
+		position = 6
+	)
+	default boolean overlayBuildRules()
+	{
+		return false;
 	}
 }

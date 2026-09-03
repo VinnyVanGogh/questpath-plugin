@@ -33,9 +33,14 @@ class QuestGraph
 	 * for a quest whose requirements were never read — a confident wrong
 	 * answer, which is the one thing this plugin must not produce.
 	 *
-	 * 2 added Item.sources().
+	 * 2 added Item.sources(). 3 added Item.itemId(), which is what the
+	 * overlays draw the game's own sprite from -- searching the item cache by
+	 * name instead would re-derive a disambiguation questpath's 16,472-row
+	 * catalogue has already done, and get it wrong: "Bucket" matches a
+	 * Meiyerditch bucket and an animation-only bucket as readily as the real
+	 * one.
 	 */
-	static final int SUPPORTED_VERSION = 2;
+	static final int SUPPORTED_VERSION = 3;
 
 	@SerializedName("version")
 	private int version;
@@ -117,6 +122,9 @@ class QuestGraph
 		@SerializedName("name")
 		private String name;
 
+		@SerializedName("item_id")
+		private int itemId;
+
 		@SerializedName("quantity")
 		private int quantity;
 
@@ -144,6 +152,20 @@ class QuestGraph
 		int quantity()
 		{
 			return quantity;
+		}
+
+		/**
+		 * The game's own item id, or 0 when questpath holds none.
+		 *
+		 * Zero means "no id", not item 0: questpath omits the field rather
+		 * than sending a zero precisely so this stays unambiguous, because
+		 * item 0 is a real item and would render as confident, wrong art for
+		 * something the catalogue could not actually identify. Callers must
+		 * treat 0 as "draw no icon".
+		 */
+		int itemId()
+		{
+			return itemId;
 		}
 
 		boolean optional()

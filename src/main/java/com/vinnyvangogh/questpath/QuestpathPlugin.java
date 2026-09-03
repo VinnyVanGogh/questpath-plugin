@@ -35,8 +35,10 @@ import net.runelite.client.game.SkillIconManager;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
+import net.runelite.api.gameval.VarPlayerID;
 import net.runelite.client.ui.ClientToolbar;
 import net.runelite.client.ui.NavigationButton;
+import net.runelite.client.ui.overlay.OverlayManager;
 
 /**
  * questpath — build-rule-aware quest planning, in the client.
@@ -78,6 +80,32 @@ public class QuestpathPlugin extends Plugin
 
 	@Inject
 	private Gson gson;
+
+	@Inject
+	private OverlayManager overlayManager;
+
+	@Inject
+	private OverlayIcons overlayIcons;
+
+	/**
+	 * The five in-game overlays, held so they can be removed again.
+	 *
+	 * All five are registered whatever the config says: an Overlay that is
+	 * switched off returns null from render and costs a method call per
+	 * frame, whereas adding and removing them as toggles change would mean
+	 * reacting to config events and getting the ordering right for no gain.
+	 */
+	private final List<QuestpathOverlay> overlays = new java.util.ArrayList<>();
+
+	/**
+	 * What the overlays draw, rebuilt whenever the panel is.
+	 *
+	 * Written on the client thread and read on the client thread during
+	 * render, but across a refresh boundary, so it is volatile and always
+	 * replaced wholesale. Null means logged out, which every overlay renders
+	 * as nothing at all rather than as an empty panel.
+	 */
+	private volatile OverlaySnapshot overlaySnapshot;
 
 	/**
 	 * The bundled quest graph, or null when it could not be loaded.
@@ -171,6 +199,16 @@ public class QuestpathPlugin extends Plugin
 			.build();
 		clientToolbar.addNavigation(navButton);
 
+		overlays.add(new NextQuestOverlay(this, config, overlayIcons));
+		overlays.add(new PickupsOverlay(this, config, overlayIcons));
+		overlays.add(new NeededItemsOverlay(this, config, overlayIcons));
+		overlays.add(new CombatXpOverlay(this, config, overlayIcons));
+		overlays.add(new BuildRulesOverlay(this, config, overlayIcons));
+		for (QuestpathOverlay overlay : overlays)
+		{
+			overlayManager.add(overlay);
+		}
+
 		try
 		{
 			questGraph = QuestGraph.load(gson);
@@ -194,6 +232,14 @@ public class QuestpathPlugin extends Plugin
 	@Override
 	protected void shutDown()
 	{
+		for (QuestpathOverlay overlay : overlays)
+		{
+			overlayManager.remove(overlay);
+		}
+		overlays.clear();
+		overlayIcons.clear();
+		overlaySnapshot = null;
+
 		clientToolbar.removeNavigation(navButton);
 		navButton = null;
 		panel = null;
@@ -285,10 +331,131 @@ public class QuestpathPlugin extends Plugin
 		if (client.getGameState() != GameState.LOGGED_IN)
 		{
 			panel.showLoggedOut();
+			// No account, so nothing for an overlay to be about. Cleared
+			// rather than left standing: the next login may be a different
+			// character, and one account's route drawn over another's game is
+			// the failure this plugin has already had once.
+			overlaySnapshot = null;
 			return;
 		}
-		panel.update(currentStats(), currentXp(), syncStatus(), buildRules, unmatchedQuests,
-			verdicts(), questItems(), nextQuest(), SyncSettings.from(config));
+
+		CombatStats stats = currentStats();
+		SkillXp xp = currentXp();
+		QuestItems items = questItems();
+		NextQuestStatus route = nextQuest();
+
+		// Built from the same reads the panel is given, in the same pass. Two
+		// passes would let the sidebar and the overlay disagree about the
+		// same account for a frame, which is exactly the kind of small lie
+		// that is impossible to reproduce later.
+		overlaySnapshot = new OverlaySnapshot(stats, xp, route, items, buildRules,
+			characterName(), questPoints());
+
+		panel.update(stats, xp, syncStatus(), buildRules, unmatchedQuests,
+			verdicts(), items, route, SyncSettings.from(config), accountReport());
+	}
+
+	/**
+	 * What the overlays draw. Read on the client thread during render.
+	 *
+	 * Package-private rather than exposed through an interface: the overlays
+	 * are the only callers and they live beside this class.
+	 */
+	OverlaySnapshot overlaySnapshot()
+	{
+		return overlaySnapshot;
+	}
+
+	/** The logged-in character, or null when there is not one. */
+	private String characterName()
+	{
+		if (client.getLocalPlayer() == null)
+		{
+			return null;
+		}
+		return client.getLocalPlayer().getName();
+	}
+
+	/**
+	 * What the Sync tab reports about this account, or null when there is no
+	 * account to report on.
+	 *
+	 * Read from the client rather than from questpath's answer, deliberately:
+	 * the tab is showing what this client believes it is sending, so that a
+	 * disagreement with what questpath received shows up as a disagreement
+	 * rather than as agreement with itself.
+	 */
+	private AccountReport accountReport()
+	{
+		String name = characterName();
+		if (name == null || name.isEmpty())
+		{
+			return null;
+		}
+
+		int complete = 0;
+		int inProgress = 0;
+		int known = 0;
+		for (Quest quest : Quest.values())
+		{
+			QuestState state = quest.getState(client);
+			if (state == null)
+			{
+				// The client has said nothing about this one, and the push
+				// skips it for the same reason: "not started" is a claim, and
+				// this is an absence of one.
+				continue;
+			}
+			known++;
+			if (state == QuestState.FINISHED)
+			{
+				complete++;
+			}
+			else if (state == QuestState.IN_PROGRESS)
+			{
+				inProgress++;
+			}
+		}
+
+		int totalLevel = 0;
+		long totalXp = 0;
+		for (Skill skill : Skill.values())
+		{
+			if (skill.getName() == null)
+			{
+				// Skill.OVERALL is declared for binary compatibility and is
+				// null at runtime; it is also an aggregate, so counting it
+				// would double every total below.
+				continue;
+			}
+			totalLevel += client.getRealSkillLevel(skill);
+			totalXp += client.getSkillExperience(skill);
+		}
+
+		return new AccountReport(name,
+			client.getLocalPlayer().getCombatLevel(),
+			questPoints(),
+			totalLevel,
+			totalXp,
+			complete,
+			inProgress,
+			known,
+			owned.stackCount(),
+			owned.bankSeen());
+	}
+
+	/**
+	 * Quest points, as the game itself counts them.
+	 *
+	 * Read from the varp rather than counted from the quest graph: the game's
+	 * own number is the one on the player's quest tab, and a count derived
+	 * from questpath's 218 quests would differ from it by every quest
+	 * questpath has not ingested -- a discrepancy with no explanation on
+	 * screen.
+	 */
+	private int questPoints()
+	{
+		return client.getVarpValue(VarPlayerID.QP);
 	}
 
 	/**

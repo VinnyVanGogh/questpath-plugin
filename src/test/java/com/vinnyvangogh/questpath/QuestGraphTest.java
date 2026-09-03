@@ -18,7 +18,7 @@ public class QuestGraphTest
 	@Test
 	public void parsesAnItemsObtainSources()
 	{
-		QuestGraph graph = GSON.fromJson("{\"version\":2,\"quests\":[{\"id\":1,\"slug\":\"a\",\"name\":\"A\","
+		QuestGraph graph = GSON.fromJson("{\"version\":3,\"quests\":[{\"id\":1,\"slug\":\"a\",\"name\":\"A\","
 			+ "\"items\":[{\"name\":\"Pot\",\"sources\":[\"Shop: Leenz's General Supplies (1 Coins)\","
 			+ "\"Shop: Little Munty's Little Shop (1 Coins)\"]}]}]}", QuestGraph.class);
 
@@ -36,21 +36,57 @@ public class QuestGraphTest
 	@Test
 	public void anItemWithNoSourcesKeyParsesToAnEmptyList()
 	{
-		QuestGraph graph = GSON.fromJson("{\"version\":2,\"quests\":[{\"id\":1,\"slug\":\"a\",\"name\":\"A\","
+		QuestGraph graph = GSON.fromJson("{\"version\":3,\"quests\":[{\"id\":1,\"slug\":\"a\",\"name\":\"A\","
 			+ "\"items\":[{\"name\":\"Rope\"}]}]}", QuestGraph.class);
 
 		assertTrue(graph.quests().get(0).items().get(0).sources().isEmpty());
 	}
 
 	/**
-	 * Pins the bump: a graph shape change (Item.sources()) must raise the
-	 * version, and this constant is what load() refuses a mismatch against.
-	 * A regression here would silently start parsing an old bundle's missing
-	 * field as "no sources" instead of refusing it outright.
+	 * The item id the overlays draw the game's own sprite from.
+	 *
+	 * Sent by questpath rather than searched for by name in the client,
+	 * because the name alone is ambiguous: "Bucket" matches a Meiyerditch
+	 * bucket and an animation-only bucket as readily as the real one, and
+	 * questpath's catalogue has already settled which is meant.
 	 */
 	@Test
-	public void supportedVersionWasBumpedForSources()
+	public void parsesAnItemsGameItemId()
 	{
-		assertEquals(2, QuestGraph.SUPPORTED_VERSION);
+		QuestGraph graph = GSON.fromJson("{\"version\":3,\"quests\":[{\"id\":1,\"slug\":\"a\",\"name\":\"A\","
+			+ "\"items\":[{\"name\":\"Bucket\",\"item_id\":1925}]}]}", QuestGraph.class);
+
+		assertEquals(1925, graph.quests().get(0).items().get(0).itemId());
+	}
+
+	/**
+	 * An item questpath could not identify carries no id, and must arrive as
+	 * 0 rather than as some other item.
+	 *
+	 * Zero is the "draw nothing" signal every icon caller checks. It is not
+	 * item 0, which is a real item -- which is exactly why questpath omits
+	 * the field instead of sending a zero, and why nothing downstream may
+	 * treat 0 as an id to look up.
+	 */
+	@Test
+	public void anItemWithNoIdParsesToZeroSoNothingIsDrawn()
+	{
+		QuestGraph graph = GSON.fromJson("{\"version\":3,\"quests\":[{\"id\":1,\"slug\":\"a\",\"name\":\"A\","
+			+ "\"items\":[{\"name\":\"Rope\"}]}]}", QuestGraph.class);
+
+		assertEquals(0, graph.quests().get(0).items().get(0).itemId());
+	}
+
+	/**
+	 * Pins the bump: a graph shape change must raise the version, and this
+	 * constant is what load() refuses a mismatch against. A regression here
+	 * would silently start parsing an old bundle's missing field as an
+	 * absence rather than refusing the bundle outright -- 2 added
+	 * Item.sources(), 3 added Item.itemId().
+	 */
+	@Test
+	public void supportedVersionWasBumpedForItemIds()
+	{
+		assertEquals(3, QuestGraph.SUPPORTED_VERSION);
 	}
 }
