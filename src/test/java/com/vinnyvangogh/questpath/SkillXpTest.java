@@ -5,6 +5,7 @@ import java.util.Map;
 import net.runelite.api.Skill;
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -100,5 +101,31 @@ public class SkillXpTest
 		SkillXp xp = SkillXp.of(map(Skill.STRENGTH, 83), map(Skill.STRENGTH, 2_800_000));
 		assertFalse(xp.known(Skill.MAGIC));
 		assertEquals(-1, xp.toLevel(Skill.MAGIC, 99));
+	}
+
+	/**
+	 * The signature moves when the experience does and holds still when it
+	 * does not.
+	 *
+	 * The Combat tab skips rebuilding itself on an unchanged signature, so a
+	 * constant one would freeze the panel and a churning one would undo the
+	 * saving entirely -- roughly thirty Swing components thrown away and
+	 * remade every game tick.
+	 */
+	@Test
+	public void theSignatureTracksTheExperienceItSummarises()
+	{
+		java.util.Map<Skill, Integer> levels = new java.util.EnumMap<>(Skill.class);
+		levels.put(Skill.ATTACK, 50);
+		java.util.Map<Skill, Integer> xp = new java.util.EnumMap<>(Skill.class);
+		xp.put(Skill.ATTACK, 101_333);
+
+		SkillXp first = SkillXp.of(levels, xp);
+		SkillXp same = SkillXp.of(levels, xp);
+		assertEquals(first.signature(), same.signature());
+
+		java.util.Map<Skill, Integer> moved = new java.util.EnumMap<>(xp);
+		moved.put(Skill.ATTACK, 120_000);
+		assertNotEquals(first.signature(), SkillXp.of(levels, moved).signature());
 	}
 }

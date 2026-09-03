@@ -81,6 +81,18 @@ class QuestpathPanel extends PluginPanel
 	private Integer lastItemsSignature;
 
 	/**
+	 * What the Combat and Build tabs last rendered.
+	 *
+	 * They were torn down and rebuilt on every refresh while Quests and Items
+	 * were signature-guarded, which is about seventy components thrown away
+	 * and remade per tick for a picture that only changes when a level or a
+	 * rule does. The Sync tab deliberately has no guard: it says "sent 3m
+	 * ago", so it has to be rebuilt to stay true.
+	 */
+	private Object lastCombatSignature;
+	private Object lastBuildSignature;
+
+	/**
 	 * The quest search box, and the last verdicts it filters.
 	 *
 	 * The box is built once and never cleared, so typing in it survives the
@@ -384,24 +396,40 @@ class QuestpathPanel extends PluginPanel
 		List<BuildRule> rules, List<String> unmatchedQuests, QuestVerdicts verdicts, QuestItems items,
 		NextQuestStatus nextQuest, SyncSettings settings, AccountReport report)
 	{
-		clearBodies(PanelSections.Tab.COMBAT, PanelSections.Tab.SYNC, PanelSections.Tab.BUILD);
+		clearBodies(PanelSections.Tab.SYNC);
 
 		int ceiling = CombatMath.freeRangedCeiling(stats.get(Skill.ATTACK), stats.get(Skill.STRENGTH));
 
-		JPanel combat = tabBodies.get(PanelSections.Tab.COMBAT);
-		combat.add(heading(PanelSections.COMBAT.title()));
-		combat.add(combatBlock(stats));
-		combat.add(Box.createVerticalStrut(14));
-		combat.add(heading(PanelSections.CEILING.title()));
-		combat.add(ceilingBlock(stats, xp, ceiling));
-		combat.add(Box.createVerticalStrut(14));
-		combat.add(heading(PanelSections.COST.title()));
-		combat.add(costBlock(stats, xp));
+		Object combatSignature = java.util.Arrays.asList(stats, xp.signature());
+		if (!java.util.Objects.equals(combatSignature, lastCombatSignature))
+		{
+			clearBodies(PanelSections.Tab.COMBAT);
+			JPanel combat = tabBodies.get(PanelSections.Tab.COMBAT);
+			combat.add(heading(PanelSections.COMBAT.title()));
+			combat.add(combatBlock(stats));
+			combat.add(Box.createVerticalStrut(14));
+			combat.add(heading(PanelSections.CEILING.title()));
+			combat.add(ceilingBlock(stats, xp, ceiling));
+			combat.add(Box.createVerticalStrut(14));
+			combat.add(heading(PanelSections.COST.title()));
+			combat.add(costBlock(stats, xp));
+			renderPlannedSectionsFor(PanelSections.Tab.COMBAT);
+			lastCombatSignature = combatSignature;
+		}
 
 		JPanel syncBody = tabBodies.get(PanelSections.Tab.SYNC);
 		syncBody.add(heading(PanelSections.SYNC.title()));
 		syncBody.add(syncBlock(sync, unmatchedQuests, settings, report));
 
+		Object buildSignature = java.util.Arrays.asList(stats, rules);
+		if (java.util.Objects.equals(buildSignature, lastBuildSignature))
+		{
+			// Unchanged, so the tab keeps what it has.
+		}
+		else
+		{
+		lastBuildSignature = buildSignature;
+		clearBodies(PanelSections.Tab.BUILD);
 		JPanel build = tabBodies.get(PanelSections.Tab.BUILD);
 		build.add(heading(PanelSections.BUILD_RULES.title()));
 		if (rules.isEmpty())
@@ -416,6 +444,8 @@ class QuestpathPanel extends PluginPanel
 		else
 		{
 			build.add(buildRulesBlock(stats, rules));
+		}
+		renderPlannedSectionsFor(PanelSections.Tab.BUILD);
 		}
 
 		// Rebuilt only when their contents actually changed; see the
@@ -466,7 +496,7 @@ class QuestpathPanel extends PluginPanel
 			lastItemsSignature = itemsSignature;
 		}
 
-		renderPlannedSectionsFor(PanelSections.Tab.COMBAT, PanelSections.Tab.SYNC, PanelSections.Tab.BUILD);
+		renderPlannedSectionsFor(PanelSections.Tab.SYNC);
 		repaintAll();
 	}
 
@@ -530,7 +560,7 @@ class QuestpathPanel extends PluginPanel
 
 			for (QuestItems.Pickup pickup : items.pickups())
 			{
-				JLabel row = new JLabel(wrap(pickup.itemName() + " — in " + pickup.questName()));
+				JLabel row = row(pickup.itemName() + " — in " + pickup.questName());
 				row.setFont(FontManager.getRunescapeSmallFont());
 				row.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
 				row.setToolTipText("You are partway through " + pickup.questName()
@@ -607,7 +637,7 @@ class QuestpathPanel extends PluginPanel
 			}
 			first = false;
 
-			JLabel title = new JLabel(wrap(needs.questName()
+			JLabel title = row((needs.questName()
 				+ "  ·  " + needs.have() + "/" + needs.needed()));
 			title.setFont(FontManager.getRunescapeSmallFont().deriveFont(Font.BOLD));
 			title.setForeground(needs.ready()
@@ -754,7 +784,7 @@ class QuestpathPanel extends PluginPanel
 				color = ColorScheme.LIGHT_GRAY_COLOR;
 			}
 
-			JLabel row = new JLabel(wrap(prefix + step.questName()));
+			JLabel row = row(prefix + step.questName());
 			row.setFont(FontManager.getRunescapeSmallFont());
 			row.setForeground(color);
 			panel.add(row);
@@ -855,7 +885,7 @@ class QuestpathPanel extends PluginPanel
 			// nothing the heading did not.
 			for (QuestGraph.Quest quest : shown)
 			{
-				JLabel row = new JLabel(wrap(quest.name()));
+				JLabel row = row(quest.name());
 				row.setFont(FontManager.getRunescapeSmallFont());
 				row.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
 				panel.add(row);
@@ -942,13 +972,18 @@ class QuestpathPanel extends PluginPanel
 		}
 	}
 
+	/**
+	 * Lays out and repaints what is actually on screen.
+	 *
+	 * It used to walk all six tab bodies. Five of them are not in the
+	 * displayed hierarchy at any moment, so validating them bought nothing --
+	 * and it happened on every refresh, which is every game tick that anything
+	 * changed. The one that is showing gets validated through `display`, which
+	 * is its ancestor, and the other five validate themselves when a tab
+	 * switch puts them on screen.
+	 */
 	private void repaintAll()
 	{
-		for (JPanel bodyForTab : tabBodies.values())
-		{
-			bodyForTab.revalidate();
-			bodyForTab.repaint();
-		}
 		display.revalidate();
 		display.repaint();
 	}
@@ -1213,7 +1248,7 @@ class QuestpathPanel extends PluginPanel
 			panel.add(header);
 			for (String name : unmatchedQuests)
 			{
-				JLabel row = new JLabel(wrap(name));
+				JLabel row = row(name);
 				row.setFont(FontManager.getRunescapeSmallFont());
 				row.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
 				panel.add(row);
@@ -1437,6 +1472,32 @@ class QuestpathPanel extends PluginPanel
 	{
 		String name = skill.getName();
 		return name.substring(0, 1).toUpperCase() + name.substring(1).toLowerCase();
+	}
+
+	/**
+	 * A one-line row label, in plain text rather than HTML.
+	 *
+	 * This exists because every label in this panel used to be an HTML one.
+	 * wrap() returns "<html><body style='width:150px'>...", which makes Swing
+	 * build a whole document model per label -- fine for a sentence, ruinous
+	 * in a loop. The quest browser lists all 218 quests, the route lists 91,
+	 * and the item lists hundreds more, so switching to those tabs was laying
+	 * out and painting several hundred HTML documents at once. That is what
+	 * made the tab strip stutter.
+	 *
+	 * A plain JLabel clips with an ellipsis on its own when the column is too
+	 * narrow, so nothing is lost visually; the full text goes on the tooltip,
+	 * which is better than wrapping for a list you are scanning anyway.
+	 *
+	 * wrap() is still right for prose -- warnings, explanations, the states
+	 * that need a sentence. Those are counted in ones, not hundreds.
+	 */
+	private static JLabel row(String text)
+	{
+		JLabel label = new JLabel(text);
+		label.setToolTipText(text);
+		label.setAlignmentX(Component.LEFT_ALIGNMENT);
+		return label;
 	}
 
 	private static JLabel muted(String text)

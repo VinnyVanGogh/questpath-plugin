@@ -33,6 +33,20 @@ public final class SkillXp
 		this.xp = xp;
 	}
 
+	/**
+	 * A cheap identity for what this holds, so a panel can skip rebuilding
+	 * itself when the numbers behind it have not moved.
+	 *
+	 * The Combat tab is rebuilt from this and a CombatStats, and it was being
+	 * torn down and remade on every refresh -- about thirty components thrown
+	 * away and recreated for a picture that changes when you gain experience,
+	 * not when a bank window opens.
+	 */
+	public int signature()
+	{
+		return xp.hashCode();
+	}
+
 	/** Nothing is known. Every lookup reports unknown. */
 	public static SkillXp unknown()
 	{
