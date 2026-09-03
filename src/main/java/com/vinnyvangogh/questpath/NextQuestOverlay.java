@@ -184,7 +184,11 @@ class NextQuestOverlay extends QuestpathOverlay
 			return;
 		}
 
-		if (!items.bankSeen())
+		if (items.freshness() == QuestItems.Freshness.LAST_SYNC)
+		{
+			rows.add(OverlayRow.note("Counts are from your last sync.", OverlayTheme.MUTED));
+		}
+		else if (!items.bankSeen())
 		{
 			// Same caveat the shopping list carries: with no bank opened,
 			// every count is what is on you, so "not held" means "not

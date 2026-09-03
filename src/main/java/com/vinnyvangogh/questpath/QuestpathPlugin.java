@@ -210,6 +210,16 @@ public class QuestpathPlugin extends Plugin
 	private volatile List<String> routeOrder = Collections.emptyList();
 
 	/**
+	 * What questpath holds for this account, by lowercased item name.
+	 *
+	 * The fallback for every item answer before the player opens a bank. Same
+	 * lifecycle as buildRules and routeOrder -- volatile, replaced wholesale,
+	 * and cleared on logout and on a rejected push, because a stale map from
+	 * another account is worse than none.
+	 */
+	private volatile Map<String, Long> knownItems = Collections.emptyMap();
+
+	/**
 	 * How often a push may be sent for experience alone, with no quest or
 	 * level change behind it.
 	 *
@@ -386,6 +396,7 @@ public class QuestpathPlugin extends Plugin
 			buildRules = Collections.emptyList();
 			unmatchedQuests = Collections.emptyList();
 			routeOrder = Collections.emptyList();
+			knownItems = Collections.emptyMap();
 			// The next login may be another account, whose bank is not this
 			// one. Reporting the previous account's items would be worse than
 			// reporting none.
@@ -624,6 +635,7 @@ public class QuestpathPlugin extends Plugin
 						buildRules = Collections.emptyList();
 						unmatchedQuests = Collections.emptyList();
 						routeOrder = Collections.emptyList();
+						knownItems = Collections.emptyMap();
 						clientThread.invokeLater(this::refresh);
 					}
 				},
@@ -637,6 +649,7 @@ public class QuestpathPlugin extends Plugin
 					// plan, and this push response is the only place it is
 					// handed over.
 					routeOrder = accepted.routeOrder();
+					knownItems = accepted.knownItems();
 
 					// Repaint now rather than waiting for the next game
 					// event. An earlier version left it to the next
@@ -830,6 +843,35 @@ public class QuestpathPlugin extends Plugin
 		return NextQuestStatus.of(routeOrder, completed);
 	}
 
+	/**
+	 * The quests the pickup list is drawn from: the next few on the route,
+	 * still undone.
+	 *
+	 * "The next few" rather than "started". A started flag never clears on an
+	 * umbrella quest -- Recipe for Disaster has been in progress for hundreds
+	 * of hours -- so it recommended an item from a Feldip Hills subquest
+	 * permanently, wherever the player actually was. What you are about to
+	 * walk through is the honest reading of "here".
+	 */
+	private java.util.Set<String> pickupScope()
+	{
+		NextQuestStatus route = nextQuest();
+		if (route == null)
+		{
+			return Collections.emptySet();
+		}
+		java.util.Set<String> scope = new HashSet<>();
+		for (NextQuestStatus.Step step : route.upcoming())
+		{
+			if (scope.size() >= Math.max(1, config.pickupsLookahead()))
+			{
+				break;
+			}
+			scope.add(step.questName());
+		}
+		return scope;
+	}
+
 	private QuestItems questItems()
 	{
 		if (questGraph == null || client.getGameState() != GameState.LOGGED_IN || owned.isEmpty())
@@ -853,8 +895,8 @@ public class QuestpathPlugin extends Plugin
 
 		return QuestItems.of(questGraph,
 			new PlayerState(levels, experience, completed, buildRules),
-			owned.heldByName(), owned.bankSeen(), inProgressQuestNames(),
-			new HashSet<>(routeOrder));
+			owned.heldByName(), owned.bankSeen(), pickupScope(),
+			new HashSet<>(routeOrder), knownItems);
 	}
 
 	@Provides

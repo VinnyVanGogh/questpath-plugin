@@ -16,20 +16,34 @@ import javax.swing.JPanel;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.ui.ColorScheme;
 import net.runelite.client.ui.FontManager;
+import net.runelite.client.ui.components.ColorJButton;
+import net.runelite.client.ui.components.colorpicker.ColorPickerManager;
+import net.runelite.client.ui.components.colorpicker.RuneliteColorPicker;
 
 /**
- * The 27 overlay/shop settings, rendered as real controls inside the
+ * The overlay/shop/ground-item settings, rendered as real controls inside the
  * questpath sidebar instead of RuneLite's own config panel.
  *
- * <p>That panel is a 225px column behind a different icon, and at 27 items
- * every label there truncates to things like "Route:..." or "Rules:..." --
- * unreadable and impossible to scan. This panel exists to give the same
- * settings room: headings, grouping, and a control wide enough to read.
+ * <p>That panel is a 225px column behind a different icon, and once every
+ * setting is spelled out every label there truncates to things like
+ * "Route:..." or "Rules:..." -- unreadable and impossible to scan. This panel
+ * exists to give the same settings room: headings, grouping, and a control
+ * wide enough to read.
  *
  * <p>It reads and writes through {@link ConfigManager} directly rather than
  * caching values locally, so it always agrees with whatever RuneLite's own
  * config panel shows -- there is exactly one source of truth for each key,
  * and it is not this class.
+ *
+ * <p>Every group below is a {@link CollapsibleGroup}: a header row a player
+ * can click to hide a group's body once they know it's set the way they want.
+ * Collapsing is view state only -- it never calls {@code ConfigManager} --
+ * and every group starts expanded. Seven of the eight groups are headed by
+ * their own enable checkbox rather than a plain label; that checkbox's own
+ * listener also expands or collapses the group ("smart-close"), so ticking a
+ * feature on always shows you its settings and one click puts them away
+ * again once you're done. The checkbox itself lives in the header row, so it
+ * stays visible and clickable whether the group is collapsed or not.
  */
 class OverlaySettingsPanel extends JPanel
 {
@@ -37,6 +51,7 @@ class OverlaySettingsPanel extends JPanel
 	private static final java.awt.Insets INDENT = new java.awt.Insets(0, 14, 0, 0);
 
 	private final ConfigManager configManager;
+	private final ColorPickerManager colorPickerManager;
 
 	/**
 	 * True only while the constructor is populating controls with their
@@ -44,16 +59,21 @@ class OverlaySettingsPanel extends JPanel
 	 *
 	 * Every control's listener checks this before writing. Without it,
 	 * simply opening this tab would call {@code setSelectedItem}/{@code
-	 * setSelected} on all 27 controls, each firing a change event that
-	 * writes the value straight back -- stamping every default as an
-	 * explicit saved setting the first time anyone looks at the tab, which
-	 * is not a write the player asked for.
+	 * setSelected} on all of them, each firing a change event that writes
+	 * the value straight back -- stamping every default as an explicit saved
+	 * setting the first time anyone looks at the tab, which is not a write
+	 * the player asked for.
 	 */
 	private boolean populating = true;
 
 	OverlaySettingsPanel(QuestpathConfig config, ConfigManager configManager)
 	{
 		this.configManager = configManager;
+		// RuneliteColorPicker's own constructor is package-private to
+		// RuneLite; ColorPickerManager is the way in, and it asks only for
+		// the ConfigManager we already have -- nothing here needs Guice
+		// injection.
+		this.colorPickerManager = new ColorPickerManager(configManager);
 
 		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 		setBackground(ColorScheme.DARK_GRAY_COLOR);
@@ -62,7 +82,7 @@ class OverlaySettingsPanel extends JPanel
 
 		add(sharedGroup(config));
 		add(spacer());
-		add(overlayGroup(
+		add(toggleGroup(
 			"Next on your route",
 			"The next quests on your saved questpath route, and how far through it you are.",
 			config.overlayNextQuest(), "overlayNextQuest",
@@ -76,7 +96,7 @@ class OverlaySettingsPanel extends JPanel
 					config.overlayNextQuestItems(), "overlayNextQuestItems"));
 			}));
 		add(spacer());
-		add(overlayGroup(
+		add(toggleGroup(
 			"Get while you're here",
 			"Items you can pick up during a quest you are already on, that other quests also want.",
 			config.overlayPickups(), "overlayPickups",
@@ -86,7 +106,7 @@ class OverlaySettingsPanel extends JPanel
 				addField(sub, "Length", lengthCombo(config.overlayPickupsLength(), "overlayPickupsLength"));
 			}));
 		add(spacer());
-		add(overlayGroup(
+		add(toggleGroup(
 			"Everything you need",
 			"Every item your doable quests need, ticked against what the client can see you hold.",
 			config.overlayItems(), "overlayItems",
@@ -101,7 +121,7 @@ class OverlaySettingsPanel extends JPanel
 					config.overlayItemsHideHeld(), "overlayItemsHideHeld"));
 			}));
 		add(spacer());
-		add(overlayGroup(
+		add(toggleGroup(
 			"Combat XP to next level",
 			"What each stat would cost to buy the next combat level, cheapest first.",
 			config.overlayCombatXp(), "overlayCombatXp",
@@ -111,7 +131,7 @@ class OverlaySettingsPanel extends JPanel
 				addField(sub, "Length", lengthCombo(config.overlayCombatXpLength(), "overlayCombatXpLength"));
 			}));
 		add(spacer());
-		add(overlayGroup(
+		add(toggleGroup(
 			"Build rules",
 			"Your declared caps and no-xp skills, and how much headroom is left in each.",
 			config.overlayBuildRules(), "overlayBuildRules",
@@ -126,18 +146,25 @@ class OverlaySettingsPanel extends JPanel
 			}));
 		add(spacer());
 		add(shopsGroup(config));
+		add(spacer());
+		add(groundItemsGroup(config));
 
 		populating = false;
 	}
 
 	/**
 	 * The five settings shared by every overlay, unless a panel overrides
-	 * its own width/length below.
+	 * its own width/length above.
+	 *
+	 * <p>The only group with no enable checkbox of its own -- there is
+	 * nothing here to smart-close against -- so its header is a plain label,
+	 * wired to collapse the same way the caret does.
 	 */
-	private JPanel sharedGroup(QuestpathConfig config)
+	private CollapsibleGroup sharedGroup(QuestpathConfig config)
 	{
+		JLabel header = headingLabel("Shared");
+
 		JPanel panel = column();
-		panel.add(heading("Shared"));
 		addField(panel, "Show",
 			combo(OverlayDisplayMode.values(), config.overlayDisplayMode(),
 				"Whether overlay rows carry the item pictures, the words, or both.",
@@ -159,64 +186,93 @@ class OverlaySettingsPanel extends JPanel
 			"Say when a list is cut short",
 			"Show the \"...and 58 more\" line at the end of a capped list.",
 			config.overlayShowOverflow(), "overlayShowOverflow"));
-		return panel;
+
+		CollapsibleGroup group = new CollapsibleGroup(header, panel, true);
+		group.alsoToggleOn(header);
+		return group;
 	}
 
 	/**
-	 * One overlay's toggle plus its own width/length/extras, indented
-	 * underneath so the relationship reads at a glance.
+	 * A group headed by its own enable checkbox: one of the five overlays,
+	 * Shops, or Ground items.
 	 *
-	 * <p>The toggle doubles as the group's heading -- it already carries the
-	 * overlay's name, so a second label saying the same thing would just be
-	 * noise in a column this narrow.
+	 * <p>The checkbox doubles as the group's heading -- it already carries
+	 * the feature's name, so a second label saying the same thing would just
+	 * be noise in a column this narrow -- and its own listener greys out
+	 * {@code extras} while off (existing behaviour, kept) and smart-closes
+	 * the group to match (new behaviour): unticked collapses it, ticked
+	 * expands it. The checkbox lives in the header row, so it stays visible
+	 * and clickable either way.
 	 */
-	private JPanel overlayGroup(String name, String tooltip, boolean enabled, String toggleKey,
+	private CollapsibleGroup toggleGroup(String name, String tooltip, boolean enabled, String toggleKey,
 		java.util.function.Consumer<JPanel> extras)
 	{
-		JPanel panel = column();
-		JCheckBox toggle = toggle(name, tooltip, enabled, toggleKey);
-		toggle.setFont(FontManager.getRunescapeBoldFont());
+		JCheckBox header = toggle(name, tooltip, enabled, toggleKey);
+		header.setFont(FontManager.getRunescapeBoldFont());
 
 		JPanel sub = column();
 		sub.setBorder(BorderFactory.createEmptyBorder(INDENT.top, INDENT.left, INDENT.bottom, INDENT.right));
 		extras.accept(sub);
-
 		setEnabledDeep(sub, enabled);
-		toggle.addActionListener(e -> setEnabledDeep(sub, toggle.isSelected()));
 
-		panel.add(toggle);
-		panel.add(sub);
-		return panel;
+		CollapsibleGroup group = new CollapsibleGroup(header, sub, true);
+		header.addActionListener(e ->
+		{
+			setEnabledDeep(sub, header.isSelected());
+			group.setExpanded(header.isSelected());
+		});
+		return group;
 	}
 
 	/**
-	 * Shop marking is two independent config items but one dependent pair in
-	 * practice: showing counts means nothing if the highlight itself is off.
+	 * Shop marking is two independent toggle-shaped config items plus a
+	 * colour, but one dependent trio in practice: the count and the outline
+	 * colour mean nothing if the highlight itself is off.
 	 */
-	private JPanel shopsGroup(QuestpathConfig config)
+	private CollapsibleGroup shopsGroup(QuestpathConfig config)
 	{
-		JPanel panel = column();
-		panel.add(heading("Shops"));
-
-		JCheckBox highlight = toggle(
+		return toggleGroup(
 			"Mark what you need in shops",
 			"While a shop is open, outline the items your quests still need and show how many"
 				+ " to buy. Works whether or not \"Everything you need\" is on.",
-			config.shopHighlight(), "shopHighlight");
+			config.shopHighlight(), "shopHighlight",
+			sub ->
+			{
+				sub.add(toggle(
+					"Show how many to buy",
+					"Print the outstanding count on the marked item, rather than only outlining it.",
+					config.shopHighlightCounts(), "shopHighlightCounts"));
+				addField(sub, "Outline colour",
+					colorField(config.shopHighlightColour(),
+						"The colour a needed item is outlined in. The buy count is drawn in green"
+							+ " above the slot regardless.",
+						"Shop outline colour", "shopHighlightColour"));
+			});
+	}
 
-		JPanel sub = column();
-		sub.setBorder(BorderFactory.createEmptyBorder(INDENT.top, INDENT.left, INDENT.bottom, INDENT.right));
-		sub.add(toggle(
-			"Show how many to buy",
-			"Print the outstanding count on the marked item, rather than only outlining it.",
-			config.shopHighlightCounts(), "shopHighlightCounts"));
-
-		setEnabledDeep(sub, config.shopHighlight());
-		highlight.addActionListener(e -> setEnabledDeep(sub, highlight.isSelected()));
-
-		panel.add(highlight);
-		panel.add(sub);
-		return panel;
+	/**
+	 * Ground-item marking: the same on/count/colour shape as Shops, for
+	 * items already lying on the floor rather than sitting in a shop's
+	 * stock.
+	 */
+	private CollapsibleGroup groundItemsGroup(QuestpathConfig config)
+	{
+		return toggleGroup(
+			"Mark what you need on the ground",
+			"Outline items lying on the floor that your plan still needs, so you pick them up"
+				+ " in passing instead of buying them later.",
+			config.groundHighlight(), "groundHighlight",
+			sub ->
+			{
+				sub.add(toggle(
+					"Show how many to pick up",
+					"Print the outstanding count beside the item name.",
+					config.groundHighlightCounts(), "groundHighlightCounts"));
+				addField(sub, "Marker colour",
+					colorField(config.groundHighlightColour(),
+						"The colour a needed item on the floor is marked in.",
+						"Ground marker colour", "groundHighlightColour"));
+			});
 	}
 
 	/**
@@ -322,6 +378,45 @@ class OverlaySettingsPanel extends JPanel
 	}
 
 	/**
+	 * A colour swatch button wired to a {@code Color} config key through
+	 * RuneLite's own colour picker dialog.
+	 *
+	 * <p>The dialog reports every slider drag through {@code onColorChange}
+	 * -- writing config on each of those would be dozens of writes for one
+	 * decision. Only the swatch updates live; the write to {@code
+	 * ConfigManager} happens once, when the dialog closes, matching the
+	 * one-write-per-decision the rest of this panel keeps.
+	 *
+	 * <p>Alpha is hidden: every colour this panel offers is an opaque
+	 * outline or marker, never a translucent fill, so a fourth slider would
+	 * only be a way to accidentally pick an invisible colour.
+	 */
+	private ColorJButton colorField(Color initial, String tooltip, String dialogTitle, String keyName)
+	{
+		ColorJButton button = new ColorJButton("", initial);
+		button.setToolTipText(tooltip);
+		button.setFocusPainted(false);
+		button.setAlignmentX(LEFT_ALIGNMENT);
+		button.setMaximumSize(CONTROL_MAX);
+		button.addActionListener(e ->
+		{
+			RuneliteColorPicker picker = colorPickerManager.create(
+				button, button.getColor(), dialogTitle, true);
+			picker.setOnColorChange(button::setColor);
+			picker.setOnClose(chosen ->
+			{
+				button.setColor(chosen);
+				if (!populating)
+				{
+					configManager.setConfiguration(QuestpathConfig.GROUP, keyName, chosen);
+				}
+			});
+			picker.setVisible(true);
+		});
+		return button;
+	}
+
+	/**
 	 * Disables (or re-enables) an entire subtree.
 	 *
 	 * A panel's own options are meaningless while its toggle is off, and
@@ -349,16 +444,13 @@ class OverlaySettingsPanel extends JPanel
 		return panel;
 	}
 
-	private static JLabel heading(String text)
+	/** A group heading's label, styled to match the panel's one look. */
+	private static JLabel headingLabel(String text)
 	{
 		JLabel label = new JLabel(text.toUpperCase());
 		label.setFont(FontManager.getRunescapeSmallFont().deriveFont(Font.BOLD));
 		label.setForeground(ColorScheme.BRAND_ORANGE);
 		label.setAlignmentX(LEFT_ALIGNMENT);
-		label.setBorder(BorderFactory.createCompoundBorder(
-			BorderFactory.createMatteBorder(0, 0, 1, 0, ColorScheme.DARK_GRAY_HOVER_COLOR),
-			BorderFactory.createEmptyBorder(0, 0, 4, 0)));
-		label.setMaximumSize(new Dimension(Integer.MAX_VALUE, label.getPreferredSize().height + 6));
 		return label;
 	}
 

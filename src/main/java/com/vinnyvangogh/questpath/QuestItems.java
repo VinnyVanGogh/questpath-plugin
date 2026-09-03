@@ -15,10 +15,38 @@ import java.util.Map;
  */
 class QuestItems
 {
+	/**
+	 * How much the counts in this list can be trusted.
+	 *
+	 * Three states, not two. The old pair -- bank seen or not -- collapsed
+	 * two very different situations into the pessimistic one: an account that
+	 * syncs every two minutes has a perfectly good bank on record from the
+	 * last session, and rendering that as "I can only see what you are
+	 * carrying" was honest but nearly always wrong in the unhelpful
+	 * direction. Stale is a much smaller problem than blind, provided the
+	 * panel says which it is.
+	 */
+	enum Freshness
+	{
+		/** The bank has been opened this session; the counts are current. */
+		LIVE,
+		/**
+		 * No bank this session, but questpath had one on record. Counts come
+		 * from that plus whatever is being carried right now.
+		 */
+		LAST_SYNC,
+		/**
+		 * No bank this session and nothing on record. Every count is
+		 * inventory and equipment only, so "none" means "not on you".
+		 */
+		CARRIED_ONLY
+	}
+
 	private final List<QuestNeeds> quests = new ArrayList<>();
 	private final List<Total> totals = new ArrayList<>();
 	private final List<Pickup> pickups = new ArrayList<>();
 	private boolean bankSeen;
+	private Freshness freshness = Freshness.CARRIED_ONLY;
 
 	/** One quest's item list, each line ticked against what is held. */
 	static class QuestNeeds
@@ -217,6 +245,47 @@ class QuestItems
 	}
 
 	/**
+	 * The counts to judge against: live where the client can see, questpath's
+	 * record where it cannot.
+	 *
+	 * The larger of the two per item, never the sum and never the record
+	 * alone. The client's map is live but blind to the bank; questpath's is
+	 * complete but as old as the last sync, and it already includes whatever
+	 * was carried then. Adding them would double-count a stack that appears
+	 * in both. Taking the larger keeps a live pickup visible immediately
+	 * while still remembering a bank the client has never been shown.
+	 *
+	 * Untouched when the bank has been opened: a live count is the answer,
+	 * and letting a stale record raise it would resurrect items that have
+	 * since been spent.
+	 */
+	static Map<String, Long> effectiveHeldForTest(Map<String, Long> held, boolean bankSeen,
+		Map<String, Long> knownItems)
+	{
+		return effectiveHeld(held, bankSeen, knownItems);
+	}
+
+	private static Map<String, Long> effectiveHeld(Map<String, Long> held, boolean bankSeen,
+		Map<String, Long> knownItems)
+	{
+		if (bankSeen || knownItems == null || knownItems.isEmpty())
+		{
+			return held;
+		}
+		Map<String, Long> merged = new LinkedHashMap<>(held);
+		for (Map.Entry<String, Long> entry : knownItems.entrySet())
+		{
+			String key = entry.getKey() == null ? "" : entry.getKey().toLowerCase();
+			if (key.isEmpty())
+			{
+				continue;
+			}
+			merged.merge(key, entry.getValue() == null ? 0L : entry.getValue(), Math::max);
+		}
+		return merged;
+	}
+
+	/**
 	 * Builds the list for the quests this account can actually start.
 	 *
 	 * Doable quests only. A shopping list for a quest whose prerequisites are
@@ -289,24 +358,47 @@ class QuestItems
 	}
 
 	static QuestItems of(QuestGraph graph, PlayerState account, Map<String, Long> held, boolean bankSeen,
-		java.util.Set<String> inProgress)
+		java.util.Set<String> upcoming)
 	{
-		return of(graph, account, held, bankSeen, inProgress, java.util.Collections.emptySet());
+		return of(graph, account, held, bankSeen, upcoming, java.util.Collections.emptySet());
 	}
 
 	/**
-	 * @param inProgress names of quests the client reports as started but not
-	 *     finished, so the list can say what is worth grabbing while you are
-	 *     already in one
+	 * @param upcoming the next few quests on the route, in order, undone. The
+	 *     pickup list is drawn from these -- see pickupsIn
 	 * @param plan quest names on the account's saved questpath route. When it
 	 *     has any, it is the scope; when it is empty the list falls back to
 	 *     whatever is doable right now.
 	 */
 	static QuestItems of(QuestGraph graph, PlayerState account, Map<String, Long> held, boolean bankSeen,
-		java.util.Set<String> inProgress, java.util.Set<String> plan)
+		java.util.Set<String> upcoming, java.util.Set<String> plan)
+	{
+		return of(graph, account, held, bankSeen, upcoming, plan, java.util.Collections.emptyMap());
+	}
+
+	/**
+	 * @param knownItems what questpath already holds for the account, by
+	 *     lowercased name. Used only when the bank has not been opened this
+	 *     session, and never to reduce a live count -- see effectiveHeld.
+	 */
+	static QuestItems of(QuestGraph graph, PlayerState account, Map<String, Long> held, boolean bankSeen,
+		java.util.Set<String> upcoming, java.util.Set<String> plan, Map<String, Long> knownItems)
 	{
 		QuestItems out = new QuestItems();
 		out.bankSeen = bankSeen;
+		if (bankSeen)
+		{
+			out.freshness = Freshness.LIVE;
+		}
+		else if (knownItems != null && !knownItems.isEmpty())
+		{
+			out.freshness = Freshness.LAST_SYNC;
+		}
+		else
+		{
+			out.freshness = Freshness.CARRIED_ONLY;
+		}
+		held = effectiveHeld(held, bankSeen, knownItems);
 		QuestClassifier classifier = new QuestClassifier(graph, account);
 
 		// The plan, not what is doable today.
@@ -362,26 +454,34 @@ class QuestItems
 		}
 
 		out.totals.addAll(totalsOf(out.quests, held));
-		out.pickups.addAll(pickupsIn(graph, inProgress, out.totals));
+		out.pickups.addAll(pickupsIn(graph, upcoming, out.totals));
 		return out;
 	}
 
 	/**
-	 * Things you can pick up inside a quest you are already doing, that
-	 * something else on the list also wants.
+	 * Things you can pick up during the quests you are about to do, that
+	 * something later on the plan also wants.
 	 *
-	 * Only worth knowing while you are actually there, which is why it is
-	 * driven by the quests the client reports as started. Quest Helper's own
-	 * selected quest would be the more precise signal and is not readable:
-	 * it lives in memory in another plugin, with no config key, no event, and
-	 * no shared class to reach it through. What the game itself calls "in
-	 * progress" is the honest substitute, and is arguably the better question
-	 * anyway -- it is where you are, not where a panel is pointed.
+	 * Driven by the next few quests on the route rather than by what the
+	 * client calls "in progress". In progress was the obvious signal and the
+	 * wrong one: Recipe for Disaster stays in progress for hundreds of hours,
+	 * and an umbrella quest carries the union of its ten subquests' items --
+	 * so "grab the ogre bellows while you are here" appeared permanently,
+	 * while standing in Draynor, for an item in the Feldip Hills.
+	 *
+	 * The next few quests are what "here" actually means for a player working
+	 * a route: you are about to walk through them, so an item one of them
+	 * drops is genuinely on your way, and a later quest wanting it is the
+	 * reason to bother.
+	 *
+	 * This is still not location awareness -- questpath holds no location for
+	 * any item, and a quest spans a lot of ground. It is a much better proxy
+	 * than a started flag that never clears.
 	 */
-	private static List<Pickup> pickupsIn(QuestGraph graph, java.util.Set<String> inProgress, List<Total> totals)
+	private static List<Pickup> pickupsIn(QuestGraph graph, java.util.Set<String> upcoming, List<Total> totals)
 	{
 		List<Pickup> out = new ArrayList<>();
-		if (inProgress == null || inProgress.isEmpty())
+		if (upcoming == null || upcoming.isEmpty())
 		{
 			return out;
 		}
@@ -399,18 +499,56 @@ class QuestItems
 			return out;
 		}
 
-		java.util.Set<String> lowerInProgress = new java.util.HashSet<>();
-		for (String name : inProgress)
+		java.util.Set<String> lowerUpcoming = new java.util.HashSet<>();
+		for (String name : upcoming)
 		{
 			if (name != null)
 			{
-				lowerInProgress.add(name.toLowerCase());
+				lowerUpcoming.add(name.toLowerCase());
+			}
+		}
+
+		// An umbrella quest carries the union of its subquests' items, and
+		// Recipe for Disaster stays "in progress" for hundreds of hours. So
+		// every item from every subquest looked like something to grab right
+		// now, attributed to the umbrella -- "Recipe for Disaster: Ogre
+		// bellows" while standing in Draynor, when the bellows are in the
+		// Feldip Hills inside one specific subquest.
+		//
+		// Attributing to the most specific quest that lists the item does not
+		// make this location-aware, and nothing here can: questpath holds no
+		// location for an item. What it does is stop the name being actively
+		// misleading. "Recipe for Disaster/Freeing Skrach Uglogwee: Ogre
+		// bellows" says which part of a hundred-hour quest, which is enough to
+		// know it is not on your way.
+		Map<String, QuestGraph.Quest> mostSpecific = new LinkedHashMap<>();
+		for (QuestGraph.Quest quest : graph.quests())
+		{
+			if (!lowerUpcoming.contains(quest.name().toLowerCase()))
+			{
+				continue;
+			}
+			for (QuestGraph.Item item : quest.items())
+			{
+				if (!item.obtainable() || !wanted.containsKey(item.name().toLowerCase()))
+				{
+					continue;
+				}
+				String key = item.name().toLowerCase();
+				QuestGraph.Quest held = mostSpecific.get(key);
+				// Longer name wins: a subquest is its umbrella's name plus a
+				// slash and a part, so it is always the longer of the two and
+				// always the more specific.
+				if (held == null || quest.name().length() > held.name().length())
+				{
+					mostSpecific.put(key, quest);
+				}
 			}
 		}
 
 		for (QuestGraph.Quest quest : graph.quests())
 		{
-			if (!lowerInProgress.contains(quest.name().toLowerCase()))
+			if (!lowerUpcoming.contains(quest.name().toLowerCase()))
 			{
 				continue;
 			}
@@ -420,8 +558,9 @@ class QuestItems
 				{
 					continue;
 				}
-				Total total = wanted.get(item.name().toLowerCase());
-				if (total == null)
+				String key = item.name().toLowerCase();
+				Total total = wanted.get(key);
+				if (total == null || mostSpecific.get(key) != quest)
 				{
 					continue;
 				}
@@ -612,6 +751,12 @@ class QuestItems
 	boolean bankSeen()
 	{
 		return bankSeen;
+	}
+
+	/** How much the counts can be trusted. See {@link Freshness}. */
+	Freshness freshness()
+	{
+		return freshness;
 	}
 
 	/** Every needed item, summed across every doable quest. */

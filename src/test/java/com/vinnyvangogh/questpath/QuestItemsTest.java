@@ -469,4 +469,51 @@ public class QuestItemsTest
 		assertEquals(1, needs.have());
 		assertEquals(1, needs.unresolvedCount());
 	}
+
+	/**
+	 * With no bank opened but a record on file, questpath's own counts fill
+	 * the gap and the list says so.
+	 *
+	 * The old behaviour collapsed "I have never seen your bank" and "I saw it
+	 * two minutes ago" into the same pessimistic answer, which for an account
+	 * that syncs constantly was almost always the wrong one.
+	 */
+	@Test
+	public void aBankOnRecordFillsInForOneNotOpenedYet()
+	{
+		java.util.Map<String, Long> carried = new java.util.HashMap<>();
+		carried.put("bucket", 1L);
+
+		java.util.Map<String, Long> known = new java.util.HashMap<>();
+		known.put("bucket", 9L);
+		known.put("rope", 4L);
+
+		java.util.Map<String, Long> merged =
+			QuestItems.effectiveHeldForTest(carried, false, known);
+
+		// The larger of the two, never the sum: questpath's record already
+		// includes whatever was carried when it was taken, so adding would
+		// double-count the same stack.
+		assertEquals(Long.valueOf(9L), merged.get("bucket"));
+		// And a bank-only item appears at all, which is the entire point.
+		assertEquals(Long.valueOf(4L), merged.get("rope"));
+	}
+
+	/**
+	 * A live bank wins outright. Letting a stale record raise a count the
+	 * client can actually see would resurrect items already spent.
+	 */
+	@Test
+	public void aLiveBankIsNeverRaisedByAnOlderRecord()
+	{
+		java.util.Map<String, Long> live = new java.util.HashMap<>();
+		live.put("bucket", 1L);
+
+		java.util.Map<String, Long> known = new java.util.HashMap<>();
+		known.put("bucket", 9L);
+
+		java.util.Map<String, Long> merged = QuestItems.effectiveHeldForTest(live, true, known);
+
+		assertEquals(Long.valueOf(1L), merged.get("bucket"));
+	}
 }

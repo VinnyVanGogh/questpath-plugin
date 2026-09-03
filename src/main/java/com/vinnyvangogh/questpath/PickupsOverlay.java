@@ -55,7 +55,12 @@ class PickupsOverlay extends QuestpathOverlay
 				OverlayRow.note("Bank and quest data not read yet.", OverlayTheme.MUTED));
 		}
 
-		if (!items.bankSeen())
+		if (items.freshness() == QuestItems.Freshness.LAST_SYNC)
+		{
+			// Handled as a footnote rather than a warning: questpath had a
+			// bank on record, so this is stale at worst rather than blind.
+		}
+		else if (!items.bankSeen())
 		{
 			// The most misleading state this overlay can be in: without a
 			// bank read, "not owned" and "not on you right now" look

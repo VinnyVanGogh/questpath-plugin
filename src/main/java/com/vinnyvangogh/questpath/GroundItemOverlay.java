@@ -188,7 +188,10 @@ class GroundItemOverlay extends Overlay
 		// is nothing" failure this project forbids), but MUTED rather than
 		// WARN so the mark itself carries the caveat: a visibly weaker claim
 		// instead of a confident one that might be wrong.
-		Color markColor = items.bankSeen() ? OverlayTheme.WARN : OverlayTheme.MUTED;
+		// See ShopItemOverlay: only CARRIED_ONLY is a weakened claim.
+		Color markColor = items.freshness() == QuestItems.Freshness.CARRIED_ONLY
+			? OverlayTheme.MUTED
+			: config.groundHighlightColour();
 
 		OverlayTheme.prepare(g);
 

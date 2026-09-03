@@ -142,7 +142,13 @@ class ShopItemOverlay extends WidgetItemOverlay
 		// this project explicitly forbids), but MUTED rather than WARN so
 		// the outline itself carries the caveat: a visibly weaker claim
 		// instead of a confident one that might be wrong.
-		Color outline = items.bankSeen() ? OverlayTheme.WARN : OverlayTheme.MUTED;
+		// LAST_SYNC counts as a real claim, not a weakened one: questpath had
+		// a bank on record and the account syncs constantly, so it is stale
+		// at worst. Only CARRIED_ONLY -- nothing on record and no bank opened
+		// -- greys out, because there the count really is just your pockets.
+		Color outline = items.freshness() == QuestItems.Freshness.CARRIED_ONLY
+			? OverlayTheme.MUTED
+			: config.shopHighlightColour();
 
 		OverlayTheme.prepare(g);
 		Stroke previousStroke = g.getStroke();
@@ -154,7 +160,8 @@ class ShopItemOverlay extends WidgetItemOverlay
 		if (config.shopHighlightCounts())
 		{
 			long outstanding = Math.max(0L, total.required() - total.owned());
-			drawCount(g, bounds, Long.toString(outstanding), items.bankSeen());
+			drawCount(g, bounds, Long.toString(outstanding),
+				items.freshness() != QuestItems.Freshness.CARRIED_ONLY);
 		}
 	}
 
@@ -176,7 +183,7 @@ class ShopItemOverlay extends WidgetItemOverlay
 	 * sits on the top row -- a count drawn above the first row would otherwise
 	 * land on the shop's title bar.
 	 */
-	private static void drawCount(Graphics2D g, Rectangle bounds, String text, boolean bankSeen)
+	private static void drawCount(Graphics2D g, Rectangle bounds, String text, boolean trusted)
 	{
 		g.setFont(OverlayTheme.smallFont());
 		FontMetrics metrics = g.getFontMetrics();
@@ -192,7 +199,7 @@ class ShopItemOverlay extends WidgetItemOverlay
 		// The same weakened claim the outline makes when the bank has not
 		// been seen: the count may be counting something already banked.
 		OverlayTheme.shadowed(g, text, x, baseline,
-			bankSeen ? OverlayTheme.GOOD : OverlayTheme.MUTED);
+			trusted ? OverlayTheme.GOOD : OverlayTheme.MUTED);
 	}
 
 	/**

@@ -25,6 +25,9 @@ class PushResponse
 	@SerializedName("route_order")
 	private List<String> routeOrder;
 
+	@SerializedName("known_items")
+	private java.util.Map<String, Long> knownItems;
+
 	String player()
 	{
 		return player == null ? "" : player;
@@ -55,6 +58,24 @@ class PushResponse
 	 * old enough to predate this field, and is treated the same way rather
 	 * than as a crash.
 	 */
+	/**
+	 * What questpath already holds for this account, by lowercased item name.
+	 *
+	 * The client cannot see a bank until the player opens one, so until then
+	 * every "do you have this" answer is about a pocket rather than an
+	 * account. This is the fallback, and it turns that from "I can only see
+	 * what you are carrying" into "as of your last sync" -- stale being a far
+	 * smaller problem than blind, provided the panel says which it is.
+	 *
+	 * Empty means questpath holds nothing on record, which is different from
+	 * the field not arriving; the server sends `{}` rather than dropping it
+	 * precisely so the two stay distinguishable.
+	 */
+	java.util.Map<String, Long> knownItems()
+	{
+		return knownItems == null ? Collections.emptyMap() : knownItems;
+	}
+
 	List<String> routeOrder()
 	{
 		return routeOrder == null ? Collections.emptyList() : routeOrder;

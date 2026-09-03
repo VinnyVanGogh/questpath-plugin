@@ -4,6 +4,7 @@ import net.runelite.client.config.Config;
 import net.runelite.client.config.ConfigGroup;
 import net.runelite.client.config.ConfigItem;
 import net.runelite.client.config.ConfigSection;
+import net.runelite.client.config.Range;
 
 /**
  * Settings for the questpath plugin.
@@ -265,6 +266,21 @@ public interface QuestpathConfig extends Config
 		return PanelListLength.MATCH_SHARED;
 	}
 
+	@Range(min = 1, max = 12)
+	@ConfigItem(
+		keyName = "pickupsLookahead",
+		name = "- how far ahead",
+		description = "How many quests down the route count as \"here\": the one in hand plus"
+			+ " the next few. Higher catches more detours worth making; lower keeps the list"
+			+ " about where you actually are, which is what it is for.",
+		section = overlaySection,
+		position = 23
+	)
+	default int pickupsLookahead()
+	{
+		return 4;
+	}
+
 	@ConfigItem(
 		keyName = "overlayItems",
 		name = "Everything you need",
@@ -436,6 +452,20 @@ public interface QuestpathConfig extends Config
 		return true;
 	}
 
+	@ConfigItem(
+		keyName = "shopHighlightColour",
+		name = "Outline colour",
+		description = "The colour a needed item is outlined in. The buy count is drawn in green"
+			+ " above the slot regardless, because green is the one colour a shop's own"
+			+ " interface never uses.",
+		section = shopSection,
+		position = 3
+	)
+	default java.awt.Color shopHighlightColour()
+	{
+		return OverlayTheme.WARN;
+	}
+
 	// ------------------------------------------------------------------
 	// Ground items.
 	//
@@ -469,5 +499,17 @@ public interface QuestpathConfig extends Config
 	default boolean groundHighlightCounts()
 	{
 		return true;
+	}
+
+	@ConfigItem(
+		keyName = "groundHighlightColour",
+		name = "Marker colour",
+		description = "The colour a needed item on the floor is marked in.",
+		section = groundSection,
+		position = 3
+	)
+	default java.awt.Color groundHighlightColour()
+	{
+		return OverlayTheme.WARN;
 	}
 }

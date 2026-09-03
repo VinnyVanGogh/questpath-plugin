@@ -104,7 +104,16 @@ class NeededItemsOverlay extends QuestpathOverlay
 			totals.isEmpty() ? 1.0 : (double) satisfiedCount / totals.size(),
 			shortItems.isEmpty() ? OverlayTheme.GOOD : OverlayTheme.WARN));
 
-		if (!items.bankSeen())
+		if (items.freshness() == QuestItems.Freshness.LAST_SYNC)
+		{
+			// A real bank, just not this session's. Worth saying, because a
+			// stack spent since the last sync still shows here -- but it is a
+			// footnote, not the warning the carried-only case needs.
+			rows.add(OverlayRow.note(
+				"Counts are from your last questpath sync plus what you are carrying.",
+				OverlayTheme.MUTED));
+		}
+		else if (!items.bankSeen())
 		{
 			// The critical caveat: with no bank opened this session, every
 			// owned() count above is inventory and equipment only. A "0 / 5"
