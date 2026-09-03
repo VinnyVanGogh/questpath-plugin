@@ -46,9 +46,16 @@ class CollapsibleGroup extends JPanel
 	 *               #alsoToggleOn} adds the header itself to that set.
 	 * @param body the group's controls, shown only while expanded.
 	 * @param startExpanded left as a parameter, not hardcoded, so the one
-	 *               place that decides it is the call site. Every call site
-	 *               in this plugin passes {@code true}: groups start
-	 *               expanded.
+	 *               place that decides it is the call site. A group headed
+	 *               by its own enable checkbox starts expanded only if that
+	 *               checkbox is already ticked, matching the smart-close
+	 *               behaviour below. A group headed by a plain label -- the
+	 *               Shared group, and the three top-level sections in
+	 *               {@link OverlaySettingsPanel} -- has no checkbox to read,
+	 *               so it always passes {@code true}: collapsing a whole
+	 *               section is a different intent from collapsing one
+	 *               overlay inside it, and must not depend on the state of
+	 *               whatever happens to be nested underneath.
 	 */
 	CollapsibleGroup(JComponent header, JPanel body, boolean startExpanded)
 	{

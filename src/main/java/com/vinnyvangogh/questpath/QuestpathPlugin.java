@@ -26,6 +26,7 @@ import net.runelite.api.Quest;
 import net.runelite.api.QuestState;
 import net.runelite.api.Skill;
 import net.runelite.api.events.GameStateChanged;
+import net.runelite.api.events.GameTick;
 import net.runelite.api.events.ItemContainerChanged;
 import net.runelite.api.events.StatChanged;
 import net.runelite.api.events.VarbitChanged;
@@ -123,6 +124,36 @@ public class QuestpathPlugin extends Plugin
 	 * as nothing at all rather than as an empty panel.
 	 */
 	private volatile OverlaySnapshot overlaySnapshot;
+
+	/**
+	 * Something happened that the panel and overlays should be rebuilt for,
+	 * and the rebuild is waiting for the next tick.
+	 *
+	 * refresh() is not cheap: it reads roughly 180 quest varbits three times
+	 * over and runs two classify passes across 218 quests. That is fine a few
+	 * times a second and ruinous per event -- and the events arrive in
+	 * bursts. Logging in fires a StatChanged for every skill; banking a full
+	 * inventory fires an ItemContainerChanged for every slot. Refreshing on
+	 * each meant twenty to thirty full rebuilds in a fraction of a second,
+	 * every time, which is exactly when the client is already busiest.
+	 *
+	 * Coalescing to the game tick makes a burst cost one rebuild instead of
+	 * thirty, at the price of up to 600ms of staleness on a readout nobody
+	 * reads that fast.
+	 */
+	private boolean refreshPending;
+
+	/**
+	 * The finished-quest set for the rebuild currently in flight.
+	 *
+	 * Three separate parts of a refresh ask for this -- the verdicts, the item
+	 * lists and the route -- and each ask walked all ~180 entries of RuneLite's
+	 * Quest enum calling getState, which reads a varbit apiece. Same answer
+	 * every time, three times over, on a method already being called too
+	 * often. Held for the duration of one refresh and dropped after, so it
+	 * can never serve a stale answer into the next one.
+	 */
+	private Set<String> completedThisPass;
 
 	/**
 	 * The shop marker, held separately from the panel overlays.
@@ -317,8 +348,25 @@ public class QuestpathPlugin extends Plugin
 	@Subscribe
 	public void onStatChanged(StatChanged event)
 	{
-		refresh();
+		// Coalesced: login fires one of these per skill.
+		refreshPending = true;
 		maybeSync();
+	}
+
+	/**
+	 * Where every coalesced rebuild actually happens.
+	 *
+	 * One per tick at most, and only when something asked for one.
+	 */
+	@Subscribe
+	public void onGameTick(GameTick event)
+	{
+		if (!refreshPending)
+		{
+			return;
+		}
+		refreshPending = false;
+		refresh();
 	}
 
 	/**
@@ -353,6 +401,9 @@ public class QuestpathPlugin extends Plugin
 			return;
 		}
 
+		// Coalesced to the next tick; see refreshPending. Banking a full
+		// inventory fires one of these per slot.
+		//
 		// Redraw before pushing, not after.
 		//
 		// This used to only sync. Picking up the banana the panel had just
@@ -368,7 +419,7 @@ public class QuestpathPlugin extends Plugin
 		// reading a bank from inside the client is answering "do I have this
 		// yet" the moment it changes, and an answer that lags until you walk
 		// to a bank is the answer the web app already gives.
-		refresh();
+		refreshPending = true;
 		maybeSync();
 	}
 
@@ -417,10 +468,29 @@ public class QuestpathPlugin extends Plugin
 			return;
 		}
 
-		CombatStats stats = currentStats();
-		SkillXp xp = currentXp();
-		QuestItems items = questItems();
-		NextQuestStatus route = nextQuest();
+		// Held for this pass only. Every read below wants the same answer and
+		// each was paying ~180 varbit reads for it; dropped in the finally so
+		// the next refresh cannot be served last refresh's quests.
+		completedThisPass = null;
+		CombatStats stats;
+		SkillXp xp;
+		QuestItems items;
+		NextQuestStatus route;
+		AccountReport report;
+		QuestVerdicts questVerdicts;
+		try
+		{
+			stats = currentStats();
+			xp = currentXp();
+			items = questItems();
+			route = nextQuest();
+			report = accountReport();
+			questVerdicts = verdicts();
+		}
+		finally
+		{
+			completedThisPass = null;
+		}
 
 		// Built from the same reads the panel is given, in the same pass. Two
 		// passes would let the sidebar and the overlay disagree about the
@@ -430,7 +500,7 @@ public class QuestpathPlugin extends Plugin
 			characterName(), questPoints());
 
 		panel.update(stats, xp, syncStatus(), buildRules, unmatchedQuests,
-			verdicts(), items, route, SyncSettings.from(config), accountReport());
+			questVerdicts, items, route, SyncSettings.from(config), report);
 	}
 
 	/**
@@ -784,6 +854,10 @@ public class QuestpathPlugin extends Plugin
 	 */
 	private Set<String> completedQuestNames()
 	{
+		if (completedThisPass != null)
+		{
+			return completedThisPass;
+		}
 		Set<String> completed = new HashSet<>();
 		for (Quest quest : Quest.values())
 		{

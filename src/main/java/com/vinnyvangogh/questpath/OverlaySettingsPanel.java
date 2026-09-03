@@ -35,12 +35,25 @@ import net.runelite.client.ui.components.colorpicker.RuneliteColorPicker;
  * config panel shows -- there is exactly one source of truth for each key,
  * and it is not this class.
  *
- * <p>Every group below is a {@link CollapsibleGroup}: a header row a player
- * can click to hide a group's body once they know it's set the way they want.
- * Collapsing is view state only -- it never calls {@code ConfigManager} --
- * and every group starts expanded. Seven of the eight groups are headed by
- * their own enable checkbox rather than a plain label; that checkbox's own
- * listener also expands or collapses the group ("smart-close"), so ticking a
+ * <p>Controls are grouped two levels deep, both levels built from the same
+ * {@link CollapsibleGroup}: a header row a player can click to hide a body
+ * once they know it's set the way they want. Collapsing is view state only
+ * -- it never calls {@code ConfigManager}.
+ *
+ * <p>The outer level is three named sections -- SHARED, OVERLAYS, EXTRAS --
+ * each headed by a plain uppercase label with no checkbox of its own, since
+ * a section groups several toggles rather than gating one. All three always
+ * start expanded regardless of what their children start as: collapsing an
+ * entire section is a different intent from collapsing one overlay inside
+ * it, so the two must not follow the same rule.
+ *
+ * <p>The inner level is the eight feature groups -- five overlays under
+ * OVERLAYS, Shops and Ground items under EXTRAS, plus Shared's own controls
+ * (which have no further nesting; Shared has no per-feature toggles to
+ * group). Every one of those eight is headed by its own enable checkbox
+ * rather than a plain label, and starts expanded only if that checkbox is
+ * already ticked -- collapsed otherwise. That checkbox's own listener also
+ * expands or collapses the group afterwards ("smart-close"), so ticking a
  * feature on always shows you its settings and one click puts them away
  * again once you're done. The checkbox itself lives in the header row, so it
  * stays visible and clickable whether the group is collapsed or not.
@@ -82,88 +95,23 @@ class OverlaySettingsPanel extends JPanel
 
 		add(sharedGroup(config));
 		add(spacer());
-		add(toggleGroup(
-			"Next on your route",
-			"The next quests on your saved questpath route, and how far through it you are.",
-			config.overlayNextQuest(), "overlayNextQuest",
-			sub ->
-			{
-				addField(sub, "Width", widthCombo(config.overlayNextQuestWidth(), "overlayNextQuestWidth"));
-				addField(sub, "Length", lengthCombo(config.overlayNextQuestLength(), "overlayNextQuestLength"));
-				sub.add(toggle(
-					"List its own items",
-					"List the next quest's own items under it, ticked against what you hold.",
-					config.overlayNextQuestItems(), "overlayNextQuestItems"));
-			}));
+		add(overlaysSection(config));
 		add(spacer());
-		add(toggleGroup(
-			"Get while you're here",
-			"Items you can pick up during a quest you are already on, that other quests also want.",
-			config.overlayPickups(), "overlayPickups",
-			sub ->
-			{
-				addField(sub, "Width", widthCombo(config.overlayPickupsWidth(), "overlayPickupsWidth"));
-				addField(sub, "Length", lengthCombo(config.overlayPickupsLength(), "overlayPickupsLength"));
-			}));
-		add(spacer());
-		add(toggleGroup(
-			"Everything you need",
-			"Every item your doable quests need, ticked against what the client can see you hold.",
-			config.overlayItems(), "overlayItems",
-			sub ->
-			{
-				addField(sub, "Width", widthCombo(config.overlayItemsWidth(), "overlayItemsWidth"));
-				addField(sub, "Length", lengthCombo(config.overlayItemsLength(), "overlayItemsLength"));
-				sub.add(toggle(
-					"Hide items you already hold",
-					"Drop the \"already held\" section, leaving only what you are short of."
-						+ " The running total still counts them.",
-					config.overlayItemsHideHeld(), "overlayItemsHideHeld"));
-			}));
-		add(spacer());
-		add(toggleGroup(
-			"Combat XP to next level",
-			"What each stat would cost to buy the next combat level, cheapest first.",
-			config.overlayCombatXp(), "overlayCombatXp",
-			sub ->
-			{
-				addField(sub, "Width", widthCombo(config.overlayCombatXpWidth(), "overlayCombatXpWidth"));
-				addField(sub, "Length", lengthCombo(config.overlayCombatXpLength(), "overlayCombatXpLength"));
-			}));
-		add(spacer());
-		add(toggleGroup(
-			"Build rules",
-			"Your declared caps and no-xp skills, and how much headroom is left in each.",
-			config.overlayBuildRules(), "overlayBuildRules",
-			sub ->
-			{
-				addField(sub, "Width", widthCombo(config.overlayBuildRulesWidth(), "overlayBuildRulesWidth"));
-				addField(sub, "Length", lengthCombo(config.overlayBuildRulesLength(), "overlayBuildRulesLength"));
-				addField(sub, "Which rules",
-					combo(BuildRuleSections.values(), config.overlayBuildRulesSections(),
-						"Blocking rules are walls; informational ones are goals and soft caps.",
-						"overlayBuildRulesSections"));
-			}));
-		add(spacer());
-		add(shopsGroup(config));
-		add(spacer());
-		add(groundItemsGroup(config));
+		add(extrasSection(config));
 
 		populating = false;
 	}
 
 	/**
-	 * The five settings shared by every overlay, unless a panel overrides
-	 * its own width/length above.
+	 * The SHARED top-level section: the five settings shared by every
+	 * overlay, unless a panel overrides its own width/length above.
 	 *
-	 * <p>The only group with no enable checkbox of its own -- there is
-	 * nothing here to smart-close against -- so its header is a plain label,
-	 * wired to collapse the same way the caret does.
+	 * <p>Unlike OVERLAYS and EXTRAS, Shared has no per-feature toggles to
+	 * nest -- these five controls are its entire body, not a further layer
+	 * of {@link #toggleGroup}s.
 	 */
 	private CollapsibleGroup sharedGroup(QuestpathConfig config)
 	{
-		JLabel header = headingLabel("Shared");
-
 		JPanel panel = column();
 		addField(panel, "Show",
 			combo(OverlayDisplayMode.values(), config.overlayDisplayMode(),
@@ -187,7 +135,23 @@ class OverlaySettingsPanel extends JPanel
 			"Show the \"...and 58 more\" line at the end of a capped list.",
 			config.overlayShowOverflow(), "overlayShowOverflow"));
 
-		CollapsibleGroup group = new CollapsibleGroup(header, panel, true);
+		return sectionGroup("Shared", panel);
+	}
+
+	/**
+	 * A top-level section heading: SHARED, OVERLAYS or EXTRAS.
+	 *
+	 * <p>None of the three has an enable checkbox of its own -- a section
+	 * groups several toggles rather than gating one -- so the header is a
+	 * plain label, wired to collapse the same way the caret does. It always
+	 * starts expanded, independent of {@code body}'s own children: see
+	 * {@link CollapsibleGroup}'s {@code startExpanded} javadoc for why that
+	 * must not follow the same rule as a feature group.
+	 */
+	private CollapsibleGroup sectionGroup(String name, JPanel body)
+	{
+		JLabel header = headingLabel(name);
+		CollapsibleGroup group = new CollapsibleGroup(header, body, true);
 		group.alsoToggleOn(header);
 		return group;
 	}
@@ -215,7 +179,7 @@ class OverlaySettingsPanel extends JPanel
 		extras.accept(sub);
 		setEnabledDeep(sub, enabled);
 
-		CollapsibleGroup group = new CollapsibleGroup(header, sub, true);
+		CollapsibleGroup group = new CollapsibleGroup(header, sub, enabled);
 		header.addActionListener(e ->
 		{
 			setEnabledDeep(sub, header.isSelected());
@@ -225,16 +189,107 @@ class OverlaySettingsPanel extends JPanel
 	}
 
 	/**
+	 * The OVERLAYS top-level section: the five panel groups, each a
+	 * self-contained {@link #toggleGroup}, nested under one shared heading.
+	 */
+	private CollapsibleGroup overlaysSection(QuestpathConfig config)
+	{
+		JPanel body = column();
+		body.add(toggleGroup(
+			"Next on your route",
+			"The next quests on your saved questpath route, and how far through it you are.",
+			config.overlayNextQuest(), "overlayNextQuest",
+			sub ->
+			{
+				addField(sub, "Width", widthCombo(config.overlayNextQuestWidth(), "overlayNextQuestWidth"));
+				addField(sub, "Length", lengthCombo(config.overlayNextQuestLength(), "overlayNextQuestLength"));
+				sub.add(toggle(
+					"List its own items",
+					"List the next quest's own items under it, ticked against what you hold.",
+					config.overlayNextQuestItems(), "overlayNextQuestItems"));
+			}));
+		body.add(spacer());
+		body.add(toggleGroup(
+			"Get while you're here",
+			"Items you can pick up during a quest you are already on, that other quests also want.",
+			config.overlayPickups(), "overlayPickups",
+			sub ->
+			{
+				addField(sub, "Width", widthCombo(config.overlayPickupsWidth(), "overlayPickupsWidth"));
+				addField(sub, "Length", lengthCombo(config.overlayPickupsLength(), "overlayPickupsLength"));
+			}));
+		body.add(spacer());
+		body.add(toggleGroup(
+			"Everything you need",
+			"Every item your doable quests need, ticked against what the client can see you hold.",
+			config.overlayItems(), "overlayItems",
+			sub ->
+			{
+				addField(sub, "Width", widthCombo(config.overlayItemsWidth(), "overlayItemsWidth"));
+				addField(sub, "Length", lengthCombo(config.overlayItemsLength(), "overlayItemsLength"));
+				sub.add(toggle(
+					"Hide items you already hold",
+					"Drop the \"already held\" section, leaving only what you are short of."
+						+ " The running total still counts them.",
+					config.overlayItemsHideHeld(), "overlayItemsHideHeld"));
+			}));
+		body.add(spacer());
+		body.add(toggleGroup(
+			"Combat XP to next level",
+			"What each stat would cost to buy the next combat level, cheapest first.",
+			config.overlayCombatXp(), "overlayCombatXp",
+			sub ->
+			{
+				addField(sub, "Width", widthCombo(config.overlayCombatXpWidth(), "overlayCombatXpWidth"));
+				addField(sub, "Length", lengthCombo(config.overlayCombatXpLength(), "overlayCombatXpLength"));
+			}));
+		body.add(spacer());
+		body.add(toggleGroup(
+			"Build rules",
+			"Your declared caps and no-xp skills, and how much headroom is left in each.",
+			config.overlayBuildRules(), "overlayBuildRules",
+			sub ->
+			{
+				addField(sub, "Width", widthCombo(config.overlayBuildRulesWidth(), "overlayBuildRulesWidth"));
+				addField(sub, "Length", lengthCombo(config.overlayBuildRulesLength(), "overlayBuildRulesLength"));
+				addField(sub, "Which rules",
+					combo(BuildRuleSections.values(), config.overlayBuildRulesSections(),
+						"Blocking rules are walls; informational ones are goals and soft caps.",
+						"overlayBuildRulesSections"));
+			}));
+		return sectionGroup("Overlays", body);
+	}
+
+	/**
+	 * The EXTRAS top-level section: the two marker groups, Shops and Ground
+	 * items, nested under one shared heading.
+	 */
+	private CollapsibleGroup extrasSection(QuestpathConfig config)
+	{
+		JPanel body = column();
+		body.add(shopsGroup(config));
+		body.add(spacer());
+		body.add(groundItemsGroup(config));
+		return sectionGroup("Extras", body);
+	}
+
+	/**
 	 * Shop marking is two independent toggle-shaped config items plus a
 	 * colour, but one dependent trio in practice: the count and the outline
 	 * colour mean nothing if the highlight itself is off.
+	 *
+	 * <p>Displayed as "Shops" rather than the fuller "Mark what you need in
+	 * shops" -- that longer name was already being cut off in the sidebar
+	 * before this group had a section to sit under. The long form survives
+	 * as the checkbox's tooltip, where truncation is not a problem.
 	 */
 	private CollapsibleGroup shopsGroup(QuestpathConfig config)
 	{
 		return toggleGroup(
-			"Mark what you need in shops",
-			"While a shop is open, outline the items your quests still need and show how many"
-				+ " to buy. Works whether or not \"Everything you need\" is on.",
+			"Shops",
+			"Mark what you need in shops: while a shop is open, outline the items your quests"
+				+ " still need and show how many to buy. Works whether or not \"Everything you"
+				+ " need\" is on.",
 			config.shopHighlight(), "shopHighlight",
 			sub ->
 			{
@@ -254,13 +309,16 @@ class OverlaySettingsPanel extends JPanel
 	 * Ground-item marking: the same on/count/colour shape as Shops, for
 	 * items already lying on the floor rather than sitting in a shop's
 	 * stock.
+	 *
+	 * <p>Displayed as "Ground items" rather than "Mark what you need on the
+	 * ground", for the same fit reason as {@link #shopsGroup}.
 	 */
 	private CollapsibleGroup groundItemsGroup(QuestpathConfig config)
 	{
 		return toggleGroup(
-			"Mark what you need on the ground",
-			"Outline items lying on the floor that your plan still needs, so you pick them up"
-				+ " in passing instead of buying them later.",
+			"Ground items",
+			"Mark what you need on the ground: outline items lying on the floor that your plan"
+				+ " still needs, so you pick them up in passing instead of buying them later.",
 			config.groundHighlight(), "groundHighlight",
 			sub ->
 			{
