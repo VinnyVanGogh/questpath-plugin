@@ -1325,16 +1325,35 @@ class QuestpathPanel extends PluginPanel
 			ColorScheme.PROGRESS_COMPLETE_COLOR);
 		addRow(summary, "From quests later", XpTable.format(plan.laterXp()),
 			ColorScheme.BRAND_ORANGE);
-		addRow(summary, "Left to train", XpTable.format(plan.xpToTrain()),
+		// Two training figures, and the first is the one that decides tonight.
+		// "After everything" prices work the account has not agreed to do --
+		// for a long prerequisite chain it is months out -- so it is shown
+		// second and as the floor it is.
+		addRow(summary, "Train, ready only", XpTable.format(plan.xpToTrainFromReadyOnly()),
+			plan.readyQuestsAreEnough()
+				? ColorScheme.PROGRESS_COMPLETE_COLOR
+				: ColorScheme.LIGHT_GRAY_COLOR,
+			"If you only do the quests you can start right now and nothing else,"
+				+ " this is what is left to train.");
+		addRow(summary, "Train, after all", XpTable.format(plan.xpToTrain()),
 			plan.questsAreEnough()
 				? ColorScheme.PROGRESS_COMPLETE_COLOR
-				: ColorScheme.LIGHT_GRAY_COLOR);
+				: ColorScheme.LIGHT_GRAY_COLOR,
+			"The floor: what is left once every quest you could ever reach has"
+				+ " paid out. The gap between these two is what unblocking the"
+				+ " list below is worth.");
 		panel.add(summary);
 
-		if (plan.questsAreEnough())
+		if (plan.readyQuestsAreEnough())
 		{
 			panel.add(Box.createVerticalStrut(6));
-			panel.add(muted("Quests alone get you there. No training needed."));
+			panel.add(muted("The quests you can start today get you there on their own."));
+		}
+		else if (plan.questsAreEnough())
+		{
+			panel.add(Box.createVerticalStrut(6));
+			panel.add(muted("Quests alone get you there, but not without"
+				+ " unblocking some first."));
 		}
 
 		if (plan.lostXp() > 0)
@@ -1379,7 +1398,7 @@ class QuestpathPanel extends PluginPanel
 		{
 			SkillPlan.Entry entry = entries.get(i);
 			addRow(rows, entry.questName(), XpTable.format(Math.round(entry.xp())),
-				ColorScheme.LIGHT_GRAY_COLOR);
+				ColorScheme.LIGHT_GRAY_COLOR, blockerTooltip(entry));
 		}
 		panel.add(rows);
 
@@ -1391,6 +1410,84 @@ class QuestpathPanel extends PluginPanel
 			panel.add(muted("...and " + remaining + " more, worth "
 				+ XpTable.format(tail(entries, shown)) + "."));
 		}
+	}
+
+	/**
+	 * How much of a blocker chain one tooltip shows before counting the rest.
+	 *
+	 * While Guthix Sleeps on a fresh account is forty-one quests and eighteen
+	 * skills, which is a fifty-nine line tooltip -- taller than the client and
+	 * unreadable at any height. Both lists lead with what matters (deepest
+	 * prerequisite first, biggest shortfall first), so a cut tail is the least
+	 * useful part, and it is counted rather than dropped so the tooltip never
+	 * understates the work.
+	 */
+	private static final int MAX_TOOLTIP_QUESTS = 12;
+	private static final int MAX_TOOLTIP_SKILLS = 8;
+
+	/**
+	 * Spells out what "after more work" actually means for one quest.
+	 *
+	 * <p>The label names a category; this names the work. Everything in the
+	 * chain, not just the immediate blocker -- a quest behind one quest that
+	 * is itself behind three is not one quest away, and saying so would send
+	 * someone off to start something they cannot finish.
+	 *
+	 * <p>Null when there is nothing to say, so ready quests get no empty
+	 * tooltip following the pointer around.
+	 */
+	private static String blockerTooltip(SkillPlan.Entry entry)
+	{
+		QuestBlockers blockers = entry.blockers();
+		if (blockers == null || blockers.isEmpty())
+		{
+			return null;
+		}
+
+		StringBuilder text = new StringBuilder("<html><body style='width:230px'>");
+		text.append("<b>").append(escape(entry.questName())).append("</b>");
+
+		List<String> questsFirst = blockers.quests();
+		if (!questsFirst.isEmpty())
+		{
+			text.append("<br><br>Do these first, in order:");
+			int shown = Math.min(questsFirst.size(), MAX_TOOLTIP_QUESTS);
+			for (int i = 0; i < shown; i++)
+			{
+				text.append("<br>&nbsp;&nbsp;").append(escape(questsFirst.get(i)));
+			}
+			if (questsFirst.size() > shown)
+			{
+				text.append("<br>&nbsp;&nbsp;...and ")
+					.append(questsFirst.size() - shown).append(" more");
+			}
+		}
+
+		List<QuestBlockers.Gap> gaps = blockers.skills();
+		if (!gaps.isEmpty())
+		{
+			text.append("<br><br>Levels needed along the way:");
+			int shown = Math.min(gaps.size(), MAX_TOOLTIP_SKILLS);
+			for (int i = 0; i < shown; i++)
+			{
+				QuestBlockers.Gap gap = gaps.get(i);
+				text.append("<br>&nbsp;&nbsp;").append(escape(gap.skill()))
+					.append(' ').append(gap.have()).append(" to ").append(gap.need());
+				if (gap.boostable())
+				{
+					// Worth saying: a boostable level is not training at all,
+					// and counting it as work would overstate the cost.
+					text.append(" (a boost covers this)");
+				}
+			}
+			if (gaps.size() > shown)
+			{
+				text.append("<br>&nbsp;&nbsp;...and ")
+					.append(gaps.size() - shown).append(" more");
+			}
+		}
+
+		return text.append("</body></html>").toString();
 	}
 
 	private static long tail(List<SkillPlan.Entry> entries, int from)

@@ -39,12 +39,27 @@ class SkillPlan
 		private final String questName;
 		private final double xp;
 		private final QuestStatus status;
+		private final QuestBlockers blockers;
 
-		Entry(String questName, double xp, QuestStatus status)
+		Entry(String questName, double xp, QuestStatus status, QuestBlockers blockers)
 		{
 			this.questName = questName;
 			this.xp = xp;
 			this.status = status;
+			this.blockers = blockers;
+		}
+
+		/**
+		 * What stands between the account and this quest, or null when
+		 * nothing does.
+		 *
+		 * Computed only for quests that are actually blocked. A ready quest
+		 * has no blockers by definition, and walking its tree to prove that
+		 * would be work done to produce an empty list.
+		 */
+		QuestBlockers blockers()
+		{
+			return blockers;
 		}
 
 		String questName()
@@ -119,12 +134,16 @@ class SkillPlan
 				continue;
 			}
 
-			Entry entry = new Entry(quest.name(), xp, status);
+			boolean ready = status == QuestStatus.ELIGIBLE || status == QuestStatus.BOOSTABLE;
+			QuestBlockers blockers = ready
+				? null
+				: QuestBlockers.of(graph, account, quest);
+			Entry entry = new Entry(quest.name(), xp, status, blockers);
 			if (status.permanent())
 			{
 				plan.lost.add(entry);
 			}
-			else if (status == QuestStatus.ELIGIBLE || status == QuestStatus.BOOSTABLE)
+			else if (ready)
 			{
 				plan.ready.add(entry);
 			}
@@ -275,5 +294,29 @@ class SkillPlan
 	boolean questsAreEnough()
 	{
 		return !reached() && xpToTrain() == 0;
+	}
+
+	/**
+	 * What is left to train if you only do the quests you can start today.
+	 *
+	 * <p>The more useful of the two figures, and the one an account actually
+	 * decides on. {@link #xpToTrain()} is the floor after every reachable
+	 * quest has paid out, which for a long chain is months away and prices
+	 * work you have not agreed to do. This is tonight's number: the quests
+	 * already open, nothing unlocked first.
+	 *
+	 * <p>Never smaller than xpToTrain, and usually larger. Both are shown
+	 * because the gap between them is itself the answer to "is it worth
+	 * unblocking those quests first".
+	 */
+	long xpToTrainFromReadyOnly()
+	{
+		return Math.max(0L, xpNeeded() - readyXp());
+	}
+
+	/** Whether the quests already open would carry the account to the target. */
+	boolean readyQuestsAreEnough()
+	{
+		return !reached() && xpToTrainFromReadyOnly() == 0;
 	}
 }
