@@ -31,6 +31,8 @@ import net.runelite.client.chat.ChatColorType;
 import net.runelite.client.chat.ChatMessageBuilder;
 import net.runelite.client.chat.QueuedMessage;
 import net.runelite.api.events.GameTick;
+import net.runelite.api.ScriptID;
+import net.runelite.api.events.ScriptPostFired;
 import net.runelite.api.events.WidgetLoaded;
 import net.runelite.api.gameval.InterfaceID;
 import net.runelite.api.events.ItemContainerChanged;
@@ -138,6 +140,7 @@ public class QuestpathPlugin extends Plugin
 	private BankNeedsOverlay bankOverlay;
 	private BankListOverlay bankListOverlay;
 	private BankButton bankButton;
+	private BankTabLayout bankTab;
 
 	/**
 	 * Whether the bank marks and list are showing.
@@ -350,6 +353,7 @@ public class QuestpathPlugin extends Plugin
 		bankListOverlay = new BankListOverlay(this, config, overlayIcons, client);
 		overlayManager.add(bankListOverlay);
 
+		bankTab = new BankTabLayout(client, clientThread, this);
 		bankButton = new BankButton(client, this::bankNeedsShown, this::toggleBankNeeds);
 
 		try
@@ -404,6 +408,11 @@ public class QuestpathPlugin extends Plugin
 		{
 			bankButton.detach();
 			bankButton = null;
+		}
+		if (bankTab != null)
+		{
+			bankTab.removeAdded();
+			bankTab = null;
 		}
 		overlayIcons.clear();
 		overlaySnapshot = null;
@@ -643,6 +652,48 @@ public class QuestpathPlugin extends Plugin
 	private void toggleBankNeeds()
 	{
 		bankNeedsShown = !bankNeedsShown;
+		if (bankTab != null)
+		{
+			// Ask the client to lay the bank out again. Its own build is what
+			// this hooks, so re-running it is how the grid switches between
+			// questpath's order and the bank's own.
+			bankTab.removeAdded();
+			clientThread.invokeLater(() -> client.runScript(ScriptID.BANKMAIN_BUILD));
+		}
+	}
+
+	/** The overlays and the bank layout read config through here. */
+	QuestpathConfig config()
+	{
+		return config;
+	}
+
+	/**
+	 * Rebuilds the bank grid once the client has finished its own build.
+	 *
+	 * BANKMAIN_FINISHBUILDING is the only point at which the item widgets both
+	 * exist and are final; earlier and there is nothing to move, later and the
+	 * client has already drawn a frame of its own layout.
+	 */
+	@Subscribe
+	public void onScriptPostFired(ScriptPostFired event)
+	{
+		if (bankTab == null)
+		{
+			return;
+		}
+		if (event.getScriptId() == ScriptID.BANKMAIN_FINISHBUILDING)
+		{
+			bankTab.onBankBuilt();
+		}
+		else if (event.getScriptId() == ScriptID.BANKMAIN_SEARCHING && bankTab.active())
+		{
+			// Tells the bank it is in a search state, which stops its own tab
+			// logic rebuilding the grid underneath this layout. The return
+			// value sits on the int stack.
+			int[] stack = client.getIntStack();
+			stack[client.getIntStackSize() - 1] = 1;
+		}
 	}
 
 	/**

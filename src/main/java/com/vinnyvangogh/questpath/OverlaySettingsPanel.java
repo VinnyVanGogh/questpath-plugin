@@ -314,6 +314,12 @@ class OverlaySettingsPanel extends JPanel
 						+ " in green so you can see the plan is covered without counting.",
 					config.bankHighlightShortOnly(), "bankHighlightShortOnly"));
 				sub.add(toggle(
+					"Rearrange the bank itself",
+					"Group the bank's own grid by what your plan needs. Items you own stay"
+						+ " withdrawable; ones you own none of are shown greyed, which is the"
+						+ " one thing outlining a slot can never tell you.",
+					config.bankTab(), "bankTab"));
+				sub.add(toggle(
 					"Show the ordered list too",
 					"Alongside the marks, list what the plan needs beside the bank: what you"
 						+ " ran out of first, then what you are short of, then what you have.",

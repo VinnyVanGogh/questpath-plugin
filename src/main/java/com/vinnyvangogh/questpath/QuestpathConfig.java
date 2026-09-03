@@ -603,12 +603,27 @@ public interface QuestpathConfig extends Config
 	}
 
 	@ConfigItem(
+		keyName = "bankTab",
+		name = "Rearrange the bank itself",
+		description = "Group the bank's own grid by what your plan needs -- what you ran out"
+			+ " of, then what you are short of, then what is ready, then everything else."
+			+ " Items you own stay withdrawable; ones you own none of are shown greyed so"
+			+ " you can see they are missing at all.",
+		section = bankSection,
+		position = 5
+	)
+	default boolean bankTab()
+	{
+		return true;
+	}
+
+	@ConfigItem(
 		keyName = "bankList",
 		name = "Show the ordered list too",
 		description = "Alongside the marks, list what the plan needs beside the bank:"
 			+ " what you are short of first, then what you already have.",
 		section = bankSection,
-		position = 5
+		position = 6
 	)
 	default boolean bankList()
 	{
