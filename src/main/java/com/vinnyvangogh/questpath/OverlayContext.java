@@ -18,18 +18,21 @@ final class OverlayContext
 	private final OverlayDisplayMode mode;
 	private final boolean compact;
 	private final boolean showOverflow;
+	private final OverlayListLength length;
 
 	OverlayContext(OverlayIcons icons, OverlayDisplayMode mode)
 	{
-		this(icons, mode, false, true);
+		this(icons, mode, false, true, OverlayListLength.NORMAL);
 	}
 
-	OverlayContext(OverlayIcons icons, OverlayDisplayMode mode, boolean compact, boolean showOverflow)
+	OverlayContext(OverlayIcons icons, OverlayDisplayMode mode, boolean compact, boolean showOverflow,
+		OverlayListLength length)
 	{
 		this.icons = icons;
 		this.mode = mode == null ? OverlayDisplayMode.TEXT_AND_ICONS : mode;
 		this.compact = compact;
 		this.showOverflow = showOverflow;
+		this.length = length == null ? OverlayListLength.NORMAL : length;
 	}
 
 	OverlayIcons icons()
@@ -70,28 +73,50 @@ final class OverlayContext
 	}
 
 	/**
-	 * How many entries a capped list should show, given a baseline written for
-	 * the roomiest case: regular text at the default width.
+	 * How many entries a list of plain rows should show.
 	 *
-	 * The caps exist so a panel stays a readout rather than a wall, and "a
-	 * wall" is measured in screen height, not entries. An icon-only grid at a
-	 * wide setting fits nine items on the line a text row spends on one, so
-	 * holding both to the same count would waste the mode the player switched
-	 * to precisely to see more. Smaller text buys a more modest increase, in
-	 * proportion to the row height it saves.
+	 * The baseline is the overlay's own idea of a sensible length at the
+	 * Normal setting, scaled by what the player chose. Scaling rather than
+	 * replacing keeps the proportions the overlays were written with -- a
+	 * route preview should stay shorter than a shopping list at every setting,
+	 * not become the same length as it.
+	 *
+	 * Smaller text raises it in proportion to the row height it saves. Display
+	 * mode does not, and must not: these rows are one line tall whatever is or
+	 * is not drawn in them. Letting mode in here is what made "Next on your
+	 * route" quietly grow four extra quests when the player switched to
+	 * images, on a panel that has no item art in it at all.
 	 */
 	int listCap(int base)
 	{
-		int cap = base;
-		if (mode == OverlayDisplayMode.ICONS_ONLY)
+		if (length.unlimited())
 		{
-			cap *= 4;
+			return Integer.MAX_VALUE;
 		}
+		int cap = Math.max(1, base * length.baseline() / OverlayListLength.NORMAL.baseline());
 		if (compact)
 		{
 			cap = cap * 3 / 2;
 		}
 		return cap;
+	}
+
+	/**
+	 * How many entries a list of <em>items</em> should show.
+	 *
+	 * The same as {@link #listCap(int)} except in icon-only mode, where these
+	 * rows really do collapse into a wrapping grid and several fit on the line
+	 * one text row would have taken. Only lists that pack may ask for this
+	 * bonus; a list of quest names must not, however it is displayed.
+	 */
+	int itemListCap(int base)
+	{
+		int cap = listCap(base);
+		if (cap == Integer.MAX_VALUE)
+		{
+			return cap;
+		}
+		return mode == OverlayDisplayMode.ICONS_ONLY ? cap * 4 : cap;
 	}
 
 	/** The body face. */

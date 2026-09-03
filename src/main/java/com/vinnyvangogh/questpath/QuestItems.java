@@ -190,13 +190,30 @@ class QuestItems
 		private final String itemName;
 		private final int itemId;
 		private final int alsoWantedBy;
+		private final List<String> sources;
 
-		Pickup(String questName, String itemName, int itemId, int alsoWantedBy)
+		Pickup(String questName, String itemName, int itemId, int alsoWantedBy, List<String> sources)
 		{
 			this.questName = questName;
 			this.itemName = itemName;
 			this.itemId = itemId;
 			this.alsoWantedBy = alsoWantedBy;
+			this.sources = sources;
+		}
+
+		/**
+		 * Where else this item comes from -- see Line.sources().
+		 *
+		 * Carried because "get this while you are here" is useless without it.
+		 * A player told to pick up a banana during Recipe for Disaster has no
+		 * way to know whether that means it drops in the quest, is sold in a
+		 * shop three squares away, or has to be farmed -- and the flag that
+		 * put the row on screen says only that the wiki marked it obtainable
+		 * during the quest, which is not the same as saying where.
+		 */
+		List<String> sources()
+		{
+			return sources == null ? java.util.Collections.emptyList() : sources;
 		}
 
 		/** The game's own item id, or 0 when questpath holds none. */
@@ -320,7 +337,8 @@ class QuestItems
 				{
 					continue;
 				}
-				out.add(new Pickup(quest.name(), item.name(), item.itemId(), total.quests()));
+				out.add(new Pickup(quest.name(), item.name(), item.itemId(), total.quests(),
+					item.sources()));
 			}
 		}
 		return out;

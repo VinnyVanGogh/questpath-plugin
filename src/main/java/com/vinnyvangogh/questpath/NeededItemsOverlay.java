@@ -34,6 +34,12 @@ class NeededItemsOverlay extends QuestpathOverlay
 	}
 
 	@Override
+	OverlayWidth width(QuestpathConfig config)
+	{
+		return config.overlayItemsWidth();
+	}
+
+	@Override
 	List<OverlayRow> rows(OverlaySnapshot snapshot, OverlayContext ctx)
 	{
 		QuestItems items = snapshot.items();
@@ -108,7 +114,7 @@ class NeededItemsOverlay extends QuestpathOverlay
 		if (!shortItems.isEmpty())
 		{
 			rows.add(OverlayRow.header("Still short (" + shortItems.size() + ")"));
-			int shown = Math.min(shortItems.size(), ctx.listCap(MAX_SHORT_ROWS));
+			int shown = Math.min(shortItems.size(), ctx.itemListCap(MAX_SHORT_ROWS));
 			for (int i = 0; i < shown; i++)
 			{
 				QuestItems.Total total = shortItems.get(i);
@@ -122,13 +128,16 @@ class NeededItemsOverlay extends QuestpathOverlay
 			}
 		}
 
-		if (!heldItems.isEmpty())
+		// Hiding the held half is the cheapest way to make this panel fit,
+		// and it costs nothing: the bar above still counts them, so what is
+		// dropped is still accounted for on screen rather than silently gone.
+		if (!heldItems.isEmpty() && !config.overlayItemsHideHeld())
 		{
 			// Already held needs no name, no quantity to chase -- just the
 			// sprite, which is what the grid form is for. Full item rows
 			// here would repeat the bar above at ten times the height.
 			rows.add(OverlayRow.header("Already held (" + heldItems.size() + ")"));
-			int shown = Math.min(heldItems.size(), ctx.listCap(MAX_HELD_CELLS));
+			int shown = Math.min(heldItems.size(), ctx.itemListCap(MAX_HELD_CELLS));
 			List<OverlayRow.Cell> cells = new ArrayList<>();
 			for (int i = 0; i < shown; i++)
 			{

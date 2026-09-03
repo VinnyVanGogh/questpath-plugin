@@ -26,6 +26,9 @@ class NextQuestOverlay extends QuestpathOverlay
 	 */
 	private static final int LOOKAHEAD = 4;
 
+	/** Item rows for the next quest, at the Normal list-length setting. */
+	private static final int QUEST_ITEM_ROWS = 8;
+
 	NextQuestOverlay(QuestpathPlugin plugin, QuestpathConfig config, OverlayIcons icons)
 	{
 		super(plugin, config, icons, "Next on your route");
@@ -35,6 +38,12 @@ class NextQuestOverlay extends QuestpathOverlay
 	boolean enabled(QuestpathConfig config)
 	{
 		return config.overlayNextQuest();
+	}
+
+	@Override
+	OverlayWidth width(QuestpathConfig config)
+	{
+		return config.overlayNextQuestWidth();
 	}
 
 	@Override
@@ -64,7 +73,7 @@ class NextQuestOverlay extends QuestpathOverlay
 
 			case NEXT:
 			default:
-				return nextRows(route, ctx);
+				return nextRows(route, ctx, snapshot.items());
 		}
 	}
 
@@ -89,7 +98,7 @@ class NextQuestOverlay extends QuestpathOverlay
 	 * finished quests are history and this panel's space is worth more spent
 	 * on what is left.
 	 */
-	private List<OverlayRow> nextRows(NextQuestStatus route, OverlayContext ctx)
+	private List<OverlayRow> nextRows(NextQuestStatus route, OverlayContext ctx, QuestItems items)
 	{
 		List<OverlayRow> rows = new ArrayList<>();
 		rows.add(OverlayRow.hero(route.questName(), OverlayTheme.ACCENT));
@@ -118,6 +127,78 @@ class NextQuestOverlay extends QuestpathOverlay
 			}
 		}
 
+		if (config.overlayNextQuestItems())
+		{
+			addQuestItems(rows, route.questName(), items, ctx);
+		}
+
 		return rows;
+	}
+
+	/**
+	 * What the named quest itself needs, ticked against what the account
+	 * holds.
+	 *
+	 * Optional, because it answers a different question from the rest of the
+	 * panel: "what now" versus "can I actually start it now". Both are worth
+	 * asking and only one of them is worth permanent screen space to everyone,
+	 * so it is a setting rather than a default.
+	 *
+	 * The quest is matched by name against the item lists questpath sent,
+	 * which is the same way everything else in this plugin joins the two
+	 * sides. A quest with no entry there is not a quest with no items -- it is
+	 * one the item list does not cover, most often because the client has
+	 * shown no containers yet -- so it says that rather than rendering an
+	 * empty list as "you need nothing".
+	 */
+	private static void addQuestItems(List<OverlayRow> rows, String questName,
+		QuestItems items, OverlayContext ctx)
+	{
+		rows.add(OverlayRow.header("It needs"));
+
+		if (items == null)
+		{
+			rows.add(OverlayRow.note("Item list not loaded yet.", OverlayTheme.MUTED));
+			return;
+		}
+
+		QuestItems.QuestNeeds needs = null;
+		for (QuestItems.QuestNeeds candidate : items.quests())
+		{
+			if (candidate.questName().equalsIgnoreCase(questName))
+			{
+				needs = candidate;
+				break;
+			}
+		}
+
+		if (needs == null || needs.lines().isEmpty())
+		{
+			rows.add(OverlayRow.note("questpath lists no items for this one.", OverlayTheme.MUTED));
+			return;
+		}
+
+		if (!items.bankSeen())
+		{
+			// Same caveat the shopping list carries: with no bank opened,
+			// every count is what is on you, so "not held" means "not
+			// carried" and not "not owned".
+			rows.add(OverlayRow.note("Bank not opened -- counts are what you carry.",
+				OverlayTheme.WARN));
+		}
+
+		int shown = Math.min(needs.lines().size(), ctx.itemListCap(QUEST_ITEM_ROWS));
+		for (int i = 0; i < shown; i++)
+		{
+			QuestItems.Line line = needs.lines().get(i);
+			String label = line.optional() ? line.name() + " (optional)" : line.name();
+			rows.add(OverlayRow.item(line.itemId(), label, line.describe(), line.held(),
+				OverlayTheme.TEXT, line.held() ? OverlayTheme.GOOD : OverlayTheme.WARN));
+		}
+		int more = needs.lines().size() - shown;
+		if (more > 0)
+		{
+			rows.add(OverlayRow.overflow("+ " + more + " more it needs"));
+		}
 	}
 }

@@ -36,6 +36,12 @@ class BuildRulesOverlay extends QuestpathOverlay
 	}
 
 	@Override
+	OverlayWidth width(QuestpathConfig config)
+	{
+		return config.overlayBuildRulesWidth();
+	}
+
+	@Override
 	List<OverlayRow> rows(OverlaySnapshot snapshot, OverlayContext ctx)
 	{
 		List<BuildRule> rules = snapshot.buildRules();
@@ -51,6 +57,12 @@ class BuildRulesOverlay extends QuestpathOverlay
 					+ "accepted, so turn sync on.",
 				OverlayTheme.MUTED));
 		}
+
+		// Which halves the player asked for. Read once here rather than
+		// checked at each section, so "blocking only" also drops the headline
+		// bar's counterpart rather than leaving a lone bar over an empty
+		// panel.
+		BuildRuleSections sections = config.overlayBuildRulesSections();
 
 		CombatStats stats = snapshot.stats();
 		List<BuildRule> ordered = BuildRule.ordered(rules);
@@ -68,20 +80,20 @@ class BuildRulesOverlay extends QuestpathOverlay
 		// fact worth a glance without opening the sidebar. Only possible
 		// once levels are known, and only for a rule with a level to close
 		// in on; NO_XP and non-combat-seven skills have no such distance.
-		BuildRule closest = closestToBreaking(blocking, stats);
+		BuildRule closest = sections.showsBlocking() ? closestToBreaking(blocking, stats) : null;
 		if (closest != null)
 		{
 			rows.add(closestBar(closest, stats));
 			rows.add(OverlayRow.spacer(2));
 		}
 
-		if (!blocking.isEmpty())
+		if (sections.showsBlocking() && !blocking.isEmpty())
 		{
 			rows.add(OverlayRow.header("Blocking"));
 			addRuleRows(rows, blocking, stats, ctx);
 		}
 
-		if (!informational.isEmpty())
+		if (sections.showsInformational() && !informational.isEmpty())
 		{
 			rows.add(OverlayRow.header("Informational"));
 			addRuleRows(rows, informational, stats, ctx);

@@ -122,13 +122,27 @@ public interface QuestpathConfig extends Config
 	}
 
 	@ConfigItem(
+		keyName = "overlayListLength",
+		name = "List length",
+		description = "How much of a capped list each overlay draws. \"Everything\" really is"
+			+ " everything, however tall that gets -- a shopping list you can only see the top"
+			+ " of is one you still have to finish somewhere else.",
+		section = overlaySection,
+		position = 3
+	)
+	default OverlayListLength overlayListLength()
+	{
+		return OverlayListLength.NORMAL;
+	}
+
+	@ConfigItem(
 		keyName = "overlayCompactText",
 		name = "Smaller text",
 		description = "Set overlay rows in the game's small font, fitting about a third more"
 			+ " of them in the same panel. Harder to read over bright scenery, which is why"
 			+ " it is a choice rather than the default.",
 		section = overlaySection,
-		position = 3
+		position = 4
 	)
 	default boolean overlayCompactText()
 	{
@@ -142,7 +156,7 @@ public interface QuestpathConfig extends Config
 			+ " Turning it off reclaims a row per section; the caps themselves do not move,"
 			+ " so the panel simply stops explaining that it is showing you the top of a list.",
 		section = overlaySection,
-		position = 4
+		position = 5
 	)
 	default boolean overlayShowOverflow()
 	{
@@ -154,9 +168,35 @@ public interface QuestpathConfig extends Config
 		name = "Next on your route",
 		description = "The next quests on your saved questpath route, and how far through it you are.",
 		section = overlaySection,
-		position = 5
+		position = 10
 	)
 	default boolean overlayNextQuest()
+	{
+		return false;
+	}
+
+	@ConfigItem(
+		keyName = "overlayNextQuestWidth",
+		name = "\u2003Route width",
+		description = "Width for the route panel alone. Leave it matching the shared setting"
+			+ " unless you want this one narrower or wider than the rest.",
+		section = overlaySection,
+		position = 11
+	)
+	default OverlayWidth overlayNextQuestWidth()
+	{
+		return OverlayWidth.MATCH_GLOBAL;
+	}
+
+	@ConfigItem(
+		keyName = "overlayNextQuestItems",
+		name = "\u2003Route: what the next quest needs",
+		description = "List the next quest's own items under it, ticked against what you hold."
+			+ " Answers \"can I start this now\" without opening anything.",
+		section = overlaySection,
+		position = 12
+	)
+	default boolean overlayNextQuestItems()
 	{
 		return false;
 	}
@@ -166,7 +206,7 @@ public interface QuestpathConfig extends Config
 		name = "Get while you're here",
 		description = "Items you can pick up during a quest you are already on, that other quests also want.",
 		section = overlaySection,
-		position = 6
+		position = 20
 	)
 	default boolean overlayPickups()
 	{
@@ -174,13 +214,52 @@ public interface QuestpathConfig extends Config
 	}
 
 	@ConfigItem(
+		keyName = "overlayPickupsWidth",
+		name = "\u2003Pickups width",
+		description = "Width for the pickups panel alone.",
+		section = overlaySection,
+		position = 21
+	)
+	default OverlayWidth overlayPickupsWidth()
+	{
+		return OverlayWidth.MATCH_GLOBAL;
+	}
+
+	@ConfigItem(
 		keyName = "overlayItems",
 		name = "Everything you need",
 		description = "Every item your doable quests need, ticked against what the client can see you hold.",
 		section = overlaySection,
-		position = 7
+		position = 30
 	)
 	default boolean overlayItems()
+	{
+		return false;
+	}
+
+	@ConfigItem(
+		keyName = "overlayItemsWidth",
+		name = "\u2003Items width",
+		description = "Width for the shopping list alone. This is the panel that most wants"
+			+ " the wider settings -- it is the one with sixty-odd rows in it.",
+		section = overlaySection,
+		position = 31
+	)
+	default OverlayWidth overlayItemsWidth()
+	{
+		return OverlayWidth.MATCH_GLOBAL;
+	}
+
+	@ConfigItem(
+		keyName = "overlayItemsHideHeld",
+		name = "\u2003Items: hide what you already have",
+		description = "Drop the \"already held\" section, leaving only what you are short of."
+			+ " The running total at the top still counts them, so nothing is hidden without"
+			+ " being accounted for.",
+		section = overlaySection,
+		position = 32
+	)
+	default boolean overlayItemsHideHeld()
 	{
 		return false;
 	}
@@ -190,7 +269,7 @@ public interface QuestpathConfig extends Config
 		name = "Combat XP to next level",
 		description = "What each stat would cost to buy the next combat level, cheapest first.",
 		section = overlaySection,
-		position = 8
+		position = 40
 	)
 	default boolean overlayCombatXp()
 	{
@@ -198,14 +277,51 @@ public interface QuestpathConfig extends Config
 	}
 
 	@ConfigItem(
+		keyName = "overlayCombatXpWidth",
+		name = "\u2003Combat width",
+		description = "Width for the combat panel alone.",
+		section = overlaySection,
+		position = 41
+	)
+	default OverlayWidth overlayCombatXpWidth()
+	{
+		return OverlayWidth.MATCH_GLOBAL;
+	}
+
+	@ConfigItem(
 		keyName = "overlayBuildRules",
 		name = "Build rules",
 		description = "Your declared caps and no-xp skills, and how much headroom is left in each.",
 		section = overlaySection,
-		position = 9
+		position = 50
 	)
 	default boolean overlayBuildRules()
 	{
 		return false;
+	}
+
+	@ConfigItem(
+		keyName = "overlayBuildRulesWidth",
+		name = "\u2003Build rules width",
+		description = "Width for the build rules panel alone.",
+		section = overlaySection,
+		position = 51
+	)
+	default OverlayWidth overlayBuildRulesWidth()
+	{
+		return OverlayWidth.MATCH_GLOBAL;
+	}
+
+	@ConfigItem(
+		keyName = "overlayBuildRulesSections",
+		name = "\u2003Build rules: which rules",
+		description = "Blocking rules are walls -- cross one and the build is over."
+			+ " Informational ones are goals and soft caps: worth tracking, never urgent.",
+		section = overlaySection,
+		position = 52
+	)
+	default BuildRuleSections overlayBuildRulesSections()
+	{
+		return BuildRuleSections.BOTH;
 	}
 }

@@ -34,6 +34,12 @@ class PickupsOverlay extends QuestpathOverlay
 	}
 
 	@Override
+	OverlayWidth width(QuestpathConfig config)
+	{
+		return config.overlayPickupsWidth();
+	}
+
+	@Override
 	List<OverlayRow> rows(OverlaySnapshot snapshot, OverlayContext ctx)
 	{
 		QuestItems items = snapshot.items();
@@ -81,7 +87,7 @@ class PickupsOverlay extends QuestpathOverlay
 			out.add(OverlayRow.header(group.getKey()));
 			for (QuestItems.Pickup pickup : group.getValue())
 			{
-				if (shown >= ctx.listCap(MAX_ROWS))
+				if (shown >= ctx.itemListCap(MAX_ROWS))
 				{
 					break outer;
 				}
@@ -90,6 +96,25 @@ class PickupsOverlay extends QuestpathOverlay
 					: "";
 				out.add(OverlayRow.item(pickup.itemId(), pickup.itemName(), right,
 					false, OverlayTheme.TEXT, OverlayTheme.ACCENT));
+
+				// Where it comes from, under the name.
+				//
+				// Without this the panel says "get a banana while you are in
+				// Recipe for Disaster" and stops -- which reads as a claim
+				// that the quest hands you one, when what the wiki actually
+				// marked is that the item is obtainable during it. The
+				// sources say whether that means a drop, a shop two squares
+				// away, or an afternoon of farming, and questpath already
+				// knows: they were being carried and thrown away here.
+				//
+				// One line, not the list. Two shop entries stacked under
+				// every item turns a glanceable prompt into a wall, and the
+				// first is the best one -- questpath orders them.
+				List<String> sources = pickup.sources();
+				if (ctx.mode().showsText() && !sources.isEmpty())
+				{
+					out.add(OverlayRow.note(sources.get(0), OverlayTheme.MUTED));
+				}
 				shown++;
 				remaining--;
 			}

@@ -168,26 +168,120 @@ public class OverlayDisplayModeTest
 	}
 
 	/**
-	 * List caps scale with how much the chosen settings actually fit.
+	 * A list of plain rows must not change length when the display mode does.
 	 *
-	 * The caps are there so a panel stays a readout rather than a wall, and a
-	 * wall is measured in screen height, not entries. A grid fits several
-	 * items on the line a text row spends on one, so holding both to the same
-	 * count would waste the mode the player switched to in order to see more.
+	 * This was a real bug: the icon-grid bonus was applied to every list, so
+	 * switching "Next on your route" to images silently added four quests to
+	 * a panel that has no item art in it at all. Only lists that genuinely
+	 * pack into a grid may claim the bonus.
 	 */
 	@Test
-	public void listCapsGrowWithDensity()
+	public void displayModeDoesNotChangeThelengthOfAPlainList()
 	{
-		OverlayIcons noIcons = null;
 		int base = 10;
+		int text = context(OverlayDisplayMode.TEXT_ONLY, false, OverlayListLength.NORMAL).listCap(base);
+		int both = context(OverlayDisplayMode.TEXT_AND_ICONS, false, OverlayListLength.NORMAL).listCap(base);
+		int icons = context(OverlayDisplayMode.ICONS_ONLY, false, OverlayListLength.NORMAL).listCap(base);
 
-		int roomy = new OverlayContext(noIcons, OverlayDisplayMode.TEXT_AND_ICONS, false, true).listCap(base);
-		int small = new OverlayContext(noIcons, OverlayDisplayMode.TEXT_AND_ICONS, true, true).listCap(base);
-		int grid = new OverlayContext(noIcons, OverlayDisplayMode.ICONS_ONLY, false, true).listCap(base);
+		assertEquals(base, text);
+		assertEquals(base, both);
+		assertEquals("a list of quest names has nothing to pack", base, icons);
+	}
 
-		assertEquals(base, roomy);
-		assertTrue("smaller text fits more rows", small > roomy);
-		assertTrue("a grid fits far more than smaller text does", grid > small);
+	/**
+	 * An item list, which really does pack into a grid, may show more in
+	 * icon-only mode -- several fit on the line one text row would take.
+	 */
+	@Test
+	public void anItemListGrowsInIconOnlyModeBecauseItPacks()
+	{
+		int base = 10;
+		assertEquals(base, context(OverlayDisplayMode.TEXT_ONLY, false, OverlayListLength.NORMAL)
+			.itemListCap(base));
+		assertTrue(context(OverlayDisplayMode.ICONS_ONLY, false, OverlayListLength.NORMAL)
+			.itemListCap(base) > base);
+	}
+
+	/**
+	 * The length setting scales the overlays' own baselines rather than
+	 * replacing them, so a route preview stays shorter than a shopping list at
+	 * every setting instead of becoming the same length as it.
+	 */
+	@Test
+	public void theLengthSettingScalesRatherThanFlattens()
+	{
+		int shortRoute = context(OverlayDisplayMode.TEXT_ONLY, false, OverlayListLength.SHORT).listCap(4);
+		int longRoute = context(OverlayDisplayMode.TEXT_ONLY, false, OverlayListLength.LONG).listCap(4);
+		int longList = context(OverlayDisplayMode.TEXT_ONLY, false, OverlayListLength.LONG).listCap(10);
+
+		assertTrue(longRoute > shortRoute);
+		assertTrue("the shorter baseline stays shorter at the same setting", longList > longRoute);
+	}
+
+	/**
+	 * "Everything" means no cap, and must not overflow into one.
+	 *
+	 * The density bonuses multiply the cap, and multiplying MAX_VALUE wraps to
+	 * a negative -- which would show nothing at all, from the setting that
+	 * asks for the most.
+	 */
+	@Test
+	public void everythingIsUncappedInEveryMode()
+	{
+		for (OverlayDisplayMode mode : OverlayDisplayMode.values())
+		{
+			for (boolean compact : new boolean[]{false, true})
+			{
+				OverlayContext ctx = context(mode, compact, OverlayListLength.EVERYTHING);
+				assertEquals(Integer.MAX_VALUE, ctx.listCap(10));
+				assertEquals(Integer.MAX_VALUE, ctx.itemListCap(10));
+			}
+		}
+	}
+
+	/** Smaller text fits more rows, in proportion to the height it saves. */
+	@Test
+	public void smallerTextFitsMoreRows()
+	{
+		assertTrue(context(OverlayDisplayMode.TEXT_ONLY, true, OverlayListLength.NORMAL).listCap(10)
+			> context(OverlayDisplayMode.TEXT_ONLY, false, OverlayListLength.NORMAL).listCap(10));
+	}
+
+	/**
+	 * A panel set to match the shared width takes it; one set explicitly does
+	 * not. A shared setting that is itself MATCH_GLOBAL would be a cycle, and
+	 * resolves to a real width rather than to zero -- a panel zero pixels wide
+	 * draws nothing.
+	 */
+	@Test
+	public void perPanelWidthFallsBackToTheSharedOne()
+	{
+		assertEquals(OverlayWidth.WIDE.pixels(),
+			OverlayWidth.MATCH_GLOBAL.resolve(OverlayWidth.WIDE));
+		assertEquals(OverlayWidth.COMPACT.pixels(),
+			OverlayWidth.COMPACT.resolve(OverlayWidth.WIDEST));
+		assertTrue(OverlayWidth.MATCH_GLOBAL.resolve(OverlayWidth.MATCH_GLOBAL) > 0);
+		assertTrue(OverlayWidth.MATCH_GLOBAL.resolve(null) > 0);
+	}
+
+	/** Each build-rule setting shows exactly the halves its name claims. */
+	@Test
+	public void buildRuleSectionsShowWhatTheyName()
+	{
+		assertTrue(BuildRuleSections.BOTH.showsBlocking());
+		assertTrue(BuildRuleSections.BOTH.showsInformational());
+
+		assertTrue(BuildRuleSections.BLOCKING.showsBlocking());
+		assertFalse(BuildRuleSections.BLOCKING.showsInformational());
+
+		assertFalse(BuildRuleSections.INFORMATIONAL.showsBlocking());
+		assertTrue(BuildRuleSections.INFORMATIONAL.showsInformational());
+	}
+
+	private static OverlayContext context(OverlayDisplayMode mode, boolean compact,
+		OverlayListLength length)
+	{
+		return new OverlayContext(null, mode, compact, true, length);
 	}
 
 	/**
@@ -198,11 +292,76 @@ public class OverlayDisplayModeTest
 	@Test
 	public void hidingOverflowNotesDoesNotChangeTheCap()
 	{
-		OverlayContext saying = new OverlayContext(null, OverlayDisplayMode.TEXT_AND_ICONS, false, true);
-		OverlayContext quiet = new OverlayContext(null, OverlayDisplayMode.TEXT_AND_ICONS, false, false);
+		OverlayContext saying = new OverlayContext(null, OverlayDisplayMode.TEXT_AND_ICONS,
+			false, true, OverlayListLength.NORMAL);
+		OverlayContext quiet = new OverlayContext(null, OverlayDisplayMode.TEXT_AND_ICONS,
+			false, false, OverlayListLength.NORMAL);
 
 		assertTrue(saying.showOverflow());
 		assertFalse(quiet.showOverflow());
 		assertEquals(saying.listCap(10), quiet.listCap(10));
+		assertEquals(saying.itemListCap(10), quiet.itemListCap(10));
+	}
+
+	/**
+	 * A long run of one-line rows is laid in columns, and the columns really
+	 * do make it shorter.
+	 *
+	 * Sixty-eight items in one column is a stripe down the screen whatever
+	 * font it is set in. Short runs are deliberately left alone -- two columns
+	 * of three is harder to read than six stacked.
+	 */
+	@Test
+	public void columnsMakeALongListShorter()
+	{
+		BufferedImage canvas = new BufferedImage(400, 600, BufferedImage.TYPE_INT_ARGB);
+		Graphics2D g = canvas.createGraphics();
+		OverlayContext ctx = context(OverlayDisplayMode.TEXT_ONLY, false, OverlayListLength.NORMAL);
+
+		java.util.List<OverlayRow> many = new java.util.ArrayList<>();
+		for (int i = 0; i < 30; i++)
+		{
+			many.add(OverlayRow.line("Item " + i, "0 / 1", OverlayTheme.TEXT, OverlayTheme.WARN));
+		}
+
+		int stacked = 0;
+		for (OverlayRow row : many)
+		{
+			stacked += row.height(g, ctx, 400);
+		}
+
+		// 400px is wide enough for the three-column maximum, so thirty rows
+		// become ten deep.
+		int wide = OverlayRow.columns(many).height(g, ctx, 400);
+		assertTrue("three columns should be roughly a third the height, was "
+			+ wide + " against " + stacked, wide < stacked / 2);
+
+		// 100px fits one column, so it is back to the full stack -- taller
+		// than the wide case, and nothing dropped to get there.
+		int narrow = OverlayRow.columns(many).height(g, ctx, 100);
+		assertTrue(narrow > wide);
+		assertTrue("one column is no shorter than stacking them", narrow >= stacked);
+
+		g.dispose();
+	}
+
+	/**
+	 * Only single-line rows may sit in a column. A heading, a bar or a wrapped
+	 * note spans the panel by design, and columnising one would break the
+	 * grouping it exists to provide.
+	 */
+	@Test
+	public void onlySingleLineRowsAreColumnisable()
+	{
+		assertTrue(OverlayRow.line("Ashes", "0 / 1", OverlayTheme.TEXT, OverlayTheme.WARN)
+			.isColumnisable());
+		assertTrue(OverlayRow.item(1925, "Bucket", "0 / 1", false,
+			OverlayTheme.TEXT, OverlayTheme.WARN).isColumnisable());
+
+		assertFalse(OverlayRow.header("Still short").isColumnisable());
+		assertFalse(OverlayRow.note("Bank not opened.", OverlayTheme.WARN).isColumnisable());
+		assertFalse(OverlayRow.bar("Items held", "38 / 106", 0.35, OverlayTheme.WARN)
+			.isColumnisable());
+		assertFalse(OverlayRow.hero("A Kingdom Divided", OverlayTheme.ACCENT).isColumnisable());
 	}
 }

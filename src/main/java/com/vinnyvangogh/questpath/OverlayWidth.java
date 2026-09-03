@@ -13,6 +13,15 @@ package com.vinnyvangogh.questpath;
  */
 public enum OverlayWidth
 {
+	/**
+	 * Take whatever the shared width setting says.
+	 *
+	 * The default for every individual overlay, so the single setting keeps
+	 * working for anyone who does not care -- while the ones who want the
+	 * route panel narrow and the shopping list enormous can say so per panel.
+	 */
+	MATCH_GLOBAL("Match the shared setting", 0),
+
 	COMPACT("Compact", 168),
 	REGULAR("Regular", 224),
 	WIDE("Wide", 300),
@@ -27,9 +36,31 @@ public enum OverlayWidth
 		this.pixels = pixels;
 	}
 
+	/** The outer width in pixels, or 0 for {@link #MATCH_GLOBAL}. */
 	int pixels()
 	{
 		return pixels;
+	}
+
+	/**
+	 * This width, or the shared one when this is MATCH_GLOBAL.
+	 *
+	 * A shared setting that is itself MATCH_GLOBAL would be a cycle, so it
+	 * falls back to REGULAR -- the config cannot currently express that, but
+	 * a saved value from a future build could, and a panel of width zero
+	 * draws nothing at all.
+	 */
+	int resolve(OverlayWidth shared)
+	{
+		if (this != MATCH_GLOBAL)
+		{
+			return pixels;
+		}
+		if (shared == null || shared == MATCH_GLOBAL)
+		{
+			return REGULAR.pixels;
+		}
+		return shared.pixels;
 	}
 
 	/** RuneLite renders an enum config item by its toString. */

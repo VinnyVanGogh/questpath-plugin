@@ -24,6 +24,9 @@ import net.runelite.api.Skill;
  */
 abstract class OverlayRow
 {
+	/** The vertical gap between stacked rows, matching the panel's own. */
+	private static final int ROW_GAP = OverlayTheme.ROW_GAP;
+
 	/** How tall this row will be once drawn into the given width. */
 	abstract int height(Graphics2D g, OverlayContext ctx, int width);
 
@@ -145,6 +148,33 @@ abstract class OverlayRow
 		return new Grid(cells);
 	}
 
+	/**
+	 * A run of one-line rows laid side by side instead of stacked.
+	 *
+	 * Sixty-eight items in one column is a stripe down the screen whatever
+	 * font it is set in; the same sixty-eight in three columns is a block you
+	 * can actually read at a glance. The panel decides how many columns fit
+	 * from its own width, so this is one row as far as everything above is
+	 * concerned.
+	 */
+	static OverlayRow columns(List<OverlayRow> rows)
+	{
+		return new Columns(rows);
+	}
+
+	/**
+	 * Whether this row is a single line of text that could sit in a column
+	 * beside its neighbours.
+	 *
+	 * Only simple rows qualify. A heading, a bar or a wrapped note is a
+	 * full-width thing whose meaning depends on spanning the panel, and
+	 * columnising one would break the grouping it exists to provide.
+	 */
+	boolean isColumnisable()
+	{
+		return false;
+	}
+
 	/** One slot in a {@link #grid}. */
 	static final class Cell
 	{
@@ -254,6 +284,12 @@ abstract class OverlayRow
 
 	private static final class Line extends OverlayRow
 	{
+		@Override
+		boolean isColumnisable()
+		{
+			return true;
+		}
+
 		private final String left;
 		private final String right;
 		private final Color leftColor;
@@ -427,6 +463,17 @@ abstract class OverlayRow
 		}
 
 		/**
+		 * An item row is one line tall whether or not it carries a sprite, so
+		 * it sits in a column happily -- the icon simply rides along at the
+		 * head of its own column.
+		 */
+		@Override
+		boolean isColumnisable()
+		{
+			return true;
+		}
+
+		/**
 		 * Collapsible only when there is a sprite to collapse to. An item
 		 * questpath could not identify keeps its own row and its text, for
 		 * the same reason it keeps its text in every mode.
@@ -548,6 +595,105 @@ abstract class OverlayRow
 			{
 				OverlayTheme.shadowed(g, right, x + width - rightWidth, baseline, rightColor);
 			}
+		}
+	}
+
+	/**
+	 * Lays a run of one-line rows out in as many columns as the panel's width
+	 * allows, filling down each column before starting the next.
+	 *
+	 * Column-major rather than row-major on purpose: these runs are sorted
+	 * lists -- what you are short of first, cheapest step first -- and reading
+	 * order has to preserve that. Filling across would scatter a sorted list
+	 * over three columns and make the ordering meaningless.
+	 */
+	private static final class Columns extends OverlayRow
+	{
+		/**
+		 * Three at most. A fourth column at any width this panel can be
+		 * leaves each one too narrow to hold a quest name, and a grid of
+		 * truncations carries less than one readable column.
+		 */
+		private static final int MAX_COLUMNS = 3;
+
+		/** Below this a column would be all ellipsis. */
+		private static final int MIN_COLUMN_WIDTH = 96;
+
+		private static final int GUTTER = 8;
+
+		private final List<OverlayRow> rows;
+
+		private Columns(List<OverlayRow> rows)
+		{
+			this.rows = rows == null ? new ArrayList<>() : rows;
+		}
+
+		private int columnCount(int width)
+		{
+			int fits = (width + GUTTER) / (MIN_COLUMN_WIDTH + GUTTER);
+			return Math.max(1, Math.min(Math.min(MAX_COLUMNS, fits), rows.size()));
+		}
+
+		private int perColumn(int columns)
+		{
+			return (rows.size() + columns - 1) / columns;
+		}
+
+		/**
+		 * Every row in a run is one line of the same font, so one row's height
+		 * is every row's height. Measured rather than assumed so a mixed run
+		 * still lays out sanely.
+		 */
+		private int rowHeight(Graphics2D g, OverlayContext ctx, int columnWidth)
+		{
+			int tallest = 0;
+			for (OverlayRow row : rows)
+			{
+				tallest = Math.max(tallest, row.height(g, ctx, columnWidth));
+			}
+			return tallest;
+		}
+
+		@Override
+		int height(Graphics2D g, OverlayContext ctx, int width)
+		{
+			if (rows.isEmpty())
+			{
+				return 0;
+			}
+			int columns = columnCount(width);
+			int columnWidth = (width - GUTTER * (columns - 1)) / columns;
+			int perColumn = perColumn(columns);
+			return perColumn * (rowHeight(g, ctx, columnWidth) + ROW_GAP) - ROW_GAP;
+		}
+
+		@Override
+		void draw(Graphics2D g, OverlayContext ctx, int x, int y, int width)
+		{
+			if (rows.isEmpty())
+			{
+				return;
+			}
+			int columns = columnCount(width);
+			int columnWidth = (width - GUTTER * (columns - 1)) / columns;
+			int perColumn = perColumn(columns);
+			int rowHeight = rowHeight(g, ctx, columnWidth);
+
+			for (int index = 0; index < rows.size(); index++)
+			{
+				int column = index / perColumn;
+				int position = index % perColumn;
+				rows.get(index).draw(g, ctx,
+					x + column * (columnWidth + GUTTER),
+					y + position * (rowHeight + ROW_GAP),
+					columnWidth);
+			}
+		}
+
+		@Override
+		int minimumWidth(Graphics2D g, OverlayContext ctx)
+		{
+			return rows.isEmpty() ? 0 : MIN_COLUMN_WIDTH;
 		}
 	}
 

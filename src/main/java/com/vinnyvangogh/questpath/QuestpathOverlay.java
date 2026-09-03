@@ -35,7 +35,15 @@ abstract class QuestpathOverlay extends Overlay
 	private static final int MIN_WIDTH = 140;
 
 	private final QuestpathPlugin plugin;
-	private final QuestpathConfig config;
+
+	/**
+	 * Protected so a subclass can read its own options.
+	 *
+	 * Panels differ in what they offer -- which build rules, whether to list
+	 * held items -- and threading each of those through rows() as a parameter
+	 * would put every panel's options in every panel's signature.
+	 */
+	protected final QuestpathConfig config;
 	private final OverlayIcons icons;
 	private final String title;
 
@@ -58,6 +66,17 @@ abstract class QuestpathOverlay extends Overlay
 
 	/** Whether this overlay's own config toggle is on. */
 	abstract boolean enabled(QuestpathConfig config);
+
+	/**
+	 * This panel's own width setting.
+	 *
+	 * Per panel because the panels are not alike: a route preview is happy
+	 * narrow and a sixty-eight item shopping list is not, and forcing both to
+	 * one number means picking which of the two to make worse. Defaults to
+	 * MATCH_GLOBAL so the shared setting keeps working for anyone who does not
+	 * care.
+	 */
+	abstract OverlayWidth width(QuestpathConfig config);
 
 	/**
 	 * What to draw, or an empty list for "nothing to say right now".
@@ -85,7 +104,8 @@ abstract class QuestpathOverlay extends Overlay
 		}
 
 		OverlayContext ctx = new OverlayContext(icons, config.overlayDisplayMode(),
-			config.overlayCompactText(), config.overlayShowOverflow());
+			config.overlayCompactText(), config.overlayShowOverflow(),
+			config.overlayListLength());
 		List<OverlayRow> rows = rows(snapshot, ctx);
 		if (rows == null || rows.isEmpty())
 		{
@@ -148,16 +168,25 @@ abstract class QuestpathOverlay extends Overlay
 			kept.add(row);
 		}
 
-		if (!ctx.mode().showsIcons() || ctx.mode().showsText())
+		if (!ctx.mode().showsText() && ctx.mode().showsIcons())
 		{
-			// Only icon-only mode packs. With text alongside, every row needs
-			// its own line to put the words on.
-			return kept;
+			return packIcons(kept);
 		}
+		return packColumns(kept);
+	}
 
-		List<OverlayRow> packed = new ArrayList<>(kept.size());
+	/**
+	 * Icon-only mode: consecutive item rows become one wrapping grid.
+	 *
+	 * Left alone, an item row here is a single slot on its own line, so twenty
+	 * of them cost the height of the text version while carrying less -- which
+	 * is the opposite of what the mode is for.
+	 */
+	private static List<OverlayRow> packIcons(List<OverlayRow> rows)
+	{
+		List<OverlayRow> packed = new ArrayList<>(rows.size());
 		List<OverlayRow.Cell> run = new ArrayList<>();
-		for (OverlayRow row : kept)
+		for (OverlayRow row : rows)
 		{
 			OverlayRow.Cell cell = row.asCell();
 			if (cell != null)
@@ -165,20 +194,67 @@ abstract class QuestpathOverlay extends Overlay
 				run.add(cell);
 				continue;
 			}
-			flush(packed, run);
+			flushCells(packed, run);
 			packed.add(row);
 		}
-		flush(packed, run);
+		flushCells(packed, run);
 		return packed;
 	}
 
-	private static void flush(List<OverlayRow> into, List<OverlayRow.Cell> run)
+	/**
+	 * Text modes: a long run of one-line rows is laid side by side instead of
+	 * stacked.
+	 *
+	 * Sixty-eight items in one column is a stripe down the screen whatever
+	 * font it is set in. Short runs are left alone -- two columns of three
+	 * items each is harder to read than six stacked, and the point is density
+	 * where density is the problem.
+	 */
+	private static List<OverlayRow> packColumns(List<OverlayRow> rows)
+	{
+		List<OverlayRow> packed = new ArrayList<>(rows.size());
+		List<OverlayRow> run = new ArrayList<>();
+		for (OverlayRow row : rows)
+		{
+			if (row.isColumnisable())
+			{
+				run.add(row);
+				continue;
+			}
+			flushColumns(packed, run);
+			packed.add(row);
+		}
+		flushColumns(packed, run);
+		return packed;
+	}
+
+	/** Below this many rows, columns cost more legibility than they buy. */
+	private static final int MIN_ROWS_FOR_COLUMNS = 6;
+
+	private static void flushCells(List<OverlayRow> into, List<OverlayRow.Cell> run)
 	{
 		if (run.isEmpty())
 		{
 			return;
 		}
 		into.add(OverlayRow.grid(new ArrayList<>(run)));
+		run.clear();
+	}
+
+	private static void flushColumns(List<OverlayRow> into, List<OverlayRow> run)
+	{
+		if (run.isEmpty())
+		{
+			return;
+		}
+		if (run.size() < MIN_ROWS_FOR_COLUMNS)
+		{
+			into.addAll(run);
+		}
+		else
+		{
+			into.add(OverlayRow.columns(new ArrayList<>(run)));
+		}
 		run.clear();
 	}
 
@@ -195,6 +271,6 @@ abstract class QuestpathOverlay extends Overlay
 	 */
 	private int widthFor()
 	{
-		return Math.max(MIN_WIDTH, config.overlayWidth().pixels());
+		return Math.max(MIN_WIDTH, width(config).resolve(config.overlayWidth()));
 	}
 }
