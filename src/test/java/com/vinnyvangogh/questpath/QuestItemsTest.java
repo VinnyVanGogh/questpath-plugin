@@ -28,6 +28,140 @@ public class QuestItemsTest
 		return QuestGraph.load(GSON);
 	}
 
+	/** The full form, with a bank and a separate "what is on you right now". */
+	private static QuestItems withCarried(Map<String, Long> held, Map<String, Long> carried)
+		throws Exception
+	{
+		return QuestItems.of(graph(), freshAccount(), held, true,
+			Collections.<String>emptySet(), Collections.<String>emptySet(),
+			Collections.<String, Long>emptyMap(), carried);
+	}
+
+	private static QuestItems.Total total(QuestItems items, String name)
+	{
+		for (QuestItems.Total total : items.totals())
+		{
+			if (total.name().equalsIgnoreCase(name))
+			{
+				return total;
+			}
+		}
+		return null;
+	}
+
+	private static int positionOf(QuestItems items, String name)
+	{
+		for (int i = 0; i < items.totals().size(); i++)
+		{
+			if (items.totals().get(i).name().equalsIgnoreCase(name))
+			{
+				return i;
+			}
+		}
+		return -1;
+	}
+
+	/**
+	 * One clay in your bags out of the six Doric wants is a mining trip in
+	 * progress, and the panel's job at that moment is to say "five more" --
+	 * not to file it under C between Bucket of water and Coal.
+	 */
+	@Test
+	public void somethingYouAreCarryingPartOfSortsAboveEverythingElseShort() throws Exception
+	{
+		Map<String, Long> one = new HashMap<>();
+		one.put("clay", 1L);
+
+		QuestItems items = withCarried(one, one);
+		QuestItems.Total clay = total(items, "Clay");
+		assertNotNull(clay);
+		assertTrue("one of six is still short", !clay.satisfied());
+		assertTrue("one of them is in your bags", clay.inProgress());
+		assertEquals(5L, clay.outstanding());
+		assertEquals("Doric's Quest", clay.questSummary());
+
+		assertEquals("a part-carried item leads the whole list", 0, positionOf(items, "Clay"));
+	}
+
+	/**
+	 * The distinction the whole feature rests on: owning some and carrying
+	 * some are different facts, and only the second one means you are out
+	 * doing it right now.
+	 */
+	@Test
+	public void aPartFullBankIsNotATripInProgress() throws Exception
+	{
+		Map<String, Long> banked = new HashMap<>();
+		banked.put("clay", 5L);
+
+		QuestItems items = withCarried(banked, Collections.<String, Long>emptyMap());
+		QuestItems.Total clay = total(items, "Clay");
+		assertNotNull(clay);
+		assertEquals(5L, clay.owned());
+		assertEquals(0L, clay.carried());
+		assertFalse("five in a bank is not a mining trip", clay.inProgress());
+	}
+
+	/** Finishing one thing beats starting a second, so the nearly-done one leads. */
+	@Test
+	public void startedItemsAreOrderedClosestToDoneFirst() throws Exception
+	{
+		Map<String, Long> carried = new HashMap<>();
+		carried.put("clay", 5L);
+		carried.put("bones", 1L);
+
+		QuestItems items = withCarried(carried, carried);
+		assertEquals("one clay outstanding", 1L, total(items, "Clay").outstanding());
+		assertEquals("twenty-four bones outstanding", 24L, total(items, "Bones").outstanding());
+		assertTrue("the nearly finished pile comes first",
+			positionOf(items, "Clay") < positionOf(items, "Bones"));
+		assertTrue("both still lead the list",
+			positionOf(items, "Bones") < positionOf(items, "Coins"));
+	}
+
+	/**
+	 * A satisfied item stays at the bottom whatever is in your bags. Carrying
+	 * the last one of something is not a reason to keep it at the top.
+	 */
+	@Test
+	public void carryingSomethingYouAlreadyHaveEnoughOfIsNotInProgress() throws Exception
+	{
+		Map<String, Long> plenty = new HashMap<>();
+		plenty.put("clay", 50L);
+
+		QuestItems items = withCarried(plenty, plenty);
+		QuestItems.Total clay = total(items, "Clay");
+		assertTrue(clay.satisfied());
+		assertFalse("enough is enough, wherever it is", clay.inProgress());
+		assertEquals(0L, clay.outstanding());
+	}
+
+	/** Every total can say what it is for -- that is the shop tooltip's whole content. */
+	@Test
+	public void everyTotalNamesTheQuestsThatWantIt() throws Exception
+	{
+		QuestItems items = QuestItems.of(graph(), freshAccount(), Collections.emptyMap(), true);
+		for (QuestItems.Total total : items.totals())
+		{
+			assertFalse(total.name() + " could not say what it was for",
+				total.questSummary().isEmpty());
+			assertEquals("a total's quest count and its named quests must agree",
+				total.quests(), total.questNames().size());
+		}
+	}
+
+	/** Three named, the rest counted -- a tooltip is one line, not a manifest. */
+	@Test
+	public void questListsArePhrasedForOneLine()
+	{
+		assertEquals("", QuestItems.phrase(Collections.<String>emptyList(), 3));
+		assertEquals("A", QuestItems.phrase(java.util.Arrays.asList("A"), 3));
+		assertEquals("A and B", QuestItems.phrase(java.util.Arrays.asList("A", "B"), 3));
+		assertEquals("A, B and C", QuestItems.phrase(java.util.Arrays.asList("A", "B", "C"), 3));
+		assertEquals("A, B, C and 2 more",
+			QuestItems.phrase(java.util.Arrays.asList("A", "B", "C", "D", "E"), 3));
+	}
+
 	@Test
 	public void listsOnlyQuestsTheAccountCanActuallyStart() throws Exception
 	{

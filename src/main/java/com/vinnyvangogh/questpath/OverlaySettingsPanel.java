@@ -270,6 +270,15 @@ class OverlaySettingsPanel extends JPanel
 		body.add(shopsGroup(config));
 		body.add(spacer());
 		body.add(groundItemsGroup(config));
+		body.add(spacer());
+		// Flat rather than a group of its own: one checkbox behind a
+		// collapsible header is a header that costs more rows than it hides.
+		body.add(toggle(
+			"Chat when an item is done",
+			"Print a line in the game chat the moment you have all of something your plan"
+				+ " needs, naming the quest it is for. Said once, at the moment it happens,"
+				+ " because that is when you are looking at the ground rather than at a panel.",
+			config.chatOnItemComplete(), "chatOnItemComplete"));
 		return sectionGroup("Extras", body);
 	}
 

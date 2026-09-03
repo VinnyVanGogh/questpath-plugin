@@ -399,6 +399,20 @@ class QuestItems
 	static QuestItems of(QuestGraph graph, PlayerState account, Map<String, Long> held, boolean bankSeen,
 		java.util.Set<String> upcoming, java.util.Set<String> plan, Map<String, Long> knownItems)
 	{
+		return of(graph, account, held, bankSeen, upcoming, plan, knownItems,
+			java.util.Collections.emptyMap());
+	}
+
+	/**
+	 * @param carried what is in the account's bags and worn right now, by
+	 *     lowercased name -- never the bank, and never widened by a previous
+	 *     session. Decides which shortfalls are gathering trips already under
+	 *     way; see Total.inProgress
+	 */
+	static QuestItems of(QuestGraph graph, PlayerState account, Map<String, Long> held, boolean bankSeen,
+		java.util.Set<String> upcoming, java.util.Set<String> plan, Map<String, Long> knownItems,
+		Map<String, Long> carried)
+	{
 		QuestItems out = new QuestItems();
 		out.bankSeen = bankSeen;
 		if (bankSeen)
@@ -468,7 +482,7 @@ class QuestItems
 			out.quests.add(needs);
 		}
 
-		out.totals.addAll(totalsOf(out.quests, held));
+		out.totals.addAll(totalsOf(out.quests, held, carried));
 		out.pickups.addAll(pickupsIn(graph, upcoming, out.totals));
 		return out;
 	}
@@ -597,7 +611,8 @@ class QuestItems
 	 * Optional lines are excluded. They are advice, not shopping, and folding
 	 * them in would inflate every total with things nobody has to bring.
 	 */
-	private static List<Total> totalsOf(List<QuestNeeds> quests, Map<String, Long> held)
+	private static List<Total> totalsOf(List<QuestNeeds> quests, Map<String, Long> held,
+		Map<String, Long> carried)
 	{
 		Map<String, Total> merged = new LinkedHashMap<>();
 
@@ -615,23 +630,77 @@ class QuestItems
 				}
 				Total total = merged.computeIfAbsent(line.name(),
 					name -> new Total(name, line.itemId(),
-						held.getOrDefault(name.toLowerCase(), 0L), line.sources()));
-				total.add(line);
+						held.getOrDefault(name.toLowerCase(), 0L),
+						carried == null ? 0L : carried.getOrDefault(name.toLowerCase(), 0L),
+						line.sources()));
+				total.add(line, needs.questName());
 			}
 		}
 
 		List<Total> out = new ArrayList<>(merged.values());
-		// Short first: what you are missing is the point of the list, and a
-		// long tail of things you already have would bury it.
+		// Three bands, in the order they are worth acting on.
+		//
+		// Short first, because what you are missing is the point of the list
+		// and a long tail of things you already have would bury it. Then,
+		// ahead of everything else short, the ones you are carrying some of
+		// already: eleven oak logs with one in your bags is a woodcutting trip
+		// you are standing in the middle of, and it is worth more than a
+		// perfectly sorted alphabet telling you about ashes you will buy in
+		// Varrock next week. Whether the item happens to start with A decides
+		// nothing about whether now is the moment to get it; whether one is
+		// already in your inventory decides quite a lot.
+		//
+		// Within that band, closest to done first -- one log outstanding beats
+		// five, because finishing something is worth more than starting a
+		// second thing.
 		out.sort((a, b) ->
 		{
 			if (a.satisfied() != b.satisfied())
 			{
 				return a.satisfied() ? 1 : -1;
 			}
+			if (a.inProgress() != b.inProgress())
+			{
+				return a.inProgress() ? -1 : 1;
+			}
+			if (a.inProgress() && a.outstanding() != b.outstanding())
+			{
+				return Long.compare(a.outstanding(), b.outstanding());
+			}
 			return a.name().compareToIgnoreCase(b.name());
 		});
 		return out;
+	}
+
+	/**
+	 * Joins names into readable English, naming at most {@code max} of them
+	 * and counting the rest.
+	 *
+	 * "A", "A and B", "A, B and C", "A, B, C and 4 more". Shared by every
+	 * surface that has to say what an item is for in the width of a tooltip.
+	 */
+	static String phrase(List<String> names, int max)
+	{
+		if (names == null || names.isEmpty())
+		{
+			return "";
+		}
+		int named = Math.min(names.size(), max);
+		int rest = names.size() - named;
+		StringBuilder out = new StringBuilder();
+		for (int i = 0; i < named; i++)
+		{
+			if (i > 0)
+			{
+				out.append(i == named - 1 && rest == 0 ? " and " : ", ");
+			}
+			out.append(names.get(i));
+		}
+		if (rest > 0)
+		{
+			out.append(" and ").append(rest).append(" more");
+		}
+		return out.toString();
 	}
 
 	/** One item summed across every doable quest that needs it. */
@@ -640,17 +709,26 @@ class QuestItems
 		private final String name;
 		private final int itemId;
 		private final long owned;
+		private final long carried;
 		private final List<String> sources;
+		private final List<String> questNames = new ArrayList<>();
 		private int wanted;
 		private int quests;
 		private boolean anyUnstated;
 
-		Total(String name, int itemId, long owned, List<String> sources)
+		Total(String name, int itemId, long owned, long carried, List<String> sources)
 		{
 			this.name = name;
 			this.itemId = itemId;
 			this.owned = owned;
+			this.carried = carried;
 			this.sources = sources;
+		}
+
+		/** Convenience for callers with no separate carried count -- mainly tests. */
+		Total(String name, int itemId, long owned, List<String> sources)
+		{
+			this(name, itemId, owned, 0L, sources);
 		}
 
 		/** Convenience for callers that do not care about obtain sources -- mainly tests. */
@@ -693,9 +771,19 @@ class QuestItems
 		 * It is a heuristic on the wiki's own habit, not a fact about the
 		 * game, and it will be wrong for a consumable nobody counted.
 		 */
+		/** Convenience for callers with no quest to attribute -- mainly tests. */
 		void add(Line line)
 		{
+			add(line, null);
+		}
+
+		void add(Line line, String questName)
+		{
 			quests++;
+			if (questName != null && !questName.isEmpty())
+			{
+				questNames.add(questName);
+			}
 			if (line.wanted() > 0)
 			{
 				wanted += line.wanted();
@@ -716,9 +804,67 @@ class QuestItems
 			return owned;
 		}
 
+		/**
+		 * How many are in your bags or worn right now, bank excluded.
+		 *
+		 * Zero is a real answer here and not an absence: it means none of what
+		 * you own is on you, which is exactly what distinguishes a banked pile
+		 * from a trip in progress.
+		 */
+		long carried()
+		{
+			return carried;
+		}
+
+		/**
+		 * Whether this is a gathering trip already under way: some on you,
+		 * still not enough.
+		 *
+		 * The condition is carried rather than owned on purpose. Oak logs
+		 * banked from last week say nothing about what you are doing now;
+		 * one in your inventory says you are chopping, and that is the moment
+		 * to mention that you need eleven.
+		 */
+		boolean inProgress()
+		{
+			return carried > 0 && !satisfied();
+		}
+
+		/** How many more to get. Zero once satisfied, never negative. */
+		long outstanding()
+		{
+			return Math.max(0L, required() - owned);
+		}
+
 		int quests()
 		{
 			return quests;
+		}
+
+		/**
+		 * Which quests want this, in the order they appear on the plan.
+		 *
+		 * The count on its own answers "why do I need three of these" and
+		 * nothing else. Standing in a shop the question is different and
+		 * better: what am I buying this *for* -- which is the difference
+		 * between a shopping list and a reason to follow it.
+		 */
+		List<String> questNames()
+		{
+			return questNames;
+		}
+
+		/**
+		 * The quests wanting this, phrased for one line of a tooltip.
+		 *
+		 * Capped at three named, because the point is to answer "what is this
+		 * for" and a tooltip listing eleven quest names answers it worse than
+		 * one listing three. The remainder is counted rather than dropped, so
+		 * the line never claims a shorter list than the truth.
+		 */
+		String questSummary()
+		{
+			return phrase(questNames, 3);
 		}
 
 		/**

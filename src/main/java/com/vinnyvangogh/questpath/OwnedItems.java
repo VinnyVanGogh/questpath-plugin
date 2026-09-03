@@ -163,9 +163,41 @@ class OwnedItems
 	 */
 	Map<String, Long> heldByName()
 	{
+		return totalByName(Container.values());
+	}
+
+	/**
+	 * What is on the account right now: inventory and worn equipment, never
+	 * the bank.
+	 *
+	 * <p>Deliberately a narrower question than {@link #heldByName()}, and the
+	 * two must not be conflated. "You own five of these" and "five of these
+	 * are on you" support different claims: the first says a shopping trip is
+	 * unnecessary, the second says you are in the middle of gathering them.
+	 * Eleven oak logs sitting in a bank is a solved requirement; one oak log
+	 * in your inventory is a woodcutting trip in progress, and only the second
+	 * is worth interrupting you about.
+	 *
+	 * <p>Unlike heldByName this is never widened by what questpath remembered
+	 * from a previous session -- a stack recorded last week is not in your
+	 * bags now, and treating it as though it were would pin a stale row to the
+	 * top of the shopping list forever.
+	 */
+	Map<String, Long> carriedByName()
+	{
+		return totalByName(Container.INVENTORY, Container.EQUIPMENT);
+	}
+
+	private Map<String, Long> totalByName(Container... from)
+	{
 		Map<String, Long> out = new LinkedHashMap<>();
-		for (List<Map<String, Object>> stacks : seen.values())
+		for (Container which : from)
 		{
+			List<Map<String, Object>> stacks = seen.get(which);
+			if (stacks == null)
+			{
+				continue;
+			}
 			for (Map<String, Object> stack : stacks)
 			{
 				Object name = stack.get("name");

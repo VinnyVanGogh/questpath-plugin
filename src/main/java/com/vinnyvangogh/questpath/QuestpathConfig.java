@@ -54,6 +54,14 @@ public interface QuestpathConfig extends Config
 	String groundSection = "ground";
 
 	@ConfigSection(
+		name = "Chat",
+		description = "What Quest Path says in the game chat",
+		position = 4,
+		closedByDefault = true
+	)
+	String chatSection = "chat";
+
+	@ConfigSection(
 		name = "questpath sync",
 		description = "Push this account's state to your own questpath instance",
 		position = 0,
@@ -516,5 +524,27 @@ public interface QuestpathConfig extends Config
 	default java.awt.Color groundHighlightColour()
 	{
 		return OverlayTheme.WARN;
+	}
+
+	// ------------------------------------------------------------------
+	// Chat.
+	//
+	// One line, once, at the moment a thing stops being outstanding. The
+	// panels can only be read by looking at them, and the moment worth
+	// knowing about -- the eleventh log going into your bags -- is the one
+	// moment you are looking at the ground instead.
+	// ------------------------------------------------------------------
+
+	@ConfigItem(
+		keyName = "chatOnItemComplete",
+		name = "Say when an item is fully collected",
+		description = "Print a line in the chat the moment you have all of something your"
+			+ " plan needs, naming the quest it is for.",
+		section = chatSection,
+		position = 1
+	)
+	default boolean chatOnItemComplete()
+	{
+		return true;
 	}
 }

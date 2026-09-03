@@ -21,11 +21,15 @@ import java.util.Set;
 import javax.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
+import net.runelite.api.ChatMessageType;
 import net.runelite.api.GameState;
 import net.runelite.api.Quest;
 import net.runelite.api.QuestState;
 import net.runelite.api.Skill;
 import net.runelite.api.events.GameStateChanged;
+import net.runelite.client.chat.ChatColorType;
+import net.runelite.client.chat.ChatMessageBuilder;
+import net.runelite.client.chat.QueuedMessage;
 import net.runelite.api.events.GameTick;
 import net.runelite.api.events.ItemContainerChanged;
 import net.runelite.api.events.StatChanged;
@@ -106,6 +110,20 @@ public class QuestpathPlugin extends Plugin
 	private net.runelite.client.game.ItemManager itemManager;
 
 	/**
+	 * RuneLite's own hover-tooltip queue, shared with every other plugin.
+	 *
+	 * Overlays add to it during a render pass and it draws whatever was added
+	 * that frame, so nothing here has to track the pointer or clear a stale
+	 * tooltip -- not adding one is how a tooltip goes away.
+	 */
+	@Inject
+	private net.runelite.client.ui.overlay.tooltip.TooltipManager tooltipManager;
+
+	/** Prints questpath's own lines into the game chat. */
+	@Inject
+	private net.runelite.client.chat.ChatMessageManager chatMessageManager;
+
+	/**
 	 * The five in-game overlays, held so they can be removed again.
 	 *
 	 * All five are registered whatever the config says: an Overlay that is
@@ -124,6 +142,13 @@ public class QuestpathPlugin extends Plugin
 	 * as nothing at all rather than as an empty panel.
 	 */
 	private volatile OverlaySnapshot overlaySnapshot;
+
+	/**
+	 * Watches for an outstanding item becoming fully held, so the chat can
+	 * say so at the moment it happens rather than a panel turning green
+	 * behind the player's back.
+	 */
+	private final ItemCompletionWatcher completions = new ItemCompletionWatcher();
 
 	/**
 	 * Something happened that the panel and overlays should be rebuilt for,
@@ -265,6 +290,7 @@ public class QuestpathPlugin extends Plugin
 	@Override
 	protected void startUp()
 	{
+		EdtWatchdog.start();
 		panel = new QuestpathPanel(sprites, new OverlaySettingsPanel(config, configManager));
 		navButton = NavigationButton.builder()
 			.tooltip("Quest Path")
@@ -284,10 +310,10 @@ public class QuestpathPlugin extends Plugin
 			overlayManager.add(overlay);
 		}
 
-		shopOverlay = new ShopItemOverlay(this, config, itemManager);
+		shopOverlay = new ShopItemOverlay(this, config, itemManager, client, tooltipManager);
 		overlayManager.add(shopOverlay);
 
-		groundOverlay = new GroundItemOverlay(this, config, client);
+		groundOverlay = new GroundItemOverlay(this, config, client, tooltipManager);
 		overlayManager.add(groundOverlay);
 
 		try
@@ -452,6 +478,7 @@ public class QuestpathPlugin extends Plugin
 			// one. Reporting the previous account's items would be worse than
 			// reporting none.
 			owned.clear();
+			completions.reset();
 		}
 	}
 
@@ -465,6 +492,10 @@ public class QuestpathPlugin extends Plugin
 			// character, and one account's route drawn over another's game is
 			// the failure this plugin has already had once.
 			overlaySnapshot = null;
+			// The next login may be another account. Keeping the baseline
+			// would announce the new one's items against the old one's
+			// shortfalls the first time anything changed.
+			completions.reset();
 			return;
 		}
 
@@ -499,8 +530,51 @@ public class QuestpathPlugin extends Plugin
 		overlaySnapshot = new OverlaySnapshot(stats, xp, route, items, buildRules,
 			characterName(), questPoints());
 
+		announce(completions.observe(items));
+
 		panel.update(stats, xp, syncStatus(), buildRules, unmatchedQuests,
 			questVerdicts, items, route, SyncSettings.from(config), report);
+	}
+
+	/**
+	 * Prints one chat line per item just completed.
+	 *
+	 * The toggle is read here rather than inside the watcher on purpose: the
+	 * watcher keeps observing either way, so switching the setting on does not
+	 * then announce a backlog of everything collected while it was off.
+	 */
+	private void announce(java.util.List<ItemCompletionWatcher.Completion> completed)
+	{
+		if (completed.isEmpty() || config == null || !config.chatOnItemComplete())
+		{
+			return;
+		}
+		for (ItemCompletionWatcher.Completion done : completed)
+		{
+			ChatMessageBuilder line = new ChatMessageBuilder()
+				.append(ChatColorType.NORMAL)
+				.append("Quest Path: you now have all ")
+				.append(ChatColorType.HIGHLIGHT)
+				.append(done.required() + " " + done.itemName())
+				.append(ChatColorType.NORMAL);
+			String quests = done.quests();
+			if (quests.isEmpty())
+			{
+				// questpath knows the item is wanted but not by what -- an
+				// unresolved line, or a total merged from a quest with no
+				// name. Saying nothing is better than saying "for ".
+				line.append(".");
+			}
+			else
+			{
+				line.append(" -- for ").append(ChatColorType.HIGHLIGHT).append(quests)
+					.append(ChatColorType.NORMAL).append(".");
+			}
+			chatMessageManager.queue(QueuedMessage.builder()
+				.type(ChatMessageType.GAMEMESSAGE)
+				.runeLiteFormattedMessage(line.build())
+				.build());
+		}
 	}
 
 	/**
@@ -970,7 +1044,7 @@ public class QuestpathPlugin extends Plugin
 		return QuestItems.of(questGraph,
 			new PlayerState(levels, experience, completed, buildRules),
 			owned.heldByName(), owned.bankSeen(), pickupScope(),
-			new HashSet<>(routeOrder), knownItems);
+			new HashSet<>(routeOrder), knownItems, owned.carriedByName());
 	}
 
 	@Provides

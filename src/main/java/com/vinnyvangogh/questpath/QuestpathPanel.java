@@ -52,8 +52,27 @@ import net.runelite.client.util.ImageUtil;
  * to Combat every few seconds while training — unusable for exactly the player
  * this is written for.
  */
+@lombok.extern.slf4j.Slf4j
 class QuestpathPanel extends PluginPanel
 {
+	/**
+	 * Timing for the two things that were reported as slow: building the
+	 * panel, and switching a tab.
+	 *
+	 * Instrumentation rather than another guess. Two rounds of reasoning about
+	 * what "ought" to be expensive found real problems and did not fix the
+	 * symptom, and the remaining complaint -- that it degrades the more you
+	 * switch back and forth -- is the shape of something accumulating, which
+	 * inference is bad at finding and a millisecond count is not.
+	 *
+	 * Logged only when a pass is slow enough to notice, so an idle client
+	 * stays quiet.
+	 */
+	private static final long SLOW_MILLIS = 4;
+
+	/** Counts how many switches have happened, to expose growth over time. */
+	private int tabSwitches;
+
 	/**
 	 * The skill icons are around 25px; the tab strip has five of them across a
 	 * 225px sidebar, so they are scaled down to leave room for the padding
@@ -148,6 +167,25 @@ class QuestpathPanel extends PluginPanel
 			wrapper.add(bodyForTab, BorderLayout.NORTH);
 
 			MaterialTab materialTab = tabFor(sprites, tab, tabGroup, wrapper);
+			// Times the switch itself. MaterialTabGroup.select swaps the
+			// displayed wrapper and validates it, which is where the cost of
+			// a big tab actually lands -- laying out and painting everything
+			// it holds, every time it comes back on screen.
+			materialTab.setOnSelectEvent(() ->
+			{
+				long startedAt = System.nanoTime();
+				tabSwitches++;
+				SwingUtilities.invokeLater(() ->
+				{
+					long millis = (System.nanoTime() - startedAt) / 1_000_000L;
+					if (millis >= SLOW_MILLIS)
+					{
+						log.info("questpath perf: switch #{} to {} took {}ms; components {}",
+							tabSwitches, tab, millis, componentCounts());
+					}
+				});
+				return true;
+			});
 			tabGroup.addTab(materialTab);
 			if (first == null)
 			{
@@ -396,6 +434,60 @@ class QuestpathPanel extends PluginPanel
 		List<BuildRule> rules, List<String> unmatchedQuests, QuestVerdicts verdicts, QuestItems items,
 		NextQuestStatus nextQuest, SyncSettings settings, AccountReport report)
 	{
+		long startedAt = System.nanoTime();
+		try
+		{
+			renderBody(stats, xp, sync, rules, unmatchedQuests, verdicts, items, nextQuest,
+				settings, report);
+		}
+		finally
+		{
+			long millis = (System.nanoTime() - startedAt) / 1_000_000L;
+			if (millis >= SLOW_MILLIS)
+			{
+				log.info("questpath perf: render took {}ms; components {}", millis, componentCounts());
+			}
+		}
+	}
+
+	/**
+	 * How many Swing components each tab is currently holding.
+	 *
+	 * The number that matters for the "worse the more you switch" report: if
+	 * it climbs across switches, something is accumulating rather than being
+	 * replaced.
+	 */
+	private String componentCounts()
+	{
+		StringBuilder out = new StringBuilder();
+		for (Map.Entry<PanelSections.Tab, JPanel> entry : tabBodies.entrySet())
+		{
+			if (out.length() > 0)
+			{
+				out.append(' ');
+			}
+			out.append(entry.getKey()).append('=').append(countDeep(entry.getValue()));
+		}
+		return out.toString();
+	}
+
+	private static int countDeep(Component component)
+	{
+		int total = 1;
+		if (component instanceof java.awt.Container)
+		{
+			for (Component child : ((java.awt.Container) component).getComponents())
+			{
+				total += countDeep(child);
+			}
+		}
+		return total;
+	}
+
+	private void renderBody(CombatStats stats, SkillXp xp, SyncStatus sync,
+		List<BuildRule> rules, List<String> unmatchedQuests, QuestVerdicts verdicts, QuestItems items,
+		NextQuestStatus nextQuest, SyncSettings settings, AccountReport report)
+	{
 		clearBodies(PanelSections.Tab.SYNC);
 
 		int ceiling = CombatMath.freeRangedCeiling(stats.get(Skill.ATTACK), stats.get(Skill.STRENGTH));
@@ -596,9 +688,18 @@ class QuestpathPanel extends PluginPanel
 			String sharedNote = total.sharedAcrossQuests()
 				? "Needed by " + total.quests() + " quests you can do"
 				: null;
-			addRow(totalsGrid, total.name(), total.describe(), total.satisfied()
+			// Three colours for three states, not two. Orange is the one you
+			// are part way through -- some in your bags and still short --
+			// which the sort has already floated to the top of the list; the
+			// colour is what stops it reading as just another grey row that
+			// happens to be first.
+			Color totalColour = total.satisfied()
 				? ColorScheme.PROGRESS_COMPLETE_COLOR
-				: ColorScheme.LIGHT_GRAY_COLOR, itemTooltip(sharedNote, total.sources()));
+				: total.inProgress()
+					? ColorScheme.PROGRESS_INPROGRESS_COLOR
+					: ColorScheme.LIGHT_GRAY_COLOR;
+			addRow(totalsGrid, total.name(), total.describe(), totalColour,
+				itemTooltip(sharedNote, total.sources()));
 		}
 		panel.add(totalsGrid);
 		if (filtering && shownTotals == 0)

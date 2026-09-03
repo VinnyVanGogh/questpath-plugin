@@ -19,6 +19,18 @@ class NeededItemsOverlay extends QuestpathOverlay
 {
 	/** Short-list rows before the panel switches to "and N more". */
 	private static final int MAX_SHORT_ROWS = 10;
+	/**
+	 * Started-item rows before the panel switches to "and N more".
+	 *
+	 * An inventory is twenty-eight slots and worn equipment eleven, so no
+	 * account can carry part-stacks of more distinct items than this however
+	 * long its plan is -- the section is self-limiting, and this only exists
+	 * so a panel cannot be driven off the screen by a count that should be
+	 * impossible. It is deliberately not the list-length setting: a cap the
+	 * player chose for a ninety-item shopping list is the wrong cap for the
+	 * two things in their bags.
+	 */
+	private static final int MAX_STARTED_ROWS = 39;
 	/** Held-item grid slots before the panel switches to "and N more". */
 	private static final int MAX_HELD_CELLS = 12;
 
@@ -83,6 +95,7 @@ class NeededItemsOverlay extends QuestpathOverlay
 		List<OverlayRow> rows = new ArrayList<>();
 
 		int satisfiedCount = 0;
+		List<QuestItems.Total> started = new ArrayList<>();
 		List<QuestItems.Total> shortItems = new ArrayList<>();
 		List<QuestItems.Total> heldItems = new ArrayList<>();
 		for (QuestItems.Total total : totals)
@@ -91,6 +104,15 @@ class NeededItemsOverlay extends QuestpathOverlay
 			{
 				satisfiedCount++;
 				heldItems.add(total);
+			}
+			else if (total.inProgress())
+			{
+				// Some already in your bags and still not enough. Kept out of
+				// the capped list below rather than merely sorted to the top
+				// of it, because a cap of seven would otherwise let ninety
+				// alphabetically earlier items push the log you are standing
+				// over off the panel.
+				started.add(total);
 			}
 			else
 			{
@@ -102,7 +124,12 @@ class NeededItemsOverlay extends QuestpathOverlay
 		// merged list is already covered.
 		rows.add(OverlayRow.bar("Items held", satisfiedCount + " / " + totals.size(),
 			totals.isEmpty() ? 1.0 : (double) satisfiedCount / totals.size(),
-			shortItems.isEmpty() ? OverlayTheme.GOOD : OverlayTheme.WARN));
+			// Green only when nothing is outstanding at all. Started items are
+			// no longer in shortItems, so testing that alone would turn the
+			// bar green while the panel below it still listed things to get.
+			shortItems.isEmpty() && started.isEmpty()
+				? OverlayTheme.GOOD
+				: OverlayTheme.WARN));
 
 		if (items.freshness() == QuestItems.Freshness.LAST_SYNC)
 		{
@@ -124,6 +151,31 @@ class NeededItemsOverlay extends QuestpathOverlay
 				"Bank not opened this session -- counts below are what you "
 					+ "are carrying and wearing only.",
 				OverlayTheme.WARN));
+		}
+
+		if (!started.isEmpty())
+		{
+			// Above the shopping list and outside its cap. This is the only
+			// part of the panel that is about right now: you are holding some
+			// of these, which means you are somewhere they come from, and the
+			// panel's one job at that moment is to say how many more.
+			rows.add(OverlayRow.header("Already started (" + started.size() + ")"));
+			int shown = Math.min(started.size(), MAX_STARTED_ROWS);
+			for (int i = 0; i < shown; i++)
+			{
+				QuestItems.Total total = started.get(i);
+				// Named in the accent rather than the body colour: on a panel
+				// where every other short row is also orange-valued, the name
+				// is the only place left to say "this one is live".
+				rows.add(OverlayRow.item(total.itemId(), total.name(), total.describe(),
+					false, OverlayTheme.ACCENT, OverlayTheme.WARN));
+			}
+			int remaining = started.size() - shown;
+			if (remaining > 0)
+			{
+				rows.add(OverlayRow.overflow(
+					"...and " + remaining + " more you have started."));
+			}
 		}
 
 		if (!shortItems.isEmpty())

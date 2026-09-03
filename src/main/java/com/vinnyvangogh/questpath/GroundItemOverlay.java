@@ -20,6 +20,8 @@ import net.runelite.api.coords.LocalPoint;
 import net.runelite.client.ui.overlay.Overlay;
 import net.runelite.client.ui.overlay.OverlayLayer;
 import net.runelite.client.ui.overlay.OverlayPosition;
+import net.runelite.client.ui.overlay.tooltip.Tooltip;
+import net.runelite.client.ui.overlay.tooltip.TooltipManager;
 
 /**
  * Marks, on the ground near the account, exactly the items its quest plan
@@ -49,6 +51,7 @@ class GroundItemOverlay extends Overlay
 	private final QuestpathPlugin plugin;
 	private final QuestpathConfig config;
 	private final Client client;
+	private final TooltipManager tooltips;
 
 	/**
 	 * How many tiles out from the local player to sweep, in each direction.
@@ -83,11 +86,13 @@ class GroundItemOverlay extends Overlay
 	private int lookupSignature;
 	private boolean haveLookup;
 
-	GroundItemOverlay(QuestpathPlugin plugin, QuestpathConfig config, Client client)
+	GroundItemOverlay(QuestpathPlugin plugin, QuestpathConfig config, Client client,
+		TooltipManager tooltips)
 	{
 		this.plugin = plugin;
 		this.config = config;
 		this.client = client;
+		this.tooltips = tooltips;
 		setPosition(OverlayPosition.DYNAMIC);
 		setLayer(OverlayLayer.ABOVE_SCENE);
 	}
@@ -274,6 +279,8 @@ class GroundItemOverlay extends Overlay
 		g.setColor(markColor);
 		g.draw(poly);
 
+		describeOnHover(poly, match, extra);
+
 		String label = match.name();
 		if (extra > 0)
 		{
@@ -291,6 +298,46 @@ class GroundItemOverlay extends Overlay
 		{
 			OverlayTheme.shadowed(g, label, textLocation.getX(), textLocation.getY(), markColor);
 		}
+	}
+
+	/**
+	 * Says what the marked tile is for, while the pointer is over it.
+	 *
+	 * The label already on the tile is the item's name, which answers "what
+	 * is that" and not "why do I care" -- and the second question is the one
+	 * worth walking over for. Drawing the quest name onto every marked tile
+	 * instead would put a sentence on the ground for each of them, which is
+	 * unreadable the moment there are three; the pointer already names the one
+	 * tile being considered.
+	 */
+	private void describeOnHover(Polygon poly, QuestItems.Total match, int extra)
+	{
+		if (client == null || tooltips == null)
+		{
+			return;
+		}
+		Point mouse = client.getMouseCanvasPosition();
+		if (mouse == null || !poly.contains(mouse.getX(), mouse.getY()))
+		{
+			return;
+		}
+		String quests = match.questSummary();
+		if (quests.isEmpty())
+		{
+			return;
+		}
+		StringBuilder text = new StringBuilder();
+		text.append(match.name()).append(' ').append(match.describe())
+			.append("</br>For ").append(quests);
+		if (extra > 0)
+		{
+			// The tile's own label already says "+N"; without this the
+			// tooltip would look like the full account of the tile and
+			// silently describe only one of the things on it.
+			text.append("</br>+").append(extra).append(" more needed item")
+				.append(extra == 1 ? "" : "s").append(" on this tile");
+		}
+		tooltips.add(new Tooltip(text.toString()));
 	}
 
 	/**

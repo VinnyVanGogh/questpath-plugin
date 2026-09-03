@@ -8,10 +8,14 @@ import java.awt.Rectangle;
 import java.awt.Stroke;
 import java.util.HashMap;
 import java.util.Map;
+import net.runelite.api.Client;
+import net.runelite.api.Point;
 import net.runelite.api.gameval.InterfaceID;
 import net.runelite.api.widgets.WidgetItem;
 import net.runelite.client.game.ItemManager;
 import net.runelite.client.ui.overlay.WidgetItemOverlay;
+import net.runelite.client.ui.overlay.tooltip.Tooltip;
+import net.runelite.client.ui.overlay.tooltip.TooltipManager;
 
 /**
  * Marks, in a shop's own item grid, exactly the stock the account's doable
@@ -44,6 +48,10 @@ class ShopItemOverlay extends WidgetItemOverlay
 	 */
 	private final ItemManager itemManager;
 
+	/** Read only for the mouse position, to answer "is the pointer on this slot". */
+	private final Client client;
+	private final TooltipManager tooltips;
+
 	/** The stroke the outline is drawn with -- thicker than a hairline, or it is lost against the shop's own slot border. */
 	private static final Stroke OUTLINE_STROKE = new BasicStroke(2f);
 
@@ -61,11 +69,14 @@ class ShopItemOverlay extends WidgetItemOverlay
 	private int lookupSignature;
 	private boolean haveLookup;
 
-	ShopItemOverlay(QuestpathPlugin plugin, QuestpathConfig config, ItemManager itemManager)
+	ShopItemOverlay(QuestpathPlugin plugin, QuestpathConfig config, ItemManager itemManager,
+		Client client, TooltipManager tooltips)
 	{
 		this.plugin = plugin;
 		this.config = config;
 		this.itemManager = itemManager;
+		this.client = client;
+		this.tooltips = tooltips;
 		// SHOPMAIN, not the deprecated widgets.InterfaceID.SHOP -- same id
 		// (300), current constant. SHOPSIDE (301) is the inventory beside the
 		// shop, which the player can already read.
@@ -163,6 +174,41 @@ class ShopItemOverlay extends WidgetItemOverlay
 			drawCount(g, bounds, Long.toString(outstanding),
 				items.freshness() != QuestItems.Freshness.CARRIED_ONLY);
 		}
+
+		describeOnHover(bounds, total);
+	}
+
+	/**
+	 * Says what the marked slot is for, while the pointer is over it.
+	 *
+	 * The outline says "you need this" and the digit says "this many", and
+	 * between them they still do not say the thing a player actually wants
+	 * before spending the coins: for what. Which is a question with a real
+	 * answer -- questpath knows precisely which quests asked -- that until
+	 * now only existed on a different screen.
+	 *
+	 * <p>Hover rather than always drawn, because forty shop slots each
+	 * captioned with a quest name is a wall of text over the interface being
+	 * shopped from. The mouse already says which one slot is being considered.
+	 */
+	private void describeOnHover(Rectangle bounds, QuestItems.Total total)
+	{
+		if (client == null || tooltips == null)
+		{
+			return;
+		}
+		Point mouse = client.getMouseCanvasPosition();
+		if (mouse == null || !bounds.contains(mouse.getX(), mouse.getY()))
+		{
+			return;
+		}
+		String quests = total.questSummary();
+		if (quests.isEmpty())
+		{
+			return;
+		}
+		tooltips.add(new Tooltip(total.name() + " " + total.describe()
+			+ "</br>For " + quests));
 	}
 
 	/**
