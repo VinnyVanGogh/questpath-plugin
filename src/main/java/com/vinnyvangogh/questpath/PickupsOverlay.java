@@ -81,7 +81,7 @@ class PickupsOverlay extends QuestpathOverlay
 			out.add(OverlayRow.header(group.getKey()));
 			for (QuestItems.Pickup pickup : group.getValue())
 			{
-				if (shown >= MAX_ROWS)
+				if (shown >= ctx.listCap(MAX_ROWS))
 				{
 					break outer;
 				}
@@ -97,7 +97,7 @@ class PickupsOverlay extends QuestpathOverlay
 
 		if (remaining > 0)
 		{
-			out.add(OverlayRow.note(remaining + " more not shown.", OverlayTheme.MUTED));
+			out.add(OverlayRow.overflow(remaining + " more not shown."));
 		}
 
 		return out;

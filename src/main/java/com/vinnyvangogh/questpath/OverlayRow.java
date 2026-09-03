@@ -73,6 +73,43 @@ abstract class OverlayRow
 		return new Note(text, color);
 	}
 
+	/**
+	 * The "...and 58 more" line at the end of a capped list.
+	 *
+	 * A distinct kind rather than a note, so it can be switched off in one
+	 * place. Truncating a list without saying so would leave it claiming to be
+	 * complete, which is why this exists at all -- but on a panel deliberately
+	 * capped short it is also a line of chrome per section, and a player who
+	 * already knows the lists are capped should be able to reclaim those rows.
+	 * The cap does not move when it is hidden; only the explanation goes.
+	 */
+	static OverlayRow overflow(String text)
+	{
+		return new Overflow(text);
+	}
+
+	/** Whether the panel may drop this row when overflow notes are off. */
+	boolean isOverflow()
+	{
+		return false;
+	}
+
+	/**
+	 * The grid cell this row collapses to when only pictures are being drawn,
+	 * or null when it has no picture to collapse to.
+	 *
+	 * This is what makes "just images" actually dense. Left alone, an item row
+	 * in icon-only mode is a single 30px slot on its own line and twenty of
+	 * them is a stripe down the screen -- the same height as the text version
+	 * for a fraction of the information. The panel packs consecutive rows that
+	 * answer this into one wrapping grid instead, which is the whole point of
+	 * the mode.
+	 */
+	Cell asCell()
+	{
+		return null;
+	}
+
 	/** A labelled progress bar with a caption on the right of its label. */
 	static OverlayRow bar(String label, String caption, double fraction, Color color)
 	{
@@ -158,14 +195,14 @@ abstract class OverlayRow
 		@Override
 		int height(Graphics2D g, OverlayContext ctx, int width)
 		{
-			g.setFont(OverlayTheme.smallFont());
+			g.setFont(ctx.smallFont());
 			return g.getFontMetrics().getHeight() + 3;
 		}
 
 		@Override
 		void draw(Graphics2D g, OverlayContext ctx, int x, int y, int width)
 		{
-			g.setFont(OverlayTheme.smallFont());
+			g.setFont(ctx.smallFont());
 			FontMetrics metrics = g.getFontMetrics();
 			String shown = OverlayTheme.truncate(metrics, text, width);
 			OverlayTheme.shadowed(g, shown, x, y + metrics.getAscent(), OverlayTheme.ACCENT);
@@ -177,7 +214,7 @@ abstract class OverlayRow
 		@Override
 		int minimumWidth(Graphics2D g, OverlayContext ctx)
 		{
-			g.setFont(OverlayTheme.smallFont());
+			g.setFont(ctx.smallFont());
 			return g.getFontMetrics().stringWidth(text) + 8;
 		}
 	}
@@ -233,21 +270,21 @@ abstract class OverlayRow
 		@Override
 		int height(Graphics2D g, OverlayContext ctx, int width)
 		{
-			g.setFont(OverlayTheme.font());
+			g.setFont(ctx.font());
 			return g.getFontMetrics().getHeight();
 		}
 
 		@Override
 		void draw(Graphics2D g, OverlayContext ctx, int x, int y, int width)
 		{
-			g.setFont(OverlayTheme.font());
+			g.setFont(ctx.font());
 			OverlayTheme.keyValue(g, x, y, width, left, leftColor, right, rightColor);
 		}
 
 		@Override
 		int minimumWidth(Graphics2D g, OverlayContext ctx)
 		{
-			g.setFont(OverlayTheme.font());
+			g.setFont(ctx.font());
 			FontMetrics metrics = g.getFontMetrics();
 			return Math.min(190, metrics.stringWidth(left)
 				+ (right == null ? 0 : metrics.stringWidth(right) + 8));
@@ -268,7 +305,7 @@ abstract class OverlayRow
 		@Override
 		int height(Graphics2D g, OverlayContext ctx, int width)
 		{
-			g.setFont(OverlayTheme.smallFont());
+			g.setFont(ctx.smallFont());
 			return OverlayTheme.wrap(g.getFontMetrics(), text, width).size()
 				* g.getFontMetrics().getHeight();
 		}
@@ -276,7 +313,7 @@ abstract class OverlayRow
 		@Override
 		void draw(Graphics2D g, OverlayContext ctx, int x, int y, int width)
 		{
-			g.setFont(OverlayTheme.smallFont());
+			g.setFont(ctx.smallFont());
 			FontMetrics metrics = g.getFontMetrics();
 			int baseline = y + metrics.getAscent();
 			for (String piece : OverlayTheme.wrap(metrics, text, width))
@@ -284,6 +321,37 @@ abstract class OverlayRow
 				OverlayTheme.shadowed(g, piece, x, baseline, color);
 				baseline += metrics.getHeight();
 			}
+		}
+	}
+
+	/**
+	 * A note that says a list was cut short. See {@link #overflow(String)}.
+	 */
+	private static final class Overflow extends OverlayRow
+	{
+		private final Note inner;
+
+		private Overflow(String text)
+		{
+			this.inner = new Note(text, OverlayTheme.MUTED);
+		}
+
+		@Override
+		boolean isOverflow()
+		{
+			return true;
+		}
+
+		@Override
+		int height(Graphics2D g, OverlayContext ctx, int width)
+		{
+			return inner.height(g, ctx, width);
+		}
+
+		@Override
+		void draw(Graphics2D g, OverlayContext ctx, int x, int y, int width)
+		{
+			inner.draw(g, ctx, x, y, width);
 		}
 	}
 
@@ -307,14 +375,14 @@ abstract class OverlayRow
 		@Override
 		int height(Graphics2D g, OverlayContext ctx, int width)
 		{
-			g.setFont(OverlayTheme.smallFont());
+			g.setFont(ctx.smallFont());
 			return g.getFontMetrics().getHeight() + BAR_HEIGHT + 2;
 		}
 
 		@Override
 		void draw(Graphics2D g, OverlayContext ctx, int x, int y, int width)
 		{
-			g.setFont(OverlayTheme.smallFont());
+			g.setFont(ctx.smallFont());
 			FontMetrics metrics = g.getFontMetrics();
 			OverlayTheme.keyValue(g, x, y, width, label, OverlayTheme.TEXT,
 				caption, OverlayTheme.MUTED);
@@ -358,10 +426,21 @@ abstract class OverlayRow
 			return ctx.mode().showsText() || !drawsIcon(ctx);
 		}
 
+		/**
+		 * Collapsible only when there is a sprite to collapse to. An item
+		 * questpath could not identify keeps its own row and its text, for
+		 * the same reason it keeps its text in every mode.
+		 */
+		@Override
+		Cell asCell()
+		{
+			return itemId > 0 ? new Cell(itemId, right, held) : null;
+		}
+
 		@Override
 		int height(Graphics2D g, OverlayContext ctx, int width)
 		{
-			g.setFont(OverlayTheme.font());
+			g.setFont(ctx.font());
 			int textHeight = g.getFontMetrics().getHeight();
 			if (!drawsIcon(ctx))
 			{
@@ -396,7 +475,7 @@ abstract class OverlayRow
 				return;
 			}
 
-			g.setFont(OverlayTheme.font());
+			g.setFont(ctx.font());
 			FontMetrics metrics = g.getFontMetrics();
 			int baseline = y + (rowHeight - metrics.getHeight()) / 2 + metrics.getAscent();
 			int room = width - (textX - x);
@@ -431,7 +510,7 @@ abstract class OverlayRow
 		@Override
 		int height(Graphics2D g, OverlayContext ctx, int width)
 		{
-			g.setFont(OverlayTheme.font());
+			g.setFont(ctx.font());
 			int textHeight = g.getFontMetrics().getHeight();
 			return ctx.mode().showsIcons()
 				? Math.max(textHeight, OverlayIcons.SKILL_SIZE + 2)
@@ -456,7 +535,7 @@ abstract class OverlayRow
 			// The value is never dropped: a skill icon says which skill, and
 			// nothing at all about the level, the cap or the cost -- which is
 			// the entire content of these rows.
-			g.setFont(OverlayTheme.font());
+			g.setFont(ctx.font());
 			FontMetrics metrics = g.getFontMetrics();
 			int baseline = y + (rowHeight - metrics.getHeight()) / 2 + metrics.getAscent();
 			int room = width - (textX - x);

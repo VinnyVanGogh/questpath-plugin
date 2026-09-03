@@ -108,7 +108,7 @@ class NeededItemsOverlay extends QuestpathOverlay
 		if (!shortItems.isEmpty())
 		{
 			rows.add(OverlayRow.header("Still short (" + shortItems.size() + ")"));
-			int shown = Math.min(shortItems.size(), MAX_SHORT_ROWS);
+			int shown = Math.min(shortItems.size(), ctx.listCap(MAX_SHORT_ROWS));
 			for (int i = 0; i < shown; i++)
 			{
 				QuestItems.Total total = shortItems.get(i);
@@ -118,7 +118,7 @@ class NeededItemsOverlay extends QuestpathOverlay
 			int remaining = shortItems.size() - shown;
 			if (remaining > 0)
 			{
-				rows.add(OverlayRow.note("...and " + remaining + " more short.", OverlayTheme.MUTED));
+				rows.add(OverlayRow.overflow("...and " + remaining + " more short."));
 			}
 		}
 
@@ -128,7 +128,7 @@ class NeededItemsOverlay extends QuestpathOverlay
 			// sprite, which is what the grid form is for. Full item rows
 			// here would repeat the bar above at ten times the height.
 			rows.add(OverlayRow.header("Already held (" + heldItems.size() + ")"));
-			int shown = Math.min(heldItems.size(), MAX_HELD_CELLS);
+			int shown = Math.min(heldItems.size(), ctx.listCap(MAX_HELD_CELLS));
 			List<OverlayRow.Cell> cells = new ArrayList<>();
 			for (int i = 0; i < shown; i++)
 			{
@@ -139,7 +139,7 @@ class NeededItemsOverlay extends QuestpathOverlay
 			int remaining = heldItems.size() - shown;
 			if (remaining > 0)
 			{
-				rows.add(OverlayRow.note("...and " + remaining + " more already held.", OverlayTheme.MUTED));
+				rows.add(OverlayRow.overflow("...and " + remaining + " more already held."));
 			}
 		}
 

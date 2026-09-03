@@ -64,7 +64,7 @@ class NextQuestOverlay extends QuestpathOverlay
 
 			case NEXT:
 			default:
-				return nextRows(route);
+				return nextRows(route, ctx);
 		}
 	}
 
@@ -89,7 +89,7 @@ class NextQuestOverlay extends QuestpathOverlay
 	 * finished quests are history and this panel's space is worth more spent
 	 * on what is left.
 	 */
-	private List<OverlayRow> nextRows(NextQuestStatus route)
+	private List<OverlayRow> nextRows(NextQuestStatus route, OverlayContext ctx)
 	{
 		List<OverlayRow> rows = new ArrayList<>();
 		rows.add(OverlayRow.hero(route.questName(), OverlayTheme.ACCENT));
@@ -105,7 +105,7 @@ class NextQuestOverlay extends QuestpathOverlay
 		if (after.size() > 1)
 		{
 			rows.add(OverlayRow.header("Then"));
-			int shown = Math.min(LOOKAHEAD, after.size() - 1);
+			int shown = Math.min(ctx.listCap(LOOKAHEAD), after.size() - 1);
 			for (int i = 1; i <= shown; i++)
 			{
 				rows.add(OverlayRow.line(after.get(i).questName(), null,
@@ -114,7 +114,7 @@ class NextQuestOverlay extends QuestpathOverlay
 			int more = after.size() - 1 - shown;
 			if (more > 0)
 			{
-				rows.add(OverlayRow.note("+ " + more + " more after that", OverlayTheme.MUTED));
+				rows.add(OverlayRow.overflow("+ " + more + " more after that"));
 			}
 		}
 

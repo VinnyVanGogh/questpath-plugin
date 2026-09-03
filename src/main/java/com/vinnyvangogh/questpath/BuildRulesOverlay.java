@@ -78,13 +78,13 @@ class BuildRulesOverlay extends QuestpathOverlay
 		if (!blocking.isEmpty())
 		{
 			rows.add(OverlayRow.header("Blocking"));
-			addRuleRows(rows, blocking, stats);
+			addRuleRows(rows, blocking, stats, ctx);
 		}
 
 		if (!informational.isEmpty())
 		{
 			rows.add(OverlayRow.header("Informational"));
-			addRuleRows(rows, informational, stats);
+			addRuleRows(rows, informational, stats, ctx);
 		}
 
 		return rows;
@@ -146,9 +146,10 @@ class BuildRulesOverlay extends QuestpathOverlay
 	 * Appends one row per rule in the section, capped so a build with many
 	 * declared rules stays a readout rather than a wall of text.
 	 */
-	private static void addRuleRows(List<OverlayRow> rows, List<BuildRule> section, CombatStats stats)
+	private static void addRuleRows(List<OverlayRow> rows, List<BuildRule> section, CombatStats stats,
+		OverlayContext ctx)
 	{
-		int shown = Math.min(MAX_ROWS, section.size());
+		int shown = Math.min(ctx.listCap(MAX_ROWS), section.size());
 		for (int i = 0; i < shown; i++)
 		{
 			rows.add(ruleRow(section.get(i), stats));
@@ -156,7 +157,7 @@ class BuildRulesOverlay extends QuestpathOverlay
 		int more = section.size() - shown;
 		if (more > 0)
 		{
-			rows.add(OverlayRow.note("+ " + more + " more", OverlayTheme.MUTED));
+			rows.add(OverlayRow.overflow("+ " + more + " more"));
 		}
 	}
 

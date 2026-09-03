@@ -7,6 +7,8 @@ import java.util.Collections;
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -130,5 +132,77 @@ public class OverlayDisplayModeTest
 		assertEquals(0, OverlayRow.grid(Collections.emptyList()).height(g, ctx, 180));
 
 		g.dispose();
+	}
+
+	/**
+	 * An overflow line is a distinct kind, so the panel can drop it in one
+	 * place rather than five overlays each deciding.
+	 */
+	@Test
+	public void onlyOverflowRowsAreDroppable()
+	{
+		assertTrue(OverlayRow.overflow("...and 58 more short.").isOverflow());
+		assertFalse(OverlayRow.note("No route saved.", OverlayTheme.MUTED).isOverflow());
+		assertFalse(OverlayRow.line("Defence", "1", OverlayTheme.TEXT, OverlayTheme.BAD).isOverflow());
+	}
+
+	/**
+	 * An item row collapses to a grid cell only when it has a sprite to
+	 * collapse to.
+	 *
+	 * This is what makes icon-only mode denser rather than merely quieter:
+	 * consecutive collapsible rows are packed into one wrapping grid. An item
+	 * questpath could not identify has no picture, so it keeps its own row and
+	 * its text -- otherwise packing would silently swallow exactly the item
+	 * worth knowing about.
+	 */
+	@Test
+	public void onlyIdentifiedItemsCollapseIntoTheGrid()
+	{
+		assertNotNull(OverlayRow.item(1925, "Bucket", "0 / 1", false,
+			OverlayTheme.TEXT, OverlayTheme.MUTED).asCell());
+		assertNull(OverlayRow.item(0, "Mysterious thing", "0 / 1", false,
+			OverlayTheme.TEXT, OverlayTheme.MUTED).asCell());
+		assertNull(OverlayRow.line("Defence", "1", OverlayTheme.TEXT, OverlayTheme.BAD).asCell());
+		assertNull(OverlayRow.note("Anything.", OverlayTheme.MUTED).asCell());
+	}
+
+	/**
+	 * List caps scale with how much the chosen settings actually fit.
+	 *
+	 * The caps are there so a panel stays a readout rather than a wall, and a
+	 * wall is measured in screen height, not entries. A grid fits several
+	 * items on the line a text row spends on one, so holding both to the same
+	 * count would waste the mode the player switched to in order to see more.
+	 */
+	@Test
+	public void listCapsGrowWithDensity()
+	{
+		OverlayIcons noIcons = null;
+		int base = 10;
+
+		int roomy = new OverlayContext(noIcons, OverlayDisplayMode.TEXT_AND_ICONS, false, true).listCap(base);
+		int small = new OverlayContext(noIcons, OverlayDisplayMode.TEXT_AND_ICONS, true, true).listCap(base);
+		int grid = new OverlayContext(noIcons, OverlayDisplayMode.ICONS_ONLY, false, true).listCap(base);
+
+		assertEquals(base, roomy);
+		assertTrue("smaller text fits more rows", small > roomy);
+		assertTrue("a grid fits far more than smaller text does", grid > small);
+	}
+
+	/**
+	 * The overflow setting hides the explanation, never the cap. A panel that
+	 * quietly showed more when you asked it to stop explaining itself would be
+	 * answering a different question.
+	 */
+	@Test
+	public void hidingOverflowNotesDoesNotChangeTheCap()
+	{
+		OverlayContext saying = new OverlayContext(null, OverlayDisplayMode.TEXT_AND_ICONS, false, true);
+		OverlayContext quiet = new OverlayContext(null, OverlayDisplayMode.TEXT_AND_ICONS, false, false);
+
+		assertTrue(saying.showOverflow());
+		assertFalse(quiet.showOverflow());
+		assertEquals(saying.listCap(10), quiet.listCap(10));
 	}
 }

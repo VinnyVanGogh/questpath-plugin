@@ -2,6 +2,7 @@ package com.vinnyvangogh.questpath;
 
 import java.awt.Dimension;
 import java.awt.Graphics2D;
+import java.util.ArrayList;
 import java.util.List;
 import net.runelite.api.MenuAction;
 import net.runelite.client.ui.overlay.Overlay;
@@ -26,14 +27,12 @@ import net.runelite.client.ui.overlay.OverlayPosition;
 abstract class QuestpathOverlay extends Overlay
 {
 	/**
-	 * The width a panel is drawn at unless its own rows demand more.
+	 * The narrowest a panel is ever drawn, whatever the width setting says.
 	 *
-	 * Chosen to sit comfortably beside a fixed-mode viewport without covering
-	 * the minimap or the chat. Rows that need more say so through
-	 * minimumWidth, and the panel grows rather than truncating them.
+	 * Below this a title truncates and the panel stops being readable at all,
+	 * which is not a trade worth offering.
 	 */
-	private static final int BASE_WIDTH = 168;
-	private static final int MAX_WIDTH = 260;
+	private static final int MIN_WIDTH = 140;
 
 	private final QuestpathPlugin plugin;
 	private final QuestpathConfig config;
@@ -85,20 +84,26 @@ abstract class QuestpathOverlay extends Overlay
 			return null;
 		}
 
-		OverlayContext ctx = new OverlayContext(icons, config.overlayDisplayMode());
+		OverlayContext ctx = new OverlayContext(icons, config.overlayDisplayMode(),
+			config.overlayCompactText(), config.overlayShowOverflow());
 		List<OverlayRow> rows = rows(snapshot, ctx);
 		if (rows == null || rows.isEmpty())
+		{
+			return null;
+		}
+		rows = arrange(rows, ctx);
+		if (rows.isEmpty())
 		{
 			return null;
 		}
 
 		OverlayTheme.prepare(g);
 
-		int width = widthFor(g, ctx, rows);
+		int width = widthFor();
 		int contentWidth = width - OverlayTheme.PAD * 2;
 
 		int height = OverlayTheme.PAD;
-		g.setFont(OverlayTheme.boldFont());
+		g.setFont(ctx.boldFont());
 		int titleHeight = g.getFontMetrics().getAscent() + 7;
 		height += titleHeight;
 		for (OverlayRow row : rows)
@@ -122,22 +127,74 @@ abstract class QuestpathOverlay extends Overlay
 	}
 
 	/**
-	 * Wide enough for the widest row that asked, within a ceiling.
+	 * Rewrites the row list for the mode and settings before anything is
+	 * measured.
 	 *
-	 * The ceiling matters more than the fit: an overlay that grows to hold a
-	 * long quest name would cover a third of the screen the one time you are
-	 * doing that quest. Past it, rows truncate, which is what
-	 * OverlayTheme.truncate is for.
+	 * Two passes, both deliberately here rather than in the five overlays.
+	 * Dropping overflow notes in one place is what makes the setting mean the
+	 * same thing everywhere; packing icon rows into grids in one place is what
+	 * makes "just images" actually denser than "just text" rather than the
+	 * same height with less in it.
 	 */
-	private int widthFor(Graphics2D g, OverlayContext ctx, List<OverlayRow> rows)
+	private static List<OverlayRow> arrange(List<OverlayRow> rows, OverlayContext ctx)
 	{
-		int widest = BASE_WIDTH - OverlayTheme.PAD * 2;
-		g.setFont(OverlayTheme.boldFont());
-		widest = Math.max(widest, g.getFontMetrics().stringWidth(title) + 4);
+		List<OverlayRow> kept = new ArrayList<>(rows.size());
 		for (OverlayRow row : rows)
 		{
-			widest = Math.max(widest, row.minimumWidth(g, ctx));
+			if (row.isOverflow() && !ctx.showOverflow())
+			{
+				continue;
+			}
+			kept.add(row);
 		}
-		return Math.min(MAX_WIDTH, widest + OverlayTheme.PAD * 2);
+
+		if (!ctx.mode().showsIcons() || ctx.mode().showsText())
+		{
+			// Only icon-only mode packs. With text alongside, every row needs
+			// its own line to put the words on.
+			return kept;
+		}
+
+		List<OverlayRow> packed = new ArrayList<>(kept.size());
+		List<OverlayRow.Cell> run = new ArrayList<>();
+		for (OverlayRow row : kept)
+		{
+			OverlayRow.Cell cell = row.asCell();
+			if (cell != null)
+			{
+				run.add(cell);
+				continue;
+			}
+			flush(packed, run);
+			packed.add(row);
+		}
+		flush(packed, run);
+		return packed;
+	}
+
+	private static void flush(List<OverlayRow> into, List<OverlayRow.Cell> run)
+	{
+		if (run.isEmpty())
+		{
+			return;
+		}
+		into.add(OverlayRow.grid(new ArrayList<>(run)));
+		run.clear();
+	}
+
+	/**
+	 * The panel's width: exactly what the player asked for.
+	 *
+	 * Fixed rather than fitted to the content, and that is the point. Five
+	 * panels that each sized themselves to their longest row would never line
+	 * up with each other, and the widest one would be whichever happened to
+	 * hold a long quest name that day -- a layout that moves under you is
+	 * worse than one that truncates. Past this width rows truncate, which is
+	 * what OverlayTheme.truncate is for, and the way to see more is to choose
+	 * a wider setting.
+	 */
+	private int widthFor()
+	{
+		return Math.max(MIN_WIDTH, config.overlayWidth().pixels());
 	}
 }

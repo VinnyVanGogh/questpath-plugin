@@ -108,11 +108,53 @@ public interface QuestpathConfig extends Config
 	}
 
 	@ConfigItem(
+		keyName = "overlayWidth",
+		name = "Width",
+		description = "How wide the overlay panels may be. Wider is denser in every mode,"
+			+ " and dramatically so with images: the same twenty items go from a stripe"
+			+ " down the screen to two rows of a grid.",
+		section = overlaySection,
+		position = 2
+	)
+	default OverlayWidth overlayWidth()
+	{
+		return OverlayWidth.REGULAR;
+	}
+
+	@ConfigItem(
+		keyName = "overlayCompactText",
+		name = "Smaller text",
+		description = "Set overlay rows in the game's small font, fitting about a third more"
+			+ " of them in the same panel. Harder to read over bright scenery, which is why"
+			+ " it is a choice rather than the default.",
+		section = overlaySection,
+		position = 3
+	)
+	default boolean overlayCompactText()
+	{
+		return false;
+	}
+
+	@ConfigItem(
+		keyName = "overlayShowOverflow",
+		name = "Say when a list is cut short",
+		description = "Show the \"...and 58 more\" line at the end of a capped list."
+			+ " Turning it off reclaims a row per section; the caps themselves do not move,"
+			+ " so the panel simply stops explaining that it is showing you the top of a list.",
+		section = overlaySection,
+		position = 4
+	)
+	default boolean overlayShowOverflow()
+	{
+		return true;
+	}
+
+	@ConfigItem(
 		keyName = "overlayNextQuest",
 		name = "Next on your route",
 		description = "The next quests on your saved questpath route, and how far through it you are.",
 		section = overlaySection,
-		position = 2
+		position = 5
 	)
 	default boolean overlayNextQuest()
 	{
@@ -124,7 +166,7 @@ public interface QuestpathConfig extends Config
 		name = "Get while you're here",
 		description = "Items you can pick up during a quest you are already on, that other quests also want.",
 		section = overlaySection,
-		position = 3
+		position = 6
 	)
 	default boolean overlayPickups()
 	{
@@ -136,7 +178,7 @@ public interface QuestpathConfig extends Config
 		name = "Everything you need",
 		description = "Every item your doable quests need, ticked against what the client can see you hold.",
 		section = overlaySection,
-		position = 4
+		position = 7
 	)
 	default boolean overlayItems()
 	{
@@ -148,7 +190,7 @@ public interface QuestpathConfig extends Config
 		name = "Combat XP to next level",
 		description = "What each stat would cost to buy the next combat level, cheapest first.",
 		section = overlaySection,
-		position = 5
+		position = 8
 	)
 	default boolean overlayCombatXp()
 	{
@@ -160,7 +202,7 @@ public interface QuestpathConfig extends Config
 		name = "Build rules",
 		description = "Your declared caps and no-xp skills, and how much headroom is left in each.",
 		section = overlaySection,
-		position = 6
+		position = 9
 	)
 	default boolean overlayBuildRules()
 	{
