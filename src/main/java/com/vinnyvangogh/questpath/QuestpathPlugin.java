@@ -180,6 +180,16 @@ public class QuestpathPlugin extends Plugin
 	private volatile OverlaySnapshot overlaySnapshot;
 
 	/**
+	 * The account as the last refresh saw it.
+	 *
+	 * Volatile because the Skills tab reads it from the event thread while
+	 * refreshes write it from the client thread. Null until the first refresh
+	 * with quests actually read -- which the panel renders as "log in",
+	 * distinct from an account with nothing to train.
+	 */
+	private volatile PlayerState accountSnapshot;
+
+	/**
 	 * Watches for an outstanding item becoming fully held, so the chat can
 	 * say so at the moment it happens rather than a panel turning green
 	 * behind the player's back.
@@ -328,7 +338,8 @@ public class QuestpathPlugin extends Plugin
 	{
 		watchdog = new EdtWatchdog(scheduler);
 		watchdog.start();
-		panel = new QuestpathPanel(sprites, new OverlaySettingsPanel(config, configManager));
+		panel = new QuestpathPanel(sprites, new OverlaySettingsPanel(config, configManager),
+			this::skillPlan);
 		navButton = NavigationButton.builder()
 			.tooltip("Quest Path")
 			.icon(icon())
@@ -568,6 +579,7 @@ public class QuestpathPlugin extends Plugin
 			// would announce the new one's items against the old one's
 			// shortfalls the first time anything changed.
 			completions.reset();
+			accountSnapshot = null;
 			return;
 		}
 
@@ -741,6 +753,29 @@ public class QuestpathPlugin extends Plugin
 	boolean bankTabActive()
 	{
 		return bankTab != null && bankTab.active();
+	}
+
+	/**
+	 * Prices a target level for the Skills tab.
+	 *
+	 * <p>Null rather than an empty plan when the graph or the account is
+	 * missing: an empty plan reads as "nothing to train", which is the
+	 * opposite of "nobody has told me anything yet". The panel renders the
+	 * two differently and has to be able to tell them apart.
+	 *
+	 * <p>Runs on the event thread, from the panel. Everything it touches --
+	 * the bundled graph, the account snapshot -- is already read, so it does
+	 * no client work; the classifier memoises within one call.
+	 */
+	private SkillPlan skillPlan(String skill, int targetLevel)
+	{
+		PlayerState account = accountSnapshot;
+		if (questGraph == null || account == null || skill == null)
+		{
+			return null;
+		}
+		return SkillPlan.of(questGraph, account,
+			new QuestClassifier(questGraph, account), skill, targetLevel);
 	}
 
 	/** The overlays and the bank layout read config through here. */
@@ -1127,7 +1162,14 @@ public class QuestpathPlugin extends Plugin
 			experience.put(skill.getName(), (long) client.getSkillExperience(skill));
 		}
 
-		return QuestVerdicts.of(questGraph, new PlayerState(levels, experience, completed, buildRules));
+		// Kept for the Skills tab, which is asked its question from the event
+		// thread and must not read the client to answer it. Built here rather
+		// than there because this is already the pass that has the client's
+		// levels, and because a snapshot the panel builds itself would be a
+		// second, subtly different account.
+		PlayerState account = new PlayerState(levels, experience, completed, buildRules);
+		accountSnapshot = account;
+		return QuestVerdicts.of(questGraph, account);
 	}
 
 	/**

@@ -25,6 +25,8 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
+import javax.swing.JSpinner;
+import javax.swing.SpinnerNumberModel;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
@@ -160,13 +162,39 @@ class QuestpathPanel extends PluginPanel
 	/** The overlay settings tab's contents, built once and kept. */
 	private final OverlaySettingsPanel overlaySettings;
 
+	/**
+	 * The skill planner's controls and its results, kept apart.
+	 *
+	 * The controls are built once and never rebuilt, for the same reason the
+	 * search boxes are: a half-chosen target that reset itself every time an
+	 * experience drop landed would be unusable. Only the results below them
+	 * are refilled.
+	 */
+	private final JComboBox<String> skillChoice = new JComboBox<>();
+	private final JSpinner skillTarget = new JSpinner(new SpinnerNumberModel(50, 2, 99, 1));
+	private final JPanel skillResults = new JPanel();
+
+	/**
+	 * Answers "what would this level cost", or null when nothing is known yet.
+	 *
+	 * A callback rather than the graph and the account themselves: the panel
+	 * has neither and should not learn to build a classifier. The plugin owns
+	 * that, and hands down the one question this tab asks.
+	 */
+	private final java.util.function.BiFunction<String, Integer, SkillPlan> planner;
+
+	/** What the skill plan was last drawn for; see the Build tab's gate. */
+	private Object lastSkillSignature;
+
 	private final JTextField itemSearch = new JTextField();
 	private final JPanel itemResults = new JPanel();
 	private QuestItems lastItems;
 
-	QuestpathPanel(SpriteManager sprites, OverlaySettingsPanel overlaySettings)
+	QuestpathPanel(SpriteManager sprites, OverlaySettingsPanel overlaySettings,
+		java.util.function.BiFunction<String, Integer, SkillPlan> planner)
 	{
 		this.overlaySettings = overlaySettings;
+		this.planner = planner;
 		setLayout(new BorderLayout());
 		setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
 
@@ -241,6 +269,8 @@ class QuestpathPanel extends PluginPanel
 		{
 			tabBodies.get(PanelSections.Tab.VIEW).add(overlaySettings);
 		}
+
+		buildSkillTab();
 
 		add(tabGroup, BorderLayout.NORTH);
 		add(display, BorderLayout.CENTER);
@@ -456,6 +486,12 @@ class QuestpathPanel extends PluginPanel
 			tabBodies.get(PanelSections.Tab.SYNC).add(muted("Log in to sync."));
 			tabBodies.get(PanelSections.Tab.QUESTS).add(muted("Log in to judge your quests."));
 			tabBodies.get(PanelSections.Tab.ITEMS).add(muted("Log in to check your bank."));
+			// Cleared with everything else, so put them back before asking
+			// them to redraw. The instances are the same, so whatever was
+			// chosen is still chosen.
+			addSkillFurniture();
+			lastSkillSignature = null;
+			renderSkillPlan();
 			renderPlannedSections();
 			repaintAll();
 		});
@@ -569,6 +605,15 @@ class QuestpathPanel extends PluginPanel
 			build.add(buildRulesBlock(stats, rules));
 		}
 		renderPlannedSectionsFor(PanelSections.Tab.BUILD);
+		}
+
+		// Shares the Build tab's gate: both are driven by levels and rules,
+		// and both go stale for the same reasons -- an experience drop, or a
+		// quest finishing and freeing the next one up.
+		if (!java.util.Objects.equals(buildSignature, lastSkillSignature))
+		{
+			lastSkillSignature = buildSignature;
+			renderSkillPlan();
 		}
 
 		// Rebuilt only when their contents actually changed; see the
@@ -1138,6 +1183,224 @@ class QuestpathPanel extends PluginPanel
 				anyAlready = true;
 			}
 		}
+	}
+
+	/**
+	 * The skill planner's fixed furniture: pick a skill, pick a level.
+	 *
+	 * Built once. Everything below it is rebuilt whenever the answer changes,
+	 * but the two controls keep whatever the player last chose -- including
+	 * across the experience drops that make this panel refresh in the first
+	 * place.
+	 */
+	private void buildSkillTab()
+	{
+		for (Skill skill : Skill.values())
+		{
+			// OVERALL is an aggregate, not a skill. A target level for it is
+			// not a thing the game has.
+			if (skill != Skill.OVERALL)
+			{
+				skillChoice.addItem(skill.getName());
+			}
+		}
+		skillChoice.setFocusable(false);
+		skillChoice.setMaximumSize(new Dimension(Integer.MAX_VALUE, 24));
+		skillChoice.setAlignmentX(Component.LEFT_ALIGNMENT);
+		skillChoice.addActionListener(event -> renderSkillPlan());
+
+		skillTarget.setMaximumSize(new Dimension(Integer.MAX_VALUE, 24));
+		skillTarget.setAlignmentX(Component.LEFT_ALIGNMENT);
+		skillTarget.addChangeListener(event -> renderSkillPlan());
+
+		skillResults.setLayout(new BoxLayout(skillResults, BoxLayout.Y_AXIS));
+		skillResults.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+		addSkillFurniture();
+	}
+
+	/**
+	 * Puts the controls back on the tab.
+	 *
+	 * Separate from building them because logging out clears every tab body,
+	 * and a control built once and cleared once is a control gone for the
+	 * session. These are the same component instances every time -- re-adding
+	 * moves them rather than making new ones, so the chosen skill and target
+	 * survive a logout.
+	 */
+	private void addSkillFurniture()
+	{
+		JPanel body = tabBodies.get(PanelSections.Tab.SKILLS);
+		body.add(heading(PanelSections.SKILL_PLAN.title()));
+		body.add(skillChoice);
+		body.add(Box.createVerticalStrut(4));
+		body.add(labelled("Target level", skillTarget));
+		body.add(Box.createVerticalStrut(8));
+		body.add(skillResults);
+	}
+
+	private static JPanel labelled(String text, Component control)
+	{
+		JPanel row = new JPanel();
+		row.setLayout(new BoxLayout(row, BoxLayout.X_AXIS));
+		row.setAlignmentX(Component.LEFT_ALIGNMENT);
+		row.setMaximumSize(new Dimension(Integer.MAX_VALUE, 24));
+		JLabel caption = new JLabel(text);
+		caption.setFont(FontManager.getRunescapeSmallFont());
+		caption.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
+		row.add(caption);
+		row.add(Box.createHorizontalStrut(6));
+		row.add(control);
+		return row;
+	}
+
+	/**
+	 * Recomputes the plan for whatever is selected and redraws the answer.
+	 *
+	 * Called both by the controls and by every refresh, because the answer
+	 * changes for two different reasons: you picked a different target, or you
+	 * finished a quest that used to be on the "later" list.
+	 */
+	private void renderSkillPlan()
+	{
+		skillResults.removeAll();
+
+		Object chosen = skillChoice.getSelectedItem();
+		SkillPlan plan = planner == null || chosen == null
+			? null
+			: planner.apply(chosen.toString(), (Integer) skillTarget.getValue());
+
+		if (plan == null)
+		{
+			// No graph, or logged out. Not "nothing to train" -- there is no
+			// account to answer about, which is a different statement.
+			skillResults.add(muted("Log in, and questpath will price this out."));
+		}
+		else
+		{
+			skillResults.add(skillPlanBlock(plan));
+		}
+
+		skillResults.revalidate();
+		skillResults.repaint();
+	}
+
+	/**
+	 * What the level costs, and how much of it questing pays for.
+	 *
+	 * The headline is deliberately the training figure rather than the total.
+	 * The total is what a skill guide already tells you; the number nobody
+	 * else can produce is what is left after the quests this account can
+	 * actually still do have paid out.
+	 */
+	private static JPanel skillPlanBlock(SkillPlan plan)
+	{
+		JPanel panel = column();
+
+		if (plan.targetBreaksBuild())
+		{
+			// Said first and in red. Every number below it is arithmetic about
+			// something this account has decided it will not do.
+			JLabel warning = new JLabel(wrap("Your build caps " + plan.skill() + " at "
+				+ plan.cappedAt() + ". Level " + plan.targetLevel() + " would end it."));
+			warning.setFont(FontManager.getRunescapeSmallFont());
+			warning.setForeground(ColorScheme.PROGRESS_ERROR_COLOR);
+			panel.add(warning);
+			panel.add(Box.createVerticalStrut(6));
+		}
+
+		if (plan.reached())
+		{
+			panel.add(muted("You are already " + plan.currentLevel() + " "
+				+ plan.skill() + "."));
+			return panel;
+		}
+
+		JPanel summary = grid();
+		addRow(summary, "Now", plan.currentLevel() + " -> " + plan.targetLevel(),
+			ColorScheme.LIGHT_GRAY_COLOR);
+		addRow(summary, "Experience", XpTable.format(plan.xpNeeded()),
+			ColorScheme.LIGHT_GRAY_COLOR);
+		addRow(summary, "From quests now", XpTable.format(plan.readyXp()),
+			ColorScheme.PROGRESS_COMPLETE_COLOR);
+		addRow(summary, "From quests later", XpTable.format(plan.laterXp()),
+			ColorScheme.BRAND_ORANGE);
+		addRow(summary, "Left to train", XpTable.format(plan.xpToTrain()),
+			plan.questsAreEnough()
+				? ColorScheme.PROGRESS_COMPLETE_COLOR
+				: ColorScheme.LIGHT_GRAY_COLOR);
+		panel.add(summary);
+
+		if (plan.questsAreEnough())
+		{
+			panel.add(Box.createVerticalStrut(6));
+			panel.add(muted("Quests alone get you there. No training needed."));
+		}
+
+		if (plan.lostXp() > 0)
+		{
+			// The one number only this plugin can produce, and the reason the
+			// training figure above is bigger than a skill guide would say.
+			panel.add(Box.createVerticalStrut(6));
+			JLabel lost = new JLabel(wrap(XpTable.format(plan.lostXp())
+				+ " is off the table for this build, across "
+				+ plan.lost().size() + " quest(s)."));
+			lost.setFont(FontManager.getRunescapeSmallFont());
+			lost.setForeground(ColorScheme.PROGRESS_ERROR_COLOR);
+			panel.add(lost);
+		}
+
+		band(panel, "READY NOW", plan.ready(), ColorScheme.PROGRESS_COMPLETE_COLOR);
+		band(panel, "AFTER MORE WORK", plan.later(), ColorScheme.BRAND_ORANGE);
+		band(panel, "OFF THE TABLE", plan.lost(), ColorScheme.PROGRESS_ERROR_COLOR);
+
+		return panel;
+	}
+
+	/** How many quests one band lists before it says how many more there are. */
+	private static final int MAX_PLAN_ROWS = 8;
+
+	private static void band(JPanel panel, String title, List<SkillPlan.Entry> entries,
+		Color colour)
+	{
+		if (entries.isEmpty())
+		{
+			return;
+		}
+		panel.add(Box.createVerticalStrut(10));
+		JLabel bandHeading = new JLabel(title + "  ·  " + entries.size());
+		bandHeading.setFont(FontManager.getRunescapeSmallFont().deriveFont(Font.BOLD));
+		bandHeading.setForeground(colour);
+		panel.add(bandHeading);
+
+		JPanel rows = grid();
+		int shown = Math.min(entries.size(), MAX_PLAN_ROWS);
+		for (int i = 0; i < shown; i++)
+		{
+			SkillPlan.Entry entry = entries.get(i);
+			addRow(rows, entry.questName(), XpTable.format(Math.round(entry.xp())),
+				ColorScheme.LIGHT_GRAY_COLOR);
+		}
+		panel.add(rows);
+
+		int remaining = entries.size() - shown;
+		if (remaining > 0)
+		{
+			// The biggest payouts are listed; the tail is counted rather than
+			// dropped, so the totals above never look unaccounted for.
+			panel.add(muted("...and " + remaining + " more, worth "
+				+ XpTable.format(tail(entries, shown)) + "."));
+		}
+	}
+
+	private static long tail(List<SkillPlan.Entry> entries, int from)
+	{
+		double total = 0;
+		for (int i = from; i < entries.size(); i++)
+		{
+			total += entries.get(i).xp();
+		}
+		return Math.round(total);
 	}
 
 	/**

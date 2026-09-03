@@ -48,6 +48,12 @@ enum PanelSections
 		Status.LIVE,
 		null),
 
+	SKILL_PLAN(
+		Tab.SKILLS,
+		"What a level costs",
+		Status.LIVE,
+		null),
+
 	NEXT_QUEST(
 		Tab.QUESTS,
 		"Next on your route",
@@ -118,6 +124,7 @@ enum PanelSections
 		// which is more than the constant was buying.
 		COMBAT("Combat", 168),          // TAB_COMBAT, the crossed swords
 		BUILD("Build", 775),            // RS2_TAB_STATS, the three bars
+		SKILLS("Skills", 1197),         // OrbXp.ACTIVATED, the experience orb
 		QUESTS("Quests", 776),          // TAB_QUESTS, the quest diary
 		ITEMS("Items", 777),            // RS2_TAB_INVENTORY, the backpack
 		SYNC("Sync", 362),              // SPELL_WIND_SURGE
