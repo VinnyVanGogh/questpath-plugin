@@ -413,6 +413,19 @@ class QuestItems
 		java.util.Set<String> upcoming, java.util.Set<String> plan, Map<String, Long> knownItems,
 		Map<String, Long> carried)
 	{
+		return of(graph, account, held, bankSeen, upcoming, plan, knownItems, carried,
+			java.util.Collections.<String>emptySet());
+	}
+
+	/**
+	 * @param placeholders lowercased names the bank is holding an empty slot
+	 *     for. Not owned -- see Total.ranOut for why they are worth knowing
+	 *     about anyway
+	 */
+	static QuestItems of(QuestGraph graph, PlayerState account, Map<String, Long> held, boolean bankSeen,
+		java.util.Set<String> upcoming, java.util.Set<String> plan, Map<String, Long> knownItems,
+		Map<String, Long> carried, java.util.Set<String> placeholders)
+	{
 		QuestItems out = new QuestItems();
 		out.bankSeen = bankSeen;
 		if (bankSeen)
@@ -482,7 +495,7 @@ class QuestItems
 			out.quests.add(needs);
 		}
 
-		out.totals.addAll(totalsOf(out.quests, held, carried));
+		out.totals.addAll(totalsOf(out.quests, held, carried, placeholders));
 		out.pickups.addAll(pickupsIn(graph, upcoming, out.totals));
 		return out;
 	}
@@ -612,7 +625,7 @@ class QuestItems
 	 * them in would inflate every total with things nobody has to bring.
 	 */
 	private static List<Total> totalsOf(List<QuestNeeds> quests, Map<String, Long> held,
-		Map<String, Long> carried)
+		Map<String, Long> carried, java.util.Set<String> placeholders)
 	{
 		Map<String, Total> merged = new LinkedHashMap<>();
 
@@ -632,6 +645,7 @@ class QuestItems
 					name -> new Total(name, line.itemId(),
 						held.getOrDefault(name.toLowerCase(), 0L),
 						carried == null ? 0L : carried.getOrDefault(name.toLowerCase(), 0L),
+						placeholders != null && placeholders.contains(name.toLowerCase()),
 						line.sources()));
 				total.add(line, needs.questName());
 			}
@@ -666,6 +680,14 @@ class QuestItems
 			if (a.inProgress() && a.outstanding() != b.outstanding())
 			{
 				return Long.compare(a.outstanding(), b.outstanding());
+			}
+			// Then the ones the bank is keeping a slot for. An empty
+			// placeholder is the game saying you had these and used them up,
+			// which is a sharper prompt than an item you have never owned --
+			// and at a bank it is the row most likely to be a mistake.
+			if (a.ranOut() != b.ranOut())
+			{
+				return a.ranOut() ? -1 : 1;
 			}
 			return a.name().compareToIgnoreCase(b.name());
 		});
@@ -710,19 +732,28 @@ class QuestItems
 		private final int itemId;
 		private final long owned;
 		private final long carried;
+		private final boolean placeholder;
 		private final List<String> sources;
 		private final List<String> questNames = new ArrayList<>();
 		private int wanted;
 		private int quests;
 		private boolean anyUnstated;
 
-		Total(String name, int itemId, long owned, long carried, List<String> sources)
+		Total(String name, int itemId, long owned, long carried, boolean placeholder,
+			List<String> sources)
 		{
 			this.name = name;
 			this.itemId = itemId;
 			this.owned = owned;
 			this.carried = carried;
+			this.placeholder = placeholder;
 			this.sources = sources;
+		}
+
+		/** Convenience for callers with no placeholder to report -- mainly tests. */
+		Total(String name, int itemId, long owned, long carried, List<String> sources)
+		{
+			this(name, itemId, owned, carried, false, sources);
 		}
 
 		/** Convenience for callers with no separate carried count -- mainly tests. */
@@ -828,6 +859,20 @@ class QuestItems
 		boolean inProgress()
 		{
 			return carried > 0 && !satisfied();
+		}
+
+		/**
+		 * Whether the bank is keeping an empty slot for this and you own none.
+		 *
+		 * A placeholder is the game's own record that you have had something
+		 * and spent all of it -- which is a different situation from never
+		 * having had it, and a more urgent one at a bank counter. It is not
+		 * ownership and is never counted as any, so this only ever describes
+		 * a shortfall.
+		 */
+		boolean ranOut()
+		{
+			return placeholder && owned <= 0;
 		}
 
 		/** How many more to get. Zero once satisfied, never negative. */

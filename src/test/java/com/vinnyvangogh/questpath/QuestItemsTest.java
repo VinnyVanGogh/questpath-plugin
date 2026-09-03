@@ -150,6 +150,57 @@ public class QuestItemsTest
 		}
 	}
 
+	private static QuestItems withPlaceholders(Map<String, Long> held,
+		java.util.Set<String> placeholders) throws Exception
+	{
+		return QuestItems.of(graph(), freshAccount(), held, true,
+			Collections.<String>emptySet(), Collections.<String>emptySet(),
+			Collections.<String, Long>emptyMap(), Collections.<String, Long>emptyMap(),
+			placeholders);
+	}
+
+	/**
+	 * A placeholder is the game's own record that you had something and spent
+	 * all of it. It is never ownership -- the count stays at zero -- but at a
+	 * bank it is a sharper prompt than an item you have never touched.
+	 */
+	@Test
+	public void aBankPlaceholderMeansYouRanOutRatherThanNeverHadIt() throws Exception
+	{
+		QuestItems items = withPlaceholders(Collections.<String, Long>emptyMap(),
+			Collections.singleton("clay"));
+
+		QuestItems.Total clay = total(items, "Clay");
+		assertNotNull(clay);
+		assertEquals("a placeholder is not an item you own", 0L, clay.owned());
+		assertTrue(clay.ranOut());
+
+		QuestItems.Total bones = total(items, "Bones");
+		assertFalse("never having had it is a different state", bones.ranOut());
+	}
+
+	/** Holding some of it means you did not run out, placeholder or not. */
+	@Test
+	public void holdingSomeMeansYouHaveNotRunOut() throws Exception
+	{
+		Map<String, Long> some = new HashMap<>();
+		some.put("clay", 2L);
+
+		QuestItems.Total clay = total(withPlaceholders(some, Collections.singleton("clay")),
+			"Clay");
+		assertFalse("two in the bank is not running out", clay.ranOut());
+	}
+
+	/** Ran-out rows lead the plain shortfalls, behind anything already started. */
+	@Test
+	public void ranOutSortsAheadOfSomethingNeverOwned() throws Exception
+	{
+		QuestItems items = withPlaceholders(Collections.<String, Long>emptyMap(),
+			Collections.singleton("clay"));
+		assertTrue("an emptied slot outranks an item never bought",
+			positionOf(items, "Clay") < positionOf(items, "Bones"));
+	}
+
 	/** Three named, the rest counted -- a tooltip is one line, not a manifest. */
 	@Test
 	public void questListsArePhrasedForOneLine()

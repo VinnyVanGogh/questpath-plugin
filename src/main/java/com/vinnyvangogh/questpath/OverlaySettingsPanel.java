@@ -271,6 +271,8 @@ class OverlaySettingsPanel extends JPanel
 		body.add(spacer());
 		body.add(groundItemsGroup(config));
 		body.add(spacer());
+		body.add(bankGroup(config));
+		body.add(spacer());
 		// Flat rather than a group of its own: one checkbox behind a
 		// collapsible header is a header that costs more rows than it hides.
 		body.add(toggle(
@@ -280,6 +282,47 @@ class OverlaySettingsPanel extends JPanel
 				+ " because that is when you are looking at the ground rather than at a panel.",
 			config.chatOnItemComplete(), "chatOnItemComplete"));
 		return sectionGroup("Extras", body);
+	}
+
+	/**
+	 * Bank marking, the same dependent-trio shape as Shops and Ground items:
+	 * the count, the colour and the list all mean nothing with the highlight
+	 * itself off.
+	 *
+	 * <p>The in-bank button is the day-to-day control and this group is not a
+	 * substitute for it -- switching the feature off here removes the button
+	 * too, which is the honest behaviour but not the one to reach for when
+	 * you only want the marks gone for one trip.
+	 */
+	private CollapsibleGroup bankGroup(QuestpathConfig config)
+	{
+		return toggleGroup(
+			"Bank",
+			"Mark what you need in the bank: while the bank is open, outline the items your"
+				+ " plan still needs and show how many more to find. Toggled per trip from"
+				+ " the Quest Path button in the bank's title bar.",
+			config.bankHighlight(), "bankHighlight",
+			sub ->
+			{
+				sub.add(toggle(
+					"Show how many more to find",
+					"Print the outstanding count above a marked slot.",
+					config.bankHighlightCounts(), "bankHighlightCounts"));
+				sub.add(toggle(
+					"Only mark what you are short of",
+					"Leave items you already have enough of unmarked. Off, they are outlined"
+						+ " in green so you can see the plan is covered without counting.",
+					config.bankHighlightShortOnly(), "bankHighlightShortOnly"));
+				sub.add(toggle(
+					"Show the ordered list too",
+					"Alongside the marks, list what the plan needs beside the bank: what you"
+						+ " ran out of first, then what you are short of, then what you have.",
+					config.bankList(), "bankList"));
+				addField(sub, "Marker colour",
+					colorField(config.bankHighlightColour(),
+						"The colour an item you still need is outlined in.",
+						"Bank marker colour", "bankHighlightColour"));
+			});
 	}
 
 	/**

@@ -67,6 +67,18 @@ abstract class QuestpathOverlay extends Overlay
 		addMenuEntry(MenuAction.RUNELITE_OVERLAY_CONFIG, "Configure", "questpath " + title);
 	}
 
+	/**
+	 * The plugin, for the two overlays that need more than a snapshot.
+	 *
+	 * Protected rather than passed through rows(): only the bank pair reads
+	 * session state the snapshot does not carry, and widening every panel's
+	 * signature for two of them would be the wrong trade.
+	 */
+	protected QuestpathPlugin plugin()
+	{
+		return plugin;
+	}
+
 	/** Whether this overlay's own config toggle is on. */
 	abstract boolean enabled(QuestpathConfig config);
 

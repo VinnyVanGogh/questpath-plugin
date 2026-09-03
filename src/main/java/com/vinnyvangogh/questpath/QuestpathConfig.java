@@ -54,6 +54,14 @@ public interface QuestpathConfig extends Config
 	String groundSection = "ground";
 
 	@ConfigSection(
+		name = "Bank",
+		description = "Mark what your plan needs while the bank is open",
+		position = 4,
+		closedByDefault = true
+	)
+	String bankSection = "bank";
+
+	@ConfigSection(
 		name = "Chat",
 		description = "What Quest Path says in the game chat",
 		position = 4,
@@ -534,6 +542,78 @@ public interface QuestpathConfig extends Config
 	// knowing about -- the eleventh log going into your bags -- is the one
 	// moment you are looking at the ground instead.
 	// ------------------------------------------------------------------
+
+	// ------------------------------------------------------------------
+	// Bank.
+	//
+	// The one screen where the shopping list stops being a list and becomes
+	// a series of withdrawals. Marks the real slots rather than replacing the
+	// grid with a drawn one: a drawn list cannot be withdrawn from, and
+	// withdrawing is the whole reason to be standing here.
+	// ------------------------------------------------------------------
+
+	@ConfigItem(
+		keyName = "bankHighlight",
+		name = "Mark what you need in the bank",
+		description = "Outline the items your plan needs while the bank is open. Toggle it"
+			+ " from the Quest Path button in the bank's title bar.",
+		section = bankSection,
+		position = 1
+	)
+	default boolean bankHighlight()
+	{
+		return true;
+	}
+
+	@ConfigItem(
+		keyName = "bankHighlightCounts",
+		name = "Show how many more to find",
+		description = "Print the outstanding count above a marked slot.",
+		section = bankSection,
+		position = 2
+	)
+	default boolean bankHighlightCounts()
+	{
+		return true;
+	}
+
+	@ConfigItem(
+		keyName = "bankHighlightShortOnly",
+		name = "Only mark what you are short of",
+		description = "Leave items you already have enough of unmarked. Off, they are"
+			+ " outlined in green so you can see the plan is covered without counting.",
+		section = bankSection,
+		position = 3
+	)
+	default boolean bankHighlightShortOnly()
+	{
+		return false;
+	}
+
+	@ConfigItem(
+		keyName = "bankHighlightColour",
+		name = "Marker colour",
+		description = "The colour an item you still need is outlined in.",
+		section = bankSection,
+		position = 4
+	)
+	default java.awt.Color bankHighlightColour()
+	{
+		return OverlayTheme.WARN;
+	}
+
+	@ConfigItem(
+		keyName = "bankList",
+		name = "Show the ordered list too",
+		description = "Alongside the marks, list what the plan needs beside the bank:"
+			+ " what you are short of first, then what you already have.",
+		section = bankSection,
+		position = 5
+	)
+	default boolean bankList()
+	{
+		return true;
+	}
 
 	@ConfigItem(
 		keyName = "chatOnItemComplete",

@@ -31,6 +31,8 @@ import net.runelite.client.chat.ChatColorType;
 import net.runelite.client.chat.ChatMessageBuilder;
 import net.runelite.client.chat.QueuedMessage;
 import net.runelite.api.events.GameTick;
+import net.runelite.api.events.WidgetLoaded;
+import net.runelite.api.gameval.InterfaceID;
 import net.runelite.api.events.ItemContainerChanged;
 import net.runelite.api.events.StatChanged;
 import net.runelite.api.events.VarbitChanged;
@@ -132,6 +134,21 @@ public class QuestpathPlugin extends Plugin
 	 * every plugin toggle, one per toggle, for the life of the client.
 	 */
 	private EdtWatchdog watchdog;
+
+	private BankNeedsOverlay bankOverlay;
+	private BankListOverlay bankListOverlay;
+	private BankButton bankButton;
+
+	/**
+	 * Whether the bank marks and list are showing.
+	 *
+	 * Session state rather than config: it is a thing you switch on for one
+	 * bank trip, in the same way a bank tab is, and a setting that survived
+	 * logout would have every future visit start in whichever state the last
+	 * one ended. Defaults on, because a player who has enabled the feature at
+	 * all has said what they want.
+	 */
+	private boolean bankNeedsShown = true;
 
 	/**
 	 * The five in-game overlays, held so they can be removed again.
@@ -327,6 +344,14 @@ public class QuestpathPlugin extends Plugin
 		groundOverlay = new GroundItemOverlay(this, config, client, tooltipManager);
 		overlayManager.add(groundOverlay);
 
+		bankOverlay = new BankNeedsOverlay(this, config, client, tooltipManager);
+		overlayManager.add(bankOverlay);
+
+		bankListOverlay = new BankListOverlay(this, config, overlayIcons, client);
+		overlayManager.add(bankListOverlay);
+
+		bankButton = new BankButton(client, this::bankNeedsShown, this::toggleBankNeeds);
+
 		try
 		{
 			questGraph = QuestGraph.load(gson);
@@ -364,6 +389,21 @@ public class QuestpathPlugin extends Plugin
 		{
 			overlayManager.remove(groundOverlay);
 			groundOverlay = null;
+		}
+		if (bankOverlay != null)
+		{
+			overlayManager.remove(bankOverlay);
+			bankOverlay = null;
+		}
+		if (bankListOverlay != null)
+		{
+			overlayManager.remove(bankListOverlay);
+			bankListOverlay = null;
+		}
+		if (bankButton != null)
+		{
+			bankButton.detach();
+			bankButton = null;
 		}
 		overlayIcons.clear();
 		overlaySnapshot = null;
@@ -592,6 +632,34 @@ public class QuestpathPlugin extends Plugin
 				.runeLiteFormattedMessage(line.build())
 				.build());
 		}
+	}
+
+	/** Whether the bank marks and list are currently switched on. */
+	boolean bankNeedsShown()
+	{
+		return bankNeedsShown;
+	}
+
+	private void toggleBankNeeds()
+	{
+		bankNeedsShown = !bankNeedsShown;
+	}
+
+	/**
+	 * Rebuilds the bank button each time the bank interface loads.
+	 *
+	 * The client discards the bank's widget tree when it closes, so a widget
+	 * held from a previous open is stale rather than reusable. Attaching on
+	 * load is the only point at which a parent exists to hang it from.
+	 */
+	@Subscribe
+	public void onWidgetLoaded(WidgetLoaded event)
+	{
+		if (event.getGroupId() != InterfaceID.BANKMAIN || bankButton == null)
+		{
+			return;
+		}
+		bankButton.attach();
 	}
 
 	/**
@@ -1061,7 +1129,8 @@ public class QuestpathPlugin extends Plugin
 		return QuestItems.of(questGraph,
 			new PlayerState(levels, experience, completed, buildRules),
 			owned.heldByName(), owned.bankSeen(), pickupScope(),
-			new HashSet<>(routeOrder), knownItems, owned.carriedByName());
+			new HashSet<>(routeOrder), knownItems, owned.carriedByName(),
+			owned.bankPlaceholders());
 	}
 
 	@Provides

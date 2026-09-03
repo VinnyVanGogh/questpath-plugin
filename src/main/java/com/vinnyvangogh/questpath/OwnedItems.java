@@ -2,9 +2,11 @@ package com.vinnyvangogh.questpath;
 
 import java.util.ArrayList;
 import java.util.EnumMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import net.runelite.api.Client;
 import net.runelite.api.Item;
 import net.runelite.api.ItemComposition;
@@ -75,6 +77,18 @@ class OwnedItems
 	private final Map<Container, List<Map<String, Object>>> seen = new EnumMap<>(Container.class);
 
 	/**
+	 * Lowercased names the bank is holding a placeholder for.
+	 *
+	 * Dropped from the counts -- a placeholder is not an item you own -- but
+	 * kept, because it is the only evidence in the game that you have had
+	 * something and spent all of it. Standing at a bank, "you own none of
+	 * these and there is a slot waiting for them" is a better prompt than
+	 * "you own none of these", and it is the difference between an item you
+	 * have never touched and one you ran out of.
+	 */
+	private final Set<String> bankPlaceholders = new HashSet<>();
+
+	/**
 	 * Records a container the client just reported.
 	 *
 	 * <p><b>Must run on the client thread</b> — reads an ItemContainer and
@@ -89,58 +103,20 @@ class OwnedItems
 		{
 			return false;
 		}
-		seen.put(which, stacksOf(client, container));
-		reportDoubleCounts(which);
+		if (which == Container.BANK)
+		{
+			bankPlaceholders.clear();
+		}
+		seen.put(which, stacksOf(client, container, which));
 		return true;
 	}
 
-	/**
-	 * Names anything currently counted in more than one container.
-	 *
-	 * <p>Temporary, and pointed at one specific report: a single pigeon cage
-	 * moved from bank to inventory read as two. heldByName sums the three
-	 * containers, which is right only while all three snapshots describe the
-	 * same instant -- an item in transit is in the new container and, until
-	 * the old one's own event arrives, still in the old one too.
-	 *
-	 * <p>Legitimate cases exist and will show up here as well (coins in the
-	 * bank and coins in your pocket really are both yours), so this only says
-	 * what is doubled, not that anything is wrong. What it settles is whether
-	 * the bank snapshot goes stale after a withdrawal, which is the thing
-	 * guessing cannot answer.
-	 */
-	private void reportDoubleCounts(Container justRecorded)
-	{
-		if (!log.isDebugEnabled())
-		{
-			return;
-		}
-		Map<String, String> firstSeenIn = new LinkedHashMap<>();
-		for (Map.Entry<Container, List<Map<String, Object>>> entry : seen.entrySet())
-		{
-			for (Map<String, Object> stack : entry.getValue())
-			{
-				Object name = stack.get("name");
-				if (!(name instanceof String) || ((String) name).isEmpty())
-				{
-					continue;
-				}
-				String key = ((String) name).toLowerCase();
-				String previous = firstSeenIn.put(key, entry.getKey().wireName());
-				if (previous != null)
-				{
-					log.debug("questpath items: after {} changed, \"{}\" is counted in both {}"
-						+ " and {}", justRecorded.wireName(), name, previous,
-						entry.getKey().wireName());
-				}
-			}
-		}
-	}
 
 	/** Forgets everything. Called on logout: the next login may be another account. */
 	void clear()
 	{
 		seen.clear();
+		bankPlaceholders.clear();
 	}
 
 	/** Whether anything has been seen yet. */
@@ -267,7 +243,14 @@ class OwnedItems
 		return seen.hashCode();
 	}
 
-	private static List<Map<String, Object>> stacksOf(Client client, ItemContainer container)
+	/** Lowercased names the bank holds a placeholder for and nothing else. */
+	Set<String> bankPlaceholders()
+	{
+		return bankPlaceholders;
+	}
+
+	private List<Map<String, Object>> stacksOf(Client client, ItemContainer container,
+		Container which)
 	{
 		Item[] items = container.getItems();
 		List<Map<String, Object>> out = new ArrayList<>(items.length);
@@ -283,6 +266,10 @@ class OwnedItems
 			ItemComposition composition = client.getItemDefinition(item.getId());
 			if (isPlaceholder(composition))
 			{
+				if (which == Container.BANK && composition.getName() != null)
+				{
+					bankPlaceholders.add(composition.getName().toLowerCase());
+				}
 				continue;
 			}
 			Map<String, Object> stack = new LinkedHashMap<>();
