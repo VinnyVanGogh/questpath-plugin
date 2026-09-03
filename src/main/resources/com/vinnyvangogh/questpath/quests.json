@@ -15107,9 +15107,72 @@
   ],
   "boosts": [
     {
+      "skill": "Agility",
+      "item": "Agility cape",
+      "base": 1
+    },
+    {
+      "skill": "Agility",
+      "item": "Agility mix",
+      "base": 3
+    },
+    {
+      "skill": "Agility",
+      "item": "Agility potion",
+      "base": 3
+    },
+    {
+      "skill": "Agility",
+      "item": "Bottle of suqah-free cola",
+      "base": 1
+    },
+    {
+      "skill": "Agility",
+      "item": "Elven dawn",
+      "base": 1
+    },
+    {
+      "skill": "Agility",
+      "item": "Spicy stew",
+      "base": 0,
+      "max": 5,
+      "random": true
+    },
+    {
+      "skill": "Agility",
+      "item": "Summer pie",
+      "base": 5
+    },
+    {
+      "skill": "Agility",
+      "item": "Sunbeam ale",
+      "base": 1
+    },
+    {
       "skill": "Attack",
       "item": "Attack cape",
       "base": 1
+    },
+    {
+      "skill": "Attack",
+      "item": "Attack mix",
+      "base": 3,
+      "per_level": 0.1,
+      "max": 12
+    },
+    {
+      "skill": "Attack",
+      "item": "Attack potion",
+      "base": 3,
+      "per_level": 0.1,
+      "max": 12
+    },
+    {
+      "skill": "Attack",
+      "item": "Bandages (Theatre of Blood)",
+      "base": 4,
+      "per_level": 0.15,
+      "max": 18
     },
     {
       "skill": "Attack",
@@ -15118,9 +15181,65 @@
     },
     {
       "skill": "Attack",
+      "item": "Blood pint",
+      "base": 2,
+      "per_level": 0.04,
+      "max": 5
+    },
+    {
+      "skill": "Attack",
+      "item": "Combat mix",
+      "base": 3,
+      "per_level": 0.1,
+      "max": 12
+    },
+    {
+      "skill": "Attack",
+      "item": "Combat potion",
+      "base": 3,
+      "per_level": 0.1,
+      "max": 12
+    },
+    {
+      "skill": "Attack",
       "item": "Cup of tea",
       "base": 2,
       "max": 3
+    },
+    {
+      "skill": "Attack",
+      "item": "Divine super attack potion",
+      "base": 5,
+      "per_level": 0.15,
+      "max": 19
+    },
+    {
+      "skill": "Attack",
+      "item": "Divine super combat potion",
+      "base": 5,
+      "per_level": 0.15,
+      "max": 19
+    },
+    {
+      "skill": "Attack",
+      "item": "Elder (+)",
+      "base": 6,
+      "per_level": 0.16,
+      "max": 21
+    },
+    {
+      "skill": "Attack",
+      "item": "Elder (-)",
+      "base": 4,
+      "per_level": 0.1,
+      "max": 13
+    },
+    {
+      "skill": "Attack",
+      "item": "Elder potion",
+      "base": 5,
+      "per_level": 0.13,
+      "max": 17
     },
     {
       "skill": "Attack",
@@ -15135,52 +15254,17 @@
     },
     {
       "skill": "Attack",
-      "item": "Spicy stew",
-      "base": 0,
-      "max": 5,
-      "random": true
-    },
-    {
-      "skill": "Attack",
-      "item": "Blood pint",
-      "base": 2,
-      "per_level": 0.04,
-      "max": 5
-    },
-    {
-      "skill": "Attack",
-      "item": "Attack potion",
+      "item": "Moonlight potion",
       "base": 3,
       "per_level": 0.1,
-      "max": 12
+      "max": 19
     },
     {
       "skill": "Attack",
-      "item": "Attack mix",
-      "base": 3,
-      "per_level": 0.1,
-      "max": 12
-    },
-    {
-      "skill": "Attack",
-      "item": "Combat potion",
-      "base": 3,
-      "per_level": 0.1,
-      "max": 12
-    },
-    {
-      "skill": "Attack",
-      "item": "Combat mix",
-      "base": 3,
-      "per_level": 0.1,
-      "max": 12
-    },
-    {
-      "skill": "Attack",
-      "item": "Elder (-)",
-      "base": 4,
-      "per_level": 0.1,
-      "max": 13
+      "item": "Overload (+)",
+      "base": 6,
+      "per_level": 0.16,
+      "max": 21
     },
     {
       "skill": "Attack",
@@ -15191,17 +15275,17 @@
     },
     {
       "skill": "Attack",
-      "item": "Elder potion",
+      "item": "Overload (Chambers of Xeric)",
       "base": 5,
       "per_level": 0.13,
       "max": 17
     },
     {
       "skill": "Attack",
-      "item": "Overload (Chambers of Xeric)",
+      "item": "Overload (Nightmare Zone)",
       "base": 5,
-      "per_level": 0.13,
-      "max": 17
+      "per_level": 0.15,
+      "max": 19
     },
     {
       "skill": "Attack",
@@ -15219,21 +15303,28 @@
     },
     {
       "skill": "Attack",
-      "item": "Bandages (Theatre of Blood)",
-      "base": 4,
-      "per_level": 0.15,
-      "max": 18
+      "item": "Smelling salts",
+      "base": 11,
+      "per_level": 0.16,
+      "max": 26
     },
     {
       "skill": "Attack",
-      "item": "Moonlight potion",
-      "base": 3,
-      "per_level": 0.1,
-      "max": 19
+      "item": "Spicy stew",
+      "base": 0,
+      "max": 5,
+      "random": true
     },
     {
       "skill": "Attack",
       "item": "Super attack",
+      "base": 5,
+      "per_level": 0.15,
+      "max": 19
+    },
+    {
+      "skill": "Attack",
+      "item": "Super combat potion",
       "base": 5,
       "per_level": 0.15,
       "max": 19
@@ -15247,880 +15338,20 @@
     },
     {
       "skill": "Attack",
-      "item": "Divine super attack potion",
-      "base": 5,
-      "per_level": 0.15,
-      "max": 19
-    },
-    {
-      "skill": "Attack",
-      "item": "Super combat potion",
-      "base": 5,
-      "per_level": 0.15,
-      "max": 19
-    },
-    {
-      "skill": "Attack",
-      "item": "Divine super combat potion",
-      "base": 5,
-      "per_level": 0.15,
-      "max": 19
-    },
-    {
-      "skill": "Attack",
-      "item": "Overload (Nightmare Zone)",
-      "base": 5,
-      "per_level": 0.15,
-      "max": 19
-    },
-    {
-      "skill": "Attack",
       "item": "Zamorak brew",
       "base": 2,
       "per_level": 0.2,
       "max": 21
     },
     {
-      "skill": "Attack",
-      "item": "Elder (+)",
-      "base": 6,
-      "per_level": 0.16,
-      "max": 21
-    },
-    {
-      "skill": "Attack",
-      "item": "Overload (+)",
-      "base": 6,
-      "per_level": 0.16,
-      "max": 21
-    },
-    {
-      "skill": "Attack",
-      "item": "Smelling salts",
-      "base": 11,
-      "per_level": 0.16,
-      "max": 26
-    },
-    {
-      "skill": "Strength",
-      "item": "Abyssal potato",
-      "base": 1
-    },
-    {
-      "skill": "Strength",
-      "item": "Strength cape",
-      "base": 1
-    },
-    {
-      "skill": "Strength",
-      "item": "Jangerberries",
-      "base": 1
-    },
-    {
-      "skill": "Strength",
-      "item": "Sunbeam ale",
-      "base": 1
-    },
-    {
-      "skill": "Strength",
-      "item": "Perildance bitter",
-      "base": 2
-    },
-    {
-      "skill": "Strength",
-      "item": "Cooked t-bone steak",
-      "base": 2
-    },
-    {
-      "skill": "Strength",
-      "item": "Beer",
-      "base": 1,
-      "per_level": 0.02,
-      "max": 3
-    },
-    {
-      "skill": "Strength",
-      "item": "Kebab",
-      "base": 1,
-      "max": 3
-    },
-    {
-      "skill": "Strength",
-      "item": "Braindeath 'rum'",
-      "base": 3
-    },
-    {
-      "skill": "Strength",
-      "item": "Brandy",
-      "base": 1,
-      "per_level": 0.05,
-      "max": 5
-    },
-    {
-      "skill": "Strength",
-      "item": "Sun-shine",
-      "base": 1,
-      "per_level": 0.05,
-      "max": 5
-    },
-    {
-      "skill": "Strength",
-      "item": "Moon-lite",
-      "base": 1,
-      "per_level": 0.05,
-      "max": 5
-    },
-    {
-      "skill": "Strength",
-      "item": "Spicy stew",
-      "base": 0,
-      "max": 5,
-      "random": true
-    },
-    {
-      "skill": "Strength",
-      "item": "Short green guy",
-      "base": 1,
-      "per_level": 0.05,
-      "max": 5
-    },
-    {
-      "skill": "Strength",
-      "item": "Grog",
-      "base": 1,
-      "per_level": 0.04,
-      "max": 5
-    },
-    {
-      "skill": "Strength",
-      "item": "Karamjan rum",
-      "base": 1,
-      "per_level": 0.05,
-      "max": 5
-    },
-    {
-      "skill": "Strength",
-      "item": "Blood pint",
-      "base": 2,
-      "per_level": 0.04,
-      "max": 5
-    },
-    {
-      "skill": "Strength",
-      "item": "Wizard blizzard",
-      "base": 1,
-      "per_level": 0.06,
-      "max": 6
-    },
-    {
-      "skill": "Strength",
-      "item": "Blurberry special",
-      "base": 2,
-      "per_level": 0.05,
-      "max": 6
-    },
-    {
-      "skill": "Strength",
-      "item": "Drunk dragon",
-      "base": 2,
-      "per_level": 0.05,
-      "max": 6
-    },
-    {
-      "skill": "Strength",
-      "item": "Keg of beer",
-      "base": 2,
-      "per_level": 0.1,
-      "max": 11
-    },
-    {
-      "skill": "Strength",
-      "item": "Strength potion",
-      "base": 3,
-      "per_level": 0.1,
-      "max": 12
-    },
-    {
-      "skill": "Strength",
-      "item": "Strength mix",
-      "base": 3,
-      "per_level": 0.1,
-      "max": 12
-    },
-    {
-      "skill": "Strength",
-      "item": "Combat potion",
-      "base": 3,
-      "per_level": 0.1,
-      "max": 12
-    },
-    {
-      "skill": "Strength",
-      "item": "Combat mix",
-      "base": 3,
-      "per_level": 0.1,
-      "max": 12
-    },
-    {
-      "skill": "Strength",
-      "item": "Zamorak brew",
-      "base": 2,
-      "per_level": 0.12,
-      "max": 13
-    },
-    {
-      "skill": "Strength",
-      "item": "Elder (-)",
-      "base": 4,
-      "per_level": 0.1,
-      "max": 13
-    },
-    {
-      "skill": "Strength",
-      "item": "Overload (-)",
-      "base": 4,
-      "per_level": 0.1,
-      "max": 13
-    },
-    {
-      "skill": "Strength",
-      "item": "Elder potion",
-      "base": 5,
-      "per_level": 0.13,
-      "max": 17
-    },
-    {
-      "skill": "Strength",
-      "item": "Overload (Chambers of Xeric)",
-      "base": 5,
-      "per_level": 0.13,
-      "max": 17
-    },
-    {
-      "skill": "Strength",
-      "item": "Black warlock (item)",
-      "base": 4,
-      "per_level": 0.15,
-      "max": 18
-    },
-    {
-      "skill": "Strength",
-      "item": "Black warlock mix",
-      "base": 4,
-      "per_level": 0.15,
-      "max": 18
-    },
-    {
-      "skill": "Strength",
-      "item": "Bandages (Theatre of Blood)",
-      "base": 4,
-      "per_level": 0.15,
-      "max": 18
-    },
-    {
-      "skill": "Strength",
-      "item": "Moonlight potion",
-      "base": 3,
-      "per_level": 0.1,
-      "max": 19
-    },
-    {
-      "skill": "Strength",
-      "item": "Super strength",
-      "base": 5,
-      "per_level": 0.15,
-      "max": 19
-    },
-    {
-      "skill": "Strength",
-      "item": "Super str. mix",
-      "base": 5,
-      "per_level": 0.15,
-      "max": 19
-    },
-    {
-      "skill": "Strength",
-      "item": "Divine super strength potion",
-      "base": 5,
-      "per_level": 0.15,
-      "max": 19
-    },
-    {
-      "skill": "Strength",
-      "item": "Super combat potion",
-      "base": 5,
-      "per_level": 0.15,
-      "max": 19
-    },
-    {
-      "skill": "Strength",
-      "item": "Divine super combat potion",
-      "base": 5,
-      "per_level": 0.15,
-      "max": 19
-    },
-    {
-      "skill": "Strength",
-      "item": "Overload (Nightmare Zone)",
-      "base": 5,
-      "per_level": 0.15,
-      "max": 19
-    },
-    {
-      "skill": "Strength",
-      "item": "Elder (+)",
-      "base": 6,
-      "per_level": 0.16,
-      "max": 21
-    },
-    {
-      "skill": "Strength",
-      "item": "Overload (+)",
-      "base": 6,
-      "per_level": 0.16,
-      "max": 21
-    },
-    {
-      "skill": "Strength",
-      "item": "Dragon battleaxe",
-      "base": 10,
-      "max": 21
-    },
-    {
-      "skill": "Strength",
-      "item": "Smelling salts",
-      "base": 11,
-      "per_level": 0.16,
-      "max": 26
-    },
-    {
-      "skill": "Defence",
-      "item": "Defence cape",
-      "base": 1
-    },
-    {
-      "skill": "Defence",
-      "item": "Kebab",
-      "base": 1,
-      "max": 3
-    },
-    {
-      "skill": "Defence",
-      "item": "Spicy stew",
-      "base": 0,
-      "max": 5,
-      "random": true
-    },
-    {
-      "skill": "Defence",
-      "item": "Excalibur",
-      "base": 8
-    },
-    {
-      "skill": "Defence",
-      "item": "Defence mix",
-      "base": 3,
-      "per_level": 0.1,
-      "max": 12
-    },
-    {
-      "skill": "Defence",
-      "item": "Elder (-)",
-      "base": 4,
-      "per_level": 0.1,
-      "max": 13
-    },
-    {
-      "skill": "Defence",
-      "item": "Overload (-)",
-      "base": 4,
-      "per_level": 0.1,
-      "max": 13
-    },
-    {
-      "skill": "Defence",
-      "item": "Elder potion",
-      "base": 5,
-      "per_level": 0.13,
-      "max": 17
-    },
-    {
-      "skill": "Defence",
-      "item": "Overload (Chambers of Xeric)",
-      "base": 5,
-      "per_level": 0.13,
-      "max": 17
-    },
-    {
-      "skill": "Defence",
-      "item": "Sapphire glacialis (item)",
-      "base": 4,
-      "per_level": 0.15,
-      "max": 18
-    },
-    {
-      "skill": "Defence",
-      "item": "Sapphire glacialis mix",
-      "base": 4,
-      "per_level": 0.15,
-      "max": 18
-    },
-    {
-      "skill": "Defence",
-      "item": "Bandages (Theatre of Blood)",
-      "base": 4,
-      "per_level": 0.15,
-      "max": 18
-    },
-    {
-      "skill": "Defence",
-      "item": "Super defence",
-      "base": 5,
-      "per_level": 0.15,
-      "max": 19
-    },
-    {
-      "skill": "Defence",
-      "item": "Super def. mix",
-      "base": 5,
-      "per_level": 0.15,
-      "max": 19
-    },
-    {
-      "skill": "Defence",
-      "item": "Divine super defence potion",
-      "base": 5,
-      "per_level": 0.15,
-      "max": 19
-    },
-    {
-      "skill": "Defence",
-      "item": "Super combat potion",
-      "base": 5,
-      "per_level": 0.15,
-      "max": 19
-    },
-    {
-      "skill": "Defence",
-      "item": "Divine super combat potion",
-      "base": 5,
-      "per_level": 0.15,
-      "max": 19
-    },
-    {
-      "skill": "Defence",
-      "item": "Bastion potion",
-      "base": 5,
-      "per_level": 0.15,
-      "max": 19
-    },
-    {
-      "skill": "Defence",
-      "item": "Divine bastion potion",
-      "base": 5,
-      "per_level": 0.15,
-      "max": 19
-    },
-    {
-      "skill": "Defence",
-      "item": "Battlemage potion",
-      "base": 5,
-      "per_level": 0.15,
-      "max": 19
-    },
-    {
-      "skill": "Defence",
-      "item": "Divine battlemage potion",
-      "base": 5,
-      "per_level": 0.15,
-      "max": 19
-    },
-    {
-      "skill": "Defence",
-      "item": "Overload (Nightmare Zone)",
-      "base": 5,
-      "per_level": 0.15,
-      "max": 19
-    },
-    {
-      "skill": "Defence",
-      "item": "Elder (+)",
-      "base": 6,
-      "per_level": 0.16,
-      "max": 21
-    },
-    {
-      "skill": "Defence",
-      "item": "Overload (+)",
-      "base": 6,
-      "per_level": 0.16,
-      "max": 21
-    },
-    {
-      "skill": "Defence",
-      "item": "Moonlight potion",
-      "base": 3,
-      "per_level": 0.1,
-      "max": 26
-    },
-    {
-      "skill": "Defence",
-      "item": "Smelling salts",
-      "base": 11,
-      "per_level": 0.16,
-      "max": 26
-    },
-    {
-      "skill": "Ranged",
-      "item": "Ranging cape",
-      "base": 1
-    },
-    {
-      "skill": "Ranged",
-      "item": "Perildance bitter",
-      "base": 2
-    },
-    {
-      "skill": "Ranged",
-      "item": "Wild pie",
-      "base": 4
-    },
-    {
-      "skill": "Ranged",
-      "item": "Lizardkicker",
-      "base": 4
-    },
-    {
-      "skill": "Ranged",
-      "item": "Spicy stew",
-      "base": 0,
-      "max": 5,
-      "random": true
-    },
-    {
-      "skill": "Ranged",
-      "item": "Ranging potion",
-      "base": 4,
-      "per_level": 0.1,
-      "max": 13
-    },
-    {
-      "skill": "Ranged",
-      "item": "Armadyl brew",
-      "base": 4,
-      "per_level": 0.1,
-      "max": 13
-    },
-    {
-      "skill": "Ranged",
-      "item": "Ranging mix",
-      "base": 4,
-      "per_level": 0.1,
-      "max": 13
-    },
-    {
-      "skill": "Ranged",
-      "item": "Divine ranging potion",
-      "base": 4,
-      "per_level": 0.1,
-      "max": 13
-    },
-    {
-      "skill": "Ranged",
-      "item": "Bastion potion",
-      "base": 4,
-      "per_level": 0.1,
-      "max": 13
-    },
-    {
-      "skill": "Ranged",
-      "item": "Divine bastion potion",
-      "base": 4,
-      "per_level": 0.1,
-      "max": 13
-    },
-    {
-      "skill": "Ranged",
-      "item": "Bandages (Theatre of Blood)",
-      "base": 4,
-      "per_level": 0.1,
-      "max": 13
-    },
-    {
-      "skill": "Ranged",
-      "item": "Twisted (-)",
-      "base": 4,
-      "per_level": 0.1,
-      "max": 13
-    },
-    {
-      "skill": "Ranged",
-      "item": "Overload (-)",
-      "base": 4,
-      "per_level": 0.1,
-      "max": 13
-    },
-    {
-      "skill": "Ranged",
-      "item": "Twisted potion",
-      "base": 5,
-      "per_level": 0.13,
-      "max": 17
-    },
-    {
-      "skill": "Ranged",
-      "item": "Overload (Chambers of Xeric)",
-      "base": 5,
-      "per_level": 0.13,
-      "max": 17
-    },
-    {
-      "skill": "Ranged",
-      "item": "Potion of power",
-      "base": 5,
-      "per_level": 0.15,
-      "max": 19
-    },
-    {
-      "skill": "Ranged",
-      "item": "Super ranging",
-      "base": 5,
-      "per_level": 0.15,
-      "max": 19
-    },
-    {
-      "skill": "Ranged",
-      "item": "Overload (Nightmare Zone)",
-      "base": 5,
-      "per_level": 0.15,
-      "max": 19
-    },
-    {
-      "skill": "Ranged",
-      "item": "Twisted (+)",
-      "base": 6,
-      "per_level": 0.16,
-      "max": 21
-    },
-    {
-      "skill": "Ranged",
-      "item": "Overload (+)",
-      "base": 6,
-      "per_level": 0.16,
-      "max": 21
-    },
-    {
-      "skill": "Ranged",
-      "item": "Smelling salts",
-      "base": 11,
-      "per_level": 0.16,
-      "max": 26
-    },
-    {
-      "skill": "Prayer",
-      "item": "Prayer cape",
-      "base": 1
-    },
-    {
-      "skill": "Prayer",
-      "item": "Spicy stew",
-      "base": 0,
-      "max": 5,
-      "random": true
-    },
-    {
-      "skill": "Prayer",
-      "item": "Ancient mace",
-      "base": 1,
-      "max": 42
-    },
-    {
-      "skill": "Prayer",
-      "item": "Eldritch Nightmare staff",
-      "base": 1,
-      "max": 60
-    },
-    {
-      "skill": "Magic",
-      "item": "Magic cape",
-      "base": 1
-    },
-    {
-      "skill": "Magic",
-      "item": "Steamforge brew",
-      "base": 1
-    },
-    {
-      "skill": "Magic",
-      "item": "Kraken ink stout",
-      "base": 2
-    },
-    {
-      "skill": "Magic",
-      "item": "Magic essence",
-      "base": 3
-    },
-    {
-      "skill": "Magic",
-      "item": "Magic essence mix",
-      "base": 3
-    },
-    {
-      "skill": "Magic",
-      "item": "Magic potion",
-      "base": 4
-    },
-    {
-      "skill": "Magic",
-      "item": "Magic mix",
-      "base": 4
-    },
-    {
-      "skill": "Magic",
-      "item": "Divine magic potion",
-      "base": 4
-    },
-    {
-      "skill": "Magic",
-      "item": "Battlemage potion",
-      "base": 4
-    },
-    {
-      "skill": "Magic",
-      "item": "Divine battlemage potion",
-      "base": 4
-    },
-    {
-      "skill": "Magic",
-      "item": "Bandages (Theatre of Blood)",
-      "base": 4
-    },
-    {
-      "skill": "Magic",
-      "item": "Spicy stew",
-      "base": 0,
-      "max": 5,
-      "random": true
-    },
-    {
-      "skill": "Magic",
-      "item": "Ancient brew",
-      "base": 2,
-      "per_level": 0.05,
-      "max": 6
-    },
-    {
-      "skill": "Magic",
-      "item": "Forgotten brew",
-      "base": 3,
-      "per_level": 0.08,
-      "max": 10
-    },
-    {
-      "skill": "Magic",
-      "item": "Imbued heart",
-      "base": 1,
-      "per_level": 0.1,
-      "max": 10
-    },
-    {
-      "skill": "Magic",
-      "item": "Saturated heart",
-      "base": 4,
-      "per_level": 0.1,
-      "max": 13
-    },
-    {
-      "skill": "Magic",
-      "item": "Kodai (-)",
-      "base": 4,
-      "per_level": 0.1,
-      "max": 13
-    },
-    {
-      "skill": "Magic",
-      "item": "Overload (-)",
-      "base": 4,
-      "per_level": 0.1,
-      "max": 13
-    },
-    {
-      "skill": "Magic",
-      "item": "Kodai potion",
-      "base": 5,
-      "per_level": 0.13,
-      "max": 17
-    },
-    {
-      "skill": "Magic",
-      "item": "Overload (Chambers of Xeric)",
-      "base": 5,
-      "per_level": 0.13,
-      "max": 17
-    },
-    {
-      "skill": "Magic",
-      "item": "Potion of power",
-      "base": 5,
-      "per_level": 0.15,
-      "max": 19
-    },
-    {
-      "skill": "Magic",
-      "item": "Super magic potion",
-      "base": 5,
-      "per_level": 0.15,
-      "max": 19
-    },
-    {
-      "skill": "Magic",
-      "item": "Overload (Nightmare Zone)",
-      "base": 5,
-      "per_level": 0.15,
-      "max": 19
-    },
-    {
-      "skill": "Magic",
-      "item": "Kodai (+)",
-      "base": 6,
-      "per_level": 0.16,
-      "max": 21
-    },
-    {
-      "skill": "Magic",
-      "item": "Overload (+)",
-      "base": 6,
-      "per_level": 0.16,
-      "max": 21
-    },
-    {
-      "skill": "Magic",
-      "item": "Smelling salts",
-      "base": 11,
-      "per_level": 0.16,
-      "max": 26
-    },
-    {
-      "skill": "Runecraft",
-      "item": "Runecraft cape",
-      "base": 1
-    },
-    {
-      "skill": "Runecraft",
-      "item": "Metztonalli white",
-      "base": 1
-    },
-    {
-      "skill": "Runecraft",
-      "item": "Spicy stew",
-      "base": 0,
-      "max": 5,
-      "random": true
-    },
-    {
       "skill": "Construction",
       "item": "Construct. cape",
       "base": 1
+    },
+    {
+      "skill": "Construction",
+      "item": "Crystal saw",
+      "base": 3
     },
     {
       "skill": "Construction",
@@ -16139,447 +15370,29 @@
     },
     {
       "skill": "Construction",
-      "item": "Crystal saw",
-      "base": 3
-    },
-    {
-      "skill": "Construction",
       "item": "Spicy stew",
       "base": 0,
       "max": 5,
       "random": true
     },
     {
-      "skill": "Hitpoints",
-      "item": "Hitpoints cape",
-      "base": 1
+      "skill": "Cooking",
+      "item": "Bottle of Dognose draught",
+      "base": 3
     },
     {
-      "skill": "Hitpoints",
-      "item": "Haddock",
+      "skill": "Cooking",
+      "item": "Chef's delight",
+      "base": 1,
+      "per_level": 0.05,
+      "max": 5
+    },
+    {
+      "skill": "Cooking",
+      "item": "Chef's delight(m)",
       "base": 2,
-      "max": 10
-    },
-    {
-      "skill": "Hitpoints",
-      "item": "Amulet of the Damned",
-      "base": 10
-    },
-    {
-      "skill": "Hitpoints",
-      "item": "Armadyl brew",
-      "base": 2,
-      "per_level": 0.1,
-      "max": 11
-    },
-    {
-      "skill": "Hitpoints",
-      "item": "Saradomin brew",
-      "base": 2,
-      "per_level": 0.15,
-      "max": 16
-    },
-    {
-      "skill": "Hitpoints",
-      "item": "Honey locust",
-      "base": 20
-    },
-    {
-      "skill": "Hitpoints",
-      "item": "Anglerfish",
-      "base": 3,
-      "max": 22
-    },
-    {
-      "skill": "Agility",
-      "item": "Agility cape",
-      "base": 1
-    },
-    {
-      "skill": "Agility",
-      "item": "Elven dawn",
-      "base": 1
-    },
-    {
-      "skill": "Agility",
-      "item": "Sunbeam ale",
-      "base": 1
-    },
-    {
-      "skill": "Agility",
-      "item": "Bottle of suqah-free cola",
-      "base": 1
-    },
-    {
-      "skill": "Agility",
-      "item": "Agility potion",
-      "base": 3
-    },
-    {
-      "skill": "Agility",
-      "item": "Agility mix",
-      "base": 3
-    },
-    {
-      "skill": "Agility",
-      "item": "Spicy stew",
-      "base": 0,
-      "max": 5,
-      "random": true
-    },
-    {
-      "skill": "Agility",
-      "item": "Summer pie",
-      "base": 5
-    },
-    {
-      "skill": "Herblore",
-      "item": "Herblore cape",
-      "base": 1
-    },
-    {
-      "skill": "Herblore",
-      "item": "Greenman's ale",
-      "base": 1
-    },
-    {
-      "skill": "Herblore",
-      "item": "Chichilihui rosé",
-      "base": 1
-    },
-    {
-      "skill": "Herblore",
-      "item": "Greenman's ale(m)",
-      "base": 2
-    },
-    {
-      "skill": "Herblore",
-      "item": "Botanical pie",
-      "base": 4
-    },
-    {
-      "skill": "Herblore",
-      "item": "Spicy stew",
-      "base": 0,
-      "max": 5,
-      "random": true
-    },
-    {
-      "skill": "Thieving",
-      "item": "Thieving cape",
-      "base": 1
-    },
-    {
-      "skill": "Thieving",
-      "item": "Poison chalice",
-      "base": 1
-    },
-    {
-      "skill": "Thieving",
-      "item": "Bandit's brew",
-      "base": 1
-    },
-    {
-      "skill": "Thieving",
-      "item": "Spring sq'irkjuice",
-      "base": 1
-    },
-    {
-      "skill": "Thieving",
-      "item": "Autumn sq'irkjuice",
-      "base": 2
-    },
-    {
-      "skill": "Thieving",
-      "item": "Summer sq'irkjuice",
-      "base": 3
-    },
-    {
-      "skill": "Thieving",
-      "item": "Spicy stew",
-      "base": 0,
-      "max": 5,
-      "random": true
-    },
-    {
-      "skill": "Crafting",
-      "item": "Crafting cape",
-      "base": 1
-    },
-    {
-      "skill": "Crafting",
-      "item": "Poison chalice",
-      "base": 0,
-      "max": 1
-    },
-    {
-      "skill": "Crafting",
-      "item": "Mushroom pie",
-      "base": 4
-    },
-    {
-      "skill": "Crafting",
-      "item": "Spicy stew",
-      "base": 0,
-      "max": 5,
-      "random": true
-    },
-    {
-      "skill": "Fletching",
-      "item": "Fletching cape",
-      "base": 1
-    },
-    {
-      "skill": "Fletching",
-      "item": "Bottle of suqah-free cola",
-      "base": 1
-    },
-    {
-      "skill": "Fletching",
-      "item": "Dragonfruit pie",
-      "base": 4
-    },
-    {
-      "skill": "Fletching",
-      "item": "Spicy stew",
-      "base": 0,
-      "max": 5,
-      "random": true
-    },
-    {
-      "skill": "Slayer",
-      "item": "Slayer cape",
-      "base": 1
-    },
-    {
-      "skill": "Slayer",
-      "item": "Imperial rosé",
-      "base": 1
-    },
-    {
-      "skill": "Slayer",
-      "item": "Kraken colada",
-      "base": 1
-    },
-    {
-      "skill": "Slayer",
-      "item": "Slayer's respite",
-      "base": 2
-    },
-    {
-      "skill": "Slayer",
-      "item": "Slayer's respite(m)",
-      "base": 4
-    },
-    {
-      "skill": "Slayer",
-      "item": "Spicy stew",
-      "base": 0,
-      "max": 5,
-      "random": true
-    },
-    {
-      "skill": "Slayer",
-      "item": "Wild pie",
-      "base": 5
-    },
-    {
-      "skill": "Hunter",
-      "item": "Hunter cape",
-      "base": 1
-    },
-    {
-      "skill": "Hunter",
-      "item": "Blackbird red",
-      "base": 1
-    },
-    {
-      "skill": "Hunter",
-      "item": "Sailor's mirage",
-      "base": 1
-    },
-    {
-      "skill": "Hunter",
-      "item": "Trapper's tipple",
-      "base": 2
-    },
-    {
-      "skill": "Hunter",
-      "item": "Horn of Plenty (empty)",
-      "base": 2
-    },
-    {
-      "skill": "Hunter",
-      "item": "Hunter potion",
-      "base": 3
-    },
-    {
-      "skill": "Hunter",
-      "item": "Hunting mix",
-      "base": 3
-    },
-    {
-      "skill": "Hunter",
-      "item": "Horn of Plenty",
-      "base": 4
-    },
-    {
-      "skill": "Hunter",
-      "item": "Spicy stew",
-      "base": 0,
-      "max": 5,
-      "random": true
-    },
-    {
-      "skill": "Mining",
-      "item": "Mining cape",
-      "base": 1
-    },
-    {
-      "skill": "Mining",
-      "item": "Steamforge brew",
-      "base": 1
-    },
-    {
-      "skill": "Mining",
-      "item": "Braindeath 'rum'",
-      "base": 1
-    },
-    {
-      "skill": "Mining",
-      "item": "Dwarven stout",
-      "base": 1
-    },
-    {
-      "skill": "Mining",
-      "item": "Dwarven stout(m)",
-      "base": 2
-    },
-    {
-      "skill": "Mining",
-      "item": "Dragon pickaxe",
-      "base": 3
-    },
-    {
-      "skill": "Mining",
-      "item": "Infernal pickaxe",
-      "base": 3
-    },
-    {
-      "skill": "Mining",
-      "item": "3rd Age pickaxe",
-      "base": 3
-    },
-    {
-      "skill": "Mining",
-      "item": "Crystal pickaxe",
-      "base": 3
-    },
-    {
-      "skill": "Mining",
-      "item": "Celestial ring",
-      "base": 4
-    },
-    {
-      "skill": "Mining",
-      "item": "Celestial signet",
-      "base": 4
-    },
-    {
-      "skill": "Mining",
-      "item": "Spicy stew",
-      "base": 0,
-      "max": 5,
-      "random": true
-    },
-    {
-      "skill": "Mining",
-      "item": "Mining Guild",
-      "base": 7
-    },
-    {
-      "skill": "Smithing",
-      "item": "Smithing cape",
-      "base": 1
-    },
-    {
-      "skill": "Smithing",
-      "item": "Dwarven stout",
-      "base": 1
-    },
-    {
-      "skill": "Smithing",
-      "item": "Dwarven stout(m)",
-      "base": 2
-    },
-    {
-      "skill": "Smithing",
-      "item": "Kovac's grog",
-      "base": 4
-    },
-    {
-      "skill": "Smithing",
-      "item": "Spicy stew",
-      "base": 0,
-      "max": 5,
-      "random": true
-    },
-    {
-      "skill": "Fishing",
-      "item": "Fishing cape",
-      "base": 1
-    },
-    {
-      "skill": "Fishing",
-      "item": "Barnacle blaster",
-      "base": 1
-    },
-    {
-      "skill": "Fishing",
-      "item": "Trawler's trust",
-      "base": 2
-    },
-    {
-      "skill": "Fishing",
-      "item": "Dragon harpoon",
-      "base": 3
-    },
-    {
-      "skill": "Fishing",
-      "item": "Infernal harpoon",
-      "base": 3
-    },
-    {
-      "skill": "Fishing",
-      "item": "Crystal harpoon",
-      "base": 3
-    },
-    {
-      "skill": "Fishing",
-      "item": "Fishing mix",
-      "base": 3
-    },
-    {
-      "skill": "Fishing",
-      "item": "Fish pie",
-      "base": 3
-    },
-    {
-      "skill": "Fishing",
-      "item": "Admiral pie",
-      "base": 5
-    },
-    {
-      "skill": "Fishing",
-      "item": "Spicy stew",
-      "base": 0,
-      "max": 5,
-      "random": true
-    },
-    {
-      "skill": "Fishing",
-      "item": "Fishing Guild",
-      "base": 7
+      "per_level": 0.05,
+      "max": 6
     },
     {
       "skill": "Cooking",
@@ -16618,128 +15431,224 @@
     },
     {
       "skill": "Cooking",
+      "item": "Spicy stew",
+      "base": 0,
+      "max": 5,
+      "random": true
+    },
+    {
+      "skill": "Cooking",
       "item": "Whirlpool surprise",
       "base": 2
     },
     {
-      "skill": "Cooking",
-      "item": "Bottle of Dognose draught",
-      "base": 3
+      "skill": "Crafting",
+      "item": "Crafting cape",
+      "base": 1
     },
     {
-      "skill": "Cooking",
+      "skill": "Crafting",
+      "item": "Mushroom pie",
+      "base": 4
+    },
+    {
+      "skill": "Crafting",
+      "item": "Poison chalice",
+      "base": 0,
+      "max": 1
+    },
+    {
+      "skill": "Crafting",
       "item": "Spicy stew",
       "base": 0,
       "max": 5,
       "random": true
     },
     {
-      "skill": "Cooking",
-      "item": "Chef's delight",
+      "skill": "Defence",
+      "item": "Bandages (Theatre of Blood)",
+      "base": 4,
+      "per_level": 0.15,
+      "max": 18
+    },
+    {
+      "skill": "Defence",
+      "item": "Bastion potion",
+      "base": 5,
+      "per_level": 0.15,
+      "max": 19
+    },
+    {
+      "skill": "Defence",
+      "item": "Battlemage potion",
+      "base": 5,
+      "per_level": 0.15,
+      "max": 19
+    },
+    {
+      "skill": "Defence",
+      "item": "Defence cape",
+      "base": 1
+    },
+    {
+      "skill": "Defence",
+      "item": "Defence mix",
+      "base": 3,
+      "per_level": 0.1,
+      "max": 12
+    },
+    {
+      "skill": "Defence",
+      "item": "Divine bastion potion",
+      "base": 5,
+      "per_level": 0.15,
+      "max": 19
+    },
+    {
+      "skill": "Defence",
+      "item": "Divine battlemage potion",
+      "base": 5,
+      "per_level": 0.15,
+      "max": 19
+    },
+    {
+      "skill": "Defence",
+      "item": "Divine super combat potion",
+      "base": 5,
+      "per_level": 0.15,
+      "max": 19
+    },
+    {
+      "skill": "Defence",
+      "item": "Divine super defence potion",
+      "base": 5,
+      "per_level": 0.15,
+      "max": 19
+    },
+    {
+      "skill": "Defence",
+      "item": "Elder (+)",
+      "base": 6,
+      "per_level": 0.16,
+      "max": 21
+    },
+    {
+      "skill": "Defence",
+      "item": "Elder (-)",
+      "base": 4,
+      "per_level": 0.1,
+      "max": 13
+    },
+    {
+      "skill": "Defence",
+      "item": "Elder potion",
+      "base": 5,
+      "per_level": 0.13,
+      "max": 17
+    },
+    {
+      "skill": "Defence",
+      "item": "Excalibur",
+      "base": 8
+    },
+    {
+      "skill": "Defence",
+      "item": "Kebab",
       "base": 1,
-      "per_level": 0.05,
-      "max": 5
+      "max": 3
     },
     {
-      "skill": "Cooking",
-      "item": "Chef's delight(m)",
-      "base": 2,
-      "per_level": 0.05,
-      "max": 6
+      "skill": "Defence",
+      "item": "Moonlight potion",
+      "base": 3,
+      "per_level": 0.1,
+      "max": 26
     },
     {
-      "skill": "Firemaking",
-      "item": "Firemaking cape",
-      "base": 1
+      "skill": "Defence",
+      "item": "Overload (+)",
+      "base": 6,
+      "per_level": 0.16,
+      "max": 21
     },
     {
-      "skill": "Firemaking",
-      "item": "Chilhuac red",
-      "base": 1
+      "skill": "Defence",
+      "item": "Overload (-)",
+      "base": 4,
+      "per_level": 0.1,
+      "max": 13
     },
     {
-      "skill": "Firemaking",
+      "skill": "Defence",
+      "item": "Overload (Chambers of Xeric)",
+      "base": 5,
+      "per_level": 0.13,
+      "max": 17
+    },
+    {
+      "skill": "Defence",
+      "item": "Overload (Nightmare Zone)",
+      "base": 5,
+      "per_level": 0.15,
+      "max": 19
+    },
+    {
+      "skill": "Defence",
+      "item": "Sapphire glacialis (item)",
+      "base": 4,
+      "per_level": 0.15,
+      "max": 18
+    },
+    {
+      "skill": "Defence",
+      "item": "Sapphire glacialis mix",
+      "base": 4,
+      "per_level": 0.15,
+      "max": 18
+    },
+    {
+      "skill": "Defence",
+      "item": "Smelling salts",
+      "base": 11,
+      "per_level": 0.16,
+      "max": 26
+    },
+    {
+      "skill": "Defence",
       "item": "Spicy stew",
       "base": 0,
       "max": 5,
       "random": true
     },
     {
-      "skill": "Woodcutting",
-      "item": "Woodcutting cape",
-      "base": 1
+      "skill": "Defence",
+      "item": "Super combat potion",
+      "base": 5,
+      "per_level": 0.15,
+      "max": 19
     },
     {
-      "skill": "Woodcutting",
-      "item": "Eclipse red",
-      "base": 1
+      "skill": "Defence",
+      "item": "Super def. mix",
+      "base": 5,
+      "per_level": 0.15,
+      "max": 19
     },
     {
-      "skill": "Woodcutting",
-      "item": "Axeman's folly",
-      "base": 1
-    },
-    {
-      "skill": "Woodcutting",
-      "item": "Axeman's folly(m)",
-      "base": 2
-    },
-    {
-      "skill": "Woodcutting",
-      "item": "Dragon axe",
-      "base": 3
-    },
-    {
-      "skill": "Woodcutting",
-      "item": "Dragon felling axe",
-      "base": 3
-    },
-    {
-      "skill": "Woodcutting",
-      "item": "Infernal axe",
-      "base": 3
-    },
-    {
-      "skill": "Woodcutting",
-      "item": "3rd Age axe",
-      "base": 3
-    },
-    {
-      "skill": "Woodcutting",
-      "item": "3rd Age felling axe",
-      "base": 3
-    },
-    {
-      "skill": "Woodcutting",
-      "item": "Crystal axe",
-      "base": 3
-    },
-    {
-      "skill": "Woodcutting",
-      "item": "Crystal felling axe",
-      "base": 3
-    },
-    {
-      "skill": "Woodcutting",
-      "item": "Spicy stew",
-      "base": 0,
-      "max": 5,
-      "random": true
-    },
-    {
-      "skill": "Woodcutting",
-      "item": "Woodcutting Guild",
-      "base": 7
-    },
-    {
-      "skill": "Woodcutting",
-      "item": "Woodcutting",
-      "base": 0,
-      "max": 10
+      "skill": "Defence",
+      "item": "Super defence",
+      "base": 5,
+      "per_level": 0.15,
+      "max": 19
     },
     {
       "skill": "Farming",
-      "item": "Farming cape",
+      "item": "Bottle of Potterington's marrow wine",
+      "base": 5
+    },
+    {
+      "skill": "Farming",
+      "item": "Bottle of suqah-free cola",
       "base": 1
     },
     {
@@ -16749,12 +15658,17 @@
     },
     {
       "skill": "Farming",
-      "item": "Ixcoztic white",
+      "item": "Farming cape",
       "base": 1
     },
     {
       "skill": "Farming",
-      "item": "Bottle of suqah-free cola",
+      "item": "Garden pie",
+      "base": 3
+    },
+    {
+      "skill": "Farming",
+      "item": "Ixcoztic white",
       "base": 1
     },
     {
@@ -16764,25 +15678,645 @@
     },
     {
       "skill": "Farming",
-      "item": "Garden pie",
-      "base": 3
-    },
-    {
-      "skill": "Farming",
       "item": "Spicy stew",
       "base": 0,
       "max": 5,
       "random": true
     },
     {
-      "skill": "Farming",
-      "item": "Bottle of Potterington's marrow wine",
+      "skill": "Firemaking",
+      "item": "Chilhuac red",
+      "base": 1
+    },
+    {
+      "skill": "Firemaking",
+      "item": "Firemaking cape",
+      "base": 1
+    },
+    {
+      "skill": "Firemaking",
+      "item": "Spicy stew",
+      "base": 0,
+      "max": 5,
+      "random": true
+    },
+    {
+      "skill": "Fishing",
+      "item": "Admiral pie",
       "base": 5
     },
     {
-      "skill": "Sailing",
-      "item": "Sailing cape",
+      "skill": "Fishing",
+      "item": "Barnacle blaster",
       "base": 1
+    },
+    {
+      "skill": "Fishing",
+      "item": "Crystal harpoon",
+      "base": 3
+    },
+    {
+      "skill": "Fishing",
+      "item": "Dragon harpoon",
+      "base": 3
+    },
+    {
+      "skill": "Fishing",
+      "item": "Fish pie",
+      "base": 3
+    },
+    {
+      "skill": "Fishing",
+      "item": "Fishing Guild",
+      "base": 7
+    },
+    {
+      "skill": "Fishing",
+      "item": "Fishing cape",
+      "base": 1
+    },
+    {
+      "skill": "Fishing",
+      "item": "Fishing mix",
+      "base": 3
+    },
+    {
+      "skill": "Fishing",
+      "item": "Infernal harpoon",
+      "base": 3
+    },
+    {
+      "skill": "Fishing",
+      "item": "Spicy stew",
+      "base": 0,
+      "max": 5,
+      "random": true
+    },
+    {
+      "skill": "Fishing",
+      "item": "Trawler's trust",
+      "base": 2
+    },
+    {
+      "skill": "Fletching",
+      "item": "Bottle of suqah-free cola",
+      "base": 1
+    },
+    {
+      "skill": "Fletching",
+      "item": "Dragonfruit pie",
+      "base": 4
+    },
+    {
+      "skill": "Fletching",
+      "item": "Fletching cape",
+      "base": 1
+    },
+    {
+      "skill": "Fletching",
+      "item": "Spicy stew",
+      "base": 0,
+      "max": 5,
+      "random": true
+    },
+    {
+      "skill": "Herblore",
+      "item": "Botanical pie",
+      "base": 4
+    },
+    {
+      "skill": "Herblore",
+      "item": "Chichilihui rosé",
+      "base": 1
+    },
+    {
+      "skill": "Herblore",
+      "item": "Greenman's ale",
+      "base": 1
+    },
+    {
+      "skill": "Herblore",
+      "item": "Greenman's ale(m)",
+      "base": 2
+    },
+    {
+      "skill": "Herblore",
+      "item": "Herblore cape",
+      "base": 1
+    },
+    {
+      "skill": "Herblore",
+      "item": "Spicy stew",
+      "base": 0,
+      "max": 5,
+      "random": true
+    },
+    {
+      "skill": "Hitpoints",
+      "item": "Amulet of the Damned",
+      "base": 10
+    },
+    {
+      "skill": "Hitpoints",
+      "item": "Anglerfish",
+      "base": 3,
+      "max": 22
+    },
+    {
+      "skill": "Hitpoints",
+      "item": "Armadyl brew",
+      "base": 2,
+      "per_level": 0.1,
+      "max": 11
+    },
+    {
+      "skill": "Hitpoints",
+      "item": "Haddock",
+      "base": 2,
+      "max": 10
+    },
+    {
+      "skill": "Hitpoints",
+      "item": "Hitpoints cape",
+      "base": 1
+    },
+    {
+      "skill": "Hitpoints",
+      "item": "Honey locust",
+      "base": 20
+    },
+    {
+      "skill": "Hitpoints",
+      "item": "Saradomin brew",
+      "base": 2,
+      "per_level": 0.15,
+      "max": 16
+    },
+    {
+      "skill": "Hunter",
+      "item": "Blackbird red",
+      "base": 1
+    },
+    {
+      "skill": "Hunter",
+      "item": "Horn of Plenty",
+      "base": 4
+    },
+    {
+      "skill": "Hunter",
+      "item": "Horn of Plenty (empty)",
+      "base": 2
+    },
+    {
+      "skill": "Hunter",
+      "item": "Hunter cape",
+      "base": 1
+    },
+    {
+      "skill": "Hunter",
+      "item": "Hunter potion",
+      "base": 3
+    },
+    {
+      "skill": "Hunter",
+      "item": "Hunting mix",
+      "base": 3
+    },
+    {
+      "skill": "Hunter",
+      "item": "Sailor's mirage",
+      "base": 1
+    },
+    {
+      "skill": "Hunter",
+      "item": "Spicy stew",
+      "base": 0,
+      "max": 5,
+      "random": true
+    },
+    {
+      "skill": "Hunter",
+      "item": "Trapper's tipple",
+      "base": 2
+    },
+    {
+      "skill": "Magic",
+      "item": "Ancient brew",
+      "base": 2,
+      "per_level": 0.05,
+      "max": 6
+    },
+    {
+      "skill": "Magic",
+      "item": "Bandages (Theatre of Blood)",
+      "base": 4
+    },
+    {
+      "skill": "Magic",
+      "item": "Battlemage potion",
+      "base": 4
+    },
+    {
+      "skill": "Magic",
+      "item": "Divine battlemage potion",
+      "base": 4
+    },
+    {
+      "skill": "Magic",
+      "item": "Divine magic potion",
+      "base": 4
+    },
+    {
+      "skill": "Magic",
+      "item": "Forgotten brew",
+      "base": 3,
+      "per_level": 0.08,
+      "max": 10
+    },
+    {
+      "skill": "Magic",
+      "item": "Imbued heart",
+      "base": 1,
+      "per_level": 0.1,
+      "max": 10
+    },
+    {
+      "skill": "Magic",
+      "item": "Kodai (+)",
+      "base": 6,
+      "per_level": 0.16,
+      "max": 21
+    },
+    {
+      "skill": "Magic",
+      "item": "Kodai (-)",
+      "base": 4,
+      "per_level": 0.1,
+      "max": 13
+    },
+    {
+      "skill": "Magic",
+      "item": "Kodai potion",
+      "base": 5,
+      "per_level": 0.13,
+      "max": 17
+    },
+    {
+      "skill": "Magic",
+      "item": "Kraken ink stout",
+      "base": 2
+    },
+    {
+      "skill": "Magic",
+      "item": "Magic cape",
+      "base": 1
+    },
+    {
+      "skill": "Magic",
+      "item": "Magic essence",
+      "base": 3
+    },
+    {
+      "skill": "Magic",
+      "item": "Magic essence mix",
+      "base": 3
+    },
+    {
+      "skill": "Magic",
+      "item": "Magic mix",
+      "base": 4
+    },
+    {
+      "skill": "Magic",
+      "item": "Magic potion",
+      "base": 4
+    },
+    {
+      "skill": "Magic",
+      "item": "Overload (+)",
+      "base": 6,
+      "per_level": 0.16,
+      "max": 21
+    },
+    {
+      "skill": "Magic",
+      "item": "Overload (-)",
+      "base": 4,
+      "per_level": 0.1,
+      "max": 13
+    },
+    {
+      "skill": "Magic",
+      "item": "Overload (Chambers of Xeric)",
+      "base": 5,
+      "per_level": 0.13,
+      "max": 17
+    },
+    {
+      "skill": "Magic",
+      "item": "Overload (Nightmare Zone)",
+      "base": 5,
+      "per_level": 0.15,
+      "max": 19
+    },
+    {
+      "skill": "Magic",
+      "item": "Potion of power",
+      "base": 5,
+      "per_level": 0.15,
+      "max": 19
+    },
+    {
+      "skill": "Magic",
+      "item": "Saturated heart",
+      "base": 4,
+      "per_level": 0.1,
+      "max": 13
+    },
+    {
+      "skill": "Magic",
+      "item": "Smelling salts",
+      "base": 11,
+      "per_level": 0.16,
+      "max": 26
+    },
+    {
+      "skill": "Magic",
+      "item": "Spicy stew",
+      "base": 0,
+      "max": 5,
+      "random": true
+    },
+    {
+      "skill": "Magic",
+      "item": "Steamforge brew",
+      "base": 1
+    },
+    {
+      "skill": "Magic",
+      "item": "Super magic potion",
+      "base": 5,
+      "per_level": 0.15,
+      "max": 19
+    },
+    {
+      "skill": "Mining",
+      "item": "3rd Age pickaxe",
+      "base": 3
+    },
+    {
+      "skill": "Mining",
+      "item": "Braindeath 'rum'",
+      "base": 1
+    },
+    {
+      "skill": "Mining",
+      "item": "Celestial ring",
+      "base": 4
+    },
+    {
+      "skill": "Mining",
+      "item": "Celestial signet",
+      "base": 4
+    },
+    {
+      "skill": "Mining",
+      "item": "Crystal pickaxe",
+      "base": 3
+    },
+    {
+      "skill": "Mining",
+      "item": "Dragon pickaxe",
+      "base": 3
+    },
+    {
+      "skill": "Mining",
+      "item": "Dwarven stout",
+      "base": 1
+    },
+    {
+      "skill": "Mining",
+      "item": "Dwarven stout(m)",
+      "base": 2
+    },
+    {
+      "skill": "Mining",
+      "item": "Infernal pickaxe",
+      "base": 3
+    },
+    {
+      "skill": "Mining",
+      "item": "Mining Guild",
+      "base": 7
+    },
+    {
+      "skill": "Mining",
+      "item": "Mining cape",
+      "base": 1
+    },
+    {
+      "skill": "Mining",
+      "item": "Spicy stew",
+      "base": 0,
+      "max": 5,
+      "random": true
+    },
+    {
+      "skill": "Mining",
+      "item": "Steamforge brew",
+      "base": 1
+    },
+    {
+      "skill": "Prayer",
+      "item": "Ancient mace",
+      "base": 1,
+      "max": 42
+    },
+    {
+      "skill": "Prayer",
+      "item": "Eldritch Nightmare staff",
+      "base": 1,
+      "max": 60
+    },
+    {
+      "skill": "Prayer",
+      "item": "Prayer cape",
+      "base": 1
+    },
+    {
+      "skill": "Prayer",
+      "item": "Spicy stew",
+      "base": 0,
+      "max": 5,
+      "random": true
+    },
+    {
+      "skill": "Ranged",
+      "item": "Armadyl brew",
+      "base": 4,
+      "per_level": 0.1,
+      "max": 13
+    },
+    {
+      "skill": "Ranged",
+      "item": "Bandages (Theatre of Blood)",
+      "base": 4,
+      "per_level": 0.1,
+      "max": 13
+    },
+    {
+      "skill": "Ranged",
+      "item": "Bastion potion",
+      "base": 4,
+      "per_level": 0.1,
+      "max": 13
+    },
+    {
+      "skill": "Ranged",
+      "item": "Divine bastion potion",
+      "base": 4,
+      "per_level": 0.1,
+      "max": 13
+    },
+    {
+      "skill": "Ranged",
+      "item": "Divine ranging potion",
+      "base": 4,
+      "per_level": 0.1,
+      "max": 13
+    },
+    {
+      "skill": "Ranged",
+      "item": "Lizardkicker",
+      "base": 4
+    },
+    {
+      "skill": "Ranged",
+      "item": "Overload (+)",
+      "base": 6,
+      "per_level": 0.16,
+      "max": 21
+    },
+    {
+      "skill": "Ranged",
+      "item": "Overload (-)",
+      "base": 4,
+      "per_level": 0.1,
+      "max": 13
+    },
+    {
+      "skill": "Ranged",
+      "item": "Overload (Chambers of Xeric)",
+      "base": 5,
+      "per_level": 0.13,
+      "max": 17
+    },
+    {
+      "skill": "Ranged",
+      "item": "Overload (Nightmare Zone)",
+      "base": 5,
+      "per_level": 0.15,
+      "max": 19
+    },
+    {
+      "skill": "Ranged",
+      "item": "Perildance bitter",
+      "base": 2
+    },
+    {
+      "skill": "Ranged",
+      "item": "Potion of power",
+      "base": 5,
+      "per_level": 0.15,
+      "max": 19
+    },
+    {
+      "skill": "Ranged",
+      "item": "Ranging cape",
+      "base": 1
+    },
+    {
+      "skill": "Ranged",
+      "item": "Ranging mix",
+      "base": 4,
+      "per_level": 0.1,
+      "max": 13
+    },
+    {
+      "skill": "Ranged",
+      "item": "Ranging potion",
+      "base": 4,
+      "per_level": 0.1,
+      "max": 13
+    },
+    {
+      "skill": "Ranged",
+      "item": "Smelling salts",
+      "base": 11,
+      "per_level": 0.16,
+      "max": 26
+    },
+    {
+      "skill": "Ranged",
+      "item": "Spicy stew",
+      "base": 0,
+      "max": 5,
+      "random": true
+    },
+    {
+      "skill": "Ranged",
+      "item": "Super ranging",
+      "base": 5,
+      "per_level": 0.15,
+      "max": 19
+    },
+    {
+      "skill": "Ranged",
+      "item": "Twisted (+)",
+      "base": 6,
+      "per_level": 0.16,
+      "max": 21
+    },
+    {
+      "skill": "Ranged",
+      "item": "Twisted (-)",
+      "base": 4,
+      "per_level": 0.1,
+      "max": 13
+    },
+    {
+      "skill": "Ranged",
+      "item": "Twisted potion",
+      "base": 5,
+      "per_level": 0.13,
+      "max": 17
+    },
+    {
+      "skill": "Ranged",
+      "item": "Wild pie",
+      "base": 4
+    },
+    {
+      "skill": "Runecraft",
+      "item": "Metztonalli white",
+      "base": 1
+    },
+    {
+      "skill": "Runecraft",
+      "item": "Runecraft cape",
+      "base": 1
+    },
+    {
+      "skill": "Runecraft",
+      "item": "Spicy stew",
+      "base": 0,
+      "max": 5,
+      "random": true
+    },
+    {
+      "skill": "Sailing",
+      "item": "Horizon's lure",
+      "base": 4
     },
     {
       "skill": "Sailing",
@@ -16796,6 +16330,11 @@
     },
     {
       "skill": "Sailing",
+      "item": "Sailing cape",
+      "base": 1
+    },
+    {
+      "skill": "Sailing",
       "item": "Trawler's trust",
       "base": 2
     },
@@ -16805,9 +16344,470 @@
       "base": 3
     },
     {
-      "skill": "Sailing",
-      "item": "Horizon's lure",
+      "skill": "Slayer",
+      "item": "Imperial rosé",
+      "base": 1
+    },
+    {
+      "skill": "Slayer",
+      "item": "Kraken colada",
+      "base": 1
+    },
+    {
+      "skill": "Slayer",
+      "item": "Slayer cape",
+      "base": 1
+    },
+    {
+      "skill": "Slayer",
+      "item": "Slayer's respite",
+      "base": 2
+    },
+    {
+      "skill": "Slayer",
+      "item": "Slayer's respite(m)",
       "base": 4
+    },
+    {
+      "skill": "Slayer",
+      "item": "Spicy stew",
+      "base": 0,
+      "max": 5,
+      "random": true
+    },
+    {
+      "skill": "Slayer",
+      "item": "Wild pie",
+      "base": 5
+    },
+    {
+      "skill": "Smithing",
+      "item": "Dwarven stout",
+      "base": 1
+    },
+    {
+      "skill": "Smithing",
+      "item": "Dwarven stout(m)",
+      "base": 2
+    },
+    {
+      "skill": "Smithing",
+      "item": "Kovac's grog",
+      "base": 4
+    },
+    {
+      "skill": "Smithing",
+      "item": "Smithing cape",
+      "base": 1
+    },
+    {
+      "skill": "Smithing",
+      "item": "Spicy stew",
+      "base": 0,
+      "max": 5,
+      "random": true
+    },
+    {
+      "skill": "Strength",
+      "item": "Abyssal potato",
+      "base": 1
+    },
+    {
+      "skill": "Strength",
+      "item": "Bandages (Theatre of Blood)",
+      "base": 4,
+      "per_level": 0.15,
+      "max": 18
+    },
+    {
+      "skill": "Strength",
+      "item": "Beer",
+      "base": 1,
+      "per_level": 0.02,
+      "max": 3
+    },
+    {
+      "skill": "Strength",
+      "item": "Black warlock (item)",
+      "base": 4,
+      "per_level": 0.15,
+      "max": 18
+    },
+    {
+      "skill": "Strength",
+      "item": "Black warlock mix",
+      "base": 4,
+      "per_level": 0.15,
+      "max": 18
+    },
+    {
+      "skill": "Strength",
+      "item": "Blood pint",
+      "base": 2,
+      "per_level": 0.04,
+      "max": 5
+    },
+    {
+      "skill": "Strength",
+      "item": "Blurberry special",
+      "base": 2,
+      "per_level": 0.05,
+      "max": 6
+    },
+    {
+      "skill": "Strength",
+      "item": "Braindeath 'rum'",
+      "base": 3
+    },
+    {
+      "skill": "Strength",
+      "item": "Brandy",
+      "base": 1,
+      "per_level": 0.05,
+      "max": 5
+    },
+    {
+      "skill": "Strength",
+      "item": "Combat mix",
+      "base": 3,
+      "per_level": 0.1,
+      "max": 12
+    },
+    {
+      "skill": "Strength",
+      "item": "Combat potion",
+      "base": 3,
+      "per_level": 0.1,
+      "max": 12
+    },
+    {
+      "skill": "Strength",
+      "item": "Cooked t-bone steak",
+      "base": 2
+    },
+    {
+      "skill": "Strength",
+      "item": "Divine super combat potion",
+      "base": 5,
+      "per_level": 0.15,
+      "max": 19
+    },
+    {
+      "skill": "Strength",
+      "item": "Divine super strength potion",
+      "base": 5,
+      "per_level": 0.15,
+      "max": 19
+    },
+    {
+      "skill": "Strength",
+      "item": "Dragon battleaxe",
+      "base": 10,
+      "max": 21
+    },
+    {
+      "skill": "Strength",
+      "item": "Drunk dragon",
+      "base": 2,
+      "per_level": 0.05,
+      "max": 6
+    },
+    {
+      "skill": "Strength",
+      "item": "Elder (+)",
+      "base": 6,
+      "per_level": 0.16,
+      "max": 21
+    },
+    {
+      "skill": "Strength",
+      "item": "Elder (-)",
+      "base": 4,
+      "per_level": 0.1,
+      "max": 13
+    },
+    {
+      "skill": "Strength",
+      "item": "Elder potion",
+      "base": 5,
+      "per_level": 0.13,
+      "max": 17
+    },
+    {
+      "skill": "Strength",
+      "item": "Grog",
+      "base": 1,
+      "per_level": 0.04,
+      "max": 5
+    },
+    {
+      "skill": "Strength",
+      "item": "Jangerberries",
+      "base": 1
+    },
+    {
+      "skill": "Strength",
+      "item": "Karamjan rum",
+      "base": 1,
+      "per_level": 0.05,
+      "max": 5
+    },
+    {
+      "skill": "Strength",
+      "item": "Kebab",
+      "base": 1,
+      "max": 3
+    },
+    {
+      "skill": "Strength",
+      "item": "Keg of beer",
+      "base": 2,
+      "per_level": 0.1,
+      "max": 11
+    },
+    {
+      "skill": "Strength",
+      "item": "Moon-lite",
+      "base": 1,
+      "per_level": 0.05,
+      "max": 5
+    },
+    {
+      "skill": "Strength",
+      "item": "Moonlight potion",
+      "base": 3,
+      "per_level": 0.1,
+      "max": 19
+    },
+    {
+      "skill": "Strength",
+      "item": "Overload (+)",
+      "base": 6,
+      "per_level": 0.16,
+      "max": 21
+    },
+    {
+      "skill": "Strength",
+      "item": "Overload (-)",
+      "base": 4,
+      "per_level": 0.1,
+      "max": 13
+    },
+    {
+      "skill": "Strength",
+      "item": "Overload (Chambers of Xeric)",
+      "base": 5,
+      "per_level": 0.13,
+      "max": 17
+    },
+    {
+      "skill": "Strength",
+      "item": "Overload (Nightmare Zone)",
+      "base": 5,
+      "per_level": 0.15,
+      "max": 19
+    },
+    {
+      "skill": "Strength",
+      "item": "Perildance bitter",
+      "base": 2
+    },
+    {
+      "skill": "Strength",
+      "item": "Short green guy",
+      "base": 1,
+      "per_level": 0.05,
+      "max": 5
+    },
+    {
+      "skill": "Strength",
+      "item": "Smelling salts",
+      "base": 11,
+      "per_level": 0.16,
+      "max": 26
+    },
+    {
+      "skill": "Strength",
+      "item": "Spicy stew",
+      "base": 0,
+      "max": 5,
+      "random": true
+    },
+    {
+      "skill": "Strength",
+      "item": "Strength cape",
+      "base": 1
+    },
+    {
+      "skill": "Strength",
+      "item": "Strength mix",
+      "base": 3,
+      "per_level": 0.1,
+      "max": 12
+    },
+    {
+      "skill": "Strength",
+      "item": "Strength potion",
+      "base": 3,
+      "per_level": 0.1,
+      "max": 12
+    },
+    {
+      "skill": "Strength",
+      "item": "Sun-shine",
+      "base": 1,
+      "per_level": 0.05,
+      "max": 5
+    },
+    {
+      "skill": "Strength",
+      "item": "Sunbeam ale",
+      "base": 1
+    },
+    {
+      "skill": "Strength",
+      "item": "Super combat potion",
+      "base": 5,
+      "per_level": 0.15,
+      "max": 19
+    },
+    {
+      "skill": "Strength",
+      "item": "Super str. mix",
+      "base": 5,
+      "per_level": 0.15,
+      "max": 19
+    },
+    {
+      "skill": "Strength",
+      "item": "Super strength",
+      "base": 5,
+      "per_level": 0.15,
+      "max": 19
+    },
+    {
+      "skill": "Strength",
+      "item": "Wizard blizzard",
+      "base": 1,
+      "per_level": 0.06,
+      "max": 6
+    },
+    {
+      "skill": "Strength",
+      "item": "Zamorak brew",
+      "base": 2,
+      "per_level": 0.12,
+      "max": 13
+    },
+    {
+      "skill": "Thieving",
+      "item": "Autumn sq'irkjuice",
+      "base": 2
+    },
+    {
+      "skill": "Thieving",
+      "item": "Bandit's brew",
+      "base": 1
+    },
+    {
+      "skill": "Thieving",
+      "item": "Poison chalice",
+      "base": 1
+    },
+    {
+      "skill": "Thieving",
+      "item": "Spicy stew",
+      "base": 0,
+      "max": 5,
+      "random": true
+    },
+    {
+      "skill": "Thieving",
+      "item": "Spring sq'irkjuice",
+      "base": 1
+    },
+    {
+      "skill": "Thieving",
+      "item": "Summer sq'irkjuice",
+      "base": 3
+    },
+    {
+      "skill": "Thieving",
+      "item": "Thieving cape",
+      "base": 1
+    },
+    {
+      "skill": "Woodcutting",
+      "item": "3rd Age axe",
+      "base": 3
+    },
+    {
+      "skill": "Woodcutting",
+      "item": "3rd Age felling axe",
+      "base": 3
+    },
+    {
+      "skill": "Woodcutting",
+      "item": "Axeman's folly",
+      "base": 1
+    },
+    {
+      "skill": "Woodcutting",
+      "item": "Axeman's folly(m)",
+      "base": 2
+    },
+    {
+      "skill": "Woodcutting",
+      "item": "Crystal axe",
+      "base": 3
+    },
+    {
+      "skill": "Woodcutting",
+      "item": "Crystal felling axe",
+      "base": 3
+    },
+    {
+      "skill": "Woodcutting",
+      "item": "Dragon axe",
+      "base": 3
+    },
+    {
+      "skill": "Woodcutting",
+      "item": "Dragon felling axe",
+      "base": 3
+    },
+    {
+      "skill": "Woodcutting",
+      "item": "Eclipse red",
+      "base": 1
+    },
+    {
+      "skill": "Woodcutting",
+      "item": "Infernal axe",
+      "base": 3
+    },
+    {
+      "skill": "Woodcutting",
+      "item": "Spicy stew",
+      "base": 0,
+      "max": 5,
+      "random": true
+    },
+    {
+      "skill": "Woodcutting",
+      "item": "Woodcutting",
+      "base": 0,
+      "max": 10
+    },
+    {
+      "skill": "Woodcutting",
+      "item": "Woodcutting Guild",
+      "base": 7
+    },
+    {
+      "skill": "Woodcutting",
+      "item": "Woodcutting cape",
+      "base": 1
     }
   ]
 }

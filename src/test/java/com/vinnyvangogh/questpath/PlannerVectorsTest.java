@@ -6,7 +6,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -128,36 +127,22 @@ public class PlannerVectorsTest
 	/**
 	 * Quests where this port is deliberately ahead of the Go planner.
 	 *
-	 * <p>The port now checks that a boost is large enough to close a
-	 * shortfall, not merely that the wiki permits one. Go still checks only
-	 * permission -- {@code if !req.Boostable { boostRescues = false }} in
-	 * internal/planner/classify.go, with no magnitude anywhere -- so it calls
-	 * a thirty-level gap boostable. Lost City is the clearest: it wants
-	 * Crafting 31 and Woodcutting 36, and the best boosts available are +4
-	 * from a mushroom pie and +7 from the Woodcutting Guild.
+	 * <p><b>Empty, and that is the point.</b> It briefly held ten quests --
+	 * Lost City, Sea Slug, Tears of Guthix and others -- during the window
+	 * where the port checked that a boost was large enough to close a
+	 * shortfall and the Go planner still checked only that the wiki permitted
+	 * one. Go now stores the boost table and applies the same test, so both
+	 * agree again and every quest is back under the plain assertion.
 	 *
-	 * <p>Listed rather than regenerated, deliberately. Re-exporting the
-	 * vectors would make the suite green by writing the bug down as the
-	 * expected answer, and the whole purpose of these vectors is to be the
-	 * thing that notices. Listing keeps every other quest under test: a new
-	 * divergence still fails.
-	 *
-	 * <p><b>This list must go to empty.</b> The Go planner needs the same
-	 * check, which needs the boost table stored rather than fetched at export
-	 * time -- see the note in cmd/questpath/export.go. Delete this set and
-	 * re-export the vectors in the same change.
+	 * <p>Kept rather than deleted because the situation recurs: the port and
+	 * the planner are two implementations of one thing, and a fix always
+	 * lands in one of them first. An empty set with the rule written down
+	 * beside it is a cheaper thing to reach for than the argument about
+	 * whether to regenerate the vectors -- which is the wrong answer, since
+	 * regenerating writes the bug down as the expected result and these
+	 * vectors exist to be the thing that notices.
 	 */
-	private static final Set<String> KNOWN_AHEAD_OF_GO = new HashSet<>(Arrays.asList(
-		"lost_city",
-		"sea_slug",
-		"one_small_favour",
-		"tears_of_guthix",
-		"forgettable_tale",
-		"shadow_of_the_storm",
-		"enlightened_journey",
-		"eagles_peak",
-		"recipe_for_disaster_freeing_pirate_pete",
-		"recipe_for_disaster_freeing_skrach_uglogwee"));
+	private static final Set<String> KNOWN_AHEAD_OF_GO = Collections.emptySet();
 
 	/**
 	 * The whole point. Every quest, the same verdict.

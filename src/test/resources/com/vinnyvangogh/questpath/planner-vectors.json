@@ -40,17 +40,17 @@
       {
         "skill": "cooking",
         "level": 21,
-        "xp": 5033
+        "xp": 5124
       },
       {
         "skill": "woodcutting",
         "level": 36,
-        "xp": 26870
+        "xp": 27257
       },
       {
         "skill": "fletching",
-        "level": 21,
-        "xp": 5390
+        "level": 24,
+        "xp": 7168
       },
       {
         "skill": "fishing",
@@ -59,13 +59,13 @@
       },
       {
         "skill": "firemaking",
-        "level": 18,
-        "xp": 3940
+        "level": 19,
+        "xp": 4240
       },
       {
         "skill": "crafting",
         "level": 24,
-        "xp": 7166
+        "xp": 7196
       },
       {
         "skill": "smithing",
@@ -74,8 +74,8 @@
       },
       {
         "skill": "mining",
-        "level": 66,
-        "xp": 547027
+        "level": 67,
+        "xp": 599923
       },
       {
         "skill": "herblore",
@@ -85,12 +85,12 @@
       {
         "skill": "agility",
         "level": 39,
-        "xp": 33651
+        "xp": 33707
       },
       {
         "skill": "thieving",
         "level": 40,
-        "xp": 38513
+        "xp": 38545
       },
       {
         "skill": "slayer",
@@ -147,6 +147,7 @@
       145,
       146,
       147,
+      151,
       168,
       170,
       176,
@@ -371,7 +372,7 @@
     {
       "quest_id": 19,
       "slug": "lost_city",
-      "status": "BOOSTABLE"
+      "status": "SKILL_BLOCKED"
     },
     {
       "quest_id": 20,
@@ -456,7 +457,7 @@
     {
       "quest_id": 36,
       "slug": "sea_slug",
-      "status": "BOOSTABLE"
+      "status": "SKILL_BLOCKED"
     },
     {
       "quest_id": 37,
@@ -631,7 +632,7 @@
     {
       "quest_id": 71,
       "slug": "one_small_favour",
-      "status": "QUEST_BLOCKED"
+      "status": "SKILL_BLOCKED"
     },
     {
       "quest_id": 72,
@@ -666,7 +667,7 @@
     {
       "quest_id": 78,
       "slug": "tears_of_guthix",
-      "status": "BOOSTABLE"
+      "status": "SKILL_BLOCKED"
     },
     {
       "quest_id": 79,
@@ -691,7 +692,7 @@
     {
       "quest_id": 83,
       "slug": "forgettable_tale",
-      "status": "QUEST_BLOCKED"
+      "status": "SKILL_BLOCKED"
     },
     {
       "quest_id": 84,
@@ -721,7 +722,7 @@
     {
       "quest_id": 89,
       "slug": "shadow_of_the_storm",
-      "status": "QUEST_BLOCKED"
+      "status": "SKILL_BLOCKED"
     },
     {
       "quest_id": 90,
@@ -836,12 +837,12 @@
     {
       "quest_id": 112,
       "slug": "enlightened_journey",
-      "status": "BOOSTABLE"
+      "status": "SKILL_BLOCKED"
     },
     {
       "quest_id": 113,
       "slug": "eagles_peak",
-      "status": "BOOSTABLE"
+      "status": "SKILL_BLOCKED"
     },
     {
       "quest_id": 114,
@@ -1031,17 +1032,17 @@
     {
       "quest_id": 151,
       "slug": "recipe_for_disaster_another_cooks_quest",
-      "status": "ELIGIBLE"
+      "status": "COMPLETE"
     },
     {
       "quest_id": 152,
       "slug": "recipe_for_disaster_freeing_the_goblin_generals",
-      "status": "QUEST_BLOCKED"
+      "status": "ELIGIBLE"
     },
     {
       "quest_id": 153,
       "slug": "recipe_for_disaster_freeing_the_mountain_dwarf",
-      "status": "QUEST_BLOCKED"
+      "status": "ELIGIBLE"
     },
     {
       "quest_id": 154,
@@ -1051,7 +1052,7 @@
     {
       "quest_id": 155,
       "slug": "recipe_for_disaster_freeing_pirate_pete",
-      "status": "QUEST_BLOCKED"
+      "status": "SKILL_BLOCKED"
     },
     {
       "quest_id": 156,
@@ -1071,7 +1072,7 @@
     {
       "quest_id": 159,
       "slug": "recipe_for_disaster_freeing_skrach_uglogwee",
-      "status": "QUEST_BLOCKED"
+      "status": "SKILL_BLOCKED"
     },
     {
       "quest_id": 160,
