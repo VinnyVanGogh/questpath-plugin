@@ -32,9 +32,11 @@ import net.runelite.client.chat.ChatMessageBuilder;
 import net.runelite.client.chat.QueuedMessage;
 import net.runelite.api.events.GameTick;
 import net.runelite.api.ScriptID;
+import net.runelite.api.events.MenuOptionClicked;
 import net.runelite.api.events.ScriptPostFired;
 import net.runelite.api.events.WidgetLoaded;
 import net.runelite.api.gameval.InterfaceID;
+import net.runelite.api.gameval.VarbitID;
 import net.runelite.api.events.ItemContainerChanged;
 import net.runelite.api.events.StatChanged;
 import net.runelite.api.events.VarbitChanged;
@@ -143,15 +145,19 @@ public class QuestpathPlugin extends Plugin
 	private BankTabLayout bankTab;
 
 	/**
-	 * Whether the bank marks and list are showing.
+	 * Whether questpath's bank layout is the one on screen.
 	 *
-	 * Session state rather than config: it is a thing you switch on for one
-	 * bank trip, in the same way a bank tab is, and a setting that survived
-	 * logout would have every future visit start in whichever state the last
-	 * one ended. Defaults on, because a player who has enabled the feature at
-	 * all has said what they want.
+	 * <p>Off by default, and that is the important half. This is a tab, not a
+	 * filter: switched on it replaces what the grid shows, so defaulting it on
+	 * meant opening tab nine and being handed questpath's list with the title
+	 * still claiming to be tab nine. A bank tab you did not choose is a broken
+	 * bank.
+	 *
+	 * <p>Session state rather than config for the same reason a real tab is:
+	 * you pick one for a trip, and a setting that survived logout would start
+	 * every visit in whichever state the last one ended.
 	 */
-	private boolean bankNeedsShown = true;
+	private boolean bankNeedsShown;
 
 	/**
 	 * The five in-game overlays, held so they can be removed again.
@@ -651,15 +657,90 @@ public class QuestpathPlugin extends Plugin
 
 	private void toggleBankNeeds()
 	{
-		bankNeedsShown = !bankNeedsShown;
-		if (bankTab != null)
+		setBankTab(!bankNeedsShown);
+	}
+
+	/**
+	 * Selects or leaves questpath's bank tab.
+	 *
+	 * <p>Turning it on deselects whichever real tab was open, the same way
+	 * clicking a real tab deselects the last one. Without that the bank still
+	 * believes tab nine is showing -- it keeps tab nine's title, and its next
+	 * rebuild puts tab nine's items back underneath.
+	 */
+	private void setBankTab(boolean on)
+	{
+		if (bankNeedsShown == on)
 		{
-			// Ask the client to lay the bank out again. Its own build is what
-			// this hooks, so re-running it is how the grid switches between
-			// questpath's order and the bank's own.
-			bankTab.removeAdded();
-			clientThread.invokeLater(() -> client.runScript(ScriptID.BANKMAIN_BUILD));
+			return;
 		}
+		bankNeedsShown = on;
+		if (bankTab == null)
+		{
+			return;
+		}
+		bankTab.removeAdded();
+		clientThread.invokeLater(() ->
+		{
+			if (on)
+			{
+				client.setVarbit(VarbitID.BANK_CURRENTTAB, 0);
+			}
+			// Re-run the client's own build. This class hooks the end of it,
+			// so re-running is how the grid moves between questpath's order
+			// and the bank's own.
+			client.runScript(ScriptID.BANKMAIN_BUILD);
+		});
+	}
+
+	/**
+	 * Steps aside the moment a real tab is chosen.
+	 *
+	 * <p>questpath's layout is one tab among the bank's own, so picking any of
+	 * the others has to mean leaving this one -- otherwise the tab strip stops
+	 * working while the feature is on, which is a far worse bug than the
+	 * feature is a good one.
+	 */
+	@Subscribe
+	public void onMenuOptionClicked(MenuOptionClicked event)
+	{
+		if (!bankNeedsShown)
+		{
+			return;
+		}
+		String option = event.getMenuOption();
+		if (option == null)
+		{
+			return;
+		}
+		String target = event.getMenuTarget();
+		if (target != null && target.contains("Quest Path"))
+		{
+			// Our own button. It carries a "View tab" option so it reads like
+			// the bank's tabs, which means without this it would match the
+			// rule below and close the tab it had just opened.
+			return;
+		}
+		if (option.startsWith("View tab") || option.startsWith("View tag tab")
+			|| option.equals("View all items") || option.startsWith("Potion store"))
+		{
+			setBankTab(false);
+			if (bankButton != null)
+			{
+				bankButton.refresh();
+			}
+		}
+	}
+
+	/**
+	 * Whether the bank grid is currently laid out by questpath.
+	 *
+	 * Read by BankNeedsOverlay so it stops outlining slots that are already
+	 * grouped by the thing the outline was there to say.
+	 */
+	boolean bankTabActive()
+	{
+		return bankTab != null && bankTab.active();
 	}
 
 	/** The overlays and the bank layout read config through here. */
@@ -685,6 +766,12 @@ public class QuestpathPlugin extends Plugin
 		if (event.getScriptId() == ScriptID.BANKMAIN_FINISHBUILDING)
 		{
 			bankTab.onBankBuilt();
+		}
+		else if (event.getScriptId() == ScriptID.BANKMAIN_SEARCH_TOGGLE && bankNeedsShown)
+		{
+			// Searching is the bank's own view of itself, which this layout is
+			// not. Stand down rather than fight it for the grid.
+			setBankTab(false);
 		}
 		else if (event.getScriptId() == ScriptID.BANKMAIN_SEARCHING && bankTab.active())
 		{

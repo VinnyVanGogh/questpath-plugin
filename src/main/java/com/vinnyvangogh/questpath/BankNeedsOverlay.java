@@ -115,6 +115,17 @@ class BankNeedsOverlay extends WidgetItemOverlay
 			return;
 		}
 
+		// Nothing drawn while the grid is already questpath's own. The marks
+		// exist to pick needed items out of a bank sorted by something else;
+		// once every slot on screen is one of them, outlining all of them
+		// says nothing and costs a box and a number per slot. The hover
+		// survives, because "what is this for" is still worth asking.
+		if (plugin.bankTabActive())
+		{
+			describeOnHover(bounds, total);
+			return;
+		}
+
 		// Two states, and the difference is the whole point of marking a bank
 		// rather than a shop: amber is "take some of this out", green is
 		// "you already have enough, leave it". A shop only ever needed the

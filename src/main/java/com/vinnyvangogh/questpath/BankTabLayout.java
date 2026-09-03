@@ -55,9 +55,9 @@ class BankTabLayout
 	private static final int RULE_HEIGHT = 2;
 	private static final int RULE_GAP = 5;
 
-	/** Checkbox sprites, used as the got-it / still-missing marks. */
-	private static final int SPRITE_TICK = 1220;
-	private static final int SPRITE_CROSS = 1221;
+	/** Checkbox.CHECKED and Checkbox.CROSSED: the got-it / still-missing marks. */
+	private static final int SPRITE_TICK = 1217;
+	private static final int SPRITE_CROSS = 1216;
 
 	/** ~bankmain_drawitem's filler id for an empty slot. */
 	private static final int BLANK_SLOT = 6512;
@@ -94,18 +94,78 @@ class BankTabLayout
 	}
 
 	/** One item's row: what it is, how many you have, how many are wanted. */
-	private static final class Row
+	static final class Row
 	{
 		private final int itemId;
+		private final String name;
 		private final long owned;
 		private final int wanted;
 
-		Row(int itemId, long owned, int wanted)
+		Row(int itemId, String name, long owned, int wanted)
 		{
 			this.itemId = itemId;
+			this.name = name;
 			this.owned = owned;
 			this.wanted = wanted;
 		}
+
+		/**
+		 * How much of the requirement is met, 0 to 1.
+		 *
+		 * The ordering key for the shortfall section. Absolute counts are the
+		 * wrong measure there: one of two Guam leaves and one of five pigeon
+		 * cages are both "one short of nothing" by count, and the first is
+		 * halfway home while the second has barely started.
+		 */
+		String name()
+		{
+			return name;
+		}
+
+		double progress()
+		{
+			if (wanted <= 0)
+			{
+				return 1.0;
+			}
+			return Math.min(1.0, (double) owned / wanted);
+		}
+
+		long outstanding()
+		{
+			return Math.max(0L, wanted - owned);
+		}
+	}
+
+	/**
+	 * Nearest to finished first, and never alphabetical.
+	 *
+	 * Alphabetical order says nothing about what to do next. Ordering by how
+	 * close each requirement is to met puts the ones a single withdrawal would
+	 * finish at the top, and the ones you have not started at the bottom where
+	 * they belong -- a bank trip is a series of decisions about what is worth
+	 * completing now.
+	 *
+	 * <p>Ties on proportion break on the smaller absolute gap: two rows both
+	 * half done are not equally close when one needs one more and the other
+	 * needs fifty.
+	 */
+	static void byClosestToDone(List<Row> rows)
+	{
+		rows.sort((a, b) ->
+		{
+			int byProgress = Double.compare(b.progress(), a.progress());
+			if (byProgress != 0)
+			{
+				return byProgress;
+			}
+			int byGap = Long.compare(a.outstanding(), b.outstanding());
+			if (byGap != 0)
+			{
+				return byGap;
+			}
+			return a.name.compareToIgnoreCase(b.name);
+		});
 	}
 
 	/**
@@ -123,6 +183,16 @@ class BankTabLayout
 		if (!active())
 		{
 			return;
+		}
+
+		// The bank writes the selected tab's name here during its own build.
+		// Left alone it says "Tab 9" over questpath's list, which is a lie
+		// about which tab is open and the reason this ever looked like the
+		// layout had hijacked the bank rather than being a tab of its own.
+		Widget title = client.getWidget(InterfaceID.Bankmain.TITLE);
+		if (title != null)
+		{
+			title.setText("Tab <col=ff9040>Quest Path</col>");
 		}
 
 		Widget container = client.getWidget(InterfaceID.Bankmain.ITEMS);
@@ -214,7 +284,7 @@ class BankTabLayout
 				continue;
 			}
 			claimed.add(itemId);
-			Row row = new Row(itemId, total.owned(), total.required());
+			Row row = new Row(itemId, total.name(), total.owned(), total.required());
 			if (total.satisfied())
 			{
 				ready.rows.add(row);
@@ -239,8 +309,17 @@ class BankTabLayout
 			{
 				continue;
 			}
-			rest.rows.add(new Row(itemId, item.getQuantity(), 0));
+			ItemComposition definition = client.getItemDefinition(itemId);
+			rest.rows.add(new Row(itemId, definition == null ? "" : definition.getName(),
+				item.getQuantity(), 0));
 		}
+
+		// Only the shortfall bands are ordered by progress. "Ready" is every
+		// row at 1.0 and "Everything else" has no requirement to be near, so
+		// sorting either by it would just be an expensive way to keep the
+		// order they arrived in.
+		byClosestToDone(shortOf.rows);
+		byClosestToDone(ranOut.rows);
 
 		List<Section> out = new ArrayList<>();
 		for (Section section : new Section[]{ranOut, shortOf, ready, rest})

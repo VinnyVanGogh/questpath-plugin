@@ -44,20 +44,35 @@ class BankButton
 	private static final int TOP_INSET = 4;
 
 	/**
-	 * TAB_QUESTS, the blue quest-book icon, the same sprite the sidebar's
-	 * Quests tab uses. Lit when the marks are on and dimmed when they are
-	 * not -- RS2_TAB_QUESTS_SELECTED does not exist as a pair, so the off
-	 * state reuses the same art and the button's own right-click text carries
-	 * the state in words.
+	 * The bank's own small square button, unselected and selected.
+	 *
+	 * The state has to be visible in the art. This is a tab, and a tab that
+	 * looks identical whether or not it is the open one leaves the player
+	 * reading the title bar to find out which view they are in.
 	 */
-	private static final int SPRITE_ON = 776;
-	private static final int SPRITE_OFF = 776;
+	private static final int SPRITE_BUTTON = 195;
+	private static final int SPRITE_BUTTON_SELECTED = 196;
+
+	/** TAB_QUESTS, the quest-book icon, drawn on top of the button. */
+	private static final int SPRITE_ICON = 776;
+
+	/** The icon is inset inside the button so the button's edge still reads. */
+	private static final int ICON_SIZE = 11;
+
+	/**
+	 * The button's menu target, and the marker that keeps it out of the
+	 * close-on-another-tab rule. Shared with the plugin rather than spelled
+	 * twice: two copies of a string that must match is a bug waiting for
+	 * whoever edits one of them.
+	 */
+	static final String TARGET = "<col=ff9040>Quest Path</col>";
 
 	private final Client client;
 	private final BooleanSupplier shown;
 	private final Runnable onToggle;
 
 	private Widget button;
+	private Widget icon;
 
 	BankButton(Client client, BooleanSupplier shown, Runnable onToggle)
 	{
@@ -102,7 +117,21 @@ class BankButton
 		created.setOnOpListener((JavaScriptCallback) event -> toggle());
 		created.revalidate();
 
+		// Drawn separately and deliberately not clickable: a child with its
+		// own listener would swallow the clicks meant for the button under it.
+		Widget drawnIcon = parent.createChild(-1, WidgetType.GRAPHIC);
+		drawnIcon.setSpriteId(SPRITE_ICON);
+		drawnIcon.setOriginalWidth(ICON_SIZE);
+		drawnIcon.setOriginalHeight(ICON_SIZE);
+		drawnIcon.setOriginalX(RIGHT_INSET + (SIZE - ICON_SIZE) / 2);
+		drawnIcon.setOriginalY(TOP_INSET + (SIZE - ICON_SIZE) / 2);
+		drawnIcon.setXPositionMode(WidgetPositionMode.ABSOLUTE_RIGHT);
+		drawnIcon.setYPositionMode(WidgetPositionMode.ABSOLUTE_TOP);
+		drawnIcon.setNoClickThrough(false);
+		drawnIcon.revalidate();
+
 		button = created;
+		icon = drawnIcon;
 		refresh();
 	}
 
@@ -114,17 +143,25 @@ class BankButton
 			return;
 		}
 		boolean on = shown.getAsBoolean();
-		button.setSpriteId(on ? SPRITE_ON : SPRITE_OFF);
-		button.setAction(0, on
-			? "Hide <col=ff9040>Quest Path</col> items"
-			: "Show <col=ff9040>Quest Path</col> items");
+		button.setSpriteId(on ? SPRITE_BUTTON_SELECTED : SPRITE_BUTTON);
+		// "View tab" so it reads like the bank's own tabs, which is what it
+		// is. The name is the menu target, and it is what tells the
+		// close-on-other-tab rule that this particular "View tab" is ours --
+		// without it, clicking this button closes the tab it just opened.
+		button.setName(TARGET);
+		button.setAction(0, "View tab");
 		button.revalidate();
+		if (icon != null)
+		{
+			icon.revalidate();
+		}
 	}
 
 	/** Forgets the widget. The client discards it when the bank closes. */
 	void detach()
 	{
 		button = null;
+		icon = null;
 	}
 
 	private void toggle()
