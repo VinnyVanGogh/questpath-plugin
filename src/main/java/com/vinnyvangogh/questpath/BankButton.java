@@ -40,16 +40,30 @@ class BankButton
 	 * Not an anchored right inset: the bank frame is a fixed width and its
 	 * own controls are placed absolutely, so matching them is what puts this
 	 * on the same line as the cross rather than near it.
+	 *
+	 * <p>One button's width left of 408, which is where Quest Helper puts its
+	 * own. Sitting on 408 stacked the two exactly on top of each other, and
+	 * whichever drew second won -- so anyone running both plugins lost one of
+	 * them with no hint as to why. Neither of us can move the other, so this
+	 * one steps aside. If Quest Helper is not installed the only cost is a
+	 * button-sized gap beside the cross.
 	 */
-	private static final int BUTTON_X = 408;
+	private static final int BUTTON_X = 380;
 	private static final int BUTTON_Y = 5;
 
 	/** The bank's own small square button, unselected and selected. */
 	private static final int SPRITE_BUTTON = 195;
 	private static final int SPRITE_BUTTON_SELECTED = 196;
 
-	/** AchievementDiaryIcons.BLUE_QUESTS -- the quest icon, inset in the button. */
-	private static final int SPRITE_ICON = 835;
+	/**
+	 * SideiconsInterface.INVENTORY, the backpack.
+	 *
+	 * Deliberately not a quest icon. Quest Helper's button is a blue quest
+	 * book, and two adjacent buttons that both say "quests" are two buttons
+	 * nobody can tell apart at 19 pixels. A bag also happens to be the more
+	 * honest label: this tab is about the items, not the quests.
+	 */
+	private static final int SPRITE_ICON = 777;
 	private static final int ICON_INSET = 3;
 
 	/**
