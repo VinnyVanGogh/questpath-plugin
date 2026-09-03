@@ -636,6 +636,16 @@ class QuestpathPanel extends PluginPanel
 		itemResults.add(itemsBlock(items, itemSearch.getText()));
 	}
 
+	/**
+	 * Quest sections drawn on the Items tab before it stops and says how many
+	 * more there are.
+	 *
+	 * Not a display preference: this is the tab's component count, and the
+	 * component count is what a rebuild costs inside a window that holds the
+	 * game canvas.
+	 */
+	private static final int MAX_QUEST_SECTIONS = 8;
+
 	private static JPanel itemsBlock(QuestItems items, String filter)
 	{
 		JPanel panel = column();
@@ -746,8 +756,23 @@ class QuestpathPanel extends PluginPanel
 		panel.add(Box.createVerticalStrut(4));
 
 		boolean first = true;
+		int questsShown = 0;
 		for (QuestItems.QuestNeeds needs : items.quests())
 		{
+			// Sixty-seven quest sections is around eight hundred and thirty
+			// Swing components, most of the tab, for a list nobody scrolls to
+			// the bottom of in a two-hundred-and-twenty-five pixel sidebar.
+			// It also has to be torn down and rebuilt every time a stack
+			// changes, and rebuilding a subtree that size inside a window
+			// holding the game canvas is what made withdrawing an item from
+			// the bank stutter. Capped to the nearest few, which is the part
+			// that answers "what do I need for what I am about to do"; the
+			// filter below still searches every quest, so nothing is
+			// unreachable.
+			if (!filtering && questsShown >= MAX_QUEST_SECTIONS)
+			{
+				break;
+			}
 			// A filter searches items, so a quest survives it by wanting one.
 			// Filtering on the quest name instead would make searching "bones"
 			// hide the very quest that needs them.
@@ -786,6 +811,17 @@ class QuestpathPanel extends PluginPanel
 					: ColorScheme.LIGHT_GRAY_COLOR, itemTooltip(null, line.sources()));
 			}
 			panel.add(grid);
+			questsShown++;
+		}
+
+		int questsLeft = items.quests().size() - questsShown;
+		if (!filtering && questsLeft > 0)
+		{
+			// Said, not silently dropped. A list that stops at eight without
+			// mentioning the other fifty-nine reads as the whole answer.
+			panel.add(Box.createVerticalStrut(8));
+			panel.add(muted(questsLeft + " more quests on your plan need items."
+				+ " Search above to see any of them."));
 		}
 
 		return panel;

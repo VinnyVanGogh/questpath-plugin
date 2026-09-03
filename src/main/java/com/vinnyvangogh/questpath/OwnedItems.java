@@ -280,9 +280,14 @@ class OwnedItems
 			{
 				continue;
 			}
+			ItemComposition composition = client.getItemDefinition(item.getId());
+			if (isPlaceholder(composition))
+			{
+				continue;
+			}
 			Map<String, Object> stack = new LinkedHashMap<>();
 			stack.put("id", item.getId());
-			stack.put("name", nameOf(client, item.getId()));
+			stack.put("name", composition == null ? "" : composition.getName());
 			stack.put("quantity", item.getQuantity());
 			out.add(stack);
 		}
@@ -290,15 +295,22 @@ class OwnedItems
 	}
 
 	/**
-	 * The in-game name for an id.
+	 * Whether this is a bank placeholder rather than an item you own.
 	 *
-	 * questpath matches quest requirement lines by name, and it has no table
-	 * of Jagex item ids to join against — so the name has to travel with the
-	 * id. getItemDefinition is a cache lookup, not a fetch.
+	 * <p>A placeholder is the greyed-out marker the bank leaves in a slot
+	 * after the last of something is withdrawn. It is a separate item with
+	 * its own id and <em>the same name</em>, which is precisely what makes it
+	 * dangerous here: questpath merges by name, so withdrawing the last
+	 * pigeon cage left one cage in the inventory and its ghost in the bank,
+	 * and the shopping list read "2 / 5" for an account holding one.
+	 *
+	 * <p>Filtering on quantity does not catch it -- the placeholder observed
+	 * arrived as id 17281, quantity 1, name "Pigeon cage", against the real
+	 * item's 424 (full) and 425 (empty). getPlaceholderTemplateId is the
+	 * client's own answer to the question and does not depend on that.
 	 */
-	private static String nameOf(Client client, int itemId)
+	private static boolean isPlaceholder(ItemComposition composition)
 	{
-		ItemComposition composition = client.getItemDefinition(itemId);
-		return composition == null ? "" : composition.getName();
+		return composition != null && composition.getPlaceholderTemplateId() != -1;
 	}
 }

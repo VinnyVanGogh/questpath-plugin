@@ -121,6 +121,32 @@ class CollapsibleGroup extends JPanel
 		this.expanded = expanded;
 		caret.setExpanded(expanded);
 		body.setVisible(expanded);
+
+		// setVisible invalidates this group's own parent and stops there. It
+		// never asks for a layout pass, so the column of groups above and
+		// below kept the heights it had worked out for the previous state --
+		// which is how the last group in a section ended up drawn at half
+		// height with the next section's heading over the top of it. It only
+		// showed with every group collapsed because that is the arrangement
+		// where the stale heights and the real ones differ most.
+		revalidate();
+		repaint();
+	}
+
+	/**
+	 * Never taller than it needs to be.
+	 *
+	 * BoxLayout hands surplus vertical space to any child whose maximum
+	 * height is unbounded, which a JPanel's is. In a column of these that
+	 * means a collapsed group can be stretched well past its header and then
+	 * paint its border in the middle of the gap. Capping the height at the
+	 * preferred one -- while leaving the width free to fill the sidebar --
+	 * makes the column stack tightly whatever is open.
+	 */
+	@Override
+	public Dimension getMaximumSize()
+	{
+		return new Dimension(Integer.MAX_VALUE, getPreferredSize().height);
 	}
 
 	private void toggleOnClick(Component component)
