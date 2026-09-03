@@ -32,8 +32,10 @@ class QuestGraph
 	 * missing a field parses cleanly into nulls and then answers "eligible"
 	 * for a quest whose requirements were never read — a confident wrong
 	 * answer, which is the one thing this plugin must not produce.
+	 *
+	 * 2 added Item.sources().
 	 */
-	static final int SUPPORTED_VERSION = 1;
+	static final int SUPPORTED_VERSION = 2;
 
 	@SerializedName("version")
 	private int version;
@@ -124,6 +126,9 @@ class QuestGraph
 		@SerializedName("obtainable")
 		private boolean obtainable;
 
+		@SerializedName("sources")
+		private List<String> sources;
+
 		String name()
 		{
 			return name == null ? "" : name;
@@ -150,6 +155,17 @@ class QuestGraph
 		boolean obtainable()
 		{
 			return obtainable;
+		}
+
+		/**
+		 * Where to get this item, best first, as short display lines ready to
+		 * show verbatim -- "Shop: Varrock General Store (5 gp)", "Drop: Goblin
+		 * (common)". Empty when questpath found no source at all, which the
+		 * panel must render as no tooltip, never an empty or invented one.
+		 */
+		List<String> sources()
+		{
+			return sources == null ? Collections.emptyList() : sources;
 		}
 	}
 

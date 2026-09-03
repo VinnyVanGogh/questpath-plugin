@@ -82,18 +82,36 @@ class QuestItems
 		private final int wanted;
 		private final long owned;
 		private final boolean optional;
+		private final List<String> sources;
 
-		Line(String name, int wanted, long owned, boolean optional)
+		Line(String name, int wanted, long owned, boolean optional, List<String> sources)
 		{
 			this.name = name;
 			this.wanted = wanted;
 			this.owned = owned;
 			this.optional = optional;
+			this.sources = sources;
+		}
+
+		/** Convenience for callers that do not care about obtain sources -- mainly tests. */
+		Line(String name, int wanted, long owned, boolean optional)
+		{
+			this(name, wanted, owned, optional, null);
 		}
 
 		String name()
 		{
 			return name;
+		}
+
+		/**
+		 * Where to get this item, best first, as short display lines carried
+		 * verbatim from the bundle. Empty when questpath knows no source --
+		 * the panel must render that as no tooltip, never an invented one.
+		 */
+		List<String> sources()
+		{
+			return sources == null ? java.util.Collections.emptyList() : sources;
 		}
 
 		long owned()
@@ -211,7 +229,7 @@ class QuestItems
 			for (QuestGraph.Item item : quest.items())
 			{
 				long owned = held.getOrDefault(item.name().toLowerCase(), 0L);
-				needs.lines.add(new Line(item.name(), item.quantity(), owned, item.optional()));
+				needs.lines.add(new Line(item.name(), item.quantity(), owned, item.optional(), item.sources()));
 			}
 			out.quests.add(needs);
 		}
@@ -310,7 +328,7 @@ class QuestItems
 					continue;
 				}
 				Total total = merged.computeIfAbsent(line.name(),
-					name -> new Total(name, held.getOrDefault(name.toLowerCase(), 0L)));
+					name -> new Total(name, held.getOrDefault(name.toLowerCase(), 0L), line.sources()));
 				total.add(line);
 			}
 		}
@@ -334,14 +352,32 @@ class QuestItems
 	{
 		private final String name;
 		private final long owned;
+		private final List<String> sources;
 		private int wanted;
 		private int quests;
 		private boolean anyUnstated;
 
-		Total(String name, long owned)
+		Total(String name, long owned, List<String> sources)
 		{
 			this.name = name;
 			this.owned = owned;
+			this.sources = sources;
+		}
+
+		/** Convenience for callers that do not care about obtain sources -- mainly tests. */
+		Total(String name, long owned)
+		{
+			this(name, owned, null);
+		}
+
+		/**
+		 * Where to get this item -- see Line.sources(). Every Line folded
+		 * into a Total shares one item name, so they all carry the same
+		 * source list; this is simply the first one seen.
+		 */
+		List<String> sources()
+		{
+			return sources == null ? java.util.Collections.emptyList() : sources;
 		}
 
 		/**

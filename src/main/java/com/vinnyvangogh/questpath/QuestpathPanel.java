@@ -20,6 +20,7 @@ import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
@@ -70,8 +71,13 @@ class QuestpathPanel extends PluginPanel
 	 * refreshes on every experience drop. Rebuilding them several times a
 	 * second while training is work for a picture that did not change, and it
 	 * throws away scroll position with it.
+	 *
+	 * lastVerdictSignature covers both QUEST_VERDICT and NEXT_QUEST, which
+	 * share one cache gate: a two-element list of (verdicts signature, next-
+	 * quest hash), compared with Objects.equals rather than typed as Integer,
+	 * because it now carries two independent pieces of state.
 	 */
-	private Integer lastVerdictSignature;
+	private Object lastVerdictSignature;
 	private Integer lastItemsSignature;
 
 	/**
@@ -83,6 +89,18 @@ class QuestpathPanel extends PluginPanel
 	 * focus mid-type would be worse than no search field.
 	 */
 	private final JTextField questSearch = new JTextField();
+
+	/**
+	 * The verdict/status filter beside the search box.
+	 *
+	 * "All statuses" plus one entry per group a search would show -- COMPLETE
+	 * included, because filtering to "Done" is a real thing to want even
+	 * outside a text search. Built once, like questSearch, so a chosen filter
+	 * survives the panel rebuilding underneath it on every quest completion.
+	 */
+	private final JComboBox<String> questStatusFilter = new JComboBox<>();
+	private static final String STATUS_FILTER_ALL = "All statuses";
+
 	private final JPanel questResults = new JPanel();
 	private QuestVerdicts lastVerdicts;
 
@@ -127,6 +145,7 @@ class QuestpathPanel extends PluginPanel
 		itemResults.setAlignmentX(Component.LEFT_ALIGNMENT);
 		styleSearch(questSearch, "Filter the quests below by name", this::refilterQuests);
 		styleSearch(itemSearch, "Filter the items below by name", this::refilterItems);
+		styleStatusFilter(questStatusFilter, this::refilterQuests);
 
 		add(tabGroup, BorderLayout.NORTH);
 		add(display, BorderLayout.CENTER);
@@ -176,6 +195,51 @@ class QuestpathPanel extends PluginPanel
 				onChange.run();
 			}
 		});
+	}
+
+	/**
+	 * The verdict/status combo beside the search box.
+	 *
+	 * Populated from {@link QuestVerdicts#searchSections()} rather than
+	 * hand-listed, so a status the classifier gains automatically gets a
+	 * filter entry instead of silently being unreachable through this box.
+	 */
+	private void styleStatusFilter(JComboBox<String> combo, Runnable onChange)
+	{
+		combo.addItem(STATUS_FILTER_ALL);
+		for (QuestStatus status : QuestVerdicts.searchSections())
+		{
+			combo.addItem(QuestVerdicts.label(status));
+		}
+		combo.setSelectedItem(STATUS_FILTER_ALL);
+		combo.setBackground(ColorScheme.DARKER_GRAY_COLOR);
+		combo.setForeground(Color.WHITE);
+		combo.setMaximumSize(new Dimension(Integer.MAX_VALUE, 22));
+		combo.setAlignmentX(Component.LEFT_ALIGNMENT);
+		combo.setToolTipText("Show only one verdict group");
+		combo.addActionListener(e -> onChange.run());
+	}
+
+	/**
+	 * The status this panel's combo is currently narrowed to, or null for
+	 * "All statuses". Null means the caller falls back to the usual
+	 * sections()/searchSections() grouping.
+	 */
+	private QuestStatus selectedStatusFilter()
+	{
+		Object selected = questStatusFilter.getSelectedItem();
+		if (selected == null || STATUS_FILTER_ALL.equals(selected))
+		{
+			return null;
+		}
+		for (QuestStatus status : QuestVerdicts.searchSections())
+		{
+			if (QuestVerdicts.label(status).equals(selected))
+			{
+				return status;
+			}
+		}
+		return null;
 	}
 
 	/**
@@ -247,10 +311,10 @@ class QuestpathPanel extends PluginPanel
 	 */
 	void update(CombatStats stats, SkillXp xp, SyncStatus sync,
 		List<BuildRule> rules, List<String> unmatchedQuests, QuestVerdicts verdicts, QuestItems items,
-		SyncSettings settings)
+		NextQuestStatus nextQuest, SyncSettings settings)
 	{
 		SwingUtilities.invokeLater(() ->
-			render(stats, xp, sync, rules, unmatchedQuests, verdicts, items, settings));
+			render(stats, xp, sync, rules, unmatchedQuests, verdicts, items, nextQuest, settings));
 	}
 
 	/**
@@ -278,7 +342,7 @@ class QuestpathPanel extends PluginPanel
 
 	private void render(CombatStats stats, SkillXp xp, SyncStatus sync,
 		List<BuildRule> rules, List<String> unmatchedQuests, QuestVerdicts verdicts, QuestItems items,
-		SyncSettings settings)
+		NextQuestStatus nextQuest, SyncSettings settings)
 	{
 		clearBodies(PanelSections.Tab.COMBAT, PanelSections.Tab.SYNC, PanelSections.Tab.BUILD);
 
@@ -315,23 +379,33 @@ class QuestpathPanel extends PluginPanel
 		}
 
 		// Rebuilt only when their contents actually changed; see the
-		// signature fields.
+		// signature fields. NEXT_QUEST shares this gate with QUEST_VERDICT --
+		// both live on the Quests tab and both are driven by the same
+		// completed-quest read, so a quest finishing invalidates them
+		// together.
 		lastVerdicts = verdicts;
-		Integer verdictSignature = verdicts == null ? null : verdicts.signature();
-		if (!java.util.Objects.equals(verdictSignature, lastVerdictSignature))
+		Object questsSignature = java.util.Arrays.asList(
+			verdicts == null ? null : verdicts.signature(),
+			nextQuest == null ? null : nextQuest.hashCode());
+		if (!java.util.Objects.equals(questsSignature, lastVerdictSignature))
 		{
 			clearBodies(PanelSections.Tab.QUESTS);
 			JPanel quests = tabBodies.get(PanelSections.Tab.QUESTS);
+			quests.add(heading(PanelSections.NEXT_QUEST.title()));
+			quests.add(nextQuestBlock(nextQuest));
+			quests.add(Box.createVerticalStrut(14));
 			quests.add(heading(PanelSections.QUEST_VERDICT.title()));
 			if (verdicts != null)
 			{
 				quests.add(questSearch);
+				quests.add(Box.createVerticalStrut(4));
+				quests.add(questStatusFilter);
 				quests.add(Box.createVerticalStrut(6));
 			}
 			quests.add(questResults);
 			fillQuestResults(verdicts);
 			renderPlannedSectionsFor(PanelSections.Tab.QUESTS);
-			lastVerdictSignature = verdictSignature;
+			lastVerdictSignature = questsSignature;
 		}
 
 		lastItems = items;
@@ -446,13 +520,15 @@ class QuestpathPanel extends PluginPanel
 			shownTotals++;
 			// The count of quests goes in the tooltip, not the label. "Ball of
 			// wool x3" beside "5 / 24" read as a multiplication rather than as
-			// "three quests want this", which is what it meant.
-			String tip = total.sharedAcrossQuests()
+			// "three quests want this", which is what it meant. Where to buy
+			// or find it rides in the same tooltip -- one hover answers both
+			// "why do I need several" and "where do I get it".
+			String sharedNote = total.sharedAcrossQuests()
 				? "Needed by " + total.quests() + " quests you can do"
 				: null;
 			addRow(totalsGrid, total.name(), total.describe(), total.satisfied()
 				? ColorScheme.PROGRESS_COMPLETE_COLOR
-				: ColorScheme.LIGHT_GRAY_COLOR, tip);
+				: ColorScheme.LIGHT_GRAY_COLOR, itemTooltip(sharedNote, total.sources()));
 		}
 		panel.add(totalsGrid);
 		if (filtering && shownTotals == 0)
@@ -505,9 +581,52 @@ class QuestpathPanel extends PluginPanel
 				String label = line.optional() ? line.name() + " (optional)" : line.name();
 				addRow(grid, label, line.describe(), line.held()
 					? ColorScheme.PROGRESS_COMPLETE_COLOR
-					: ColorScheme.LIGHT_GRAY_COLOR);
+					: ColorScheme.LIGHT_GRAY_COLOR, itemTooltip(null, line.sources()));
 			}
 			panel.add(grid);
+		}
+
+		return panel;
+	}
+
+	/**
+	 * The saved route's next undone quest, or why there is not one to show.
+	 *
+	 * Three distinct pictures, not one: a route nobody has saved in
+	 * questpath, a route that is entirely finished, and a route with a real
+	 * next quest on it. Collapsing any two of those into the same message
+	 * would tell the player something false about their plan.
+	 */
+	private static JPanel nextQuestBlock(NextQuestStatus next)
+	{
+		JPanel panel = column();
+
+		if (next == null)
+		{
+			// Not "no route saved". The client may not have loaded quest
+			// states yet, which looks identical to "zero quests finished" --
+			// see QuestpathPlugin.nextQuest().
+			panel.add(muted("Cannot judge your route yet. Log in and let the client load."));
+			return panel;
+		}
+
+		switch (next.state())
+		{
+			case NO_ROUTE:
+				panel.add(muted("No route saved in questpath. Save a plan there and it will show up here."));
+				break;
+			case ALL_DONE:
+				JLabel done = new JLabel(wrap("Nothing left to do — every quest on your route is finished."));
+				done.setFont(FontManager.getRunescapeSmallFont());
+				done.setForeground(ColorScheme.PROGRESS_COMPLETE_COLOR);
+				panel.add(done);
+				break;
+			case NEXT:
+				JLabel value = new JLabel(wrap(next.questName()));
+				value.setFont(FontManager.getRunescapeBoldFont());
+				value.setForeground(Color.WHITE);
+				panel.add(value);
+				break;
 		}
 
 		return panel;
@@ -523,10 +642,10 @@ class QuestpathPanel extends PluginPanel
 	private void fillQuestResults(QuestVerdicts verdicts)
 	{
 		questResults.removeAll();
-		questResults.add(verdictBlock(verdicts, questSearch.getText()));
+		questResults.add(verdictBlock(verdicts, questSearch.getText(), selectedStatusFilter()));
 	}
 
-	private static JPanel verdictBlock(QuestVerdicts verdicts, String filter)
+	private static JPanel verdictBlock(QuestVerdicts verdicts, String filter, QuestStatus statusFilter)
 	{
 		JPanel panel = column();
 
@@ -561,8 +680,17 @@ class QuestpathPanel extends PluginPanel
 		done.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
 		panel.add(done);
 
+		// A status picked from the combo narrows the sections shown to that one
+		// group, on top of whatever text filter is also active. Left at "All
+		// statuses", the grouping is the same as before: every section while
+		// searching by name (so a finished quest is still findable), the
+		// smaller default set otherwise.
+		QuestStatus[] toRender = statusFilter != null
+			? new QuestStatus[]{statusFilter}
+			: (filtering ? QuestVerdicts.searchSections() : QuestVerdicts.sections());
+
 		int matched = 0;
-		for (QuestStatus status : filtering ? QuestVerdicts.searchSections() : QuestVerdicts.sections())
+		for (QuestStatus status : toRender)
 		{
 			List<QuestGraph.Quest> shown = new ArrayList<>();
 			for (QuestGraph.Quest quest : verdicts.quests(status))
@@ -603,7 +731,7 @@ class QuestpathPanel extends PluginPanel
 			}
 		}
 
-		if (filtering && matched == 0)
+		if ((filtering || statusFilter != null) && matched == 0)
 		{
 			panel.add(Box.createVerticalStrut(8));
 			panel.add(muted("No quest matches that."));
@@ -1049,6 +1177,50 @@ class QuestpathPanel extends PluginPanel
 			return ColorScheme.PROGRESS_INPROGRESS_COLOR;
 		}
 		return ColorScheme.PROGRESS_COMPLETE_COLOR;
+	}
+
+	/**
+	 * Builds a row's tooltip from an optional note plus its item's obtain
+	 * sources, or null when there is neither.
+	 *
+	 * Null, not an empty string: Swing renders a tooltip with an empty
+	 * string as a visible blank balloon, which is worse than no tooltip at
+	 * all, and an item questpath knows no source for must show no tooltip
+	 * rather than an empty or invented one.
+	 */
+	private static String itemTooltip(String note, List<String> sources)
+	{
+		List<String> lines = new ArrayList<>();
+		if (note != null && !note.isEmpty())
+		{
+			lines.add(note);
+		}
+		if (sources != null)
+		{
+			lines.addAll(sources);
+		}
+		if (lines.isEmpty())
+		{
+			return null;
+		}
+
+		StringBuilder html = new StringBuilder("<html>");
+		for (int i = 0; i < lines.size(); i++)
+		{
+			if (i > 0)
+			{
+				html.append("<br>");
+			}
+			html.append(escapeHtml(lines.get(i)));
+		}
+		html.append("</html>");
+		return html.toString();
+	}
+
+	/** Swing tooltips render as HTML, so a source line has to escape it. */
+	private static String escapeHtml(String text)
+	{
+		return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
 	}
 
 	private static void addRow(JPanel grid, String label, String detail, Color detailColor)

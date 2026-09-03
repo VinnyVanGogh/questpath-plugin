@@ -12,12 +12,10 @@ import net.runelite.api.Skill;
  * from "questpath has not been taught this yet", because the first is
  * something to fix in the app and the second is something to wait for.
  *
- * The blocked ones are all blocked on the same thing: the quest graph. Those
- * answers need every quest's requirements, rewards and prerequisites, which
- * questpath ingests from the wiki and the plugin does not carry yet. The plan
- * for getting it here is docs/questpath-plugin-plan.md in the Go repo — a
- * bundled export, plus the planner ported to Java against generated golden
- * vectors.
+ * Every section is LIVE as of the bundled quest graph landing (see
+ * docs/questpath-plugin-plan.md in the Go repo): NEXT_QUEST and QUEST_BROWSER
+ * were the last two waiting on it. A future section that is not built yet
+ * still says so in those words here rather than rendering an empty state.
  */
 enum PanelSections
 {
@@ -54,9 +52,8 @@ enum PanelSections
 	NEXT_QUEST(
 		Tab.QUESTS,
 		"Next on your route",
-		Status.NOT_BUILT,
-		"Your saved route order from questpath, rather than every doable quest at once. The order "
-			+ "lives in questpath and is not sent yet."),
+		Status.LIVE,
+		null),
 
 	QUEST_VERDICT(
 		Tab.QUESTS,
@@ -73,9 +70,8 @@ enum PanelSections
 	QUEST_BROWSER(
 		Tab.QUESTS,
 		"Quest browser",
-		Status.NOT_BUILT,
-		"Search and filter the list above, rather than the first eight of each group. Quest Helper "
-			+ "already does walkthroughs better than this ever would; the point here is the verdict.");
+		Status.LIVE,
+		null);
 
 	/**
 	 * Which tab a section lives under.

@@ -13,6 +13,19 @@ import static org.junit.Assert.assertTrue;
  */
 public class PanelSectionsTest
 {
+	/**
+	 * NOTE: this test is currently VACUOUS. Every section is LIVE, so the loop
+	 * below reaches no assertion and passes by finding nothing to check.
+	 *
+	 * It is kept rather than deleted because the rule it states is the one
+	 * that matters the moment anyone adds the next unbuilt section, and a rule
+	 * with no test is how "questpath cannot answer this yet" quietly starts
+	 * rendering as "questpath looked and found nothing". But a green tick here
+	 * is not evidence of anything today, and saying so costs less than someone
+	 * later mistaking it for coverage. The same applies to
+	 * QuestpathPanel.renderPlannedSectionsFor, whose not-built rendering path
+	 * no section currently exercises.
+	 */
 	@Test
 	public void everyUnbuiltSectionSaysWhatItWillShow()
 	{
@@ -101,20 +114,24 @@ public class PanelSectionsTest
 	}
 
 	/**
-	 * If every section were built this enum would be pointless, and if none
-	 * were the panel would be a promise. Both ends are worth failing on.
+	 * If every section were unbuilt the panel would be a promise rather than a
+	 * plugin. Worth failing on.
+	 *
+	 * This used to also require at least one NOT_BUILT section, back when
+	 * NEXT_QUEST and QUEST_BROWSER were genuinely still waiting on the
+	 * bundled quest graph. Now that every section is LIVE, requiring an
+	 * unbuilt one would fail the moment the panel finished rather than the
+	 * moment it regressed -- a fully-built panel is success, not something to
+	 * guard against.
 	 */
 	@Test
-	public void thePanelHasBothBuiltAndUnbuiltSections()
+	public void thePanelHasAtLeastOneLiveSection()
 	{
 		boolean anyLive = false;
-		boolean anyPlanned = false;
 		for (PanelSections section : PanelSections.values())
 		{
 			anyLive |= section.status() == PanelSections.Status.LIVE;
-			anyPlanned |= section.status() == PanelSections.Status.NOT_BUILT;
 		}
 		assertTrue(anyLive);
-		assertTrue(anyPlanned);
 	}
 }

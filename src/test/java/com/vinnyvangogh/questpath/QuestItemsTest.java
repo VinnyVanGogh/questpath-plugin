@@ -345,4 +345,104 @@ public class QuestItemsTest
 		QuestItems items = QuestItems.of(graph, freshAccount(), stocked, true, everything);
 		assertTrue("with a full bank there is nothing to detour for", items.pickups().isEmpty());
 	}
+
+	/**
+	 * The bundled graph carries obtain sources for most quest items (questpath
+	 * only omits one when it genuinely knows none), and QuestItems must carry
+	 * them through onto both the per-quest line and the merged total -- that
+	 * is the whole path a hover in the Items tab reads from.
+	 */
+	@Test
+	public void obtainSourcesReachBothTheLineAndItsTotal() throws Exception
+	{
+		QuestGraph graph = graph();
+
+		String itemWithSources = null;
+		for (QuestGraph.Quest quest : graph.quests())
+		{
+			for (QuestGraph.Item item : quest.items())
+			{
+				if (!item.sources().isEmpty())
+				{
+					itemWithSources = item.name();
+					break;
+				}
+			}
+			if (itemWithSources != null)
+			{
+				break;
+			}
+		}
+		assertNotNull("the bundled graph carries no item with a known source at all", itemWithSources);
+
+		QuestItems items = QuestItems.of(graph, freshAccount(), Collections.emptyMap(), true);
+
+		boolean lineHadSources = false;
+		for (QuestItems.QuestNeeds needs : items.quests())
+		{
+			for (QuestItems.Line line : needs.lines())
+			{
+				if (line.name().equals(itemWithSources))
+				{
+					assertFalse(line.sources().isEmpty());
+					for (String source : line.sources())
+					{
+						assertTrue(source.startsWith("Shop: ") || source.startsWith("Drop: "));
+					}
+					lineHadSources = true;
+				}
+			}
+		}
+		assertTrue("the item was in the graph with sources but no line carried them", lineHadSources);
+
+		boolean totalHadSources = false;
+		for (QuestItems.Total total : items.totals())
+		{
+			if (total.name().equals(itemWithSources))
+			{
+				assertFalse(total.sources().isEmpty());
+				totalHadSources = true;
+			}
+		}
+		assertTrue("the item's total did not carry its sources", totalHadSources);
+	}
+
+	/**
+	 * An item the wiki gives no obtain source for must carry none through --
+	 * never an empty placeholder mistaken for "not loaded" and never an
+	 * invented one.
+	 */
+	@Test
+	public void anItemWithNoKnownSourceCarriesAnEmptyListNotNull() throws Exception
+	{
+		QuestGraph graph = graph();
+
+		String itemWithoutSources = null;
+		outer:
+		for (QuestGraph.Quest quest : graph.quests())
+		{
+			for (QuestGraph.Item item : quest.items())
+			{
+				if (item.sources().isEmpty())
+				{
+					itemWithoutSources = item.name();
+					break outer;
+				}
+			}
+		}
+		assertNotNull("the bundled graph has no item lacking a source; nothing to pin here", itemWithoutSources);
+
+		QuestItems items = QuestItems.of(graph, freshAccount(), Collections.emptyMap(), true);
+		for (QuestItems.QuestNeeds needs : items.quests())
+		{
+			for (QuestItems.Line line : needs.lines())
+			{
+				if (line.name().equals(itemWithoutSources))
+				{
+					assertNotNull(line.sources());
+					assertTrue(line.sources().isEmpty());
+				}
+			}
+		}
+	}
 }

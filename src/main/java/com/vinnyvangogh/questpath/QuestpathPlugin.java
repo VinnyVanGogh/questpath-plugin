@@ -133,6 +133,21 @@ public class QuestpathPlugin extends Plugin
 	private volatile List<String> unmatchedQuests = Collections.emptyList();
 
 	/**
+	 * The account's saved route from questpath, as quest names in order.
+	 *
+	 * Written from an OkHttp callback and read on the client thread, so it is
+	 * volatile and always replaced wholesale. Empty until the first accepted
+	 * push, same as buildRules and for the same reason -- there is no other
+	 * way to learn it, and an account with a genuinely empty saved route
+	 * looks identical to one that has not synced yet, which is the honest
+	 * answer in both cases: "no route saved, as far as questpath has told
+	 * this session". Cleared with buildRules on logout and on a rejected
+	 * push, because on a rejection questpath is not confirming this
+	 * account's state, and a stale route could belong to another account.
+	 */
+	private volatile List<String> routeOrder = Collections.emptyList();
+
+	/**
 	 * How often a push may be sent for experience alone, with no quest or
 	 * level change behind it.
 	 *
@@ -257,6 +272,7 @@ public class QuestpathPlugin extends Plugin
 			// Showing the previous one's would be worse than showing none.
 			buildRules = Collections.emptyList();
 			unmatchedQuests = Collections.emptyList();
+			routeOrder = Collections.emptyList();
 			// The next login may be another account, whose bank is not this
 			// one. Reporting the previous account's items would be worse than
 			// reporting none.
@@ -272,7 +288,7 @@ public class QuestpathPlugin extends Plugin
 			return;
 		}
 		panel.update(currentStats(), currentXp(), syncStatus(), buildRules, unmatchedQuests,
-			verdicts(), questItems(), SyncSettings.from(config));
+			verdicts(), questItems(), nextQuest(), SyncSettings.from(config));
 	}
 
 	/**
@@ -373,6 +389,7 @@ public class QuestpathPlugin extends Plugin
 					{
 						buildRules = Collections.emptyList();
 						unmatchedQuests = Collections.emptyList();
+						routeOrder = Collections.emptyList();
 						clientThread.invokeLater(this::refresh);
 					}
 				},
@@ -382,6 +399,10 @@ public class QuestpathPlugin extends Plugin
 					// the plugin learns them.
 					buildRules = BuildRule.ordered(accepted.buildRules());
 					unmatchedQuests = accepted.unmatched();
+					// Same story for the saved route -- questpath owns the
+					// plan, and this push response is the only place it is
+					// handed over.
+					routeOrder = accepted.routeOrder();
 
 					// Repaint now rather than waiting for the next game
 					// event. An earlier version left it to the next
@@ -548,6 +569,31 @@ public class QuestpathPlugin extends Plugin
 			}
 		}
 		return started;
+	}
+
+	/**
+	 * Which quest on the saved route to do next, or why that cannot be
+	 * answered yet.
+	 *
+	 * Null for the same reason verdicts() is null: a logged-out client, or one
+	 * whose quest varbits have not loaded, reports zero completed quests
+	 * indistinguishably from an account that genuinely has none, and the
+	 * first quest on a real route would then be reported "next" even if it
+	 * was finished months ago. The panel renders null as "cannot judge yet",
+	 * not as "nothing to do".
+	 */
+	private NextQuestStatus nextQuest()
+	{
+		if (client.getGameState() != GameState.LOGGED_IN)
+		{
+			return null;
+		}
+		Set<String> completed = completedQuestNames();
+		if (completed.isEmpty())
+		{
+			return null;
+		}
+		return NextQuestStatus.of(routeOrder, completed);
 	}
 
 	private QuestItems questItems()

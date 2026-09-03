@@ -22,6 +22,9 @@ class PushResponse
 	@SerializedName("build_rules")
 	private List<BuildRule> buildRules;
 
+	@SerializedName("route_order")
+	private List<String> routeOrder;
+
 	String player()
 	{
 		return player == null ? "" : player;
@@ -42,5 +45,18 @@ class PushResponse
 	List<BuildRule> buildRules()
 	{
 		return buildRules == null ? Collections.emptyList() : buildRules;
+	}
+
+	/**
+	 * The account's saved route from questpath, as quest names in route order.
+	 *
+	 * questpath always sends this field, even empty, so an empty list here
+	 * means "no route saved" -- a null would only happen against a questpath
+	 * old enough to predate this field, and is treated the same way rather
+	 * than as a crash.
+	 */
+	List<String> routeOrder()
+	{
+		return routeOrder == null ? Collections.emptyList() : routeOrder;
 	}
 }
