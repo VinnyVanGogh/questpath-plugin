@@ -40,6 +40,14 @@ public interface QuestpathConfig extends Config
 	String shopSection = "shops";
 
 	@ConfigSection(
+		name = "Ground items",
+		description = "Mark things you need that are lying on the floor",
+		position = 3,
+		closedByDefault = false
+	)
+	String groundSection = "ground";
+
+	@ConfigSection(
 		name = "questpath sync",
 		description = "Push this account's state to your own questpath instance",
 		position = 0,
@@ -424,6 +432,41 @@ public interface QuestpathConfig extends Config
 		position = 2
 	)
 	default boolean shopHighlightCounts()
+	{
+		return true;
+	}
+
+	// ------------------------------------------------------------------
+	// Ground items.
+	//
+	// Strictly things already lying on the floor. questpath knows where items
+	// drop from, and turning that into instructions would carpet the screen
+	// with kill orders for a shopping list -- so the rule is simply that the
+	// item is physically there. A pile of bones on the ground is worth
+	// marking; "go and make some bones" is not a thing this will ever say.
+	// ------------------------------------------------------------------
+
+	@ConfigItem(
+		keyName = "groundHighlight",
+		name = "Mark what you need on the ground",
+		description = "Outline items lying on the floor that your plan still needs, so you"
+			+ " pick them up in passing instead of buying them later.",
+		section = groundSection,
+		position = 1
+	)
+	default boolean groundHighlight()
+	{
+		return true;
+	}
+
+	@ConfigItem(
+		keyName = "groundHighlightCounts",
+		name = "Show how many to pick up",
+		description = "Print the outstanding count beside the item name.",
+		section = groundSection,
+		position = 2
+	)
+	default boolean groundHighlightCounts()
 	{
 		return true;
 	}

@@ -2,6 +2,7 @@ package com.vinnyvangogh.questpath;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.Stroke;
@@ -153,12 +154,45 @@ class ShopItemOverlay extends WidgetItemOverlay
 		if (config.shopHighlightCounts())
 		{
 			long outstanding = Math.max(0L, total.required() - total.owned());
-			// The slot corner is where the game itself prints a stack count,
-			// so a second number there reads as more of the same rather than
-			// as a new kind of overlay -- there is no room for more than the
-			// number anyway.
-			OverlayTheme.stackCount(g, bounds.x, bounds.y, Long.toString(outstanding), outline);
+			drawCount(g, bounds, Long.toString(outstanding), items.bankSeen());
 		}
+	}
+
+	/**
+	 * How many to buy, above the slot rather than inside it.
+	 *
+	 * The corner is already taken. The shop prints its own stock there in
+	 * yellow -- "1", "100" -- and putting a second number in the same place
+	 * produced two unrelated figures overlapping in the same colour family,
+	 * which is worse than either alone: the one number a player must not
+	 * misread is how many to buy.
+	 *
+	 * So it sits above the slot, outside the outline, and in green rather
+	 * than the outline's amber. Amber is the shop's own palette and the
+	 * outline's; green is not used anywhere else in a shop, which is exactly
+	 * why it reads as ours.
+	 *
+	 * Centred over the slot, and nudged back inside the interface if the slot
+	 * sits on the top row -- a count drawn above the first row would otherwise
+	 * land on the shop's title bar.
+	 */
+	private static void drawCount(Graphics2D g, Rectangle bounds, String text, boolean bankSeen)
+	{
+		g.setFont(OverlayTheme.smallFont());
+		FontMetrics metrics = g.getFontMetrics();
+		int width = metrics.stringWidth(text);
+
+		int x = bounds.x + (bounds.width - width) / 2;
+		int baseline = bounds.y - 2;
+		if (baseline - metrics.getAscent() < 0)
+		{
+			baseline = bounds.y + metrics.getAscent();
+		}
+
+		// The same weakened claim the outline makes when the bank has not
+		// been seen: the count may be counting something already banked.
+		OverlayTheme.shadowed(g, text, x, baseline,
+			bankSeen ? OverlayTheme.GOOD : OverlayTheme.MUTED);
 	}
 
 	/**

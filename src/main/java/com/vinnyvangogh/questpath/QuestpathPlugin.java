@@ -136,6 +136,12 @@ public class QuestpathPlugin extends Plugin
 	private ShopItemOverlay shopOverlay;
 
 	/**
+	 * The ground marker. Also outside the panel overlays, and for the same
+	 * reason: it draws into the world rather than owning a panel.
+	 */
+	private GroundItemOverlay groundOverlay;
+
+	/**
 	 * The bundled quest graph, or null when it could not be loaded.
 	 *
 	 * Null is rendered as a plain failure rather than as an empty quest list:
@@ -240,6 +246,9 @@ public class QuestpathPlugin extends Plugin
 		shopOverlay = new ShopItemOverlay(this, config, itemManager);
 		overlayManager.add(shopOverlay);
 
+		groundOverlay = new GroundItemOverlay(this, config, client);
+		overlayManager.add(groundOverlay);
+
 		try
 		{
 			questGraph = QuestGraph.load(gson);
@@ -272,6 +281,11 @@ public class QuestpathPlugin extends Plugin
 		{
 			overlayManager.remove(shopOverlay);
 			shopOverlay = null;
+		}
+		if (groundOverlay != null)
+		{
+			overlayManager.remove(groundOverlay);
+			groundOverlay = null;
 		}
 		overlayIcons.clear();
 		overlaySnapshot = null;
@@ -839,7 +853,8 @@ public class QuestpathPlugin extends Plugin
 
 		return QuestItems.of(questGraph,
 			new PlayerState(levels, experience, completed, buildRules),
-			owned.heldByName(), owned.bankSeen(), inProgressQuestNames());
+			owned.heldByName(), owned.bankSeen(), inProgressQuestNames(),
+			new HashSet<>(routeOrder));
 	}
 
 	@Provides

@@ -284,24 +284,69 @@ class QuestItems
 
 	static QuestItems of(QuestGraph graph, PlayerState account, Map<String, Long> held, boolean bankSeen)
 	{
-		return of(graph, account, held, bankSeen, java.util.Collections.emptySet());
+		return of(graph, account, held, bankSeen, java.util.Collections.emptySet(),
+			java.util.Collections.emptySet());
+	}
+
+	static QuestItems of(QuestGraph graph, PlayerState account, Map<String, Long> held, boolean bankSeen,
+		java.util.Set<String> inProgress)
+	{
+		return of(graph, account, held, bankSeen, inProgress, java.util.Collections.emptySet());
 	}
 
 	/**
 	 * @param inProgress names of quests the client reports as started but not
 	 *     finished, so the list can say what is worth grabbing while you are
 	 *     already in one
+	 * @param plan quest names on the account's saved questpath route. When it
+	 *     has any, it is the scope; when it is empty the list falls back to
+	 *     whatever is doable right now.
 	 */
 	static QuestItems of(QuestGraph graph, PlayerState account, Map<String, Long> held, boolean bankSeen,
-		java.util.Set<String> inProgress)
+		java.util.Set<String> inProgress, java.util.Set<String> plan)
 	{
 		QuestItems out = new QuestItems();
 		out.bankSeen = bankSeen;
 		QuestClassifier classifier = new QuestClassifier(graph, account);
 
+		// The plan, not what is doable today.
+		//
+		// Scoping to doable quests answered "what can I start right now",
+		// which is the wrong question at a shop counter. You are standing in
+		// front of the stock; the useful list is everything the plan will ever
+		// want, so the trip happens once instead of once per quest becoming
+		// available. On a real account that is 171 items rather than 113 --
+		// 42 more you could have bought while you were already there.
+		//
+		// Falls back to doable when no route has been synced, because an
+		// account questpath has never seen a plan for still deserves a list,
+		// and "everything in the game" is not one.
+		java.util.Set<String> scope = new java.util.HashSet<>();
+		for (String name : plan)
+		{
+			if (name != null)
+			{
+				scope.add(name.toLowerCase());
+			}
+		}
+
 		for (QuestGraph.Quest quest : graph.quests())
 		{
-			if (!classifier.classify(quest).doable() || quest.items().isEmpty())
+			if (quest.items().isEmpty())
+			{
+				continue;
+			}
+			QuestStatus status = classifier.classify(quest);
+			// A finished quest never needs shopping for, whichever scope is
+			// in force.
+			if (status == QuestStatus.COMPLETE)
+			{
+				continue;
+			}
+			boolean wanted = scope.isEmpty()
+				? status.doable()
+				: scope.contains(quest.name().toLowerCase());
+			if (!wanted)
 			{
 				continue;
 			}

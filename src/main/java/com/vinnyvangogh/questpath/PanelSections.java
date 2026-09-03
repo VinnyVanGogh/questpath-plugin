@@ -1,6 +1,5 @@
 package com.vinnyvangogh.questpath;
 
-import net.runelite.api.SpriteID;
 
 /**
  * Every section the sidebar will carry, and what is behind each one today.
@@ -111,12 +110,18 @@ enum PanelSections
 		// The label survives as the tooltip either way -- an icon that has to
 		// be learned needs a way to be learned, and it is also the fallback
 		// when a sprite cannot be produced.
-		COMBAT("Combat", SpriteID.TAB_COMBAT),
-		BUILD("Build", SpriteID.RS2_TAB_STATS),
-		QUESTS("Quests", SpriteID.TAB_QUESTS),
-		ITEMS("Items", SpriteID.RS2_TAB_INVENTORY),
-		SYNC("Sync", SpriteID.SPELL_WIND_SURGE),
-		VIEW("View", SpriteID.RS2_TAB_OPTIONS);
+		// Sprite ids given as numbers rather than through
+		// net.runelite.api.SpriteID, which is deprecated in favour of a
+		// gameval namespace that splits every sprite into its own nested
+		// class. These six ids are stable game data, they are named right
+		// here, and PanelSectionsTest pins that each is real and distinct --
+		// which is more than the constant was buying.
+		COMBAT("Combat", 168),          // TAB_COMBAT, the crossed swords
+		BUILD("Build", 775),            // RS2_TAB_STATS, the three bars
+		QUESTS("Quests", 776),          // TAB_QUESTS, the quest diary
+		ITEMS("Items", 777),            // RS2_TAB_INVENTORY, the backpack
+		SYNC("Sync", 362),              // SPELL_WIND_SURGE
+		VIEW("View", 785);              // RS2_TAB_OPTIONS, the wrench
 
 		private final String label;
 		private final int sprite;
