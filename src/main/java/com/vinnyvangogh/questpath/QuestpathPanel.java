@@ -1,6 +1,7 @@
 package com.vinnyvangogh.questpath;
 
 import java.awt.BorderLayout;
+import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -81,7 +82,28 @@ class QuestpathPanel extends PluginPanel
 	private static final int TAB_ICON_SIZE = 20;
 
 	private final Map<PanelSections.Tab, JPanel> tabBodies = new EnumMap<>(PanelSections.Tab.class);
-	private final JPanel display = new JPanel(new BorderLayout());
+
+	/**
+	 * Switches tabs by changing which one is visible, never by removing one.
+	 *
+	 * MaterialTabGroup's own display panel does the swap as
+	 * {@code removeAll(); add(next);} and that is what made switching away
+	 * from the Items tab take four seconds. RuneLite's game canvas is a
+	 * heavyweight AWT component, so every lightweight component removed from
+	 * that window runs AWT's mixing pass -- {@code removeNotify} into
+	 * {@code mixOnHiding} into {@code recursiveApplyCurrentShape}, walking
+	 * the tree to recompute what overlaps the canvas. Removing one panel
+	 * recurses into every descendant, so a tab holding fourteen hundred
+	 * components paid that walk fourteen hundred times.
+	 *
+	 * <p>The cost therefore tracked the tab being left, not the one being
+	 * opened, which is why a thirty-five component tab measured four seconds
+	 * and a hundred and sixty-seven component tab measured twelve
+	 * milliseconds. CardLayout hides with {@code setVisible} instead: one
+	 * mixing pass for the card, not one per component inside it.
+	 */
+	private final CardLayout cards = new CardLayout();
+	private final JPanel display = new JPanel(cards);
 
 	/**
 	 * What the Quests and Items tabs last rendered.
@@ -148,7 +170,11 @@ class QuestpathPanel extends PluginPanel
 		setLayout(new BorderLayout());
 		setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
 
-		MaterialTabGroup tabGroup = new MaterialTabGroup(display);
+		// Deliberately the no-display constructor. Handed a panel, the group
+		// swaps content by removing it, which is the expensive path above;
+		// left null it only manages the tab labels and select() skips the
+		// swap entirely, leaving it to the card layout below.
+		MaterialTabGroup tabGroup = new MaterialTabGroup();
 		// One row, equal widths. Five labels at the sidebar's 225px is about
 		// six characters each, which is why the tab names are one word.
 		tabGroup.setLayout(new GridLayout(0, PanelSections.Tab.values().length, 2, 2));
@@ -166,6 +192,10 @@ class QuestpathPanel extends PluginPanel
 			JPanel wrapper = new JPanel(new BorderLayout());
 			wrapper.add(bodyForTab, BorderLayout.NORTH);
 
+			// Every tab's wrapper is added once and stays. Only its visibility
+			// changes after this.
+			display.add(wrapper, tab.name());
+
 			MaterialTab materialTab = tabFor(sprites, tab, tabGroup, wrapper);
 			// Times the switch itself. MaterialTabGroup.select swaps the
 			// displayed wrapper and validates it, which is where the cost of
@@ -175,6 +205,7 @@ class QuestpathPanel extends PluginPanel
 			{
 				long startedAt = System.nanoTime();
 				tabSwitches++;
+				cards.show(display, tab.name());
 				SwingUtilities.invokeLater(() ->
 				{
 					long millis = (System.nanoTime() - startedAt) / 1_000_000L;

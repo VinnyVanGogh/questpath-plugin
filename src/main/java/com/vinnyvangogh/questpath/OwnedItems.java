@@ -25,6 +25,7 @@ import net.runelite.api.gameval.InventoryID;
  * been opened this session is reported as unknown rather than as empty. Those
  * are different claims and questpath renders them differently.
  */
+@lombok.extern.slf4j.Slf4j
 class OwnedItems
 {
 	/** Which container a stack came from, matching what questpath stores. */
@@ -89,7 +90,51 @@ class OwnedItems
 			return false;
 		}
 		seen.put(which, stacksOf(client, container));
+		reportDoubleCounts(which);
 		return true;
+	}
+
+	/**
+	 * Names anything currently counted in more than one container.
+	 *
+	 * <p>Temporary, and pointed at one specific report: a single pigeon cage
+	 * moved from bank to inventory read as two. heldByName sums the three
+	 * containers, which is right only while all three snapshots describe the
+	 * same instant -- an item in transit is in the new container and, until
+	 * the old one's own event arrives, still in the old one too.
+	 *
+	 * <p>Legitimate cases exist and will show up here as well (coins in the
+	 * bank and coins in your pocket really are both yours), so this only says
+	 * what is doubled, not that anything is wrong. What it settles is whether
+	 * the bank snapshot goes stale after a withdrawal, which is the thing
+	 * guessing cannot answer.
+	 */
+	private void reportDoubleCounts(Container justRecorded)
+	{
+		if (!log.isDebugEnabled())
+		{
+			return;
+		}
+		Map<String, String> firstSeenIn = new LinkedHashMap<>();
+		for (Map.Entry<Container, List<Map<String, Object>>> entry : seen.entrySet())
+		{
+			for (Map<String, Object> stack : entry.getValue())
+			{
+				Object name = stack.get("name");
+				if (!(name instanceof String) || ((String) name).isEmpty())
+				{
+					continue;
+				}
+				String key = ((String) name).toLowerCase();
+				String previous = firstSeenIn.put(key, entry.getKey().wireName());
+				if (previous != null)
+				{
+					log.debug("questpath items: after {} changed, \"{}\" is counted in both {}"
+						+ " and {}", justRecorded.wireName(), name, previous,
+						entry.getKey().wireName());
+				}
+			}
+		}
 	}
 
 	/** Forgets everything. Called on logout: the next login may be another account. */
