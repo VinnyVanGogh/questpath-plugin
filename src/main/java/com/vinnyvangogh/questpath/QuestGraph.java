@@ -38,9 +38,12 @@ class QuestGraph
 	 * name instead would re-derive a disambiguation questpath's 16,472-row
 	 * catalogue has already done, and get it wrong: "Bucket" matches a
 	 * Meiyerditch bucket and an animation-only bucket as readily as the real
-	 * one.
+	 * one. 4 added Item.unresolved(), the wiki lines the catalogue could not
+	 * place -- 354 of 1,301 -- which used to be dropped from the bundle
+	 * without trace, leaving every quest's item list quietly short while
+	 * presenting itself as the list.
 	 */
-	static final int SUPPORTED_VERSION = 3;
+	static final int SUPPORTED_VERSION = 4;
 
 	@SerializedName("version")
 	private int version;
@@ -128,6 +131,9 @@ class QuestGraph
 		@SerializedName("quantity")
 		private int quantity;
 
+		@SerializedName("unresolved")
+		private boolean unresolved;
+
 		@SerializedName("optional")
 		private boolean optional;
 
@@ -166,6 +172,21 @@ class QuestGraph
 		int itemId()
 		{
 			return itemId;
+		}
+
+		/**
+		 * Whether this is a wiki line questpath could not match to a real
+		 * item.
+		 *
+		 * name() then carries the wiki's own words rather than an item name,
+		 * there is no id, and nothing can tick it against a bank. It is shown
+		 * anyway: dropping it would make the rest of the list a lie, because
+		 * the panel would present four items as everything the quest needs
+		 * when the wiki listed five.
+		 */
+		boolean unresolved()
+		{
+			return unresolved;
 		}
 
 		boolean optional()

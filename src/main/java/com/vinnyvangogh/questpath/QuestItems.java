@@ -47,7 +47,7 @@ class QuestItems
 			int count = 0;
 			for (Line line : lines)
 			{
-				if (!line.optional() && line.held())
+				if (!line.optional() && !line.unresolved() && line.held())
 				{
 					count++;
 				}
@@ -55,13 +55,35 @@ class QuestItems
 			return count;
 		}
 
-		/** How many lines are required at all. */
+		/**
+		 * How many lines are required and countable.
+		 *
+		 * Unresolved lines are excluded from both halves of the ratio rather
+		 * than counted as missing. They cannot be ticked -- there is nothing
+		 * to tick them against -- so counting them would make "4 of 5" a
+		 * number that never reaches 5 however much you buy. They are still
+		 * listed and still marked; see unresolvedCount().
+		 */
 		int needed()
 		{
 			int count = 0;
 			for (Line line : lines)
 			{
-				if (!line.optional())
+				if (!line.optional() && !line.unresolved())
+				{
+					count++;
+				}
+			}
+			return count;
+		}
+
+		/** How many lines this quest has that questpath could not identify. */
+		int unresolvedCount()
+		{
+			int count = 0;
+			for (Line line : lines)
+			{
+				if (line.unresolved())
 				{
 					count++;
 				}
@@ -83,16 +105,37 @@ class QuestItems
 		private final int wanted;
 		private final long owned;
 		private final boolean optional;
+		private final boolean unresolved;
 		private final List<String> sources;
 
 		Line(String name, int itemId, int wanted, long owned, boolean optional, List<String> sources)
+		{
+			this(name, itemId, wanted, owned, optional, false, sources);
+		}
+
+		Line(String name, int itemId, int wanted, long owned, boolean optional, boolean unresolved,
+			List<String> sources)
 		{
 			this.name = name;
 			this.itemId = itemId;
 			this.wanted = wanted;
 			this.owned = owned;
 			this.optional = optional;
+			this.unresolved = unresolved;
 			this.sources = sources;
+		}
+
+		/**
+		 * A wiki line questpath could not match to a real item.
+		 *
+		 * name() is then the wiki's own words, there is no id, and held() is
+		 * meaningless -- nothing can be counted against a phrase. Shown
+		 * anyway, marked, because the alternative is a list that is quietly
+		 * short while claiming to be the list.
+		 */
+		boolean unresolved()
+		{
+			return unresolved;
 		}
 
 		/** Convenience for callers that do not care about obtain sources -- mainly tests. */
@@ -268,7 +311,7 @@ class QuestItems
 			{
 				long owned = held.getOrDefault(item.name().toLowerCase(), 0L);
 				needs.lines.add(new Line(item.name(), item.itemId(), item.quantity(), owned,
-					item.optional(), item.sources()));
+					item.optional(), item.unresolved(), item.sources()));
 			}
 			out.quests.add(needs);
 		}
@@ -363,8 +406,12 @@ class QuestItems
 		{
 			for (Line line : needs.lines())
 			{
-				if (line.optional())
+				if (line.optional() || line.unresolved())
 				{
+					// An unresolved line has no item to merge on and no count
+					// to tick, so it cannot join a shopping list. It stays on
+					// its quest's own list, where the words at least say what
+					// the wiki asked for.
 					continue;
 				}
 				Total total = merged.computeIfAbsent(line.name(),

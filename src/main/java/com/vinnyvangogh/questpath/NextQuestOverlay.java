@@ -47,6 +47,12 @@ class NextQuestOverlay extends QuestpathOverlay
 	}
 
 	@Override
+	OverlayListLength length(QuestpathConfig config)
+	{
+		return config.overlayNextQuestLength();
+	}
+
+	@Override
 	List<OverlayRow> rows(OverlaySnapshot snapshot, OverlayContext ctx)
 	{
 		NextQuestStatus route = snapshot.route();
@@ -191,6 +197,18 @@ class NextQuestOverlay extends QuestpathOverlay
 		for (int i = 0; i < shown; i++)
 		{
 			QuestItems.Line line = needs.lines().get(i);
+			if (line.unresolved())
+			{
+				// The wiki asked for something questpath could not match to a
+				// real item -- "Any fruit blast excluding a premade fr'
+				// blast". There is no id to draw, no count to tick, and no
+				// honest way to say whether you have it. Shown in the wiki's
+				// own words and marked, because leaving it out is what made
+				// this list quietly short in the first place.
+				rows.add(OverlayRow.item(0, line.name(), "?", false,
+					OverlayTheme.MUTED, OverlayTheme.WARN));
+				continue;
+			}
 			String label = line.optional() ? line.name() + " (optional)" : line.name();
 			rows.add(OverlayRow.item(line.itemId(), label, line.describe(), line.held(),
 				OverlayTheme.TEXT, line.held() ? OverlayTheme.GOOD : OverlayTheme.WARN));
@@ -199,6 +217,11 @@ class NextQuestOverlay extends QuestpathOverlay
 		if (more > 0)
 		{
 			rows.add(OverlayRow.overflow("+ " + more + " more it needs"));
+		}
+		if (needs.unresolvedCount() > 0)
+		{
+			rows.add(OverlayRow.note("? = questpath could not match this to an item,"
+				+ " so it cannot check your bank for it.", OverlayTheme.MUTED));
 		}
 	}
 }

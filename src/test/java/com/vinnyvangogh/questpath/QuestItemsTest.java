@@ -445,4 +445,28 @@ public class QuestItemsTest
 			}
 		}
 	}
+
+	/**
+	 * A line questpath could not match to an item is listed but not counted.
+	 *
+	 * It cannot be ticked -- there is nothing to tick it against -- so
+	 * counting it as missing would make "4 of 5" a ratio that never reaches
+	 * 5 however much you buy. It still appears, and unresolvedCount says how
+	 * many there are, because dropping it is what made these lists quietly
+	 * short in the first place.
+	 */
+	@Test
+	public void anUnresolvedLineIsListedButNotCounted()
+	{
+		QuestItems.QuestNeeds needs = new QuestItems.QuestNeeds("Recipe for Disaster/Another Cook's Quest");
+		needs.lines().add(new QuestItems.Line("Ashes", 592, 1, 1, false, false, null));
+		needs.lines().add(new QuestItems.Line("Eye of newt", 221, 1, 0, false, false, null));
+		needs.lines().add(new QuestItems.Line("Any fruit blast excluding a premade fr' blast",
+			0, 0, 0, false, true, null));
+
+		assertEquals(3, needs.lines().size());
+		assertEquals("the unresolved line is neither held nor missing", 2, needs.needed());
+		assertEquals(1, needs.have());
+		assertEquals(1, needs.unresolvedCount());
+	}
 }

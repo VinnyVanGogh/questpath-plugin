@@ -177,7 +177,7 @@ public interface QuestpathConfig extends Config
 
 	@ConfigItem(
 		keyName = "overlayNextQuestWidth",
-		name = "\u2003Route width",
+		name = "Route: width",
 		description = "Width for the route panel alone. Leave it matching the shared setting"
 			+ " unless you want this one narrower or wider than the rest.",
 		section = overlaySection,
@@ -189,8 +189,20 @@ public interface QuestpathConfig extends Config
 	}
 
 	@ConfigItem(
+		keyName = "overlayNextQuestLength",
+		name = "Route: length",
+		description = "How much of the route preview to list. Short is usually right here -- it answers \"what now\", not \"show me the whole plan\".",
+		section = overlaySection,
+		position = 13
+	)
+	default OverlayListLength overlayNextQuestLength()
+	{
+		return OverlayListLength.MATCH_SHARED;
+	}
+
+	@ConfigItem(
 		keyName = "overlayNextQuestItems",
-		name = "\u2003Route: what the next quest needs",
+		name = "Route: items",
 		description = "List the next quest's own items under it, ticked against what you hold."
 			+ " Answers \"can I start this now\" without opening anything.",
 		section = overlaySection,
@@ -215,7 +227,7 @@ public interface QuestpathConfig extends Config
 
 	@ConfigItem(
 		keyName = "overlayPickupsWidth",
-		name = "\u2003Pickups width",
+		name = "Pickups: width",
 		description = "Width for the pickups panel alone.",
 		section = overlaySection,
 		position = 21
@@ -223,6 +235,18 @@ public interface QuestpathConfig extends Config
 	default OverlayWidth overlayPickupsWidth()
 	{
 		return OverlayWidth.MATCH_GLOBAL;
+	}
+
+	@ConfigItem(
+		keyName = "overlayPickupsLength",
+		name = "Pickups: length",
+		description = "How many pickups to list.",
+		section = overlaySection,
+		position = 22
+	)
+	default OverlayListLength overlayPickupsLength()
+	{
+		return OverlayListLength.MATCH_SHARED;
 	}
 
 	@ConfigItem(
@@ -239,7 +263,7 @@ public interface QuestpathConfig extends Config
 
 	@ConfigItem(
 		keyName = "overlayItemsWidth",
-		name = "\u2003Items width",
+		name = "Items: width",
 		description = "Width for the shopping list alone. This is the panel that most wants"
 			+ " the wider settings -- it is the one with sixty-odd rows in it.",
 		section = overlaySection,
@@ -251,8 +275,20 @@ public interface QuestpathConfig extends Config
 	}
 
 	@ConfigItem(
+		keyName = "overlayItemsLength",
+		name = "Items: length",
+		description = "How much of the shopping list to show. This is the panel that wants Everything: a list you can only see the top of is one you still have to finish elsewhere.",
+		section = overlaySection,
+		position = 33
+	)
+	default OverlayListLength overlayItemsLength()
+	{
+		return OverlayListLength.MATCH_SHARED;
+	}
+
+	@ConfigItem(
 		keyName = "overlayItemsHideHeld",
-		name = "\u2003Items: hide what you already have",
+		name = "Items: hide held",
 		description = "Drop the \"already held\" section, leaving only what you are short of."
 			+ " The running total at the top still counts them, so nothing is hidden without"
 			+ " being accounted for.",
@@ -278,7 +314,7 @@ public interface QuestpathConfig extends Config
 
 	@ConfigItem(
 		keyName = "overlayCombatXpWidth",
-		name = "\u2003Combat width",
+		name = "Combat: width",
 		description = "Width for the combat panel alone.",
 		section = overlaySection,
 		position = 41
@@ -286,6 +322,18 @@ public interface QuestpathConfig extends Config
 	default OverlayWidth overlayCombatXpWidth()
 	{
 		return OverlayWidth.MATCH_GLOBAL;
+	}
+
+	@ConfigItem(
+		keyName = "overlayCombatXpLength",
+		name = "Combat: length",
+		description = "How many stats to price. There are only seven, so this rarely needs changing.",
+		section = overlaySection,
+		position = 42
+	)
+	default OverlayListLength overlayCombatXpLength()
+	{
+		return OverlayListLength.MATCH_SHARED;
 	}
 
 	@ConfigItem(
@@ -302,7 +350,7 @@ public interface QuestpathConfig extends Config
 
 	@ConfigItem(
 		keyName = "overlayBuildRulesWidth",
-		name = "\u2003Build rules width",
+		name = "Rules: width",
 		description = "Width for the build rules panel alone.",
 		section = overlaySection,
 		position = 51
@@ -313,8 +361,20 @@ public interface QuestpathConfig extends Config
 	}
 
 	@ConfigItem(
+		keyName = "overlayBuildRulesLength",
+		name = "Rules: length",
+		description = "How many rules to list per section.",
+		section = overlaySection,
+		position = 53
+	)
+	default OverlayListLength overlayBuildRulesLength()
+	{
+		return OverlayListLength.MATCH_SHARED;
+	}
+
+	@ConfigItem(
 		keyName = "overlayBuildRulesSections",
-		name = "\u2003Build rules: which rules",
+		name = "Rules: which",
 		description = "Blocking rules are walls -- cross one and the build is over."
 			+ " Informational ones are goals and soft caps: worth tracking, never urgent.",
 		section = overlaySection,

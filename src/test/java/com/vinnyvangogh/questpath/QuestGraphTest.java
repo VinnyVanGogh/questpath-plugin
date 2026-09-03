@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import java.util.List;
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -18,7 +19,7 @@ public class QuestGraphTest
 	@Test
 	public void parsesAnItemsObtainSources()
 	{
-		QuestGraph graph = GSON.fromJson("{\"version\":3,\"quests\":[{\"id\":1,\"slug\":\"a\",\"name\":\"A\","
+		QuestGraph graph = GSON.fromJson("{\"version\":4,\"quests\":[{\"id\":1,\"slug\":\"a\",\"name\":\"A\","
 			+ "\"items\":[{\"name\":\"Pot\",\"sources\":[\"Shop: Leenz's General Supplies (1 Coins)\","
 			+ "\"Shop: Little Munty's Little Shop (1 Coins)\"]}]}]}", QuestGraph.class);
 
@@ -36,7 +37,7 @@ public class QuestGraphTest
 	@Test
 	public void anItemWithNoSourcesKeyParsesToAnEmptyList()
 	{
-		QuestGraph graph = GSON.fromJson("{\"version\":3,\"quests\":[{\"id\":1,\"slug\":\"a\",\"name\":\"A\","
+		QuestGraph graph = GSON.fromJson("{\"version\":4,\"quests\":[{\"id\":1,\"slug\":\"a\",\"name\":\"A\","
 			+ "\"items\":[{\"name\":\"Rope\"}]}]}", QuestGraph.class);
 
 		assertTrue(graph.quests().get(0).items().get(0).sources().isEmpty());
@@ -53,7 +54,7 @@ public class QuestGraphTest
 	@Test
 	public void parsesAnItemsGameItemId()
 	{
-		QuestGraph graph = GSON.fromJson("{\"version\":3,\"quests\":[{\"id\":1,\"slug\":\"a\",\"name\":\"A\","
+		QuestGraph graph = GSON.fromJson("{\"version\":4,\"quests\":[{\"id\":1,\"slug\":\"a\",\"name\":\"A\","
 			+ "\"items\":[{\"name\":\"Bucket\",\"item_id\":1925}]}]}", QuestGraph.class);
 
 		assertEquals(1925, graph.quests().get(0).items().get(0).itemId());
@@ -71,7 +72,7 @@ public class QuestGraphTest
 	@Test
 	public void anItemWithNoIdParsesToZeroSoNothingIsDrawn()
 	{
-		QuestGraph graph = GSON.fromJson("{\"version\":3,\"quests\":[{\"id\":1,\"slug\":\"a\",\"name\":\"A\","
+		QuestGraph graph = GSON.fromJson("{\"version\":4,\"quests\":[{\"id\":1,\"slug\":\"a\",\"name\":\"A\","
 			+ "\"items\":[{\"name\":\"Rope\"}]}]}", QuestGraph.class);
 
 		assertEquals(0, graph.quests().get(0).items().get(0).itemId());
@@ -82,11 +83,45 @@ public class QuestGraphTest
 	 * constant is what load() refuses a mismatch against. A regression here
 	 * would silently start parsing an old bundle's missing field as an
 	 * absence rather than refusing the bundle outright -- 2 added
-	 * Item.sources(), 3 added Item.itemId().
+	 * Item.sources(), 3 added Item.itemId(), 4 added Item.unresolved().
 	 */
 	@Test
-	public void supportedVersionWasBumpedForItemIds()
+	public void supportedVersionWasBumpedForUnresolvedLines()
 	{
-		assertEquals(3, QuestGraph.SUPPORTED_VERSION);
+		assertEquals(4, QuestGraph.SUPPORTED_VERSION);
+	}
+
+	/**
+	 * A wiki line the catalogue could not place arrives marked, with the
+	 * wiki's own words as its name and no id.
+	 *
+	 * 354 of the wiki's 1,301 item lines are like this, and every one of them
+	 * used to be dropped from the bundle without trace -- so a quest whose
+	 * wiki page lists five items presented four and called it the list. "Any
+	 * fruit blast excluding a premade fr' blast" is one of them: the item
+	 * exists, the catalogue holds it as 2084, and the phrasing defeats the
+	 * resolver.
+	 */
+	@Test
+	public void anUnresolvedLineArrivesMarkedAndWithoutAnId()
+	{
+		QuestGraph graph = GSON.fromJson("{\"version\":4,\"quests\":[{\"id\":1,\"slug\":\"a\",\"name\":\"A\","
+			+ "\"items\":[{\"name\":\"Any fruit blast excluding a premade fr' blast\","
+			+ "\"unresolved\":true}]}]}", QuestGraph.class);
+
+		QuestGraph.Item item = graph.quests().get(0).items().get(0);
+		assertTrue(item.unresolved());
+		assertEquals(0, item.itemId());
+		assertEquals("Any fruit blast excluding a premade fr' blast", item.name());
+	}
+
+	/** An ordinary item is not marked unresolved. */
+	@Test
+	public void aResolvedLineIsNotMarked()
+	{
+		QuestGraph graph = GSON.fromJson("{\"version\":4,\"quests\":[{\"id\":1,\"slug\":\"a\",\"name\":\"A\","
+			+ "\"items\":[{\"name\":\"Ashes\",\"item_id\":592}]}]}", QuestGraph.class);
+
+		assertFalse(graph.quests().get(0).items().get(0).unresolved());
 	}
 }

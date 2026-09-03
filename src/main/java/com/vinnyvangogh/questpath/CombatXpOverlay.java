@@ -45,6 +45,12 @@ class CombatXpOverlay extends QuestpathOverlay
 	}
 
 	@Override
+	OverlayListLength length(QuestpathConfig config)
+	{
+		return config.overlayCombatXpLength();
+	}
+
+	@Override
 	List<OverlayRow> rows(OverlaySnapshot snapshot, OverlayContext ctx)
 	{
 		CombatStats stats = snapshot.stats();

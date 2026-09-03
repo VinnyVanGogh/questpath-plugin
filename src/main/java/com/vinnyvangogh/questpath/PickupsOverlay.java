@@ -40,6 +40,12 @@ class PickupsOverlay extends QuestpathOverlay
 	}
 
 	@Override
+	OverlayListLength length(QuestpathConfig config)
+	{
+		return config.overlayPickupsLength();
+	}
+
+	@Override
 	List<OverlayRow> rows(OverlaySnapshot snapshot, OverlayContext ctx)
 	{
 		QuestItems items = snapshot.items();

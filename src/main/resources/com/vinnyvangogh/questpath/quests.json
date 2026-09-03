@@ -1,5 +1,5 @@
 {
-  "version": 3,
+  "version": 4,
   "quests": [
     {
       "id": 1,
@@ -84,6 +84,11 @@
       "members": false,
       "items": [
         {
+          "name": "A water container, such as a bucket of water",
+          "obtainable": true,
+          "unresolved": true
+        },
+        {
           "name": "Bones",
           "item_id": 526,
           "quantity": 25,
@@ -107,7 +112,18 @@
       "id": 4,
       "slug": "shield_of_arrav",
       "name": "Shield of Arrav",
-      "members": false
+      "members": false,
+      "items": [
+        {
+          "name": "Black Arm Gang: 2 Phoenix crossbows",
+          "obtainable": true,
+          "unresolved": true
+        },
+        {
+          "name": "Phoenix Gang: 20 coins",
+          "unresolved": true
+        }
+      ]
     },
     {
       "id": 5,
@@ -129,6 +145,11 @@
             "Shop: Hamab's Crafting Emporium (2 Coins)",
             "Shop: Neitiznot supplies. (2 Coins)"
           ]
+        },
+        {
+          "name": "Shears if obtaining wool to spin into balls of wool",
+          "obtainable": true,
+          "unresolved": true
         }
       ]
     },
@@ -256,6 +277,11 @@
       "name": "Prince Ali Rescue",
       "members": false,
       "items": [
+        {
+          "name": "40 coins for the Al Kharid toll gate if not using teleports to and from Al Kharid",
+          "quantity": 30,
+          "unresolved": true
+        },
         {
           "name": "Ashes",
           "item_id": 592,
@@ -398,6 +424,10 @@
       "members": false,
       "items": [
         {
+          "name": "Bronze med helm . Alternatively, a Black full helm, Black platebody and Black platelegs/black plateskirt can be used in place of the Iron chainbody and Bronze med helm",
+          "unresolved": true
+        },
+        {
           "name": "Cabbage",
           "item_id": 1965,
           "sources": [
@@ -480,12 +510,27 @@
       ],
       "items": [
         {
+          "name": "3 Blurite ore - optionally an additional ore each for your own blurite sword and the Falador easy diary",
+          "quantity": 1,
+          "obtainable": true,
+          "unresolved": true
+        },
+        {
+          "name": "Any pickaxe",
+          "unresolved": true
+        },
+        {
           "name": "Redberry pie",
           "item_id": 2325,
           "sources": [
             "Shop: Pie Shop (12 Coins)",
             "Shop: Yarnio's Baked Goods (12 Coins)"
           ]
+        },
+        {
+          "name": "or 4 iron bars",
+          "quantity": 2,
+          "unresolved": true
         }
       ]
     },
@@ -511,6 +556,15 @@
           ]
         },
         {
+          "name": "Offer 20 coins to Wyson the gardener and he will give you two woad leaves",
+          "unresolved": true
+        },
+        {
+          "name": "Orange dye – created by combining red dye with yellow dye",
+          "quantity": 1,
+          "unresolved": true
+        },
+        {
           "name": "Red dye",
           "item_id": 1763,
           "quantity": 1,
@@ -527,6 +581,12 @@
             "Shop: Dyes to Die For (6 Coins)",
             "Shop: Guinevere's Dyes (6 Coins)"
           ]
+        },
+        {
+          "name": "sets of Goblin mail",
+          "quantity": 3,
+          "obtainable": true,
+          "unresolved": true
         }
       ]
     },
@@ -622,6 +682,10 @@
           ]
         },
         {
+          "name": "Free-to-play: Buy from Sawmill operator at the sawmill or pick up the spawns in the Graveyard of Shadows, level 19 Wilderness",
+          "unresolved": true
+        },
+        {
           "name": "Hammer",
           "item_id": 2347,
           "sources": [
@@ -636,6 +700,14 @@
             "Shop: Elder Krill's Fishing Stall (20 Coins)",
             "Shop: Henderson's Catch of the Day (20 Coins)"
           ]
+        },
+        {
+          "name": "Magic/ranged weapon as well as a law and air rune or 10,000 coins",
+          "unresolved": true
+        },
+        {
+          "name": "Member: Several other spawn locations or buy them at the sawmill",
+          "unresolved": true
         },
         {
           "name": "Plank",
@@ -748,6 +820,10 @@
             "Shop: Martin Thwait's Lost and Found. (6 Coins)",
             "Shop: Neitiznot supplies. (6 Coins)"
           ]
+        },
+        {
+          "name": "Woodcutting axe",
+          "unresolved": true
         }
       ]
     },
@@ -957,12 +1033,24 @@
           ]
         },
         {
+          "name": "Harralander potion",
+          "unresolved": true
+        },
+        {
           "name": "Ice gloves",
           "item_id": 1580,
           "obtainable": true,
           "sources": [
             "Drop: Ice Queen (Always)"
           ]
+        },
+        {
+          "name": "Pickaxe",
+          "unresolved": true
+        },
+        {
+          "name": "Some form of Ranged or Magic attack method",
+          "unresolved": true
         }
       ]
     },
@@ -1027,6 +1115,10 @@
       ],
       "items": [
         {
+          "name": "Any poison cure . Does not need to contain full doses",
+          "unresolved": true
+        },
+        {
           "name": "Bass",
           "item_id": 365,
           "sources": [
@@ -1035,12 +1127,20 @@
           ]
         },
         {
+          "name": "Means to cast all 4 Blast spells",
+          "unresolved": true
+        },
+        {
           "name": "Necklace mould",
           "item_id": 1597,
           "sources": [
             "Shop: Artima's Crafting Supplies (5 Coins)",
             "Shop: Elder Coco's Crafting Stall (5 Coins)"
           ]
+        },
+        {
+          "name": "Pickaxe - adamant or rune highly recommended",
+          "unresolved": true
         },
         {
           "name": "Ring mould",
@@ -1080,6 +1180,11 @@
             "Shop: Fishing Guild Shop. (40 Coins)",
             "Shop: Keepa Kettilon's store (44 Coins)"
           ]
+        },
+        {
+          "name": "cut rubies",
+          "quantity": 2,
+          "unresolved": true
         }
       ]
     },
@@ -1222,6 +1327,10 @@
       ],
       "items": [
         {
+          "name": "Any bow capable of firing ice arrows or any thrown weapon",
+          "unresolved": true
+        },
+        {
           "name": "Boots of lightness",
           "item_id": 88,
           "obtainable": true,
@@ -1237,6 +1346,10 @@
             "Drop: Limpwurt plant (Always)",
             "Drop: Hobgoblin#Unarmed (22/128)"
           ]
+        },
+        {
+          "name": "Other forms of weight-reducing clothing such as the graceful outfit",
+          "unresolved": true
         }
       ]
     },
@@ -1307,6 +1420,14 @@
         }
       ],
       "items": [
+        {
+          "name": "Combat equipment",
+          "unresolved": true
+        },
+        {
+          "name": "Food",
+          "unresolved": true
+        },
         {
           "name": "Logs",
           "item_id": 1511,
@@ -1388,6 +1509,11 @@
       ],
       "items": [
         {
+          "name": "4 buckets of water",
+          "quantity": 1,
+          "unresolved": true
+        },
+        {
           "name": "Bucket of milk",
           "item_id": 1927,
           "sources": [
@@ -1426,6 +1552,10 @@
             "Shop: Martin Thwait's Lost and Found. (6 Coins)",
             "Shop: Neitiznot supplies. (6 Coins)"
           ]
+        },
+        {
+          "name": "Picture of Elena",
+          "unresolved": true
         },
         {
           "name": "Rope",
@@ -1582,6 +1712,13 @@
           "skill": "magic",
           "xp": 2150
         }
+      ],
+      "items": [
+        {
+          "name": "coins if you previously chose not to help Femi on your first entry to the Tree Gnome Stronghold",
+          "quantity": 1000,
+          "unresolved": true
+        }
       ]
     },
     {
@@ -1610,6 +1747,15 @@
         }
       ],
       "items": [
+        {
+          "name": "5 arrows",
+          "quantity": 1,
+          "unresolved": true
+        },
+        {
+          "name": "Bow",
+          "unresolved": true
+        },
         {
           "name": "Bucket",
           "item_id": 1925,
@@ -1718,6 +1864,10 @@
           ]
         },
         {
+          "name": "Desert shirt, robe, and boots",
+          "unresolved": true
+        },
+        {
           "name": "Hammer",
           "item_id": 2347,
           "sources": [
@@ -1732,6 +1882,10 @@
             "Drop: Grand Gold Chest#Room 7 (1/650)",
             "Drop: Sarcophagus (Pyramid Plunder)#Room 7 (1/650)"
           ]
+        },
+        {
+          "name": "Ten feathers",
+          "unresolved": true
         }
       ]
     },
@@ -1774,6 +1928,11 @@
         }
       ],
       "items": [
+        {
+          "name": "Any light source",
+          "obtainable": true,
+          "unresolved": true
+        },
         {
           "name": "Bat bones",
           "item_id": 530,
@@ -1818,6 +1977,11 @@
           ]
         },
         {
+          "name": "Guam leaf and vial of water if making your own potion",
+          "obtainable": true,
+          "unresolved": true
+        },
+        {
           "name": "Guam potion (unf)",
           "item_id": 91
         },
@@ -1838,6 +2002,10 @@
             "Shop: The Lighthouse Store (4 Coins)",
             "Shop: Elder Raley's Herblore Stall (4 Coins)"
           ]
+        },
+        {
+          "name": "Pickaxe",
+          "unresolved": true
         },
         {
           "name": "Rope",
@@ -2258,6 +2426,10 @@
           ]
         },
         {
+          "name": "Pickaxe",
+          "unresolved": true
+        },
+        {
           "name": "Red topaz",
           "item_id": 1613,
           "sources": [
@@ -2301,6 +2473,10 @@
             "Shop: Baba Yaga's Magic Shop. (300 Coins)",
             "Shop: Magic Guild Store (Runes and Staves) (300 Coins)"
           ]
+        },
+        {
+          "name": "Unpowered orb and runes to cast any Charge Orb once",
+          "unresolved": true
         },
         {
           "name": "Vial of water",
@@ -2404,6 +2580,11 @@
             "Shop: Drogo's Mining Emporium. (28 Coins)",
             "Drop: Iron dragon#Standard (Always)"
           ]
+        },
+        {
+          "name": "unnoted cooked trout",
+          "quantity": 10,
+          "unresolved": true
         }
       ]
     },
@@ -2531,6 +2712,14 @@
         }
       ],
       "items": [
+        {
+          "name": "Any axe that you can use",
+          "unresolved": true
+        },
+        {
+          "name": "Bringing 50 to buy 25 feathers from Fycie also works",
+          "unresolved": true
+        },
         {
           "name": "Cabbage",
           "item_id": 1965,
@@ -2695,6 +2884,10 @@
           ]
         },
         {
+          "name": "Pickaxe",
+          "unresolved": true
+        },
+        {
           "name": "Thread",
           "item_id": 1734,
           "sources": [
@@ -2739,6 +2932,11 @@
             "Shop: Ivan's Supplies (175 Coins)",
             "Shop: Efaritay's Supplies (175 Coins)"
           ]
+        },
+        {
+          "name": "empty inventory spaces",
+          "quantity": 6,
+          "unresolved": true
         }
       ]
     },
@@ -2801,9 +2999,21 @@
       ],
       "items": [
         {
+          "name": "Bow and some arrows",
+          "unresolved": true
+        },
+        {
           "name": "Cooked rabbit",
           "item_id": 3228,
           "obtainable": true
+        },
+        {
+          "name": "Gloves, the list on Quicklime shows all gloves that work",
+          "unresolved": true
+        },
+        {
+          "name": "Limestone . Note that limestone bricks will not work",
+          "unresolved": true
         },
         {
           "name": "Pestle and mortar",
@@ -2850,6 +3060,11 @@
             "Shop: Ali's Discount Wares. (1 Coins)",
             "Shop: Aurel's Supplies (1 Coins)"
           ]
+        },
+        {
+          "name": "coal in the bank",
+          "quantity": 5,
+          "unresolved": true
         }
       ]
     },
@@ -2897,6 +3112,14 @@
       ],
       "items": [
         {
+          "name": "Agility potion",
+          "unresolved": true
+        },
+        {
+          "name": "Iron spear, Steel spear, Mithril spear, Adamant spear, Rune spear or Dragon spear which will be consumed during the quest",
+          "unresolved": true
+        },
+        {
           "name": "Jogre bones",
           "item_id": 3125,
           "obtainable": true,
@@ -2922,6 +3145,11 @@
           ]
         },
         {
+          "name": "Logs to quickly make Poison karambwan at fishing site and to cook Pasty jogre bones later in the quest",
+          "quantity": 2,
+          "unresolved": true
+        },
+        {
           "name": "Pestle and mortar",
           "item_id": 233,
           "obtainable": true,
@@ -2929,6 +3157,10 @@
             "Shop: The Lighthouse Store (4 Coins)",
             "Shop: Elder Raley's Herblore Stall (4 Coins)"
           ]
+        },
+        {
+          "name": "Ranged equipment, Magic equipment, or a halberd to kill a monkey for a monkey corpse",
+          "unresolved": true
         },
         {
           "name": "Seaweed",
@@ -3061,12 +3293,22 @@
           ]
         },
         {
+          "name": "Tarromin potion OR 2 vials of water and 2 tarromins",
+          "quantity": 2,
+          "obtainable": true,
+          "unresolved": true
+        },
+        {
           "name": "Tinderbox",
           "item_id": 590,
           "sources": [
             "Shop: Ali's Discount Wares. (1 Coins)",
             "Shop: Aurel's Supplies (1 Coins)"
           ]
+        },
+        {
+          "name": "Using a Flamtaer hammer is highly recommended in case the minigame is unpopulated, as a regular hammer is insufficient to build the temple alone. An additional 13,000 coins allows you to buy a Flamtaer hammer from Razmire",
+          "unresolved": true
         }
       ]
     },
@@ -3145,6 +3387,11 @@
           ]
         },
         {
+          "name": "Fletching, 40 Woodcutting, and 40 Crafting",
+          "quantity": 25,
+          "unresolved": true
+        },
+        {
           "name": "Knife",
           "item_id": 946,
           "sources": [
@@ -3185,6 +3432,10 @@
             "Shop: Ali's Discount Wares. (1 Coins)",
             "Shop: Aurel's Supplies (1 Coins)"
           ]
+        },
+        {
+          "name": "Woodcutting axe",
+          "unresolved": true
         }
       ]
     },
@@ -3227,6 +3478,14 @@
           ]
         },
         {
+          "name": "Any arrow",
+          "unresolved": true
+        },
+        {
+          "name": "At least one combat style to defeat the Dagannoth Mother - she cycles every 18 seconds between only being vulnerable to one of six different types of attack",
+          "unresolved": true
+        },
+        {
           "name": "Earth rune",
           "item_id": 557,
           "sources": [
@@ -3249,6 +3508,10 @@
             "Shop: Jiminua's Jungle Store. (1 Coins)",
             "Shop: Neitiznot supplies. (1 Coins)"
           ]
+        },
+        {
+          "name": "Highly recommended to bring means to deal damage with all of the elemental Magic types",
+          "unresolved": true
         },
         {
           "name": "Molten glass",
@@ -3303,6 +3566,10 @@
             "Shop: Amlodd's Magical Supplies (4 Coins)",
             "Shop: Aubury's Rune Shop. (4 Coins)"
           ]
+        },
+        {
+          "name": "You may also bring means to deal Ranged and Melee damage",
+          "unresolved": true
         }
       ]
     },
@@ -3316,6 +3583,26 @@
         61
       ],
       "items": [
+        {
+          "name": "A pickaxe and 35 Mining to mine coal",
+          "unresolved": true
+        },
+        {
+          "name": "A rake and 10 Farming to rake flax",
+          "unresolved": true
+        },
+        {
+          "name": "An axe and 45 Woodcutting to cut maple trees",
+          "unresolved": true
+        },
+        {
+          "name": "Any common, non-silver ring that you're willing to lose",
+          "unresolved": true
+        },
+        {
+          "name": "At least one of the following to gain favour during the quest",
+          "unresolved": true
+        },
         {
           "name": "Harpoon",
           "item_id": 311,
@@ -3340,6 +3627,11 @@
             "Drop: Dead tree (2021 Christmas event) (Always)",
             "Drop: Jungle tree (Always)"
           ]
+        },
+        {
+          "name": "to buy flowers from Flower Girl",
+          "quantity": 1875,
+          "unresolved": true
         }
       ]
     },
@@ -3369,6 +3661,10 @@
             "Shop: Solihib's Food Stall (2 Coins)",
             "Shop: Cobado's Groceries (2 Coins)"
           ]
+        },
+        {
+          "name": "Five empty inventory slots",
+          "unresolved": true
         },
         {
           "name": "Gold bar",
@@ -3543,6 +3839,14 @@
         }
       ],
       "items": [
+        {
+          "name": "A Druid pouch containing at least 5 charges",
+          "unresolved": true
+        },
+        {
+          "name": "A Silver sickle to collect these items for the charges if not buying from the Grand Exchange",
+          "unresolved": true
+        },
         {
           "name": "Coins",
           "item_id": 995,
@@ -3787,6 +4091,10 @@
       ],
       "items": [
         {
+          "name": "A tinderbox and a log of which you have the Firemaking level to light. Tinderbox can be purchased from the general store during quest",
+          "unresolved": true
+        },
+        {
           "name": "Bowl of water",
           "item_id": 1921,
           "obtainable": true,
@@ -3822,8 +4130,17 @@
           "quantity": 31
         },
         {
+          "name": "Ecto-tokens using charter ships",
+          "quantity": 25,
+          "unresolved": true
+        },
+        {
           "name": "Ghostspeak amulet",
           "item_id": 552
+        },
+        {
+          "name": "Gloves",
+          "unresolved": true
         },
         {
           "name": "Knife",
@@ -3850,6 +4167,10 @@
           ]
         },
         {
+          "name": "One extra bucket of slime for colouring the bed sheet",
+          "unresolved": true
+        },
+        {
           "name": "Silk",
           "item_id": 950,
           "sources": [
@@ -3864,6 +4185,16 @@
             "Shop: Alice's Farming shop. (3 Coins)",
             "Shop: Branwen's Farming Shop (3 Coins)"
           ]
+        },
+        {
+          "name": "bone, 1 pot, and 1 bucket for every 5 ecto-tokens required",
+          "quantity": 1,
+          "unresolved": true
+        },
+        {
+          "name": "colours of dye",
+          "quantity": 3,
+          "unresolved": true
         }
       ]
     },
@@ -3963,6 +4294,10 @@
           ]
         },
         {
+          "name": "Note: The pigeons do not need to be let out of the cages",
+          "unresolved": true
+        },
+        {
           "name": "Opal",
           "item_id": 1609,
           "sources": [
@@ -4019,6 +4354,11 @@
             "Drop: Steel dragon#Standard (Always)",
             "Drop: Marlo's crate (Always)"
           ]
+        },
+        {
+          "name": "Two of each of the following cut gems, or a chisel to cut the uncut gems received during the quest",
+          "obtainable": true,
+          "unresolved": true
         }
       ]
     },
@@ -4045,6 +4385,18 @@
         }
       ],
       "items": [
+        {
+          "name": "Axe",
+          "unresolved": true
+        },
+        {
+          "name": "Gloves",
+          "unresolved": true
+        },
+        {
+          "name": "Pickaxe",
+          "unresolved": true
+        },
         {
           "name": "Plank",
           "item_id": 960,
@@ -4113,6 +4465,10 @@
         }
       ],
       "items": [
+        {
+          "name": "A pickaxe",
+          "unresolved": true
+        },
         {
           "name": "Ammo mould",
           "item_id": 4,
@@ -4204,6 +4560,14 @@
           ]
         },
         {
+          "name": "Gloves",
+          "unresolved": true
+        },
+        {
+          "name": "If you have the snake charm in your bank already, you will need to retrieve it",
+          "unresolved": true
+        },
+        {
           "name": "Kharidian headpiece",
           "item_id": 4591,
           "sources": [
@@ -4254,6 +4618,10 @@
         }
       ],
       "items": [
+        {
+          "name": "Means to enter the desert",
+          "unresolved": true
+        },
         {
           "name": "Papyrus",
           "item_id": 970,
@@ -4332,6 +4700,15 @@
         }
       ],
       "items": [
+        {
+          "name": "50+ lockpicks",
+          "quantity": 20,
+          "unresolved": true
+        },
+        {
+          "name": "A sweet",
+          "unresolved": true
+        },
         {
           "name": "Ashes",
           "item_id": 592,
@@ -4496,9 +4873,21 @@
           ]
         },
         {
+          "name": "Full waterskin to give away",
+          "unresolved": true
+        },
+        {
           "name": "Linen",
           "item_id": 4684,
           "obtainable": true
+        },
+        {
+          "name": "Means to enter the desert",
+          "unresolved": true
+        },
+        {
+          "name": "Regular or overgrown cat, hellcat, or kitten. No food is required as the kitten can stay in your inventory for the most part, or automatically go in/out of your inventory",
+          "unresolved": true
         },
         {
           "name": "Tinderbox",
@@ -4564,6 +4953,18 @@
           ]
         },
         {
+          "name": "Cut sapphire",
+          "unresolved": true
+        },
+        {
+          "name": "Lit sapphire lantern or the materials to make one",
+          "unresolved": true
+        },
+        {
+          "name": "Pickaxe",
+          "unresolved": true
+        },
+        {
           "name": "Rope",
           "item_id": 954,
           "optional": true,
@@ -4612,6 +5013,16 @@
         {
           "skill": "mining",
           "xp": 3000
+        }
+      ],
+      "items": [
+        {
+          "name": "Light source",
+          "unresolved": true
+        },
+        {
+          "name": "Pickaxe",
+          "unresolved": true
         }
       ]
     },
@@ -4695,6 +5106,10 @@
           ]
         },
         {
+          "name": "Means to cast Telekinetic Grab",
+          "unresolved": true
+        },
+        {
           "name": "Redberry pie",
           "item_id": 2325,
           "sources": [
@@ -4709,6 +5124,21 @@
             "Shop: Ali's Discount Wares. (1 Coins)",
             "Shop: Aurel's Supplies (1 Coins)"
           ]
+        },
+        {
+          "name": "Various ores and bars",
+          "obtainable": true,
+          "unresolved": true
+        },
+        {
+          "name": "coins for the clothes",
+          "quantity": 200,
+          "unresolved": true
+        },
+        {
+          "name": "cut sapphires",
+          "quantity": 3,
+          "unresolved": true
         }
       ]
     },
@@ -4790,6 +5220,11 @@
           ]
         },
         {
+          "name": "Each of these dyes: red, yellow, green, and blue",
+          "obtainable": true,
+          "unresolved": true
+        },
+        {
           "name": "Feather",
           "item_id": 314,
           "sources": [
@@ -4845,6 +5280,15 @@
           "sources": [
             "Drop: Tortoise#With riders (10/128)"
           ]
+        },
+        {
+          "name": "You may want to bring additional dyes to collect multiple coloured toads in case you miss when firing the device",
+          "unresolved": true
+        },
+        {
+          "name": "empty inventory spaces for the Mourner gear",
+          "quantity": 7,
+          "unresolved": true
         }
       ]
     },
@@ -4880,6 +5324,10 @@
         }
       ],
       "items": [
+        {
+          "name": "A random item from the list below",
+          "unresolved": true
+        },
         {
           "name": "Ale yeast",
           "item_id": 5767,
@@ -4980,6 +5428,14 @@
         }
       ],
       "items": [
+        {
+          "name": "A rune/pure essence",
+          "unresolved": true
+        },
+        {
+          "name": "All tool leprechaun tools",
+          "unresolved": true
+        },
         {
           "name": "Cabbage seed",
           "item_id": 5324,
@@ -5093,6 +5549,11 @@
             "Shop: Alice's Farming shop. (8 Coins)",
             "Shop: Branwen's Farming Shop (8 Coins)"
           ]
+        },
+        {
+          "name": "ultracompost/supercompost/compost",
+          "quantity": 2,
+          "unresolved": true
         }
       ]
     },
@@ -5112,6 +5573,10 @@
             "Shop: Culinaromancer's Chest (6 Coins)",
             "Shop: Funch's Fine Groceries (6 Coins)"
           ]
+        },
+        {
+          "name": "Cat or kitten",
+          "unresolved": true
         },
         {
           "name": "Catspeak amulet",
@@ -5245,6 +5710,10 @@
           ]
         },
         {
+          "name": "Light source",
+          "unresolved": true
+        },
+        {
           "name": "Molten glass",
           "item_id": 1775,
           "sources": [
@@ -5260,6 +5729,10 @@
             "Shop: Jiminua's Jungle Store. (5 Coins)",
             "Shop: Jiminua's Jungle Store. (6 Coins)"
           ]
+        },
+        {
+          "name": "The player must deliver all 20 rune essence at once",
+          "unresolved": true
         }
       ]
     },
@@ -5279,12 +5752,20 @@
       ],
       "items": [
         {
+          "name": "A death talisman/tiara, catalytic talisman/tiara, Runecraft cape or 50 junk items",
+          "unresolved": true
+        },
+        {
           "name": "Chisel",
           "item_id": 1755,
           "sources": [
             "Shop: Martin Thwait's Lost and Found. (1 Coins)",
             "Shop: Gwyn's Mining Emporium (1 Coins)"
           ]
+        },
+        {
+          "name": "Full mourner clothes",
+          "unresolved": true
         },
         {
           "name": "Rope",
@@ -5372,6 +5853,11 @@
             "Shop: Alice's Farming shop. (6 Coins)",
             "Shop: Branwen's Farming Shop (6 Coins)"
           ]
+        },
+        {
+          "name": "prayer points for the Evil spirits part of the quest",
+          "quantity": 47,
+          "unresolved": true
         }
       ]
     },
@@ -5393,8 +5879,20 @@
       ],
       "items": [
         {
+          "name": "Any black outfit",
+          "unresolved": true
+        },
+        {
           "name": "Black dye",
           "item_id": 4622
+        },
+        {
+          "name": "Means to enter the desert",
+          "unresolved": true
+        },
+        {
+          "name": "Note: You can make a black desert robe and shirt during the quest if you brought a desert robe and shirt",
+          "unresolved": true
         },
         {
           "name": "Silver bar",
@@ -5436,6 +5934,14 @@
       ],
       "items": [
         {
+          "name": "A way to enter Port Phasmatys",
+          "unresolved": true
+        },
+        {
+          "name": "Completion of Ghosts Ahoy or",
+          "unresolved": true
+        },
+        {
           "name": "Ghostspeak amulet",
           "item_id": 552
         },
@@ -5454,6 +5960,21 @@
             "Shop: Alice's Farming shop. (3 Coins)",
             "Shop: Branwen's Farming Shop (3 Coins)"
           ]
+        },
+        {
+          "name": "bone, 1 pot and 1 bucket to earn 5 ecto-tokens or",
+          "quantity": 1,
+          "unresolved": true
+        },
+        {
+          "name": "ecto-token or",
+          "quantity": 2,
+          "unresolved": true
+        },
+        {
+          "name": "gold for a Charter ship to Port Phasmatys",
+          "quantity": 5200,
+          "unresolved": true
         }
       ]
     },
@@ -5473,12 +5994,20 @@
       ],
       "items": [
         {
+          "name": "Any type of cat or hellcat",
+          "unresolved": true
+        },
+        {
           "name": "Bucket of milk",
           "item_id": 1927,
           "sources": [
             "Shop: Culinaromancer's Chest (6 Coins)",
             "Shop: Funch's Fine Groceries (6 Coins)"
           ]
+        },
+        {
+          "name": "Catspeak amulet, even if Dragon Slayer II is completed",
+          "unresolved": true
         },
         {
           "name": "Cheese",
@@ -5488,6 +6017,14 @@
             "Shop: Culinaromancer's Chest (4 Coins)",
             "Shop: Cobado's Groceries (4 Coins)"
           ]
+        },
+        {
+          "name": "Cleaned kwuarm",
+          "unresolved": true
+        },
+        {
+          "name": "Cleaned marrentill",
+          "unresolved": true
         },
         {
           "name": "Coins",
@@ -5537,6 +6074,11 @@
             "Drop: Cave bug#Level 6 (2/128)",
             "Drop: Cave crawler (2/128)"
           ]
+        },
+        {
+          "name": "free inventory space",
+          "quantity": 1,
+          "unresolved": true
         }
       ]
     },
@@ -5583,12 +6125,30 @@
       ],
       "items": [
         {
+          "name": "2 thread",
+          "quantity": 1,
+          "unresolved": true
+        },
+        {
+          "name": "Any pickaxe that you have the Mining level to use",
+          "obtainable": true,
+          "unresolved": true
+        },
+        {
+          "name": "Crush weapon",
+          "unresolved": true
+        },
+        {
           "name": "Knife",
           "item_id": 946,
           "sources": [
             "Shop: Martin Thwait's Lost and Found. (6 Coins)",
             "Shop: Neitiznot supplies. (6 Coins)"
           ]
+        },
+        {
+          "name": "Light source",
+          "unresolved": true
         },
         {
           "name": "Needle",
@@ -5605,6 +6165,23 @@
             "Shop: Ned's Handmade Rope (100% Wool) (16 Coins)",
             "Shop: Martin Thwait's Lost and Found. (18 Coins)"
           ]
+        },
+        {
+          "name": "Runes for Telekinetic Grab",
+          "unresolved": true
+        },
+        {
+          "name": "Slash weapon",
+          "unresolved": true
+        },
+        {
+          "name": "Some form of Ranged or Magic attack method",
+          "obtainable": true,
+          "unresolved": true
+        },
+        {
+          "name": "Stab weapon",
+          "unresolved": true
         }
       ]
     },
@@ -5834,6 +6411,10 @@
           ]
         },
         {
+          "name": "Enough remaining Prayer points to cast Protect from Melee for about five seconds",
+          "unresolved": true
+        },
+        {
           "name": "Logs",
           "item_id": 1511,
           "sources": [
@@ -5858,6 +6439,26 @@
           ]
         },
         {
+          "name": "One of the following: bread, any kind of pie, cake or chocolate cake, any kind of pizza, or a baked potato with topping",
+          "unresolved": true
+        },
+        {
+          "name": "Pickaxe",
+          "unresolved": true
+        },
+        {
+          "name": "Runes to cast Crumble Undead",
+          "unresolved": true
+        },
+        {
+          "name": "Runes to cast Fire Bolt, Fire Blast or Fire Wave",
+          "unresolved": true
+        },
+        {
+          "name": "Runes to cast Wind Bolt, Wind Blast or Wind Wave",
+          "unresolved": true
+        },
+        {
           "name": "Soft clay",
           "item_id": 1761,
           "obtainable": true,
@@ -5875,12 +6476,23 @@
           ]
         },
         {
+          "name": "Two 5 kg pieces of granite",
+          "obtainable": true,
+          "unresolved": true
+        },
+        {
           "name": "Willow logs",
           "item_id": 1519,
           "sources": [
             "Drop: Willow tree (Always)",
             "Drop: Willow tree (Farming) (Always)"
           ]
+        },
+        {
+          "name": "kg of sandstone",
+          "quantity": 52,
+          "obtainable": true,
+          "unresolved": true
         }
       ]
     },
@@ -5950,6 +6562,10 @@
         }
       ],
       "items": [
+        {
+          "name": "A combination of three items picked for you at random, see list of potential items",
+          "unresolved": true
+        },
         {
           "name": "Dramen staff",
           "item_id": 772
@@ -6061,6 +6677,22 @@
       ],
       "items": [
         {
+          "name": "Any axe",
+          "unresolved": true
+        },
+        {
+          "name": "Any cat except an overgrown cat",
+          "unresolved": true
+        },
+        {
+          "name": "Any fruit blast excluding a premade fr' blast",
+          "unresolved": true
+        },
+        {
+          "name": "Any pickaxe",
+          "unresolved": true
+        },
+        {
           "name": "Asgarnian ale",
           "item_id": 1905,
           "quantity": 4,
@@ -6159,6 +6791,10 @@
           ]
         },
         {
+          "name": "Dramen staff and branch",
+          "unresolved": true
+        },
+        {
           "name": "Egg",
           "item_id": 1944,
           "quantity": 2,
@@ -6189,6 +6825,15 @@
             "Shop: Fishing Guild Shop. (3 Coins)",
             "Shop: Henderson's Catch of the Day (3 Coins)"
           ]
+        },
+        {
+          "name": "Gloves",
+          "unresolved": true
+        },
+        {
+          "name": "Gorilla, ninja and zombie greegree",
+          "obtainable": true,
+          "unresolved": true
         },
         {
           "name": "Greenman's ale",
@@ -6252,6 +6897,10 @@
           "sources": [
             "Drop: Unlocked Ogre chest (Always)"
           ]
+        },
+        {
+          "name": "Ogre bow and several ogre arrows",
+          "unresolved": true
         },
         {
           "name": "Orange",
@@ -6339,6 +6988,10 @@
           ]
         },
         {
+          "name": "Several bowls of stew",
+          "unresolved": true
+        },
+        {
           "name": "Spice",
           "item_id": 2007,
           "sources": [
@@ -6408,6 +7061,15 @@
       ],
       "items": [
         {
+          "name": "5 buckets",
+          "quantity": 1,
+          "unresolved": true
+        },
+        {
+          "name": "Any pickaxe",
+          "unresolved": true
+        },
+        {
           "name": "Blessed axe",
           "item_id": 10491
         },
@@ -6435,6 +7097,10 @@
             "Shop: Amlodd's Magical Supplies (50 Coins)",
             "Shop: Tal Teklan Rune Shop (50 Coins)"
           ]
+        },
+        {
+          "name": "Efaritay's aid equipped in combination with any weapon OR",
+          "unresolved": true
         },
         {
           "name": "Emberlight",
@@ -6587,6 +7253,26 @@
             "Shop: Amlodd's Magical Supplies (4 Coins)",
             "Shop: Aubury's Rune Shop. (4 Coins)"
           ]
+        },
+        {
+          "name": "Wolfbane dagger",
+          "unresolved": true
+        },
+        {
+          "name": "nails",
+          "quantity": 44,
+          "obtainable": true,
+          "unresolved": true
+        },
+        {
+          "name": "piece of any food to enter Burgh de Rott for the first time",
+          "quantity": 1,
+          "unresolved": true
+        },
+        {
+          "name": "stew , salmon, snails, or slimy eels",
+          "quantity": 15,
+          "unresolved": true
         }
       ]
     },
@@ -6606,6 +7292,10 @@
         }
       ],
       "items": [
+        {
+          "name": "A weapon",
+          "unresolved": true
+        },
         {
           "name": "Rope",
           "item_id": 954,
@@ -6648,6 +7338,16 @@
             "Shop: Ali's Discount Wares. (1 Coins)",
             "Shop: Aurel's Supplies (1 Coins)"
           ]
+        },
+        {
+          "name": "coins for 8 pots of vinegar",
+          "quantity": 8,
+          "unresolved": true
+        },
+        {
+          "name": "logs of any type",
+          "quantity": 8,
+          "unresolved": true
         }
       ]
     },
@@ -6707,6 +7407,10 @@
         }
       ],
       "items": [
+        {
+          "name": "An airtight pot – created by using a pot lid on a pot",
+          "unresolved": true
+        },
         {
           "name": "Blood rune",
           "item_id": 565,
@@ -6772,6 +7476,10 @@
           ]
         },
         {
+          "name": "Soft clay if making your own pot lid during the quest , or a pickaxe to obtain the clay during the quest",
+          "unresolved": true
+        },
+        {
           "name": "Tinderbox",
           "item_id": 590,
           "obtainable": true,
@@ -6779,6 +7487,26 @@
             "Shop: Ali's Discount Wares. (1 Coins)",
             "Shop: Aurel's Supplies (1 Coins)"
           ]
+        },
+        {
+          "name": "a pickaxe if mining your own iron during quest",
+          "obtainable": true,
+          "unresolved": true
+        },
+        {
+          "name": "an axe if chopping your own logs during quest",
+          "obtainable": true,
+          "unresolved": true
+        },
+        {
+          "name": "iron bars, or",
+          "quantity": 5,
+          "unresolved": true
+        },
+        {
+          "name": "set of logs of any kind, or",
+          "quantity": 1,
+          "unresolved": true
         }
       ]
     },
@@ -6881,6 +7609,23 @@
         {
           "skill": "thieving",
           "xp": 2000
+        }
+      ],
+      "items": [
+        {
+          "name": "Any light source",
+          "unresolved": true
+        },
+        {
+          "name": "Pickaxe",
+          "optional": true,
+          "unresolved": true
+        },
+        {
+          "name": "full sets of H.A.M. robes",
+          "quantity": 2,
+          "obtainable": true,
+          "unresolved": true
         }
       ]
     },
@@ -7002,6 +7747,36 @@
         }
       ],
       "items": [
+        {
+          "name": "A few coins",
+          "unresolved": true
+        },
+        {
+          "name": "A finished bullseye lantern",
+          "obtainable": true,
+          "unresolved": true
+        },
+        {
+          "name": "A needle and 2 spools of thread",
+          "unresolved": true
+        },
+        {
+          "name": "All elemental talismans or their respective tiaras , or access to the Abyss or the Guardians of the Rift minigame",
+          "unresolved": true
+        },
+        {
+          "name": "Any axe",
+          "obtainable": true,
+          "unresolved": true
+        },
+        {
+          "name": "Any pickaxe",
+          "unresolved": true
+        },
+        {
+          "name": "Combat equipment",
+          "unresolved": true
+        },
         {
           "name": "Dramen staff",
           "item_id": 772
@@ -7224,6 +7999,11 @@
           ]
         },
         {
+          "name": "Means to cast Telekinetic Grab",
+          "obtainable": true,
+          "unresolved": true
+        },
+        {
           "name": "Plank",
           "item_id": 960,
           "quantity": 2,
@@ -7231,6 +8011,11 @@
             "Shop: Razmire Builders Merchants. (1 Coins)",
             "Drop: Undead Lumberjack (Always)"
           ]
+        },
+        {
+          "name": "nails",
+          "quantity": 8,
+          "unresolved": true
         }
       ]
     },
@@ -7277,6 +8062,14 @@
       ],
       "items": [
         {
+          "name": "Access to Guardians of the Rift",
+          "unresolved": true
+        },
+        {
+          "name": "Access to the Air, Water, Earth, Fire, and Mind Altars",
+          "unresolved": true
+        },
+        {
           "name": "Chisel",
           "item_id": 1755,
           "sources": [
@@ -7313,12 +8106,34 @@
           ]
         },
         {
+          "name": "OR",
+          "unresolved": true
+        },
+        {
+          "name": "OR",
+          "unresolved": true
+        },
+        {
           "name": "Swamp paste",
           "item_id": 1941,
           "sources": [
             "Shop: Razmire Builders Merchants. (31 Coins)",
             "Shop: Seb's Shipyard Supplies (39 Coins)"
           ]
+        },
+        {
+          "name": "Travelling through the Abyss or using a Runecraft cape",
+          "unresolved": true
+        },
+        {
+          "name": "open inventory slots",
+          "quantity": 5,
+          "unresolved": true
+        },
+        {
+          "name": "rune/pure essence",
+          "quantity": 5,
+          "unresolved": true
         }
       ]
     },
@@ -7378,6 +8193,16 @@
             "Shop: Jiminua's Jungle Store. (1 Coins)",
             "Shop: Neitiznot supplies. (1 Coins)"
           ]
+        },
+        {
+          "name": "Pickaxe",
+          "optional": true,
+          "obtainable": true,
+          "unresolved": true
+        },
+        {
+          "name": "The battered key from Elemental Workshop I",
+          "unresolved": true
         }
       ]
     },
@@ -7476,6 +8301,16 @@
             "Shop: Alice's Farming shop. (3 Coins)",
             "Shop: Branwen's Farming Shop (3 Coins)"
           ]
+        },
+        {
+          "name": "Supercompost Note: Bottomless compost bucket will not work, even one that is containing supercompost",
+          "quantity": 7,
+          "unresolved": true
+        },
+        {
+          "name": "additional buckets",
+          "quantity": 3,
+          "unresolved": true
         }
       ]
     },
@@ -7521,6 +8356,10 @@
       ],
       "items": [
         {
+          "name": "A full sack of potatoes",
+          "unresolved": true
+        },
+        {
           "name": "Ball of wool",
           "item_id": 1759,
           "quantity": 1,
@@ -7552,6 +8391,10 @@
             "Drop: Dead tree (2021 Christmas event) (Always)",
             "Drop: Jungle tree (Always)"
           ]
+        },
+        {
+          "name": "Note: The player receives a willow sapling during the quest, although planting one beforehand may be faster. You will also receive a basket of apples to pay to protect the tree",
+          "unresolved": true
         },
         {
           "name": "Papyrus",
@@ -7607,6 +8450,10 @@
           ]
         },
         {
+          "name": "TRIP 2",
+          "unresolved": true
+        },
+        {
           "name": "Tinderbox",
           "item_id": 590,
           "sources": [
@@ -7629,6 +8476,11 @@
             "Shop: Dyes to Die For (6 Coins)",
             "Shop: Guinevere's Dyes (6 Coins)"
           ]
+        },
+        {
+          "name": "empty sacks – bring 9 sacks if planning to fill one with potatoes on Entrana",
+          "quantity": 8,
+          "unresolved": true
         }
       ]
     },
@@ -7769,6 +8621,11 @@
         {
           "name": "Polished buttons",
           "item_id": 10496
+        },
+        {
+          "name": "iron bars unnoted",
+          "quantity": 5,
+          "unresolved": true
         }
       ]
     },
@@ -7785,6 +8642,16 @@
         {
           "skill": "thieving",
           "xp": 7000
+        }
+      ],
+      "items": [
+        {
+          "name": "A light source . If you don't have one, the Sophanem guard under the temple of the lesser deities will sell you an unlit torch for 200 coins",
+          "unresolved": true
+        },
+        {
+          "name": "A tinderbox . If you don't have one, the Sophanem guard will sell you one for 50 coins",
+          "unresolved": true
         }
       ]
     },
@@ -7976,6 +8843,14 @@
           ]
         },
         {
+          "name": "Either 8 tin ores, 7 pieces of coal, or 6 mithril ores . Note: The ores can be noted",
+          "unresolved": true
+        },
+        {
+          "name": "If the Neitiznot shield is already purchased, only 8 ropes are required",
+          "unresolved": true
+        },
+        {
           "name": "Knife",
           "item_id": 946,
           "sources": [
@@ -8007,10 +8882,19 @@
           ]
         },
         {
+          "name": "Silly jester costume",
+          "obtainable": true,
+          "unresolved": true
+        },
+        {
           "name": "Split log",
           "item_id": 10812,
           "quantity": 8,
           "obtainable": true
+        },
+        {
+          "name": "Yak-hide armour top and legs",
+          "unresolved": true
         }
       ]
     },
@@ -8048,6 +8932,10 @@
         }
       ],
       "items": [
+        {
+          "name": "A fishbowl helmet and a diving apparatus",
+          "unresolved": true
+        },
         {
           "name": "Grey wolf fur",
           "item_id": 958,
@@ -8106,6 +8994,22 @@
           "sources": [
             "Drop: Dr Fenkenstrain (Always)"
           ]
+        },
+        {
+          "name": "nails",
+          "quantity": 100,
+          "unresolved": true
+        },
+        {
+          "name": "oak planks, a hammer, and a saw",
+          "quantity": 4,
+          "optional": true,
+          "unresolved": true
+        },
+        {
+          "name": "wooden cats – partial completion of The Great Brain Robbery is required to make these yourself, however they are tradeable and available at the Grand Exchange",
+          "quantity": 10,
+          "unresolved": true
         }
       ]
     },
@@ -8135,6 +9039,10 @@
       ],
       "items": [
         {
+          "name": "Access to the Chaos Altar",
+          "unresolved": true
+        },
+        {
           "name": "Chaos rune",
           "item_id": 562,
           "quantity": 15,
@@ -8142,6 +9050,10 @@
             "Shop: The Runic Emporium (90 Coins)",
             "Shop: Battle Runes (90 Coins)"
           ]
+        },
+        {
+          "name": "Empty bowl",
+          "unresolved": true
         }
       ]
     },
@@ -8173,6 +9085,10 @@
       ],
       "items": [
         {
+          "name": "Any woodcutting axe",
+          "unresolved": true
+        },
+        {
           "name": "Rope",
           "item_id": 954,
           "quantity": 6,
@@ -8197,6 +9113,11 @@
             "Shop: Ali's Discount Wares. (1 Coins)",
             "Shop: Aurel's Supplies (1 Coins)"
           ]
+        },
+        {
+          "name": "free inventory slots",
+          "quantity": 4,
+          "unresolved": true
         }
       ]
     },
@@ -8231,6 +9152,14 @@
         }
       ],
       "items": [
+        {
+          "name": "A light source",
+          "unresolved": true
+        },
+        {
+          "name": "Magic or Ranged gear for enemy fight",
+          "unresolved": true
+        },
         {
           "name": "Specimen brush",
           "item_id": 670,
@@ -8271,6 +9200,10 @@
         }
       ],
       "items": [
+        {
+          "name": "A good weapon , good armour, good food such as sharks, and super potion sets",
+          "unresolved": true
+        },
         {
           "name": "Astral rune",
           "item_id": 9075,
@@ -8314,6 +9247,11 @@
             "Shop: Ali's Discount Wares. (1 Coins)",
             "Shop: Aurel's Supplies (1 Coins)"
           ]
+        },
+        {
+          "name": "different kinds of food: 6 of 1 type and 7 of 2 others for a total of 20 pieces",
+          "quantity": 3,
+          "unresolved": true
         }
       ]
     },
@@ -8380,6 +9318,18 @@
       ],
       "items": [
         {
+          "name": "Any axe",
+          "unresolved": true
+        },
+        {
+          "name": "Good armour and a weapon",
+          "unresolved": true
+        },
+        {
+          "name": "High healing food",
+          "unresolved": true
+        },
+        {
           "name": "Leather gloves",
           "item_id": 1059,
           "obtainable": true,
@@ -8387,6 +9337,19 @@
             "Shop: Shayzien Styles (6 Coins)",
             "Shop: Thessalia's Fine Clothes. (6 Coins)"
           ]
+        },
+        {
+          "name": "Seed dibber . Not needed if the Farming portion of the Barbarian Training miniquest is completed",
+          "unresolved": true
+        },
+        {
+          "name": "Tarromin potion OR 2 vials of water and 2 tarromins",
+          "quantity": 2,
+          "unresolved": true
+        },
+        {
+          "name": "Watering can with at least 1 dose",
+          "unresolved": true
         }
       ]
     },
@@ -8423,6 +9386,11 @@
       ],
       "items": [
         {
+          "name": "Animate rock scroll . Note: if you have it in your bank, either destroy it or take it with you. You won't be able to receive another from Wizard Cromperty otherwise",
+          "obtainable": true,
+          "unresolved": true
+        },
+        {
           "name": "Bronze med helm",
           "item_id": 1139,
           "sources": [
@@ -8431,12 +9399,25 @@
           ]
         },
         {
+          "name": "Full black armour —Note: Elite and trimmed versions of black armour will work. versions will not work",
+          "unresolved": true
+        },
+        {
+          "name": "Granite",
+          "unresolved": true
+        },
+        {
           "name": "Iron chainbody",
           "item_id": 1101,
           "sources": [
             "Shop: Blair's Armour (210 Coins)",
             "Shop: Horvik's Armour Shop. (210 Coins)"
           ]
+        },
+        {
+          "name": "Telekinetic Grab runes",
+          "obtainable": true,
+          "unresolved": true
         }
       ]
     },
@@ -8468,6 +9449,10 @@
       ],
       "items": [
         {
+          "name": "A lit torch , Candle lantern, candle or black candle - the light source will be consumed. Bullseye lantern and firemaking cape do not work",
+          "unresolved": true
+        },
+        {
           "name": "Bones",
           "item_id": 526,
           "quantity": 3,
@@ -8476,6 +9461,10 @@
             "Drop: Chicken (Always)",
             "Drop: Crimson swift (Always)"
           ]
+        },
+        {
+          "name": "Bronze bar and hammer to create one",
+          "unresolved": true
         },
         {
           "name": "Bronze wire",
@@ -8529,6 +9518,11 @@
             "Drop: Mourner#Level 11 (Always)",
             "Drop: Mourner#Level 108 (Always)"
           ]
+        },
+        {
+          "name": "Priest gown top and bottom",
+          "obtainable": true,
+          "unresolved": true
         }
       ]
     },
@@ -8536,7 +9530,14 @@
       "id": 127,
       "slug": "alfred_grimhands_barcrawl",
       "name": "Alfred Grimhand's Barcrawl",
-      "members": true
+      "members": true,
+      "items": [
+        {
+          "name": "coins to buy all the required alcohol",
+          "quantity": 208,
+          "unresolved": true
+        }
+      ]
     },
     {
       "id": 128,
@@ -8565,6 +9566,10 @@
         }
       ],
       "items": [
+        {
+          "name": "All pieces of the Ghostly robes set",
+          "unresolved": true
+        },
         {
           "name": "Coins",
           "item_id": 995,
@@ -8632,6 +9637,26 @@
       ],
       "items": [
         {
+          "name": "A normal attack potion",
+          "unresolved": true
+        },
+        {
+          "name": "An axe",
+          "unresolved": true
+        },
+        {
+          "name": "An axe or 200 coins",
+          "unresolved": true
+        },
+        {
+          "name": "Any sapling and a free Farming patch for it",
+          "unresolved": true
+        },
+        {
+          "name": "Any seed that can be planted with a seed dibber and a free Farming patch for it",
+          "unresolved": true
+        },
+        {
           "name": "Caviar",
           "item_id": 11326,
           "sources": [
@@ -8693,6 +9718,14 @@
             "Shop: Ali's Discount Wares. (1 Coins)",
             "Shop: Aurel's Supplies (1 Coins)"
           ]
+        },
+        {
+          "name": "Two logs corresponding to the type of metal bars you are using. Bronze, iron, steel, mithril, adamantite, and runite bars require normal, oak, willow, maple, yew, or magic logs, respectively",
+          "unresolved": true
+        },
+        {
+          "name": "Two metal bars of a level you can smith",
+          "unresolved": true
         }
       ]
     },
@@ -8748,6 +9781,11 @@
             "Shop: Funch's Fine Groceries (2 Coins)",
             "Shop: Grand Tree Groceries (2 Coins)"
           ]
+        },
+        {
+          "name": "Gloves to pick the nettles",
+          "obtainable": true,
+          "unresolved": true
         },
         {
           "name": "Knife",
@@ -8808,6 +9846,10 @@
           "sources": [
             "Shop: Rasolo (0 Coins)"
           ]
+        },
+        {
+          "name": "Some players may need a knife or slash weapon",
+          "unresolved": true
         }
       ]
     },
@@ -8890,6 +9932,10 @@
       ],
       "items": [
         {
+          "name": "Combat gear to kill zogres",
+          "unresolved": true
+        },
+        {
           "name": "Dusty key",
           "item_id": 1590,
           "optional": true,
@@ -8897,6 +9943,10 @@
             "Shop: Velrak the explorer (0 Coins)",
             "Shop: Legends Guild Shop of Useful Items. (1 Coins)"
           ]
+        },
+        {
+          "name": "Fishing explosives",
+          "unresolved": true
         },
         {
           "name": "Ice cooler",
@@ -8912,6 +9962,10 @@
           "sources": [
             "Shop: Wine Shop. (1 Coins)"
           ]
+        },
+        {
+          "name": "Light source",
+          "unresolved": true
         },
         {
           "name": "Mirror shield",
@@ -8944,6 +9998,11 @@
             "Shop: Ali's Discount Wares. (1 Coins)",
             "Shop: Aurel's Supplies (1 Coins)"
           ]
+        },
+        {
+          "name": "sets of logs",
+          "quantity": 27,
+          "unresolved": true
         }
       ]
     },
@@ -8993,6 +10052,14 @@
         }
       ],
       "items": [
+        {
+          "name": "A light source",
+          "unresolved": true
+        },
+        {
+          "name": "An empty vial and a pestle and mortar if making the black dye during the quest",
+          "unresolved": true
+        },
         {
           "name": "Black dye",
           "item_id": 4622,
@@ -9067,6 +10134,11 @@
             "Shop: Dyes to Die For (6 Coins)",
             "Shop: Guinevere's Dyes (6 Coins)"
           ]
+        },
+        {
+          "name": "goblin mails are recommended",
+          "quantity": 6,
+          "unresolved": true
         }
       ]
     },
@@ -9153,6 +10225,10 @@
           ]
         },
         {
+          "name": "Equipment for two different combat styles",
+          "unresolved": true
+        },
+        {
           "name": "Iron chainbody",
           "item_id": 1101,
           "sources": [
@@ -9184,6 +10260,14 @@
           ]
         },
         {
+          "name": "One of each of the following runes: air, water, earth, fire, mind, law, death",
+          "unresolved": true
+        },
+        {
+          "name": "Papyrus and charcoal",
+          "unresolved": true
+        },
+        {
           "name": "Pink dye",
           "item_id": 6955,
           "sources": [
@@ -9191,11 +10275,27 @@
           ]
         },
         {
+          "name": "Restore potion",
+          "unresolved": true
+        },
+        {
           "name": "Ring of Charos",
           "item_id": 4202,
           "sources": [
             "Drop: Dr Fenkenstrain (Always)"
           ]
+        },
+        {
+          "name": "Runes for any charge orb spell",
+          "unresolved": true
+        },
+        {
+          "name": "Runes for the following spells: multiple casts of all four elemental spells, Snare/Entangle, Weaken/Enfeeble, Telekinetic Grab, and Low/High Level Alchemy",
+          "unresolved": true
+        },
+        {
+          "name": "Runes to cast the Astral Contact spell four times",
+          "unresolved": true
         },
         {
           "name": "Sapphire lantern",
@@ -9225,6 +10325,11 @@
             "Drop: Chest (Dorgesh-Kaan Average)#Oldak's chests (1/20)",
             "Drop: Skeleton (Tarn's Lair)#Low level (3/128)"
           ]
+        },
+        {
+          "name": "log of any type except redwood (you can obtain one using a bronze axe next to the Hunting Expert, but you must not already have an axe in your inventory",
+          "quantity": 1,
+          "unresolved": true
         }
       ]
     },
@@ -9269,6 +10374,14 @@
       ],
       "items": [
         {
+          "name": "Any tier of brutal arrows with a comp ogre bow, which deals full damage",
+          "unresolved": true
+        },
+        {
+          "name": "Crumble Undead, which deals half damage",
+          "unresolved": true
+        },
+        {
           "name": "Knife",
           "item_id": 946,
           "obtainable": true,
@@ -9276,6 +10389,11 @@
             "Shop: Martin Thwait's Lost and Found. (6 Coins)",
             "Shop: Neitiznot supplies. (6 Coins)"
           ]
+        },
+        {
+          "name": "free inventory spaces are needed to receive items near the start of the quest",
+          "quantity": 5,
+          "unresolved": true
         }
       ]
     },
@@ -9294,6 +10412,13 @@
         {
           "skill": "slayer",
           "xp": 5000
+        }
+      ],
+      "items": [
+        {
+          "name": "coins required each time you use the banker Odovacar",
+          "quantity": 100,
+          "unresolved": true
         }
       ]
     },
@@ -9367,6 +10492,19 @@
       ],
       "items": [
         {
+          "name": "A light source",
+          "unresolved": true
+        },
+        {
+          "name": "A pickaxe",
+          "optional": true,
+          "unresolved": true
+        },
+        {
+          "name": "A slash weapon",
+          "unresolved": true
+        },
+        {
           "name": "Chisel",
           "item_id": 1755,
           "obtainable": true,
@@ -9431,6 +10569,10 @@
             "Shop: The Lighthouse Store (4 Coins)",
             "Shop: Elder Raley's Herblore Stall (4 Coins)"
           ]
+        },
+        {
+          "name": "The Translation book from The Grand Tree. If you have lost it a replacement can be obtained from King Narnode during the quest",
+          "unresolved": true
         }
       ]
     },
@@ -9493,6 +10635,10 @@
         {
           "name": "Run",
           "item_id": 10947
+        },
+        {
+          "name": "Something to cut webs",
+          "unresolved": true
         }
       ]
     },
@@ -9700,6 +10846,14 @@
       ],
       "items": [
         {
+          "name": "A pickaxe",
+          "unresolved": true
+        },
+        {
+          "name": "An axe",
+          "unresolved": true
+        },
+        {
           "name": "Astral rune",
           "item_id": 9075,
           "sources": [
@@ -9710,6 +10864,10 @@
         {
           "name": "Catspeak amulet",
           "item_id": 4677
+        },
+        {
+          "name": "Cut dragonstone",
+          "unresolved": true
         },
         {
           "name": "Ghostspeak amulet",
@@ -9774,6 +10932,10 @@
           ]
         },
         {
+          "name": "Runes for 3 Fire Wave spells or 3 Fire Surge spells",
+          "unresolved": true
+        },
+        {
           "name": "Saw",
           "item_id": 8794,
           "sources": [
@@ -9809,6 +10971,11 @@
             "Shop: Ali's Discount Wares. (1 Coins)",
             "Shop: Aurel's Supplies (1 Coins)"
           ]
+        },
+        {
+          "name": "nails of any kind",
+          "quantity": 12,
+          "unresolved": true
         }
       ]
     },
@@ -9848,6 +11015,10 @@
         }
       ],
       "items": [
+        {
+          "name": "Any fruit blast excluding a premade fr' blast",
+          "unresolved": true
+        },
         {
           "name": "Ashes",
           "item_id": 592,
@@ -9957,6 +11128,10 @@
             "Shop: Fortis Spice Stall (230 Coins)",
             "Shop: Port Roberts Spice Stall (230 Coins)"
           ]
+        },
+        {
+          "name": "Use a knife on an orange",
+          "unresolved": true
         }
       ]
     },
@@ -9999,6 +11174,10 @@
           ]
         },
         {
+          "name": "Bring additional coins if buying the other ingredients or bringing additional ales",
+          "unresolved": true
+        },
+        {
           "name": "Bucket of milk",
           "item_id": 1927,
           "sources": [
@@ -10024,12 +11203,20 @@
           ]
         },
         {
+          "name": "Gloves, If not using gloves make sure to bring Telekinetic Grab spell runes",
+          "unresolved": true
+        },
+        {
           "name": "Pot of flour",
           "item_id": 1933,
           "sources": [
             "Shop: Culinaromancer's Chest (10 Coins)",
             "Shop: Grand Tree Groceries (10 Coins)"
           ]
+        },
+        {
+          "name": "Recommended to bring at least 2 additional ales in case Rohak sobers up",
+          "unresolved": true
         }
       ]
     },
@@ -10047,6 +11234,16 @@
         {
           "skill": "cooking",
           "xp": 7000
+        }
+      ],
+      "items": [
+        {
+          "name": "Any cat except an overgrown cat",
+          "unresolved": true
+        },
+        {
+          "name": "Several bowls of stew",
+          "unresolved": true
         }
       ]
     },
@@ -10195,6 +11392,14 @@
           ]
         },
         {
+          "name": "Minigame Teleport to Guardians of the Rift",
+          "unresolved": true
+        },
+        {
+          "name": "Necklace of passage or access to fairy rings and a Lunar/Dramen staff",
+          "unresolved": true
+        },
+        {
           "name": "Pot of flour",
           "item_id": 1933,
           "sources": [
@@ -10229,6 +11434,10 @@
       ],
       "items": [
         {
+          "name": "Any axe",
+          "unresolved": true
+        },
+        {
           "name": "Bucket of milk",
           "item_id": 1927,
           "sources": [
@@ -10237,8 +11446,16 @@
           ]
         },
         {
+          "name": "Dramen branch to make cinnamon",
+          "unresolved": true
+        },
+        {
           "name": "Dramen staff",
           "item_id": 772
+        },
+        {
+          "name": "Ice gloves (only required if wanting to take no damage from the flambé. Anti-dragon shield will mitigate most of the damage",
+          "unresolved": true
         },
         {
           "name": "Machete",
@@ -10327,6 +11544,10 @@
           ]
         },
         {
+          "name": "Gorilla, Ninja monkey and Zombie monkey greegree",
+          "unresolved": true
+        },
+        {
           "name": "Karamjan monkey greegree",
           "item_id": 4031
         },
@@ -10409,6 +11630,10 @@
       ],
       "items": [
         {
+          "name": "Axe",
+          "unresolved": true
+        },
+        {
           "name": "Ball of wool",
           "item_id": 1759,
           "sources": [
@@ -10430,6 +11655,10 @@
           ]
         },
         {
+          "name": "Ogre arrows Chisel, knife, wolf bones, and feathers if you are making your own ogre arrows",
+          "unresolved": true
+        },
+        {
           "name": "Ogre bellows",
           "item_id": 2871,
           "obtainable": true,
@@ -10441,6 +11670,10 @@
           "name": "Ogre bow",
           "item_id": 2883,
           "obtainable": true
+        },
+        {
+          "name": "Pickaxe",
+          "unresolved": true
         },
         {
           "name": "Raw chompy",
@@ -10472,6 +11705,20 @@
         {
           "skill": "magic",
           "level": 75
+        }
+      ],
+      "items": [
+        {
+          "name": "God staves",
+          "unresolved": true
+        },
+        {
+          "name": "Item to cut webs",
+          "unresolved": true
+        },
+        {
+          "name": "Runes to cast god spells",
+          "unresolved": true
         }
       ]
     },
@@ -10533,6 +11780,10 @@
       ],
       "items": [
         {
+          "name": "An enchant emerald or jade tablet",
+          "unresolved": true
+        },
+        {
           "name": "Chisel",
           "item_id": 1755,
           "sources": [
@@ -10575,6 +11826,11 @@
           ]
         },
         {
+          "name": "Rod of ivandis",
+          "obtainable": true,
+          "unresolved": true
+        },
+        {
           "name": "Vial of water",
           "item_id": 227,
           "obtainable": true,
@@ -10582,6 +11838,15 @@
             "Shop: Jatix's Herblore Shop. (2 Coins)",
             "Shop: Aemad's Adventuring Supplies. (2 Coins)"
           ]
+        },
+        {
+          "name": "Weapons and armour",
+          "unresolved": true
+        },
+        {
+          "name": "air runes, 1 cosmic rune, and having your magic set to the standard Spellbook",
+          "quantity": 3,
+          "unresolved": true
         }
       ]
     },
@@ -10605,12 +11870,28 @@
       ],
       "items": [
         {
+          "name": "A melee weapon of any kind",
+          "unresolved": true
+        },
+        {
+          "name": "A pickaxe",
+          "unresolved": true
+        },
+        {
+          "name": "A ranged weapon with ammunition. Darts and throwing knives also work",
+          "unresolved": true
+        },
+        {
           "name": "Rope",
           "item_id": 954,
           "sources": [
             "Shop: Ned's Handmade Rope (100% Wool) (16 Coins)",
             "Shop: Martin Thwait's Lost and Found. (18 Coins)"
           ]
+        },
+        {
+          "name": "Runes for 2-3 casts of any magic combat spell",
+          "unresolved": true
         }
       ]
     },
@@ -10700,6 +11981,10 @@
           ]
         },
         {
+          "name": "Combat equipment",
+          "unresolved": true
+        },
+        {
           "name": "Hammer",
           "item_id": 2347,
           "obtainable": true,
@@ -10716,6 +12001,11 @@
             "Drop: The Mimic#Elite (Always)",
             "Drop: The Mimic#Master (Always)"
           ]
+        },
+        {
+          "name": "Pickaxe",
+          "obtainable": true,
+          "unresolved": true
         },
         {
           "name": "Rope",
@@ -10752,6 +12042,24 @@
         157,
         158,
         159
+      ],
+      "items": [
+        {
+          "name": "Certain armour and weapons for each boss",
+          "unresolved": true
+        },
+        {
+          "name": "Good healing food, such as sharks",
+          "unresolved": true
+        },
+        {
+          "name": "Ice gloves for defeating Flambeed",
+          "unresolved": true
+        },
+        {
+          "name": "Menaphite remedy or restore potions since Karamel will lower your stats",
+          "unresolved": true
+        }
       ]
     },
     {
@@ -10851,6 +12159,10 @@
           ]
         },
         {
+          "name": "Axe",
+          "unresolved": true
+        },
+        {
           "name": "Black knife",
           "item_id": 869,
           "sources": [
@@ -10884,6 +12196,14 @@
           ]
         },
         {
+          "name": "Limestone brick x 8",
+          "unresolved": true
+        },
+        {
+          "name": "Mourner gear including gas mask",
+          "unresolved": true
+        },
+        {
           "name": "Nature rune",
           "item_id": 561,
           "sources": [
@@ -10898,6 +12218,10 @@
             "Shop: The Lighthouse Store (4 Coins)",
             "Shop: Elder Raley's Herblore Stall (4 Coins)"
           ]
+        },
+        {
+          "name": "Pickaxe",
+          "unresolved": true
         },
         {
           "name": "Purple dye",
@@ -11131,6 +12455,14 @@
           ]
         },
         {
+          "name": "Combat equipment",
+          "unresolved": true
+        },
+        {
+          "name": "Fishing rod, fly fishing rod, or barbarian fishing rod",
+          "unresolved": true
+        },
+        {
           "name": "Fremennik shield",
           "item_id": 3758,
           "sources": [
@@ -11197,9 +12529,21 @@
           "item_id": 3695
         },
         {
+          "name": "Recommended: Rune thrownaxes or 85 Agility to get to Bardur in the Waterbirth Island Dungeon",
+          "unresolved": true
+        },
+        {
           "name": "Seal of passage",
           "item_id": 9083,
           "optional": true
+        },
+        {
+          "name": "a pickaxe to obtain 3 ores to turn into Lunar bars",
+          "unresolved": true
+        },
+        {
+          "name": "get it from Bardur AFTER being exiled, for either 150,000 or for free using a Ring of charos",
+          "unresolved": true
         }
       ]
     },
@@ -11269,6 +12613,10 @@
         }
       ],
       "items": [
+        {
+          "name": "Any pickaxe",
+          "unresolved": true
+        },
         {
           "name": "Crossbow",
           "item_id": 837,
@@ -11368,7 +12716,22 @@
       "id": 173,
       "slug": "in_search_of_knowledge",
       "name": "In Search of Knowledge",
-      "members": true
+      "members": true,
+      "items": [
+        {
+          "name": "A slash weapon or knife to cut through webs",
+          "unresolved": true
+        },
+        {
+          "name": "Combat equipment",
+          "unresolved": true
+        },
+        {
+          "name": "pieces of food",
+          "quantity": 5,
+          "unresolved": true
+        }
+      ]
     },
     {
       "id": 174,
@@ -11411,6 +12774,10 @@
       ],
       "items": [
         {
+          "name": "Any axe",
+          "unresolved": true
+        },
+        {
           "name": "Chisel",
           "item_id": 1755,
           "sources": [
@@ -11442,6 +12809,15 @@
             "Shop: Conara's Jewels (1000 Coins)",
             "Shop: Elder Coco's Crafting Stall (1000 Coins)"
           ]
+        },
+        {
+          "name": "Runes for Lvl-3 Enchant or an enchant ruby or topaz tablet",
+          "unresolved": true
+        },
+        {
+          "name": "Vyrewatch outfit or 1,950 coins to purchase it from Trader Sven's Black-market Goods",
+          "obtainable": true,
+          "unresolved": true
         }
       ]
     },
@@ -11489,6 +12865,14 @@
       ],
       "items": [
         {
+          "name": "A defence potion",
+          "unresolved": true
+        },
+        {
+          "name": "Any axe",
+          "unresolved": true
+        },
+        {
           "name": "Dark essence block",
           "item_id": 13446
         },
@@ -11499,6 +12883,10 @@
             "Drop: Phantom Muspah (15/235)",
             "Drop: Monumental chest (1/30)"
           ]
+        },
+        {
+          "name": "Normal spellbook, and runes to cast a fire spell",
+          "unresolved": true
         },
         {
           "name": "Volcanic sulphur",
@@ -11560,6 +12948,12 @@
             "Shop: Construction supplies (13 Coins)",
             "Drop: Tool store 1 (Always)"
           ]
+        },
+        {
+          "name": "nails of any type, e.g. steel nails",
+          "quantity": 16,
+          "obtainable": true,
+          "unresolved": true
         }
       ]
     },
@@ -11621,12 +13015,20 @@
       ],
       "items": [
         {
+          "name": "Clay rocks are found in the Kebos Lowlands mine passed during the quest",
+          "unresolved": true
+        },
+        {
           "name": "Fur",
           "item_id": 6814,
           "sources": [
             "Shop: Darkmeyer Seamstress (13 Coins)",
             "Shop: Pellem's Fur Store (13 Coins)"
           ]
+        },
+        {
+          "name": "Gordon's house has a water source and a bucket spawn",
+          "unresolved": true
         },
         {
           "name": "Hammer",
@@ -11692,6 +13094,19 @@
             "Drop: Soft clay rocks (Always)",
             "Drop: Soft clay pack (Always)"
           ]
+        },
+        {
+          "name": "There is a Bronze pickaxe spawn at the mine, stuck in some rocks",
+          "unresolved": true
+        },
+        {
+          "name": "Thread unless you're using the Costume needle",
+          "unresolved": true
+        },
+        {
+          "name": "nails of any kind",
+          "quantity": 6,
+          "unresolved": true
         }
       ]
     },
@@ -11755,6 +13170,10 @@
       ],
       "items": [
         {
+          "name": "Any axe besides the blessed axe",
+          "unresolved": true
+        },
+        {
           "name": "Ghostspeak amulet",
           "item_id": 552
         },
@@ -11805,6 +13224,11 @@
         }
       ],
       "items": [
+        {
+          "name": "Any cooked or raw meat",
+          "obtainable": true,
+          "unresolved": true
+        },
         {
           "name": "Coal",
           "item_id": 453,
@@ -11892,6 +13316,11 @@
             "Drop: Crate (Armadyl's Eyrie) (Always)",
             "Drop: Chewed bones (6/128)"
           ]
+        },
+        {
+          "name": "ropes to reach Saradomin's Encampment; one-time only",
+          "quantity": 2,
+          "unresolved": true
         }
       ]
     },
@@ -11913,8 +13342,16 @@
       ],
       "items": [
         {
+          "name": "Food and potions to defeat 5 enemies without armour, weapons, or magic",
+          "unresolved": true
+        },
+        {
           "name": "Ghostspeak amulet",
           "item_id": 552
+        },
+        {
+          "name": "Goblin potion",
+          "unresolved": true
         },
         {
           "name": "Lunar staff",
@@ -11970,6 +13407,11 @@
             "Shop: Martin Thwait's Lost and Found. (1 Coins)",
             "Shop: Gwyn's Mining Emporium (1 Coins)"
           ]
+        },
+        {
+          "name": "Pickaxe",
+          "obtainable": true,
+          "unresolved": true
         }
       ]
     },
@@ -12025,6 +13467,10 @@
       ],
       "items": [
         {
+          "name": "Combat equipment and some food",
+          "unresolved": true
+        },
+        {
           "name": "Crossbow",
           "item_id": 837,
           "sources": [
@@ -12039,6 +13485,11 @@
             "Drop: Crate (Armadyl's Eyrie) (Always)",
             "Drop: Chewed bones (6/128)"
           ]
+        },
+        {
+          "name": "Tree Gnome Village Dungeon key",
+          "obtainable": true,
+          "unresolved": true
         }
       ]
     },
@@ -12103,6 +13554,11 @@
             "Drop: Alpaca (Always)",
             "Drop: Sheep (Always)"
           ]
+        },
+        {
+          "name": "nails",
+          "quantity": 10,
+          "unresolved": true
         }
       ]
     },
@@ -12195,6 +13651,10 @@
           ]
         },
         {
+          "name": "Be on the Ancient Magicks spellbook",
+          "unresolved": true
+        },
+        {
           "name": "Blood rune",
           "item_id": 565,
           "quantity": 2,
@@ -12247,11 +13707,20 @@
           ]
         },
         {
+          "name": "Pickaxe",
+          "obtainable": true,
+          "unresolved": true
+        },
+        {
           "name": "Ring of visibility",
           "item_id": 4657,
           "sources": [
             "Shop: Rasolo (0 Coins)"
           ]
+        },
+        {
+          "name": "Runes to cast Blood Burst, Ice Burst, Smoke Burst, and Shadow Burst",
+          "unresolved": true
         },
         {
           "name": "Soul rune",
@@ -12357,6 +13826,10 @@
       "members": true,
       "items": [
         {
+          "name": "Combat equipment to defeat the Barrows Brothers",
+          "unresolved": true
+        },
+        {
           "name": "Spade",
           "item_id": 952,
           "sources": [
@@ -12431,6 +13904,10 @@
           ]
         },
         {
+          "name": "Combat equipment for multiple PvM encounters",
+          "unresolved": true
+        },
+        {
           "name": "Knife",
           "item_id": 946,
           "obtainable": true,
@@ -12478,6 +13955,13 @@
           "skill": "woodcutting",
           "xp": 2000
         }
+      ],
+      "items": [
+        {
+          "name": "Any axe",
+          "obtainable": true,
+          "unresolved": true
+        }
       ]
     },
     {
@@ -12492,6 +13976,12 @@
         {
           "skill": "thieving",
           "xp": 3000
+        }
+      ],
+      "items": [
+        {
+          "name": "Items for two different combat classes or a poisoned weapon",
+          "unresolved": true
         }
       ]
     },
@@ -12622,6 +14112,10 @@
             "Drop: Anja (Always)",
             "Drop: Citizen (Aldarin) (Always)"
           ]
+        },
+        {
+          "name": "Up to 4 empty inventory slots",
+          "unresolved": true
         }
       ]
     },
@@ -12792,6 +14286,15 @@
           ]
         },
         {
+          "name": "Melee combat gear",
+          "unresolved": true
+        },
+        {
+          "name": "Pickaxe",
+          "obtainable": true,
+          "unresolved": true
+        },
+        {
           "name": "Tinderbox",
           "item_id": 590,
           "obtainable": true,
@@ -12799,6 +14302,11 @@
             "Shop: Ali's Discount Wares. (1 Coins)",
             "Shop: Aurel's Supplies (1 Coins)"
           ]
+        },
+        {
+          "name": "Vyre noble clothing",
+          "obtainable": true,
+          "unresolved": true
         }
       ]
     },
@@ -12841,6 +14349,10 @@
       ],
       "items": [
         {
+          "name": "Any kind of bones or raw meat/cooked meat",
+          "unresolved": true
+        },
+        {
           "name": "Beer",
           "item_id": 1917,
           "obtainable": true,
@@ -12848,6 +14360,10 @@
             "Shop: King's Axe Inn (1 Coins)",
             "Shop: The Asp \u0026 Snake Bar. (2 Coins)"
           ]
+        },
+        {
+          "name": "Emissary robes",
+          "unresolved": true
         },
         {
           "name": "Knife",
@@ -13052,6 +14568,11 @@
       ],
       "items": [
         {
+          "name": "Any axe",
+          "obtainable": true,
+          "unresolved": true
+        },
+        {
           "name": "Hammer",
           "item_id": 2347,
           "obtainable": true,
@@ -13097,6 +14618,16 @@
         {
           "skill": "smithing",
           "xp": 5000
+        }
+      ],
+      "items": [
+        {
+          "name": "A boat",
+          "unresolved": true
+        },
+        {
+          "name": "Cannons on your boat for ship combat, or Magic/Ranged gear to skip it",
+          "unresolved": true
         }
       ]
     },
@@ -13145,6 +14676,10 @@
         }
       ],
       "items": [
+        {
+          "name": "Can be purchased from Arcuani's Archery Supplies in Tal Teklan or Lowe's Archery Emporium in Varrock",
+          "unresolved": true
+        },
         {
           "name": "Fishing rod",
           "item_id": 307,
@@ -13253,6 +14788,11 @@
             "Shop: Construction supplies (13 Coins)",
             "Drop: Tool store 1 (Always)"
           ]
+        },
+        {
+          "name": "nails",
+          "quantity": 6,
+          "unresolved": true
         }
       ]
     },
@@ -13268,6 +14808,11 @@
         }
       ],
       "items": [
+        {
+          "name": "Four fletched items of the same type of wood as the logs, such as unstrung longbows or shields",
+          "obtainable": true,
+          "unresolved": true
+        },
         {
           "name": "Knife",
           "item_id": 946,
@@ -13429,6 +14974,15 @@
       ],
       "items": [
         {
+          "name": "A pickaxe",
+          "obtainable": true,
+          "unresolved": true
+        },
+        {
+          "name": "A raft or skiff",
+          "unresolved": true
+        },
+        {
           "name": "Chisel",
           "item_id": 1755,
           "obtainable": true,
@@ -13436,6 +14990,10 @@
             "Shop: Martin Thwait's Lost and Found. (1 Coins)",
             "Shop: Gwyn's Mining Emporium (1 Coins)"
           ]
+        },
+        {
+          "name": "Combat equipment and supplies to defeat the Mad Angel, weak to Crush",
+          "unresolved": true
         }
       ]
     },

@@ -364,4 +364,28 @@ public class OverlayDisplayModeTest
 			.isColumnisable());
 		assertFalse(OverlayRow.hero("A Kingdom Divided", OverlayTheme.ACCENT).isColumnisable());
 	}
+
+	/**
+	 * Per-panel length falls back to the shared setting, and an explicit one
+	 * wins.
+	 *
+	 * One length for all five was the wrong shape: "Everything" is what makes
+	 * the shopping list usable and what makes the route preview ninety quests
+	 * long, and "Short" is right for the route and leaves the shopping list
+	 * showing five of sixty-five. No single value is correct for both.
+	 */
+	@Test
+	public void perPanelLengthFallsBackToTheSharedOne()
+	{
+		assertEquals(OverlayListLength.EVERYTHING,
+			OverlayListLength.MATCH_SHARED.resolve(OverlayListLength.EVERYTHING));
+		assertEquals(OverlayListLength.SHORT,
+			OverlayListLength.SHORT.resolve(OverlayListLength.EVERYTHING));
+
+		// A shared setting that is itself MATCH_SHARED would be a cycle, and
+		// a baseline of zero shows nothing at all.
+		assertEquals(OverlayListLength.NORMAL,
+			OverlayListLength.MATCH_SHARED.resolve(OverlayListLength.MATCH_SHARED));
+		assertEquals(OverlayListLength.NORMAL, OverlayListLength.MATCH_SHARED.resolve(null));
+	}
 }

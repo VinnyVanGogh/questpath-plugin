@@ -42,6 +42,12 @@ class BuildRulesOverlay extends QuestpathOverlay
 	}
 
 	@Override
+	OverlayListLength length(QuestpathConfig config)
+	{
+		return config.overlayBuildRulesLength();
+	}
+
+	@Override
 	List<OverlayRow> rows(OverlaySnapshot snapshot, OverlayContext ctx)
 	{
 		List<BuildRule> rules = snapshot.buildRules();

@@ -34,6 +34,9 @@ abstract class QuestpathOverlay extends Overlay
 	 */
 	private static final int MIN_WIDTH = 140;
 
+	/** Breathing room left below a panel that has been trimmed to fit. */
+	private static final int SCREEN_MARGIN = 6;
+
 	private final QuestpathPlugin plugin;
 
 	/**
@@ -79,6 +82,17 @@ abstract class QuestpathOverlay extends Overlay
 	abstract OverlayWidth width(QuestpathConfig config);
 
 	/**
+	 * This panel's own list-length setting.
+	 *
+	 * Per panel for the same reason width is, only more so: there is no single
+	 * value correct for all five. "Everything" is what makes the shopping list
+	 * usable and what makes the route preview ninety quests long; "Short" is
+	 * right for the route preview and leaves the shopping list showing five of
+	 * sixty-five. Defaults to matching the shared setting.
+	 */
+	abstract OverlayListLength length(QuestpathConfig config);
+
+	/**
 	 * What to draw, or an empty list for "nothing to say right now".
 	 *
 	 * An empty list hides the panel entirely rather than drawing an empty
@@ -105,7 +119,7 @@ abstract class QuestpathOverlay extends Overlay
 
 		OverlayContext ctx = new OverlayContext(icons, config.overlayDisplayMode(),
 			config.overlayCompactText(), config.overlayShowOverflow(),
-			config.overlayListLength());
+			length(config).resolve(config.overlayListLength()));
 		List<OverlayRow> rows = rows(snapshot, ctx);
 		if (rows == null || rows.isEmpty())
 		{
@@ -122,15 +136,21 @@ abstract class QuestpathOverlay extends Overlay
 		int width = widthFor();
 		int contentWidth = width - OverlayTheme.PAD * 2;
 
-		int height = OverlayTheme.PAD;
 		g.setFont(ctx.boldFont());
 		int titleHeight = g.getFontMetrics().getAscent() + 7;
-		height += titleHeight;
+		int chrome = OverlayTheme.PAD * 2 + titleHeight;
+
+		rows = fitToScreen(g, ctx, rows, contentWidth, chrome);
+		if (rows.isEmpty())
+		{
+			return null;
+		}
+
+		int height = chrome - OverlayTheme.ROW_GAP;
 		for (OverlayRow row : rows)
 		{
 			height += row.height(g, ctx, contentWidth) + OverlayTheme.ROW_GAP;
 		}
-		height += OverlayTheme.PAD - OverlayTheme.ROW_GAP;
 
 		OverlayTheme.panel(g, width, height);
 
@@ -144,6 +164,78 @@ abstract class QuestpathOverlay extends Overlay
 		}
 
 		return new Dimension(width, height);
+	}
+
+	/**
+	 * Drops rows that would not fit on the screen below this panel.
+	 *
+	 * Nothing else stops an overlay growing past the bottom of the client. A
+	 * shopping list set to Everything is sixty-five rows tall, which runs
+	 * under the chatbox and off the canvas, and every row past the edge is a
+	 * row the player cannot read while still costing the ones above it their
+	 * position. RuneLite does not clamp this; the overlay has to.
+	 *
+	 * What is cut is said, in the same words a capped list uses, so a panel
+	 * trimmed by the screen never quietly looks like a panel that was simply
+	 * shorter. That line is drawn even when overflow notes are switched off:
+	 * a list the player asked to see in full and did not is not the same
+	 * situation as one they capped themselves.
+	 */
+	private List<OverlayRow> fitToScreen(Graphics2D g, OverlayContext ctx,
+		List<OverlayRow> rows, int contentWidth, int chrome)
+	{
+		int available = availableHeight();
+		if (available <= 0)
+		{
+			return rows;
+		}
+
+		int used = chrome;
+		int fitted = 0;
+		for (OverlayRow row : rows)
+		{
+			int next = used + row.height(g, ctx, contentWidth) + OverlayTheme.ROW_GAP;
+			if (next > available && fitted > 0)
+			{
+				break;
+			}
+			used = next;
+			fitted++;
+		}
+
+		if (fitted >= rows.size())
+		{
+			return rows;
+		}
+
+		// Room for the line that explains the cut, taken from the rows rather
+		// than added past the edge -- a notice drawn off-screen explains
+		// nothing.
+		List<OverlayRow> trimmed = new ArrayList<>(rows.subList(0, Math.max(1, fitted - 1)));
+		trimmed.add(OverlayRow.note(
+			"+ " + (rows.size() - trimmed.size()) + " more, no room on screen",
+			OverlayTheme.WARN));
+		return trimmed;
+	}
+
+	/**
+	 * How much vertical room this panel has before it runs off the client.
+	 *
+	 * Measured from where the overlay actually sat last frame, which is what
+	 * RuneLite's own layout puts in getBounds(). Returns 0 -- meaning "do not
+	 * clamp" -- when either figure is unavailable, because guessing a height
+	 * and trimming against it would hide rows for no reason.
+	 */
+	private int availableHeight()
+	{
+		java.awt.Rectangle parent = getParentBounds();
+		java.awt.Rectangle self = getBounds();
+		if (parent == null || self == null || parent.height <= 0)
+		{
+			return 0;
+		}
+		int top = Math.max(0, self.y - parent.y);
+		return Math.max(0, parent.height - top - SCREEN_MARGIN);
 	}
 
 	/**
