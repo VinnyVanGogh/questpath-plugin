@@ -1,12 +1,18 @@
 package com.vinnyvangogh.questpath;
 
 import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Polygon;
+import java.awt.RenderingHints;
 import java.awt.Cursor;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.JComponent;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -26,7 +32,7 @@ import net.runelite.client.ui.FontManager;
  */
 class CollapsibleGroup extends JPanel
 {
-	private final JLabel caret;
+	private final Chevron caret;
 	private final JPanel body;
 	private boolean expanded;
 
@@ -53,9 +59,7 @@ class CollapsibleGroup extends JPanel
 		setBackground(ColorScheme.DARK_GRAY_COLOR);
 		setAlignmentX(LEFT_ALIGNMENT);
 
-		caret = new JLabel(caretText(startExpanded));
-		caret.setFont(FontManager.getRunescapeSmallFont());
-		caret.setForeground(ColorScheme.BRAND_ORANGE);
+		caret = new Chevron(startExpanded);
 		caret.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 6));
 
 		JPanel row = new JPanel();
@@ -108,7 +112,7 @@ class CollapsibleGroup extends JPanel
 	void setExpanded(boolean expanded)
 	{
 		this.expanded = expanded;
-		caret.setText(caretText(expanded));
+		caret.setExpanded(expanded);
 		body.setVisible(expanded);
 	}
 
@@ -124,8 +128,69 @@ class CollapsibleGroup extends JPanel
 		});
 	}
 
-	private static String caretText(boolean expanded)
+	/**
+	 * The open/closed arrow, painted rather than typed.
+	 *
+	 * It was a text label carrying a unicode triangle, which the game's font
+	 * has no glyph for -- so it rendered as an orange tofu box, on every group
+	 * header, which is the first thing anyone sees on this tab. Painting two
+	 * dozen pixels is both certain to work and one less non-ASCII character in
+	 * a source tree that is meant not to have any.
+	 */
+	private static final class Chevron extends JComponent
 	{
-		return expanded ? "▾" : "▸";
+		private static final int SIZE = 9;
+
+		private boolean expanded;
+
+		private Chevron(boolean expanded)
+		{
+			this.expanded = expanded;
+			Dimension box = new Dimension(SIZE + 4, SIZE + 2);
+			setPreferredSize(box);
+			setMinimumSize(box);
+			setMaximumSize(box);
+		}
+
+		private void setExpanded(boolean expanded)
+		{
+			this.expanded = expanded;
+			repaint();
+		}
+
+		@Override
+		protected void paintComponent(Graphics g)
+		{
+			Graphics2D g2 = (Graphics2D) g.create();
+			try
+			{
+				g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+					RenderingHints.VALUE_ANTIALIAS_ON);
+				g2.setColor(ColorScheme.BRAND_ORANGE);
+
+				int x = 2;
+				int y = (getHeight() - SIZE) / 2;
+				Polygon arrow = new Polygon();
+				if (expanded)
+				{
+					// Pointing down: the body below is showing.
+					arrow.addPoint(x, y + 2);
+					arrow.addPoint(x + SIZE, y + 2);
+					arrow.addPoint(x + SIZE / 2, y + SIZE - 1);
+				}
+				else
+				{
+					// Pointing right: the body is folded away.
+					arrow.addPoint(x + 1, y);
+					arrow.addPoint(x + SIZE - 1, y + SIZE / 2);
+					arrow.addPoint(x + 1, y + SIZE);
+				}
+				g2.fillPolygon(arrow);
+			}
+			finally
+			{
+				g2.dispose();
+			}
+		}
 	}
 }

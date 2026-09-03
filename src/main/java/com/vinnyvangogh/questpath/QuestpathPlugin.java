@@ -54,7 +54,7 @@ import net.runelite.client.ui.overlay.OverlayManager;
  */
 @Slf4j
 @PluginDescriptor(
-	name = "questpath",
+	name = "Quest Path",
 	description = "What the next combat level costs, and which quests your build can legally do",
 	tags = {"quest", "combat", "pure", "ironman", "planner", "build"}
 )
@@ -236,7 +236,7 @@ public class QuestpathPlugin extends Plugin
 	{
 		panel = new QuestpathPanel(sprites, new OverlaySettingsPanel(config, configManager));
 		navButton = NavigationButton.builder()
-			.tooltip("questpath")
+			.tooltip("Quest Path")
 			.icon(icon())
 			.priority(7)
 			.panel(panel)

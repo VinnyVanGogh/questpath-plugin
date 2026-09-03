@@ -102,8 +102,11 @@ class PickupsOverlay extends QuestpathOverlay
 				{
 					break outer;
 				}
-				String right = pickup.alsoWantedBy() > 1
-					? pickup.alsoWantedBy() + " quests"
+				// How many to grab, not how many quests want it. The quest
+				// count answers "is this worth carrying"; the outstanding
+				// count is the one you act on while standing over the thing.
+				String right = pickup.outstanding() > 0
+					? Long.toString(pickup.outstanding())
 					: "";
 				out.add(OverlayRow.item(pickup.itemId(), pickup.itemName(), right,
 					false, OverlayTheme.TEXT, OverlayTheme.ACCENT));

@@ -26,9 +26,14 @@ public interface QuestpathConfig extends Config
 
 	@ConfigSection(
 		name = "In-game overlays",
-		description = "Which questpath panels to draw over the game, and how",
+		description = "Which Quest Path panels to draw over the game, and how."
+			+ " These are easier to read on the Quest Path sidebar's View tab, which groups"
+			+ " them and does not truncate the labels.",
 		position = 1,
-		closedByDefault = false
+		// Closed. There are more than twenty items in here and they are laid
+		// out better on the sidebar's own View tab; leaving this open makes
+		// the config screen a wall for something most people will set once.
+		closedByDefault = true
 	)
 	String overlaySection = "overlays";
 
@@ -36,7 +41,7 @@ public interface QuestpathConfig extends Config
 		name = "Shops",
 		description = "Mark the things you need while a shop is open",
 		position = 2,
-		closedByDefault = false
+		closedByDefault = true
 	)
 	String shopSection = "shops";
 
@@ -44,7 +49,7 @@ public interface QuestpathConfig extends Config
 		name = "Ground items",
 		description = "Mark things you need that are lying on the floor",
 		position = 3,
-		closedByDefault = false
+		closedByDefault = true
 	)
 	String groundSection = "ground";
 

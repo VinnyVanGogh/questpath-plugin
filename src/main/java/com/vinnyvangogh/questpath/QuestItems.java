@@ -302,15 +302,30 @@ class QuestItems
 		private final String itemName;
 		private final int itemId;
 		private final int alsoWantedBy;
+		private final long outstanding;
 		private final List<String> sources;
 
-		Pickup(String questName, String itemName, int itemId, int alsoWantedBy, List<String> sources)
+		Pickup(String questName, String itemName, int itemId, int alsoWantedBy, long outstanding,
+			List<String> sources)
 		{
 			this.questName = questName;
 			this.itemName = itemName;
 			this.itemId = itemId;
 			this.alsoWantedBy = alsoWantedBy;
+			this.outstanding = outstanding;
 			this.sources = sources;
+		}
+
+		/**
+		 * How many are still needed across everything on the plan.
+		 *
+		 * The row used to say only how many quests wanted it, which answers
+		 * "is this worth carrying" and not "how many do I grab" -- and the
+		 * second is the one you act on while standing over the thing.
+		 */
+		long outstanding()
+		{
+			return outstanding;
 		}
 
 		/**
@@ -565,7 +580,7 @@ class QuestItems
 					continue;
 				}
 				out.add(new Pickup(quest.name(), item.name(), item.itemId(), total.quests(),
-					item.sources()));
+					Math.max(0L, total.required() - total.owned()), item.sources()));
 			}
 		}
 		return out;
