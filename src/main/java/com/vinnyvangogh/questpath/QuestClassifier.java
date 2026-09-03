@@ -33,10 +33,21 @@ class QuestClassifier
 	/** Ids currently being classified, so a prerequisite cycle is detected. */
 	private final Set<Long> visiting = new HashSet<>();
 
+	/**
+	 * The boost table, used to check a shortfall is small enough to drink
+	 * away.
+	 *
+	 * Built from the graph rather than passed in, so every caller gets the
+	 * check whether or not it knew to ask for it. That matters: the bug this
+	 * closes was that nobody asked.
+	 */
+	private final Boosts boosts;
+
 	QuestClassifier(QuestGraph graph, PlayerState account)
 	{
 		this.graph = graph;
 		this.account = account;
+		this.boosts = new Boosts(graph.boosts());
 	}
 
 	/**
@@ -216,12 +227,21 @@ class QuestClassifier
 		gaps.allBoostable = true;
 		for (QuestGraph.Requirement requirement : quest.requirements())
 		{
-			if (account.levelIn(requirement.skill()) >= requirement.level())
+			int have = account.levelIn(requirement.skill());
+			if (have >= requirement.level())
 			{
 				continue;
 			}
 			gaps.anyGap = true;
-			if (!requirement.boostable())
+			// Permission and magnitude, and it used to be only the first.
+			// The wiki's marker says a boost is allowed for this
+			// requirement; it says nothing about size, so a fifty-level
+			// shortfall passed as readily as a one-level one and the quest
+			// came back BOOSTABLE either way. Both have to hold now: the
+			// requirement must allow a boost, and something drinkable must
+			// actually close the gap at the level held.
+			if (!requirement.boostable()
+				|| !boosts.covers(requirement.skill(), have, requirement.level() - have))
 			{
 				gaps.allBoostable = false;
 			}

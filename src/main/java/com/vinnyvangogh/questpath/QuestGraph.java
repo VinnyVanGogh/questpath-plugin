@@ -43,13 +43,80 @@ class QuestGraph
 	 * without trace, leaving every quest's item list quietly short while
 	 * presenting itself as the list.
 	 */
-	static final int SUPPORTED_VERSION = 4;
+	static final int SUPPORTED_VERSION = 5;
 
 	@SerializedName("version")
 	private int version;
 
 	@SerializedName("quests")
 	private List<Quest> quests;
+
+	@SerializedName("boosts")
+	private List<Boost> boosts;
+
+	/**
+	 * One temporary skill boost, with the size the requirement flag never
+	 * had.
+	 *
+	 * A requirement's {@code boostable} is a bare yes from the wiki: it says
+	 * a boost is allowed and never how large one can be. Without these, a
+	 * fifty-level shortfall and a one-level shortfall are indistinguishable,
+	 * which is the bug they exist to close.
+	 */
+	static class Boost
+	{
+		@SerializedName("skill")
+		private String skill;
+
+		@SerializedName("item")
+		private String item;
+
+		@SerializedName("base")
+		private int base;
+
+		@SerializedName("per_level")
+		private double perLevel;
+
+		@SerializedName("max")
+		private int max;
+
+		@SerializedName("random")
+		private boolean random;
+
+		String skill()
+		{
+			return skill == null ? "" : skill;
+		}
+
+		String item()
+		{
+			return item == null ? "" : item;
+		}
+
+		/** The increase at level 0, or the whole increase when flat. */
+		int base()
+		{
+			return base;
+		}
+
+		/** The fraction of the account's level added on top; zero when flat. */
+		double perLevel()
+		{
+			return perLevel;
+		}
+
+		/** The wiki's stated ceiling, or zero when it states one number. */
+		int max()
+		{
+			return max;
+		}
+
+		/** Whether this one can drain instead of boosting -- the stews. */
+		boolean random()
+		{
+			return random;
+		}
+	}
 
 	/** One quest as the verdict engine sees it. */
 	static class Quest
@@ -275,6 +342,12 @@ class QuestGraph
 	List<Quest> quests()
 	{
 		return quests == null ? Collections.emptyList() : quests;
+	}
+
+	/** Every temporary skill boost the bundle carries. */
+	List<Boost> boosts()
+	{
+		return boosts == null ? Collections.emptyList() : boosts;
 	}
 
 	/** One quest by id, or null when the graph does not carry it. */

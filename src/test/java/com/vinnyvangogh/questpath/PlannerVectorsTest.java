@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -125,6 +126,40 @@ public class PlannerVectorsTest
 	}
 
 	/**
+	 * Quests where this port is deliberately ahead of the Go planner.
+	 *
+	 * <p>The port now checks that a boost is large enough to close a
+	 * shortfall, not merely that the wiki permits one. Go still checks only
+	 * permission -- {@code if !req.Boostable { boostRescues = false }} in
+	 * internal/planner/classify.go, with no magnitude anywhere -- so it calls
+	 * a thirty-level gap boostable. Lost City is the clearest: it wants
+	 * Crafting 31 and Woodcutting 36, and the best boosts available are +4
+	 * from a mushroom pie and +7 from the Woodcutting Guild.
+	 *
+	 * <p>Listed rather than regenerated, deliberately. Re-exporting the
+	 * vectors would make the suite green by writing the bug down as the
+	 * expected answer, and the whole purpose of these vectors is to be the
+	 * thing that notices. Listing keeps every other quest under test: a new
+	 * divergence still fails.
+	 *
+	 * <p><b>This list must go to empty.</b> The Go planner needs the same
+	 * check, which needs the boost table stored rather than fetched at export
+	 * time -- see the note in cmd/questpath/export.go. Delete this set and
+	 * re-export the vectors in the same change.
+	 */
+	private static final Set<String> KNOWN_AHEAD_OF_GO = new HashSet<>(Arrays.asList(
+		"lost_city",
+		"sea_slug",
+		"one_small_favour",
+		"tears_of_guthix",
+		"forgettable_tale",
+		"shadow_of_the_storm",
+		"enlightened_journey",
+		"eagles_peak",
+		"recipe_for_disaster_freeing_pirate_pete",
+		"recipe_for_disaster_freeing_skrach_uglogwee"));
+
+	/**
 	 * The whole point. Every quest, the same verdict.
 	 *
 	 * Failures are collected rather than thrown on the first one: a port that
@@ -141,7 +176,7 @@ public class PlannerVectorsTest
 		{
 			QuestStatus actual = classifier.classify(expected.questId);
 			String actualName = actual == null ? "NOT_IN_GRAPH" : actual.name();
-			if (!expected.status.equals(actualName))
+			if (!expected.status.equals(actualName) && !KNOWN_AHEAD_OF_GO.contains(expected.slug))
 			{
 				mismatches.add(expected.slug + ": expected " + expected.status + ", got " + actualName);
 			}
@@ -150,6 +185,37 @@ public class PlannerVectorsTest
 		assertEquals(mismatches.size() + " of " + vectors.expected.size()
 			+ " verdicts disagree with the Go planner:\n  " + String.join("\n  ", mismatches),
 			Collections.emptyList(), mismatches);
+	}
+
+	/**
+	 * The exemptions above have to stay real.
+	 *
+	 * A slug that stops diverging is a slug someone fixed, and leaving it
+	 * listed would quietly excuse a future regression on that quest. This
+	 * fails when the list is stale, which is what makes it safe to have one.
+	 */
+	@Test
+	public void everyKnownDivergenceStillDiverges()
+	{
+		QuestClassifier classifier = new QuestClassifier(graph, accountUnderTest());
+
+		List<String> agreeing = new ArrayList<>();
+		for (Verdict expected : vectors.expected)
+		{
+			if (!KNOWN_AHEAD_OF_GO.contains(expected.slug))
+			{
+				continue;
+			}
+			QuestStatus actual = classifier.classify(expected.questId);
+			String actualName = actual == null ? "NOT_IN_GRAPH" : actual.name();
+			if (expected.status.equals(actualName))
+			{
+				agreeing.add(expected.slug);
+			}
+		}
+
+		assertEquals("these no longer diverge and must come off KNOWN_AHEAD_OF_GO: "
+			+ String.join(", ", agreeing), Collections.emptyList(), agreeing);
 	}
 
 	/**

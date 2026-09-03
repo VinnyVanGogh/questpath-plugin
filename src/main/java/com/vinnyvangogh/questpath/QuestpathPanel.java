@@ -30,6 +30,7 @@ import javax.swing.SpinnerNumberModel;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
+import javax.swing.ToolTipManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import net.runelite.api.Skill;
@@ -271,6 +272,7 @@ class QuestpathPanel extends PluginPanel
 		}
 
 		buildSkillTab();
+		quickenTooltips();
 
 		add(tabGroup, BorderLayout.NORTH);
 		add(display, BorderLayout.CENTER);
@@ -1185,6 +1187,61 @@ class QuestpathPanel extends PluginPanel
 		}
 	}
 
+	/** How long a hover waits before this panel's tooltips appear. */
+	private static final int TOOLTIP_DELAY_MILLIS = 150;
+
+	/** How long they stay up. Long enough to read forty quest names. */
+	private static final int TOOLTIP_DISMISS_MILLIS = 60_000;
+
+	/**
+	 * Makes this panel's tooltips appear promptly, and only this panel's.
+	 *
+	 * <p>Swing waits 750ms before showing one, which on a row whose whole
+	 * purpose is the tooltip reads as the hover not working at all. The
+	 * dismiss delay matters as much: the default four seconds is not long
+	 * enough to read a twelve-quest prerequisite chain, and a tooltip that
+	 * vanishes mid-sentence is worse than a slow one.
+	 *
+	 * <p>ToolTipManager is a process-wide singleton shared with every other
+	 * plugin's sidebar, so the timings are changed on the way in and put back
+	 * on the way out rather than set once at startup. Retuning the whole
+	 * client's tooltips to suit one panel would be a side effect nobody asked
+	 * for and nobody could find.
+	 */
+	private void quickenTooltips()
+	{
+		ToolTipManager tooltips = ToolTipManager.sharedInstance();
+		addMouseListener(new java.awt.event.MouseAdapter()
+		{
+			private int initial;
+			private int dismiss;
+			private boolean saved;
+
+			@Override
+			public void mouseEntered(java.awt.event.MouseEvent event)
+			{
+				if (!saved)
+				{
+					initial = tooltips.getInitialDelay();
+					dismiss = tooltips.getDismissDelay();
+					saved = true;
+				}
+				tooltips.setInitialDelay(TOOLTIP_DELAY_MILLIS);
+				tooltips.setDismissDelay(TOOLTIP_DISMISS_MILLIS);
+			}
+
+			@Override
+			public void mouseExited(java.awt.event.MouseEvent event)
+			{
+				if (saved)
+				{
+					tooltips.setInitialDelay(initial);
+					tooltips.setDismissDelay(dismiss);
+				}
+			}
+		});
+	}
+
 	/**
 	 * The skill planner's fixed furniture: pick a skill, pick a level.
 	 *
@@ -1473,12 +1530,7 @@ class QuestpathPanel extends PluginPanel
 				QuestBlockers.Gap gap = gaps.get(i);
 				text.append("<br>&nbsp;&nbsp;").append(escape(gap.skill()))
 					.append(' ').append(gap.have()).append(" to ").append(gap.need());
-				if (gap.boostable())
-				{
-					// Worth saying: a boostable level is not training at all,
-					// and counting it as work would overstate the cost.
-					text.append(" (a boost covers this)");
-				}
+				text.append(boostNote(gap));
 			}
 			if (gaps.size() > shown)
 			{
@@ -1488,6 +1540,40 @@ class QuestpathPanel extends PluginPanel
 		}
 
 		return text.append("</body></html>").toString();
+	}
+
+	/**
+	 * What a boost does for one shortfall, named and sized.
+	 *
+	 * <p>This line used to read "(a boost covers this)" for any gap the wiki
+	 * permitted a boost on, whatever its size -- which reported a nine-level
+	 * Cooking shortfall as solved by a boost that exists at no level in the
+	 * game. It now says which item and how many levels, so the claim can be
+	 * checked rather than taken.
+	 *
+	 * <p>A boost that falls short is still worth naming. "Best is +3, you are
+	 * 9 down" tells you both that drinking will not do it and how far off it
+	 * is, which is more than silence and more than a false yes.
+	 */
+	private static String boostNote(QuestBlockers.Gap gap)
+	{
+		if (!gap.boostable())
+		{
+			// The quest refuses boosted levels outright. Saying nothing here
+			// is right: there is no item to name.
+			return "";
+		}
+		Boosts.Best boost = gap.boost();
+		if (boost.levels() <= 0)
+		{
+			return " (no boost reaches this)";
+		}
+		if (gap.covered())
+		{
+			return " (+" + boost.levels() + " from " + escape(boost.item()) + " covers it)";
+		}
+		return " (best is +" + boost.levels() + " from " + escape(boost.item())
+			+ ", " + gap.shortfall() + " short)";
 	}
 
 	private static long tail(List<SkillPlan.Entry> entries, int from)

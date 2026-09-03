@@ -33,13 +33,15 @@ class QuestBlockers
 		private final int have;
 		private final int need;
 		private final boolean boostable;
+		private final Boosts.Best boost;
 
-		Gap(String skill, int have, int need, boolean boostable)
+		Gap(String skill, int have, int need, boolean boostable, Boosts.Best boost)
 		{
 			this.skill = skill;
 			this.have = have;
 			this.need = need;
 			this.boostable = boostable;
+			this.boost = boost == null ? Boosts.NONE : boost;
 		}
 
 		String skill()
@@ -57,10 +59,42 @@ class QuestBlockers
 			return need;
 		}
 
-		/** Whether a boost covers it, so it is not really training at all. */
+		/**
+		 * Whether the wiki permits a boost for this requirement.
+		 *
+		 * Permission only, and that is the distinction the old code missed.
+		 * Some quests refuse boosted levels outright; this is that flag, and
+		 * on its own it says nothing about whether anything reaches.
+		 */
 		boolean boostable()
 		{
 			return boostable;
+		}
+
+		/**
+		 * The best boost available for this skill at the level held, enough
+		 * or not.
+		 *
+		 * Reported even when it falls short, because "the best you can drink
+		 * is +3 and you are 9 down" is a more useful sentence than "not
+		 * boostable" -- it names the item and says how close it gets.
+		 */
+		Boosts.Best boost()
+		{
+			return boost;
+		}
+
+		/**
+		 * Whether a boost actually closes this gap at the level held.
+		 *
+		 * Both halves. The requirement has to permit a boost, and something
+		 * drinkable has to reach. Before this only the first was checked, and
+		 * a nine-level Cooking shortfall was reported as covered by a boost
+		 * that exists at no level.
+		 */
+		boolean covered()
+		{
+			return boostable && boost.levels() >= shortfall();
 		}
 
 		int shortfall()
@@ -71,6 +105,9 @@ class QuestBlockers
 
 	private final List<String> quests = new ArrayList<>();
 	private final List<Gap> skills = new ArrayList<>();
+
+	/** The boost table, so a gap can say what would actually close it. */
+	private Boosts boosts = new Boosts(null);
 
 	private QuestBlockers()
 	{
@@ -89,6 +126,7 @@ class QuestBlockers
 	{
 		QuestBlockers blockers = new QuestBlockers();
 		Map<String, Gap> worst = new LinkedHashMap<>();
+		blockers.boosts = new Boosts(graph.boosts());
 		blockers.walk(graph, account, quest, new LinkedHashSet<>(), worst, true);
 
 		blockers.skills.addAll(worst.values());
@@ -136,9 +174,14 @@ class QuestBlockers
 			Gap existing = worst.get(requirement.skill().toLowerCase());
 			if (existing == null || requirement.level() > existing.need())
 			{
+				// The boost is looked up at the level held rather than the
+				// level wanted. Several scale with your current level, so
+				// asking what a potion gives at the target would report a
+				// boost the account cannot yet drink its way to.
 				worst.put(requirement.skill().toLowerCase(),
 					new Gap(requirement.skill(), have, requirement.level(),
-						requirement.boostable()));
+						requirement.boostable(),
+						boosts.bestFor(requirement.skill(), have)));
 			}
 		}
 	}

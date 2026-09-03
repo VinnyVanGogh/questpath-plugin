@@ -83,12 +83,19 @@ public class QuestGraphTest
 	 * constant is what load() refuses a mismatch against. A regression here
 	 * would silently start parsing an old bundle's missing field as an
 	 * absence rather than refusing the bundle outright -- 2 added
-	 * Item.sources(), 3 added Item.itemId(), 4 added Item.unresolved().
+	 * Item.sources(), 3 added Item.itemId(), 4 added Item.unresolved(),
+	 * 5 added boosts().
+	 *
+	 * <p>5 is the one that most needs refusing rather than tolerating. A
+	 * requirement's boostable flag permits a boost and never says how large
+	 * one can be, so a bundle without the boost table leaves the classifier
+	 * unable to tell a one-level shortfall from a fifty-level one, which is
+	 * exactly the bug the table exists to close.
 	 */
 	@Test
-	public void supportedVersionWasBumpedForUnresolvedLines()
+	public void supportedVersionWasBumpedForTheBoostTable()
 	{
-		assertEquals(4, QuestGraph.SUPPORTED_VERSION);
+		assertEquals(5, QuestGraph.SUPPORTED_VERSION);
 	}
 
 	/**
