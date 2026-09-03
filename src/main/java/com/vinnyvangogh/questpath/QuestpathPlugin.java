@@ -78,6 +78,13 @@ public class QuestpathPlugin extends Plugin
 	@Inject
 	private SkillIconManager skillIcons;
 
+	/**
+	 * The client's own interface art, for the sidebar tabs. Skill icons are
+	 * still used inside the overlays, where a row really is about a skill.
+	 */
+	@Inject
+	private net.runelite.client.game.SpriteManager sprites;
+
 	@Inject
 	private Gson gson;
 
@@ -211,7 +218,7 @@ public class QuestpathPlugin extends Plugin
 	@Override
 	protected void startUp()
 	{
-		panel = new QuestpathPanel(skillIcons, new OverlaySettingsPanel(config, configManager));
+		panel = new QuestpathPanel(sprites, new OverlaySettingsPanel(config, configManager));
 		navButton = NavigationButton.builder()
 			.tooltip("questpath")
 			.icon(icon())

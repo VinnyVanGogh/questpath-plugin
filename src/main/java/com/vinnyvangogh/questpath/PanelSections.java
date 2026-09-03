@@ -1,6 +1,6 @@
 package com.vinnyvangogh.questpath;
 
-import net.runelite.api.Skill;
+import net.runelite.api.SpriteID;
 
 /**
  * Every section the sidebar will carry, and what is behind each one today.
@@ -90,43 +90,41 @@ enum PanelSections
 	 */
 	enum Tab
 	{
-		// The icon is the game's own skill-tab art, via SkillIconManager --
-		// no asset to ship, no sprite id to guess wrong, and it already looks
-		// like the rest of the client.
+		// The game's own interface art, via SpriteManager -- no asset to ship,
+		// no sprite to draw badly, and it already looks like the rest of the
+		// client because it is the rest of the client.
 		//
-		// Two of these are honest metaphors and three are borrowed. A sword
-		// for combat and a hammer for build rules read on sight; a slayer
-		// helm for quests, a needle for items and a rune for sync are the
-		// least-bad skill icons for concepts that have no skill. The label
-		// survives as the tooltip precisely because of that -- an icon that
-		// has to be learned is worse than a word until it is.
+		// These replaced a set of borrowed skill icons. Four of the six were
+		// metaphors that had to be learned -- a slayer helm for quests, a
+		// needle for items, a rune for sync -- which is the one thing an icon
+		// must not be. Where the game has the actual icon for a concept, that
+		// is the icon: two crossed swords for combat, the three bars for
+		// stats, the quest diary, the inventory, the options wrench.
 		//
-		// Do not reach for Skill.OVERALL here. It is declared in
-		// net.runelite.api.Skill and is null at runtime in 1.12.37 -- the
-		// field exists for binary compatibility and the static initialiser
-		// never gives it a value. It compiles, and the tab silently drops to
-		// its text fallback. PanelSectionsTest.everyTabHasAnIcon is what
-		// found that, and is what will find it again.
-		COMBAT("Combat", Skill.ATTACK),
-		BUILD("Build", Skill.CONSTRUCTION),
-		QUESTS("Quests", Skill.SLAYER),
-		ITEMS("Items", Skill.CRAFTING),
-		SYNC("Sync", Skill.MAGIC),
-		// The overlay settings, which used to live only in RuneLite's own
-		// config panel -- a 225px column several clicks away behind a
-		// different icon, where 27 items truncated to "Route:...",
-		// "Pickup..." and "Rules:...". Farming for the icon because these
-		// are the settings that decide what grows on screen, and because
-		// every icon here past the first two is borrowed anyway.
-		VIEW("View", Skill.FARMING);
+		// Sync is the only one with no interface equivalent, because pushing
+		// your account somewhere is not a thing the game does. Wind surge is
+		// the stand-in: a surge is the closest the spellbook comes to "send
+		// this outward", and it is at least a picture nobody will mistake for
+		// one of the others. SPELL_TELE_BLOCK (352) is the alternative and is
+		// one constant away.
+		//
+		// The label survives as the tooltip either way -- an icon that has to
+		// be learned needs a way to be learned, and it is also the fallback
+		// when a sprite cannot be produced.
+		COMBAT("Combat", SpriteID.TAB_COMBAT),
+		BUILD("Build", SpriteID.RS2_TAB_STATS),
+		QUESTS("Quests", SpriteID.TAB_QUESTS),
+		ITEMS("Items", SpriteID.RS2_TAB_INVENTORY),
+		SYNC("Sync", SpriteID.SPELL_WIND_SURGE),
+		VIEW("View", SpriteID.RS2_TAB_OPTIONS);
 
 		private final String label;
-		private final Skill icon;
+		private final int sprite;
 
-		Tab(String label, Skill icon)
+		Tab(String label, int sprite)
 		{
 			this.label = label;
-			this.icon = icon;
+			this.sprite = sprite;
 		}
 
 		String label()
@@ -134,10 +132,10 @@ enum PanelSections
 			return label;
 		}
 
-		/** The skill whose tab icon stands for this tab. */
-		Skill icon()
+		/** The game sprite drawn on this tab. */
+		int sprite()
 		{
-			return icon;
+			return sprite;
 		}
 	}
 

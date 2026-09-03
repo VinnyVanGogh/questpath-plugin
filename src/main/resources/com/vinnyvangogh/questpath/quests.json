@@ -278,11 +278,6 @@
       "members": false,
       "items": [
         {
-          "name": "40 coins for the Al Kharid toll gate if not using teleports to and from Al Kharid",
-          "quantity": 30,
-          "unresolved": true
-        },
-        {
           "name": "Ashes",
           "item_id": 592,
           "sources": [
@@ -323,6 +318,15 @@
           "sources": [
             "Shop: Shantay Pass Shop (6 Coins)",
             "Shop: Pollnivneach general store. (6 Coins)"
+          ]
+        },
+        {
+          "name": "Coins",
+          "item_id": 995,
+          "quantity": 40,
+          "sources": [
+            "Drop: Anja (Always)",
+            "Drop: Citizen (Aldarin) (Always)"
           ]
         },
         {
@@ -424,8 +428,12 @@
       "members": false,
       "items": [
         {
-          "name": "Bronze med helm . Alternatively, a Black full helm, Black platebody and Black platelegs/black plateskirt can be used in place of the Iron chainbody and Bronze med helm",
-          "unresolved": true
+          "name": "Bronze med helm",
+          "item_id": 1139,
+          "sources": [
+            "Shop: Blair's Armour (24 Coins)",
+            "Shop: Helmet Shop. (24 Coins)"
+          ]
         },
         {
           "name": "Cabbage",
@@ -510,13 +518,13 @@
       ],
       "items": [
         {
-          "name": "3 Blurite ore - optionally an additional ore each for your own blurite sword and the Falador easy diary",
-          "quantity": 1,
-          "obtainable": true,
+          "name": "Any pickaxe",
           "unresolved": true
         },
         {
-          "name": "Any pickaxe",
+          "name": "Blurite ore - optionally an additional ore each for your own blurite sword and the Falador easy diary",
+          "quantity": 3,
+          "obtainable": true,
           "unresolved": true
         },
         {
@@ -1115,7 +1123,7 @@
       ],
       "items": [
         {
-          "name": "Any poison cure . Does not need to contain full doses",
+          "name": "Any poison cure",
           "unresolved": true
         },
         {
@@ -1509,16 +1517,20 @@
       ],
       "items": [
         {
-          "name": "4 buckets of water",
-          "quantity": 1,
-          "unresolved": true
-        },
-        {
           "name": "Bucket of milk",
           "item_id": 1927,
           "sources": [
             "Shop: Culinaromancer's Chest (6 Coins)",
             "Shop: Funch's Fine Groceries (6 Coins)"
+          ]
+        },
+        {
+          "name": "Bucket of water",
+          "item_id": 1929,
+          "quantity": 4,
+          "sources": [
+            "Shop: Shantay Pass Shop (6 Coins)",
+            "Shop: Pollnivneach general store. (6 Coins)"
           ]
         },
         {
@@ -1715,9 +1727,13 @@
       ],
       "items": [
         {
-          "name": "coins if you previously chose not to help Femi on your first entry to the Tree Gnome Stronghold",
+          "name": "Coins",
+          "item_id": 995,
           "quantity": 1000,
-          "unresolved": true
+          "sources": [
+            "Drop: Anja (Always)",
+            "Drop: Citizen (Aldarin) (Always)"
+          ]
         }
       ]
     },
@@ -1747,11 +1763,6 @@
         }
       ],
       "items": [
-        {
-          "name": "5 arrows",
-          "quantity": 1,
-          "unresolved": true
-        },
         {
           "name": "Bow",
           "unresolved": true
@@ -1789,6 +1800,11 @@
             "Shop: Ali's Discount Wares. (1 Coins)",
             "Shop: Aurel's Supplies (1 Coins)"
           ]
+        },
+        {
+          "name": "arrows",
+          "quantity": 5,
+          "unresolved": true
         }
       ]
     },
@@ -3012,8 +3028,12 @@
           "unresolved": true
         },
         {
-          "name": "Limestone . Note that limestone bricks will not work",
-          "unresolved": true
+          "name": "Limestone",
+          "item_id": 3211,
+          "sources": [
+            "Shop: Razmire Builders Merchants. (10 Coins)",
+            "Drop: Limestone rock (Always)"
+          ]
         },
         {
           "name": "Pestle and mortar",
@@ -4701,11 +4721,6 @@
       ],
       "items": [
         {
-          "name": "50+ lockpicks",
-          "quantity": 20,
-          "unresolved": true
-        },
-        {
           "name": "A sweet",
           "unresolved": true
         },
@@ -4770,6 +4785,15 @@
           "sources": [
             "Drop: Mourner#Level 11 (Always)",
             "Drop: Mourner#Level 108 (Always)"
+          ]
+        },
+        {
+          "name": "Lockpick",
+          "item_id": 1523,
+          "quantity": 50,
+          "sources": [
+            "Shop: Martin Thwait's Lost and Found. (20 Coins)",
+            "Drop: Bandit (Bandit Camp) (1/7)"
           ]
         },
         {
@@ -5090,6 +5114,15 @@
           ]
         },
         {
+          "name": "Coins",
+          "item_id": 995,
+          "quantity": 200,
+          "sources": [
+            "Drop: Anja (Always)",
+            "Drop: Citizen (Aldarin) (Always)"
+          ]
+        },
+        {
           "name": "Iron bar",
           "item_id": 2351,
           "sources": [
@@ -5128,11 +5161,6 @@
         {
           "name": "Various ores and bars",
           "obtainable": true,
-          "unresolved": true
-        },
-        {
-          "name": "coins for the clothes",
-          "quantity": 200,
           "unresolved": true
         },
         {
@@ -6125,11 +6153,6 @@
       ],
       "items": [
         {
-          "name": "2 thread",
-          "quantity": 1,
-          "unresolved": true
-        },
-        {
           "name": "Any pickaxe that you have the Mining level to use",
           "obtainable": true,
           "unresolved": true
@@ -6182,6 +6205,15 @@
         {
           "name": "Stab weapon",
           "unresolved": true
+        },
+        {
+          "name": "Thread",
+          "item_id": 1734,
+          "quantity": 2,
+          "sources": [
+            "Shop: Moon Clan Fine Clothes. (1 Coins)",
+            "Shop: Carefree Crafting Stall (1 Coins)"
+          ]
         }
       ]
     },
@@ -6685,10 +6717,6 @@
           "unresolved": true
         },
         {
-          "name": "Any fruit blast excluding a premade fr' blast",
-          "unresolved": true
-        },
-        {
           "name": "Any pickaxe",
           "unresolved": true
         },
@@ -6824,6 +6852,14 @@
           "sources": [
             "Shop: Fishing Guild Shop. (3 Coins)",
             "Shop: Henderson's Catch of the Day (3 Coins)"
+          ]
+        },
+        {
+          "name": "Fruit blast",
+          "item_id": 2084,
+          "sources": [
+            "Shop: Gabooty's Tai Bwo Wannai Drinky Store. (28 Trading sticks)",
+            "Shop: Gabooty's Tai Bwo Wannai Drinky Store. (30 Trading sticks)"
           ]
         },
         {
@@ -7061,11 +7097,6 @@
       ],
       "items": [
         {
-          "name": "5 buckets",
-          "quantity": 1,
-          "unresolved": true
-        },
-        {
           "name": "Any pickaxe",
           "unresolved": true
         },
@@ -7080,6 +7111,15 @@
           "sources": [
             "Shop: Bandit Duty Free (14 Coins)",
             "Shop: Bob's Brilliant Axes. (16 Coins)"
+          ]
+        },
+        {
+          "name": "Bucket",
+          "item_id": 1925,
+          "quantity": 5,
+          "sources": [
+            "Shop: Tynan's Fishing Supplies (2 Coins)",
+            "Shop: Alice's Farming shop. (2 Coins)"
           ]
         },
         {
@@ -7323,6 +7363,15 @@
       ],
       "items": [
         {
+          "name": "Coins",
+          "item_id": 995,
+          "quantity": 8,
+          "sources": [
+            "Drop: Anja (Always)",
+            "Drop: Citizen (Aldarin) (Always)"
+          ]
+        },
+        {
           "name": "Pot",
           "item_id": 1931,
           "quantity": 8,
@@ -7338,11 +7387,6 @@
             "Shop: Ali's Discount Wares. (1 Coins)",
             "Shop: Aurel's Supplies (1 Coins)"
           ]
-        },
-        {
-          "name": "coins for 8 pots of vinegar",
-          "quantity": 8,
-          "unresolved": true
         },
         {
           "name": "logs of any type",
@@ -8646,12 +8690,16 @@
       ],
       "items": [
         {
-          "name": "A light source . If you don't have one, the Sophanem guard under the temple of the lesser deities will sell you an unlit torch for 200 coins",
+          "name": "A light source",
           "unresolved": true
         },
         {
-          "name": "A tinderbox . If you don't have one, the Sophanem guard will sell you one for 50 coins",
-          "unresolved": true
+          "name": "Tinderbox",
+          "item_id": 590,
+          "sources": [
+            "Shop: Ali's Discount Wares. (1 Coins)",
+            "Shop: Aurel's Supplies (1 Coins)"
+          ]
         }
       ]
     },
@@ -9339,8 +9387,12 @@
           ]
         },
         {
-          "name": "Seed dibber . Not needed if the Farming portion of the Barbarian Training miniquest is completed",
-          "unresolved": true
+          "name": "Seed dibber",
+          "item_id": 5343,
+          "sources": [
+            "Shop: Alice's Farming shop. (6 Coins)",
+            "Shop: Branwen's Farming Shop (6 Coins)"
+          ]
         },
         {
           "name": "Tarromin potion OR 2 vials of water and 2 tarromins",
@@ -9386,9 +9438,9 @@
       ],
       "items": [
         {
-          "name": "Animate rock scroll . Note: if you have it in your bank, either destroy it or take it with you. You won't be able to receive another from Wizard Cromperty otherwise",
-          "obtainable": true,
-          "unresolved": true
+          "name": "Animate rock scroll",
+          "item_id": 4428,
+          "obtainable": true
         },
         {
           "name": "Bronze med helm",
@@ -9533,9 +9585,13 @@
       "members": true,
       "items": [
         {
-          "name": "coins to buy all the required alcohol",
+          "name": "Coins",
+          "item_id": 995,
           "quantity": 208,
-          "unresolved": true
+          "sources": [
+            "Drop: Anja (Always)",
+            "Drop: Citizen (Aldarin) (Always)"
+          ]
         }
       ]
     },
@@ -9653,10 +9709,6 @@
           "unresolved": true
         },
         {
-          "name": "Any seed that can be planted with a seed dibber and a free Farming patch for it",
-          "unresolved": true
-        },
-        {
           "name": "Caviar",
           "item_id": 11326,
           "sources": [
@@ -9698,6 +9750,9 @@
         {
           "name": "Roe",
           "item_id": 11324
+        },
+        {
+          "name": "Seeds"
         },
         {
           "name": "Signed oak bow",
@@ -10416,9 +10471,13 @@
       ],
       "items": [
         {
-          "name": "coins required each time you use the banker Odovacar",
+          "name": "Coins",
+          "item_id": 995,
           "quantity": 100,
-          "unresolved": true
+          "sources": [
+            "Drop: Anja (Always)",
+            "Drop: Citizen (Aldarin) (Always)"
+          ]
         }
       ]
     },
@@ -11016,10 +11075,6 @@
       ],
       "items": [
         {
-          "name": "Any fruit blast excluding a premade fr' blast",
-          "unresolved": true
-        },
-        {
           "name": "Ashes",
           "item_id": 592,
           "sources": [
@@ -11033,6 +11088,14 @@
           "sources": [
             "Shop: Jatix's Herblore Shop. (3 Coins)",
             "Shop: Betty's Magic Emporium (3 Coins)"
+          ]
+        },
+        {
+          "name": "Fruit blast",
+          "item_id": 2084,
+          "sources": [
+            "Shop: Gabooty's Tai Bwo Wannai Drinky Store. (28 Trading sticks)",
+            "Shop: Gabooty's Tai Bwo Wannai Drinky Store. (30 Trading sticks)"
           ]
         },
         {

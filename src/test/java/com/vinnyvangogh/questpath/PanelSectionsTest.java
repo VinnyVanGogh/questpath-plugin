@@ -68,16 +68,37 @@ public class PanelSectionsTest
 	 * one is only ever discovered by clicking it.
 	 */
 	/**
-	 * Every tab needs an icon, since that is what the strip renders. A null
-	 * would drop the tab to its text fallback silently — one word among four
-	 * pictures, which looks like a bug rather than a choice.
+	 * Every tab names a real game sprite, since that is what the strip
+	 * renders. Zero would drop the tab to its text fallback silently -- one
+	 * word among five pictures, which looks like a bug rather than a choice.
+	 *
+	 * These used to be skill icons, and four of the six were metaphors that
+	 * had to be learned. They are now the game's own interface art, which is
+	 * why the ids are checked rather than a nullable object: a sprite id is
+	 * an int, so a missing one is a plausible-looking 0 rather than an
+	 * obvious null.
 	 */
 	@Test
-	public void everyTabHasAnIcon()
+	public void everyTabNamesARealSprite()
 	{
 		for (PanelSections.Tab tab : PanelSections.Tab.values())
 		{
-			assertNotNull(tab + " has no icon", tab.icon());
+			assertTrue(tab + " has no sprite", tab.sprite() > 0);
+		}
+	}
+
+	/**
+	 * No two tabs share a sprite. Six tabs in a 225px strip are told apart by
+	 * their pictures alone once the labels drop to tooltips, so a duplicate
+	 * makes two of them indistinguishable.
+	 */
+	@Test
+	public void noTwoTabsShareASprite()
+	{
+		java.util.Set<Integer> seen = new java.util.HashSet<>();
+		for (PanelSections.Tab tab : PanelSections.Tab.values())
+		{
+			assertTrue(tab + " reuses another tab's sprite", seen.add(tab.sprite()));
 		}
 	}
 

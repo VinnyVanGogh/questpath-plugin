@@ -30,7 +30,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import net.runelite.api.Skill;
-import net.runelite.client.game.SkillIconManager;
+import net.runelite.client.game.SpriteManager;
 import net.runelite.client.ui.ColorScheme;
 import net.runelite.client.ui.FontManager;
 import net.runelite.client.ui.PluginPanel;
@@ -111,7 +111,7 @@ class QuestpathPanel extends PluginPanel
 	private final JPanel itemResults = new JPanel();
 	private QuestItems lastItems;
 
-	QuestpathPanel(SkillIconManager skillIcons, OverlaySettingsPanel overlaySettings)
+	QuestpathPanel(SpriteManager sprites, OverlaySettingsPanel overlaySettings)
 	{
 		this.overlaySettings = overlaySettings;
 		setLayout(new BorderLayout());
@@ -135,7 +135,7 @@ class QuestpathPanel extends PluginPanel
 			JPanel wrapper = new JPanel(new BorderLayout());
 			wrapper.add(bodyForTab, BorderLayout.NORTH);
 
-			MaterialTab materialTab = tabFor(skillIcons, tab, tabGroup, wrapper);
+			MaterialTab materialTab = tabFor(sprites, tab, tabGroup, wrapper);
 			tabGroup.addTab(materialTab);
 			if (first == null)
 			{
@@ -296,25 +296,44 @@ class QuestpathPanel extends PluginPanel
 	 * concepts they stand for have no skill, and an icon that has to be
 	 * learned needs a way to be learned.
 	 */
-	private static MaterialTab tabFor(SkillIconManager skillIcons, PanelSections.Tab tab,
+	private static MaterialTab tabFor(SpriteManager sprites, PanelSections.Tab tab,
 		MaterialTabGroup group, JPanel content)
 	{
-		MaterialTab materialTab = null;
-		if (skillIcons != null)
-		{
-			BufferedImage icon = skillIcons.getSkillImage(tab.icon(), true);
-			if (icon != null)
-			{
-				materialTab = new MaterialTab(
-					new ImageIcon(ImageUtil.resizeImage(icon, TAB_ICON_SIZE, TAB_ICON_SIZE)),
-					group, content);
-			}
-		}
-		if (materialTab == null)
-		{
-			materialTab = new MaterialTab(tab.label(), group, content);
-		}
+		// Built with its label first and given the picture when the picture
+		// arrives.
+		//
+		// SpriteManager cannot always answer immediately -- the client's
+		// sprite cache may not be loaded when a plugin starts, and asking
+		// synchronously then returns null forever, which would strand every
+		// tab on its text fallback for the whole session. The async form
+		// answers when it can, and the label in the meantime is the same
+		// thing the tab falls back to permanently if the sprite never comes.
+		MaterialTab materialTab = new MaterialTab(tab.label(), group, content);
 		materialTab.setToolTipText(tab.label());
+
+		if (sprites != null)
+		{
+			sprites.getSpriteAsync(tab.sprite(), 0, image ->
+			{
+				if (image == null)
+				{
+					return;
+				}
+				// Swing, so the swap happens on the EDT rather than on
+				// whichever thread the sprite finished loading on.
+				SwingUtilities.invokeLater(() ->
+				{
+					materialTab.setIcon(new ImageIcon(
+						ImageUtil.resizeImage(image, TAB_ICON_SIZE, TAB_ICON_SIZE)));
+					// The label becomes the tooltip alone once there is a
+					// picture; six words across a 225px strip is unreadable.
+					materialTab.setText(null);
+					materialTab.revalidate();
+					materialTab.repaint();
+				});
+			});
+		}
+
 		return materialTab;
 	}
 
