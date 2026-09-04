@@ -4091,6 +4091,10 @@
       "slug": "ghosts_ahoy",
       "name": "Ghosts Ahoy",
       "members": true,
+      "prerequisites": [
+        6,
+        56
+      ],
       "requirements": [
         {
           "skill": "agility",
@@ -6443,7 +6447,7 @@
           ]
         },
         {
-          "name": "Enough remaining Prayer points to cast Protect from Melee for about five seconds",
+          "name": "Enough remaining Prayer points to maintain Protect from Melee for about five seconds",
           "unresolved": true
         },
         {
@@ -6636,7 +6640,18 @@
       "name": "Recipe for Disaster",
       "members": true,
       "prerequisites": [
-        1
+        1,
+        15,
+        20,
+        25,
+        45,
+        47,
+        53,
+        55,
+        62,
+        64,
+        76,
+        89
       ],
       "requirements": [
         {
@@ -7882,6 +7897,9 @@
       "slug": "the_eyes_of_glouphrie",
       "name": "The Eyes of Glouphrie",
       "members": true,
+      "prerequisites": [
+        39
+      ],
       "requirements": [
         {
           "skill": "construction",
@@ -8951,6 +8969,11 @@
       "slug": "the_great_brain_robbery",
       "name": "The Great Brain Robbery",
       "members": true,
+      "prerequisites": [
+        68,
+        96,
+        155
+      ],
       "requirements": [
         {
           "skill": "construction",
@@ -9400,8 +9423,12 @@
           "unresolved": true
         },
         {
-          "name": "Watering can with at least 1 dose",
-          "unresolved": true
+          "name": "Watering can",
+          "item_id": 5331,
+          "sources": [
+            "Shop: Alice's Farming shop. (8 Coins)",
+            "Shop: Branwen's Farming Shop (8 Coins)"
+          ]
         }
       ]
     },
@@ -9615,6 +9642,10 @@
       "slug": "the_generals_shadow",
       "name": "The General's Shadow",
       "members": true,
+      "prerequisites": [
+        32,
+        132
+      ],
       "rewards": [
         {
           "skill": "slayer",
@@ -9966,7 +9997,9 @@
       "name": "Rag and Bone Man II",
       "members": true,
       "prerequisites": [
-        68
+        68,
+        101,
+        131
       ],
       "requirements": [
         {
@@ -10457,6 +10490,9 @@
       "slug": "lair_of_tarn_razorlor",
       "name": "Lair of Tarn Razorlor",
       "members": true,
+      "prerequisites": [
+        65
+      ],
       "requirements": [
         {
           "skill": "slayer",
@@ -10664,6 +10700,9 @@
       "slug": "the_enchanted_key",
       "name": "The Enchanted Key",
       "members": true,
+      "prerequisites": [
+        90
+      ],
       "items": [
         {
           "name": "Enchanted key",
@@ -11889,7 +11928,7 @@
           ]
         },
         {
-          "name": "Rod of ivandis",
+          "name": "Rod of Ivandis",
           "obtainable": true,
           "unresolved": true
         },
@@ -12605,7 +12644,7 @@
           "unresolved": true
         },
         {
-          "name": "get it from Bardur AFTER being exiled, for either 150,000 or for free using a Ring of charos",
+          "name": "get it from Bardur AFTER being exiled, for either 150,000 or for free using a Ring of Charos",
           "unresolved": true
         }
       ]
@@ -13887,6 +13926,15 @@
       "slug": "his_faithful_servants",
       "name": "His Faithful Servants",
       "members": true,
+      "prerequisites": [
+        56
+      ],
+      "rewards": [
+        {
+          "skill": "prayer",
+          "xp": 20000
+        }
+      ],
       "items": [
         {
           "name": "Combat equipment to defeat the Barrows Brothers",
@@ -14175,6 +14223,11 @@
             "Drop: Anja (Always)",
             "Drop: Citizen (Aldarin) (Always)"
           ]
+        },
+        {
+          "name": "Pickaxe",
+          "obtainable": true,
+          "unresolved": true
         },
         {
           "name": "Up to 4 empty inventory slots",
@@ -14864,6 +14917,9 @@
       "slug": "vale_totems_miniquest",
       "name": "Vale Totems (miniquest)",
       "members": true,
+      "prerequisites": [
+        192
+      ],
       "requirements": [
         {
           "skill": "fletching",
@@ -15466,6 +15522,13 @@
     },
     {
       "skill": "Defence",
+      "item": "Abidor Crank",
+      "base": 3,
+      "per_level": 0.1,
+      "max": 12
+    },
+    {
+      "skill": "Defence",
       "item": "Bandages (Theatre of Blood)",
       "base": 4,
       "per_level": 0.15,
@@ -15493,6 +15556,13 @@
     {
       "skill": "Defence",
       "item": "Defence mix",
+      "base": 3,
+      "per_level": 0.1,
+      "max": 12
+    },
+    {
+      "skill": "Defence",
+      "item": "Defence potion",
       "base": 3,
       "per_level": 0.1,
       "max": 12
@@ -15608,6 +15678,13 @@
     },
     {
       "skill": "Defence",
+      "item": "Saradomin brew",
+      "base": 2,
+      "per_level": 0.2,
+      "max": 21
+    },
+    {
+      "skill": "Defence",
       "item": "Smelling salts",
       "base": 11,
       "per_level": 0.16,
@@ -15712,6 +15789,11 @@
     },
     {
       "skill": "Fishing",
+      "item": "Bottle of fishtongue tonic",
+      "base": 3
+    },
+    {
+      "skill": "Fishing",
       "item": "Crystal harpoon",
       "base": 3
     },
@@ -15742,6 +15824,11 @@
     },
     {
       "skill": "Fishing",
+      "item": "Fishing potion",
+      "base": 3
+    },
+    {
+      "skill": "Fishing",
       "item": "Infernal harpoon",
       "base": 3
     },
@@ -15751,6 +15838,11 @@
       "base": 0,
       "max": 5,
       "random": true
+    },
+    {
+      "skill": "Fishing",
+      "item": "Super fishing potion",
+      "base": 6
     },
     {
       "skill": "Fishing",
@@ -15813,6 +15905,18 @@
     },
     {
       "skill": "Hitpoints",
+      "item": "Abidor Crank",
+      "base": 15
+    },
+    {
+      "skill": "Hitpoints",
+      "item": "Ambrosia",
+      "base": 2,
+      "per_level": 0.25,
+      "max": 26
+    },
+    {
+      "skill": "Hitpoints",
       "item": "Amulet of the Damned",
       "base": 10
     },
@@ -15831,6 +15935,21 @@
     },
     {
       "skill": "Hitpoints",
+      "item": "Bloody bracer",
+      "base": 2
+    },
+    {
+      "skill": "Hitpoints",
+      "item": "Elidinis Statuette",
+      "base": 7
+    },
+    {
+      "skill": "Hitpoints",
+      "item": "Guthix rest",
+      "base": 5
+    },
+    {
+      "skill": "Hitpoints",
       "item": "Haddock",
       "base": 2,
       "max": 10
@@ -15844,6 +15963,13 @@
       "skill": "Hitpoints",
       "item": "Honey locust",
       "base": 20
+    },
+    {
+      "skill": "Hitpoints",
+      "item": "Nectar",
+      "base": 3,
+      "per_level": 0.15,
+      "max": 17
     },
     {
       "skill": "Hitpoints",
@@ -15896,6 +16022,11 @@
     },
     {
       "skill": "Hunter",
+      "item": "Super hunter potion",
+      "base": 6
+    },
+    {
+      "skill": "Hunter",
       "item": "Trapper's tipple",
       "base": 2
     },
@@ -15915,6 +16046,13 @@
       "skill": "Magic",
       "item": "Battlemage potion",
       "base": 4
+    },
+    {
+      "skill": "Magic",
+      "item": "Castlewars brew",
+      "base": 1,
+      "per_level": 0.1,
+      "max": 10
     },
     {
       "skill": "Magic",
@@ -16128,6 +16266,13 @@
     },
     {
       "skill": "Prayer",
+      "item": "Ambrosia",
+      "base": 5,
+      "per_level": 0.2,
+      "max": 24
+    },
+    {
+      "skill": "Prayer",
       "item": "Ancient mace",
       "base": 1,
       "max": 42
@@ -16332,6 +16477,13 @@
       "skill": "Sailing",
       "item": "Sailing cape",
       "base": 1
+    },
+    {
+      "skill": "Sailing",
+      "item": "Spicy stew",
+      "base": 0,
+      "max": 5,
+      "random": true
     },
     {
       "skill": "Sailing",

@@ -812,7 +812,7 @@
     {
       "quest_id": 107,
       "slug": "the_eyes_of_glouphrie",
-      "status": "SKILL_BLOCKED"
+      "status": "UNREACHABLE"
     },
     {
       "quest_id": 108,
@@ -922,7 +922,7 @@
     {
       "quest_id": 129,
       "slug": "the_generals_shadow",
-      "status": "ELIGIBLE"
+      "status": "UNREACHABLE"
     },
     {
       "quest_id": 130,
@@ -967,7 +967,7 @@
     {
       "quest_id": 138,
       "slug": "lair_of_tarn_razorlor",
-      "status": "SKILL_BLOCKED"
+      "status": "UNREACHABLE"
     },
     {
       "quest_id": 139,
@@ -987,7 +987,7 @@
     {
       "quest_id": 142,
       "slug": "the_enchanted_key",
-      "status": "ELIGIBLE"
+      "status": "UNREACHABLE"
     },
     {
       "quest_id": 143,
@@ -1232,7 +1232,7 @@
     {
       "quest_id": 191,
       "slug": "his_faithful_servants",
-      "status": "ELIGIBLE"
+      "status": "BUILD_BLOCKED"
     },
     {
       "quest_id": 192,

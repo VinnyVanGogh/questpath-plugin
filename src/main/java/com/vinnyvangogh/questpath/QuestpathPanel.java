@@ -4,12 +4,14 @@ import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.Insets;
+import java.awt.Window;
 import java.awt.image.BufferedImage;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -22,6 +24,8 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
+import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
@@ -33,6 +37,7 @@ import javax.swing.SpinnerNumberModel;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
+import javax.swing.Timer;
 import javax.swing.ToolTipManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -904,7 +909,7 @@ class QuestpathPanel extends PluginPanel
 	 * someone looking for the list that was not there. The head keeps its own
 	 * prominence because "what now" is still the question asked most often.
 	 */
-	private static JPanel nextQuestBlock(NextQuestStatus next)
+	private JPanel nextQuestBlock(NextQuestStatus next)
 	{
 		JPanel panel = column();
 
@@ -932,9 +937,14 @@ class QuestpathPanel extends PluginPanel
 				panel.add(routeList(next));
 				return panel;
 			case NEXT:
+				// The headline quest, left-clickable the same way its own row
+				// further down the list is -- see attachQuestHelperInteractions.
+				// It is the one name most players actually look at, which is
+				// exactly the row Defect 2 reported as dead.
 				JLabel value = new JLabel(wrap(next.questName()));
 				value.setFont(FontManager.getRunescapeBoldFont());
 				value.setForeground(Color.WHITE);
+				attachQuestHelperInteractions(value, next.questName());
 				panel.add(value);
 				panel.add(Box.createVerticalStrut(6));
 				panel.add(routeProgress(next));
@@ -986,8 +996,12 @@ class QuestpathPanel extends PluginPanel
 	 *
 	 * The next quest is marked in the list as well as named above it, because
 	 * the list is what gets scrolled and the headline scrolls away.
+	 *
+	 * Every row is left- and right-clickable the same way the headline is --
+	 * see attachQuestHelperInteractions -- including finished ones, which
+	 * Quest Helper is content to be asked to start again.
 	 */
-	private static JPanel routeList(NextQuestStatus next)
+	private JPanel routeList(NextQuestStatus next)
 	{
 		JPanel panel = column();
 		panel.add(Box.createVerticalStrut(8));
@@ -999,17 +1013,28 @@ class QuestpathPanel extends PluginPanel
 			Color color;
 			if (step.done())
 			{
-				prefix = "\u2713  ";
+				// "x" rather than a check mark: FontManager's small
+				// RuneScape font is a bitmap font with no glyph for \u2713,
+				// which drew as a tofu box players read as a stray "F".
+				// Verified against the font's own cmap, not assumed --
+				// plain ASCII is certain to be there, another Unicode pick
+				// would only be a second gamble.
+				prefix = "x  ";
 				color = ColorScheme.PROGRESS_COMPLETE_COLOR.darker();
 			}
 			else if (!marked)
 			{
-				prefix = "\u25b8  ";
+				// Same reasoning as the check mark above: \u25b8 is missing
+				// from the font too. ">" is the ASCII stand-in.
+				prefix = ">  ";
 				color = Color.WHITE;
 				marked = true;
 			}
 			else
 			{
+				// \u00b7 (middle dot) is Latin-1 and the font does carry
+				// it -- verified, not just assumed innocent because it
+				// looked simpler than the other two.
 				prefix = "\u00b7  ";
 				color = ColorScheme.LIGHT_GRAY_COLOR;
 			}
@@ -1017,6 +1042,7 @@ class QuestpathPanel extends PluginPanel
 			JLabel row = row(prefix + step.questName());
 			row.setFont(FontManager.getRunescapeSmallFont());
 			row.setForeground(color);
+			attachQuestHelperInteractions(row, step.questName());
 			panel.add(row);
 		}
 
@@ -1171,6 +1197,70 @@ class QuestpathPanel extends PluginPanel
 	}
 
 	/**
+	 * Left-click a route row to send it straight to Quest Helper; right-click
+	 * for the same menu the quest browser gets. This is what "Next on your
+	 * route" was missing entirely -- the right-click handler only ever
+	 * reached the quest-browser rows, so the one place most players actually
+	 * look had no affordance at all.
+	 *
+	 * <p>Availability, and the reason behind it, is computed on hover for the
+	 * tooltip and again on click -- never at render time, for the same
+	 * reason {@link #attachQuestHelperMenu} builds its popup lazily. The
+	 * route is short, but the rule guarding it is the same rule.
+	 */
+	private void attachQuestHelperInteractions(JComponent row, String questName)
+	{
+		row.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+		// A cheap placeholder so ToolTipManager registers this component --
+		// registration happens the first time setToolTipText is called with
+		// non-null text -- before the real, reflection-backed text below
+		// ever has to run. quickenTooltips(), called once on the whole
+		// panel, still governs how fast that text appears from here.
+		row.setToolTipText(questName);
+		row.addMouseListener(new java.awt.event.MouseAdapter()
+		{
+			@Override
+			public void mouseEntered(java.awt.event.MouseEvent event)
+			{
+				row.setToolTipText(questHelperBridge.availability(questName).menuLabel());
+			}
+
+			@Override
+			public void mousePressed(java.awt.event.MouseEvent event)
+			{
+				maybeShowPopup(event);
+			}
+
+			@Override
+			public void mouseReleased(java.awt.event.MouseEvent event)
+			{
+				maybeShowPopup(event);
+			}
+
+			@Override
+			public void mouseClicked(java.awt.event.MouseEvent event)
+			{
+				if (event.getButton() == java.awt.event.MouseEvent.BUTTON1 && !event.isPopupTrigger())
+				{
+					startFromRoute(questName);
+				}
+			}
+
+			private void maybeShowPopup(java.awt.event.MouseEvent event)
+			{
+				// The popup trigger is mousePressed on macOS and
+				// mouseReleased on Windows/Linux; checking both is the
+				// portable way to catch either.
+				if (!event.isPopupTrigger())
+				{
+					return;
+				}
+				questHelperMenu(questName).show(event.getComponent(), event.getX(), event.getY());
+			}
+		});
+	}
+
+	/**
 	 * One menu item, its label doubling as the reason when it is disabled.
 	 *
 	 * <p>A disabled Swing component receives no mouse events, so a tooltip on
@@ -1184,21 +1274,115 @@ class QuestpathPanel extends PluginPanel
 		QuestHelperBridge.Availability availability = questHelperBridge.availability(questName);
 		JMenuItem item = new JMenuItem(availability.menuLabel());
 		item.setEnabled(availability == QuestHelperBridge.Availability.AVAILABLE);
-		item.addActionListener(event ->
+		item.addActionListener(event -> startFromRoute(questName));
+		menu.add(item);
+		return menu;
+	}
+
+	/**
+	 * Hands questName to {@link #questHelperBridge} and reports what
+	 * actually happened. See {@link QuestHelperBridge}'s class doc for why
+	 * the reflective call not throwing was never proof of anything -- this
+	 * is the fix for that: the outcome reported here is always the verified
+	 * one, never the fact that a method returned.
+	 *
+	 * <p>The callback can land on Quest Helper's own client thread rather
+	 * than the EDT -- see {@link QuestHelperBridge#start}'s doc -- so it is
+	 * always marshalled back before touching Swing, even for the two
+	 * outcomes that in practice arrive synchronously.
+	 */
+	private void startFromRoute(String questName)
+	{
+		questHelperBridge.start(questName,
+			outcome -> SwingUtilities.invokeLater(() -> reportStartOutcome(questName, outcome)));
+	}
+
+	/**
+	 * Turns a {@link QuestHelperBridge.StartOutcome} into what the player
+	 * sees. A confirmed start gets a brief, non-modal toast: silence on
+	 * success was the entire bug this exists to fix, and good news does not
+	 * need a decision dismissed before the player can keep going. Every
+	 * other outcome gets a plain warning, naming the reason where one is
+	 * actually known rather than guessed at.
+	 */
+	private void reportStartOutcome(String questName, QuestHelperBridge.StartOutcome outcome)
+	{
+		switch (outcome)
 		{
-			if (!questHelperBridge.start(questName))
-			{
+			case CONFIRMED:
+				showStartConfirmation(questName);
+				return;
+			case UNAVAILABLE:
+				warn("Quest Helper could not start \"" + questName
+					+ "\" -- it was no longer available by the time the click landed.");
+				return;
+			case CALL_FAILED:
 				// Availability said AVAILABLE a moment ago; if the actual
 				// handoff still failed, that is Quest Helper's integration
 				// breaking between the click and the call, not a state this
 				// menu item can pre-empt. Said plainly rather than swallowed.
-				JOptionPane.showMessageDialog(this,
-					"Quest Helper could not start \"" + questName + "\". Check the client log.",
-					"Quest Path", JOptionPane.WARNING_MESSAGE);
-			}
-		});
-		menu.add(item);
-		return menu;
+				warn("Quest Helper could not start \"" + questName + "\". Check the client log.");
+				return;
+			case NOT_LOGGED_IN:
+				warn("Quest Helper did not start \"" + questName + "\" -- you are not logged in.");
+				return;
+			case NOT_SELECTED:
+				// The two known silent-return paths that land here --
+				// Quest Helper's own account for "already effectively
+				// complete" and any other reason it declined -- are not
+				// distinguishable from outside QuestManager. Said honestly
+				// rather than picking one to guess at.
+				warn("Quest Helper did not start \"" + questName
+					+ "\". It may already be effectively complete, or something else stopped it"
+					+ " -- check the client log.");
+				return;
+			case UNVERIFIABLE:
+				warn("Sent \"" + questName + "\" to Quest Helper, but questpath could not confirm"
+					+ " whether it actually started -- the integration may be out of date."
+					+ " Check the client log.");
+				return;
+			default:
+				// Exhaustive over a closed enum; nothing else to report.
+		}
+	}
+
+	private void warn(String message)
+	{
+		JOptionPane.showMessageDialog(this, message, "Quest Path", JOptionPane.WARNING_MESSAGE);
+	}
+
+	/** How long the "started" toast stays up before it dismisses itself. */
+	private static final int START_TOAST_MILLIS = 2500;
+
+	/**
+	 * A brief, non-modal confirmation that Quest Helper actually selected
+	 * the quest. Non-modal on purpose: this is good news, not a decision the
+	 * player has to dismiss before doing anything else -- unlike the warning
+	 * dialogs above, which really are asking for that.
+	 */
+	private void showStartConfirmation(String questName)
+	{
+		Window owner = SwingUtilities.getWindowAncestor(this);
+		JDialog toast = new JDialog(owner);
+		toast.setUndecorated(true);
+		toast.setModal(false);
+		toast.setFocusableWindowState(false);
+
+		JLabel label = new JLabel(wrap("Started \"" + questName + "\" in Quest Helper."));
+		label.setFont(FontManager.getRunescapeSmallFont());
+		label.setForeground(Color.WHITE);
+		label.setOpaque(true);
+		label.setBackground(ColorScheme.PROGRESS_COMPLETE_COLOR.darker());
+		label.setBorder(BorderFactory.createEmptyBorder(6, 10, 6, 10));
+
+		toast.getContentPane().add(label);
+		toast.pack();
+		toast.setLocationRelativeTo(this);
+		toast.setVisible(true);
+
+		Timer dismiss = new Timer(START_TOAST_MILLIS, event -> toast.dispose());
+		dismiss.setRepeats(false);
+		dismiss.start();
 	}
 
 	/**

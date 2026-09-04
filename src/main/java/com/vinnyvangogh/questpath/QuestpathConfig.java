@@ -77,6 +77,14 @@ public interface QuestpathConfig extends Config
 	)
 	String syncSection = "sync";
 
+	@ConfigSection(
+		name = "Quest Helper",
+		description = "Automation around Quest Helper's own start-quest flow.",
+		position = 6,
+		closedByDefault = true
+	)
+	String questHelperSection = "questHelper";
+
 	@ConfigItem(
 		keyName = "syncEnabled",
 		name = "Send my account state",
@@ -628,6 +636,24 @@ public interface QuestpathConfig extends Config
 	default boolean bankList()
 	{
 		return true;
+	}
+
+	@ConfigItem(
+		keyName = "autoAdvanceQuestHelper",
+		name = "Auto-start the next quest",
+		description = "When the quest you just finished was the current step on your saved route,"
+			+ " automatically start the next one in Quest Helper -- only if Quest Helper reports it"
+			+ " available. Always says what it did (or why it could not) in the chat, and never"
+			+ " retries on its own.",
+		section = questHelperSection,
+		position = 1
+	)
+	default boolean autoAdvanceQuestHelper()
+	{
+		// Off by default. Starting something in another plugin unasked is
+		// intrusive, however welcome it usually is a moment after finishing
+		// the quest before it.
+		return false;
 	}
 
 	@ConfigItem(

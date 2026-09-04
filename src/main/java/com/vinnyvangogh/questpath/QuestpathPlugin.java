@@ -268,6 +268,16 @@ public class QuestpathPlugin extends Plugin
 	private QuestHelperBridge questHelperBridge;
 
 	/**
+	 * Notices when the route's current step finishes, for {@link
+	 * QuestpathConfig#autoAdvanceQuestHelper}.
+	 *
+	 * Reset in {@link #startUp} and on logout, same as every other piece of
+	 * per-session route state -- see its class doc for why an unreset
+	 * planner would misfire on the very sweep it exists to ignore.
+	 */
+	private final AutoAdvancePlanner autoAdvance = new AutoAdvancePlanner();
+
+	/**
 	 * The bank, inventory and equipment as last seen. Not re-read on demand:
 	 * the client does not hold the bank's contents until it has been opened.
 	 */
@@ -350,8 +360,24 @@ public class QuestpathPlugin extends Plugin
 	{
 		watchdog = new EdtWatchdog(scheduler);
 		watchdog.start();
+		// The plugin can be toggled off and on again within the same
+		// session without a logout in between, and RuneLite reuses this
+		// same instance across that toggle -- so without this, a quest
+		// finished while the plugin was off would look like a completion
+		// observed live the moment it comes back on. See AutoAdvancePlanner's
+		// class doc.
+		autoAdvance.reset();
 		questHelperBridge = new QuestHelperBridge(pluginManager::getPlugins,
-			plugin -> pluginManager.isPluginEnabled((Plugin) plugin));
+			plugin -> pluginManager.isPluginEnabled((Plugin) plugin),
+			// Quest Helper's own startUpQuest defers through this same queue
+			// when not already called from it, so a read-back posted here
+			// runs after Quest Helper's own deferred write -- see
+			// QuestHelperBridge's class doc.
+			clientThread::invokeLater,
+			// Answered by this plugin's own Client, not read reflectively out
+			// of Quest Helper -- net.runelite.api.Client is RuneLite's shared
+			// game state, not something private to Quest Helper.
+			() -> client.getGameState() == GameState.LOGGED_IN);
 		panel = new QuestpathPanel(sprites, new OverlaySettingsPanel(config, configManager),
 			this::skillPlan, questHelperBridge);
 		navButton = NavigationButton.builder()
@@ -576,6 +602,11 @@ public class QuestpathPlugin extends Plugin
 			// reporting none.
 			owned.clear();
 			completions.reset();
+			// The next login may be a different account on a different
+			// route entirely; its first sighting of that route must not be
+			// read as a completion of whatever this account's route last
+			// pointed at.
+			autoAdvance.reset();
 		}
 	}
 
@@ -630,8 +661,96 @@ public class QuestpathPlugin extends Plugin
 
 		announce(completions.observe(items));
 
+		if (route != null)
+		{
+			// Always observed, whether or not the toggle is on: the planner
+			// has to keep tracking the route's real head even while this
+			// feature is switched off, or turning it on mid-session would
+			// see a stale head and misreport whatever finished while it was
+			// off as a live completion. route == null (client not loaded
+			// yet) is the one pass this must not see at all -- see
+			// AutoAdvancePlanner#observe's doc.
+			AutoAdvancePlanner.Decision decision = autoAdvance.observe(route);
+			if (config.autoAdvanceQuestHelper())
+			{
+				handleAutoAdvance(decision);
+			}
+		}
+
 		panel.update(stats, xp, syncStatus(), buildRules, unmatchedQuests,
 			questVerdicts, items, route, SyncSettings.from(config), report);
+	}
+
+	/**
+	 * Acts on what {@link AutoAdvancePlanner} decided: starts the next route
+	 * step in Quest Helper, or says why it could not, in one chat line
+	 * either way. Never called more than once per transition -- {@link
+	 * AutoAdvancePlanner#observe} already moved its own head forward before
+	 * this runs, so there is nothing left here that could turn into a retry
+	 * loop.
+	 */
+	private void handleAutoAdvance(AutoAdvancePlanner.Decision decision)
+	{
+		switch (decision.action())
+		{
+			case ADVANCE:
+				startNextOnAutoAdvance(decision.finished(), decision.next());
+				return;
+			case ROUTE_FINISHED:
+				chat("Quest Path: \"" + decision.finished()
+					+ "\" finished -- that was the last quest on your route.");
+				return;
+			case NONE:
+			default:
+				// Nothing happened worth a line in the chat.
+		}
+	}
+
+	/**
+	 * Starts next in Quest Helper, reusing {@link QuestHelperBridge}'s own
+	 * availability check rather than calling {@link QuestHelperBridge#start}
+	 * blind -- the same rule the panel's right-click menu follows, so
+	 * auto-advance can never attempt a handoff the manual path would have
+	 * refused.
+	 */
+	private void startNextOnAutoAdvance(String finished, String next)
+	{
+		QuestHelperBridge.Availability availability = questHelperBridge.availability(next);
+		if (availability != QuestHelperBridge.Availability.AVAILABLE)
+		{
+			chat("Quest Path: \"" + finished + "\" finished, but \"" + next
+				+ "\" could not be started in Quest Helper -- " + availability.menuLabel() + ".");
+			return;
+		}
+		questHelperBridge.start(next, outcome -> reportAutoAdvanceOutcome(finished, next, outcome));
+	}
+
+	/**
+	 * The one line the player sees for an auto-advance attempt. Silent
+	 * automation is worse than none, so both a confirmed start and a failed
+	 * one get said -- never only the good news.
+	 */
+	private void reportAutoAdvanceOutcome(String finished, String next, QuestHelperBridge.StartOutcome outcome)
+	{
+		if (outcome == QuestHelperBridge.StartOutcome.CONFIRMED)
+		{
+			chat("Quest Path: \"" + finished + "\" finished -- started \"" + next + "\" in Quest Helper.");
+			return;
+		}
+		chat("Quest Path: \"" + finished + "\" finished, but \"" + next
+			+ "\" did not start in Quest Helper (" + outcome + "). Check the client log.");
+	}
+
+	/** One plain line in the game chat, questpath's own message colour. */
+	private void chat(String message)
+	{
+		ChatMessageBuilder line = new ChatMessageBuilder()
+			.append(ChatColorType.NORMAL)
+			.append(message);
+		chatMessageManager.queue(QueuedMessage.builder()
+			.type(ChatMessageType.GAMEMESSAGE)
+			.runeLiteFormattedMessage(line.build())
+			.build());
 	}
 
 	/**
