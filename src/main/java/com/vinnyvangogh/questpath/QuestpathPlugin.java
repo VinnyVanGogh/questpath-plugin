@@ -26,6 +26,7 @@ import net.runelite.api.GameState;
 import net.runelite.api.Quest;
 import net.runelite.api.QuestState;
 import net.runelite.api.Skill;
+import net.runelite.api.coords.WorldPoint;
 import net.runelite.api.events.GameStateChanged;
 import net.runelite.client.chat.ChatColorType;
 import net.runelite.client.chat.ChatMessageBuilder;
@@ -40,9 +41,11 @@ import net.runelite.api.gameval.VarbitID;
 import net.runelite.api.events.ItemContainerChanged;
 import net.runelite.api.events.StatChanged;
 import net.runelite.api.events.VarbitChanged;
+import net.runelite.api.widgets.Widget;
 import net.runelite.client.callback.ClientThread;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.game.SkillIconManager;
+import net.runelite.client.eventbus.EventBus;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
@@ -78,9 +81,20 @@ public class QuestpathPlugin extends Plugin
 	@Inject
 	private ClientToolbar clientToolbar;
 
-	/** Used to find the running Quest Helper plugin, if any -- see {@link QuestHelperBridge}. */
+	/**
+	 * Used to find the running Quest Helper or Shortest Path plugin, if
+	 * either is present -- see {@link QuestHelperBridge} and {@link
+	 * ShortestPathBridge}.
+	 */
 	@Inject
 	private PluginManager pluginManager;
+
+	/**
+	 * RuneLite's own shared event bus, used only to post a {@code
+	 * PluginMessage} for Shortest Path -- see {@link ShortestPathBridge}.
+	 */
+	@Inject
+	private EventBus eventBus;
 
 	@Inject
 	private ClientThread clientThread;
@@ -202,6 +216,14 @@ public class QuestpathPlugin extends Plugin
 	private final ItemCompletionWatcher completions = new ItemCompletionWatcher();
 
 	/**
+	 * Watches for a shop opening that sells something outstanding -- see its
+	 * own class doc for why this is "at a shop" rather than the
+	 * walking-distance proximity {@link #shopLocation} now makes buildable
+	 * but that this class does not attempt.
+	 */
+	private final ShopArrivalWatcher shopArrival = new ShopArrivalWatcher();
+
+	/**
 	 * Something happened that the panel and overlays should be rebuilt for,
 	 * and the rebuild is waiting for the next tick.
 	 *
@@ -268,6 +290,13 @@ public class QuestpathPlugin extends Plugin
 	private QuestHelperBridge questHelperBridge;
 
 	/**
+	 * Built once in {@link #startUp}, same reason {@link #questHelperBridge}
+	 * is: it needs {@code pluginManager} and {@code eventBus} wired into
+	 * lambdas, not a RuneLite instance of its own. See its class doc.
+	 */
+	private ShortestPathBridge shortestPathBridge;
+
+	/**
 	 * Notices when the route's current step finishes, for {@link
 	 * QuestpathConfig#autoAdvanceQuestHelper}.
 	 *
@@ -276,6 +305,17 @@ public class QuestpathPlugin extends Plugin
 	 * planner would misfire on the very sweep it exists to ignore.
 	 */
 	private final AutoAdvancePlanner autoAdvance = new AutoAdvancePlanner();
+
+	/**
+	 * Notices when the player arrives at the next route quest's start point,
+	 * for {@link QuestpathConfig#questHelperArrivalPrompt}.
+	 *
+	 * Reset in {@link #startUp} and on logout, same triggers and same reason
+	 * as {@link #autoAdvance} -- see that field's doc and {@link
+	 * QuestStartArrivalWatcher}'s class doc for why an unreset watcher would
+	 * misfire on the very sweep it exists to ignore.
+	 */
+	private final QuestStartArrivalWatcher questStartArrival = new QuestStartArrivalWatcher();
 
 	/**
 	 * The bank, inventory and equipment as last seen. Not re-read on demand:
@@ -367,6 +407,10 @@ public class QuestpathPlugin extends Plugin
 		// observed live the moment it comes back on. See AutoAdvancePlanner's
 		// class doc.
 		autoAdvance.reset();
+		// Same reasoning, same class shape: toggling the plugin off and back
+		// on must not read wherever the player is already standing as a
+		// fresh arrival. See QuestStartArrivalWatcher's class doc.
+		questStartArrival.reset();
 		questHelperBridge = new QuestHelperBridge(pluginManager::getPlugins,
 			plugin -> pluginManager.isPluginEnabled((Plugin) plugin),
 			// Quest Helper's own startUpQuest defers through this same queue
@@ -378,8 +422,14 @@ public class QuestpathPlugin extends Plugin
 			// of Quest Helper -- net.runelite.api.Client is RuneLite's shared
 			// game state, not something private to Quest Helper.
 			() -> client.getGameState() == GameState.LOGGED_IN);
+		shortestPathBridge = new ShortestPathBridge(pluginManager::getPlugins,
+			plugin -> pluginManager.isPluginEnabled((Plugin) plugin),
+			// PluginMessage/EventBus#post is RuneLite's own public API, not
+			// Shortest Path's -- see ShortestPathBridge's class doc for why
+			// that means no reflection and no thread hand-off are needed here.
+			eventBus::post);
 		panel = new QuestpathPanel(sprites, new OverlaySettingsPanel(config, configManager),
-			this::skillPlan, questHelperBridge);
+			this::skillPlan, questHelperBridge, shortestPathBridge, this::shopLocation);
 		navButton = NavigationButton.builder()
 			.tooltip("Quest Path")
 			.icon(icon())
@@ -390,7 +440,7 @@ public class QuestpathPlugin extends Plugin
 
 		overlays.add(new NextQuestOverlay(this, config, overlayIcons));
 		overlays.add(new PickupsOverlay(this, config, overlayIcons));
-		overlays.add(new NeededItemsOverlay(this, config, overlayIcons));
+		overlays.add(new NeededItemsOverlay(this, config, overlayIcons, client));
 		overlays.add(new CombatXpOverlay(this, config, overlayIcons));
 		overlays.add(new BuildRulesOverlay(this, config, overlayIcons));
 		for (QuestpathOverlay overlay : overlays)
@@ -485,6 +535,7 @@ public class QuestpathPlugin extends Plugin
 		panel = null;
 		haveSent = false;
 		owned.clear();
+		shopArrival.reset();
 		log.debug("questpath stopped");
 	}
 
@@ -510,12 +561,165 @@ public class QuestpathPlugin extends Plugin
 	@Subscribe
 	public void onGameTick(GameTick event)
 	{
+		// Unconditional, unlike the refresh below: this is about whether a
+		// shop interface is open right now, which has nothing to do with
+		// whether the account's own state changed this tick.
+		checkShopArrival();
+
+		// Same reasoning: the player's position moves every tick regardless
+		// of whether the account's own state changed, and questStartArrival
+		// has to keep tracking it continuously -- see its class doc for why
+		// this is safe to call unconditionally, unlike AutoAdvancePlanner.
+		checkQuestStartArrival();
+
 		if (!refreshPending)
 		{
 			return;
 		}
 		refreshPending = false;
 		refresh();
+	}
+
+	/**
+	 * Reads whether a shop is open and, if so, what it stocks, and hands
+	 * both to {@link #shopArrival} -- see that class's doc for why this is
+	 * "at a shop", not walking-distance proximity.
+	 *
+	 * <p>Checked on the game tick rather than {@code WidgetLoaded}
+	 * deliberately: {@code WidgetLoaded} fires when the shop interface's
+	 * widget tree is created, which is not guaranteed to be after the
+	 * game's own script has finished populating it with the shop's actual
+	 * stock, and this plugin has no way to run the real client and confirm
+	 * the ordering either way -- see the plugin's own report on this
+	 * feature. A game tick happens once the client has finished processing
+	 * the tick's game logic, which is the conventional, lower-risk point to
+	 * read widget content that a script populates.
+	 *
+	 * <p>Cost while no shop is open: one widget lookup that returns null.
+	 * Cost while one is open: one widget lookup plus a scan of its own
+	 * slots, bounded by a shop's own size (never more than a few dozen) --
+	 * not the 218-quest or 577-item scale the rest of this plugin is
+	 * careful about, and only paid while a shop interface is actually on
+	 * screen.
+	 */
+	private void checkShopArrival()
+	{
+		Widget itemsWidget = client.getWidget(InterfaceID.Shopmain.ITEMS);
+		boolean shopOpenNow = itemsWidget != null;
+
+		Set<Integer> shopItemIds = Collections.emptySet();
+		if (shopOpenNow)
+		{
+			Widget[] slots = itemsWidget.getDynamicChildren();
+			if (slots != null)
+			{
+				shopItemIds = new HashSet<>();
+				for (Widget slot : slots)
+				{
+					if (slot != null && slot.getItemId() > 0)
+					{
+						shopItemIds.add(slot.getItemId());
+					}
+				}
+			}
+		}
+
+		QuestItems items = overlaySnapshot == null ? null : overlaySnapshot.items();
+		announceShopArrival(shopArrival.observe(shopOpenNow, shopItemIds, items));
+	}
+
+	/**
+	 * Reads the route's current head, its start point, and the player's
+	 * position, and hands all three to {@link #questStartArrival} -- see
+	 * that class's doc for why this is safe every tick and why it only ever
+	 * checks the one quest actually queued next.
+	 *
+	 * <p>Cost: one field read for the route head (already computed by the
+	 * last refresh), one lazy, memoised graph lookup by name, and one
+	 * distance comparison. Nothing here scales with the quest list.
+	 */
+	private void checkQuestStartArrival()
+	{
+		NextQuestStatus route = overlaySnapshot == null ? null : overlaySnapshot.route();
+		String nextQuestName = route != null && route.state() == NextQuestStatus.State.NEXT
+			? route.questName() : null;
+
+		WorldPoint start = questStartPoint(nextQuestName);
+		WorldPoint player = client.getLocalPlayer() == null ? null : client.getLocalPlayer().getWorldLocation();
+
+		// Always observed, whatever the toggle says -- same discipline as
+		// autoAdvance in refresh(): the watcher has to keep tracking the
+		// player's real position even while this feature is off, or turning
+		// it on mid-session would see a stale baseline and could fire the
+		// moment it is switched on for wherever the player already happens
+		// to be standing.
+		QuestStartArrivalWatcher.Decision decision = questStartArrival.observe(nextQuestName, start, player);
+		if (config.questHelperArrivalPrompt() && decision.action() == QuestStartArrivalWatcher.Action.ARRIVED)
+		{
+			handleQuestStartArrival(decision.questName());
+		}
+	}
+
+	/**
+	 * Where to walk for nextQuestName's start point, or null when the
+	 * bundled graph carries no start for it -- 13 of 218 quests, or when the
+	 * graph is missing or the name resolves to nothing.
+	 *
+	 * <p>Plane is always 0: questpath's export carries none, so every start
+	 * point is treated as ground level, and {@link
+	 * QuestStartArrivalWatcher}'s use of {@code WorldPoint#distanceTo} means
+	 * a player standing on a different plane -- indoors, upstairs -- above
+	 * or below the real door correctly never reads as arrived, rather than
+	 * firing confidently for the wrong floor.
+	 */
+	private WorldPoint questStartPoint(String nextQuestName)
+	{
+		if (questGraph == null || nextQuestName == null)
+		{
+			return null;
+		}
+		QuestGraph.Quest quest = questGraph.byName(nextQuestName);
+		if (quest == null || !quest.hasStart())
+		{
+			return null;
+		}
+		return new WorldPoint(quest.startX(), quest.startY(), 0);
+	}
+
+	/**
+	 * Starts questName in Quest Helper on arrival, reusing {@link
+	 * QuestHelperBridge}'s own availability check rather than calling {@link
+	 * QuestHelperBridge#start} blind -- the same rule {@link
+	 * #startNextOnAutoAdvance} and the panel's right-click menu both follow,
+	 * so this can never attempt a handoff either of those would have refused.
+	 */
+	private void handleQuestStartArrival(String questName)
+	{
+		QuestHelperBridge.Availability availability = questHelperBridge.availability(questName);
+		if (availability != QuestHelperBridge.Availability.AVAILABLE)
+		{
+			chat("Quest Path: you're at the start of \"" + questName
+				+ "\", but it could not be opened in Quest Helper -- " + availability.menuLabel() + ".");
+			return;
+		}
+		questHelperBridge.start(questName, outcome -> reportQuestStartArrivalOutcome(questName, outcome));
+	}
+
+	/**
+	 * The one line the player sees for an arrival attempt. Silent automation
+	 * is worse than none, so both a confirmed start and a failed one get
+	 * said -- never only the good news. Mirrors {@link
+	 * #reportAutoAdvanceOutcome}.
+	 */
+	private void reportQuestStartArrivalOutcome(String questName, QuestHelperBridge.StartOutcome outcome)
+	{
+		if (outcome == QuestHelperBridge.StartOutcome.CONFIRMED)
+		{
+			chat("Quest Path: you're at the start of \"" + questName + "\" -- opened it in Quest Helper.");
+			return;
+		}
+		chat("Quest Path: you're at the start of \"" + questName
+			+ "\", but it did not open in Quest Helper (" + outcome + "). Check the client log.");
 	}
 
 	/**
@@ -602,11 +806,19 @@ public class QuestpathPlugin extends Plugin
 			// reporting none.
 			owned.clear();
 			completions.reset();
+			// The next login may stand in front of a different shop, or none
+			// at all -- the previous account's "just opened" state must not
+			// carry over and suppress a genuine new opening.
+			shopArrival.reset();
 			// The next login may be a different account on a different
 			// route entirely; its first sighting of that route must not be
 			// read as a completion of whatever this account's route last
 			// pointed at.
 			autoAdvance.reset();
+			// Same reasoning: the next login may stand anywhere at all, on a
+			// different account's route, and that first sighting must not be
+			// read as an arrival.
+			questStartArrival.reset();
 		}
 	}
 
@@ -794,6 +1006,40 @@ public class QuestpathPlugin extends Plugin
 		}
 	}
 
+	/**
+	 * Prints one chat line, at most, the moment a shop is opened that sells
+	 * something outstanding -- see {@link ShopArrivalWatcher}'s class doc for
+	 * exactly what this does and does not detect.
+	 *
+	 * The toggle is read here rather than inside the watcher, same reason as
+	 * {@link #announce}: the watcher keeps observing every shop opening
+	 * either way, so switching the setting on mid-session announces only the
+	 * next opening, never a backlog.
+	 */
+	private void announceShopArrival(java.util.List<QuestItems.Total> matches)
+	{
+		if (matches.isEmpty() || config == null || !config.shopArrivalPrompt())
+		{
+			return;
+		}
+		java.util.List<String> names = new java.util.ArrayList<>();
+		for (QuestItems.Total total : matches)
+		{
+			names.add(total.name());
+		}
+		ChatMessageBuilder line = new ChatMessageBuilder()
+			.append(ChatColorType.NORMAL)
+			.append("Quest Path: this shop sells ")
+			.append(ChatColorType.HIGHLIGHT)
+			.append(QuestItems.phrase(names, 4))
+			.append(ChatColorType.NORMAL)
+			.append(", which your plan still needs.");
+		chatMessageManager.queue(QueuedMessage.builder()
+			.type(ChatMessageType.GAMEMESSAGE)
+			.runeLiteFormattedMessage(line.build())
+			.build());
+	}
+
 	/** Whether the bank marks and list are currently switched on. */
 	boolean bankNeedsShown()
 	{
@@ -909,6 +1155,26 @@ public class QuestpathPlugin extends Plugin
 		}
 		return SkillPlan.of(questGraph, account,
 			new QuestClassifier(questGraph, account), skill, targetLevel);
+	}
+
+	/**
+	 * Where to walk for a shop named by an item's {@code shopNames()}, or
+	 * null when the bundled graph carries no coordinate for it -- see
+	 * {@link QuestGraph.Shop}'s own doc for why every name that does resolve
+	 * is a genuine, walkable destination.
+	 *
+	 * <p>Handed to the panel as a callback, the same shape {@link #skillPlan}
+	 * is: the panel has no graph of its own and should not learn to hold
+	 * one, and this is the one question it needs answered from it.
+	 */
+	private WorldPoint shopLocation(String shopName)
+	{
+		if (questGraph == null || shopName == null)
+		{
+			return null;
+		}
+		QuestGraph.Shop shop = questGraph.shop(shopName);
+		return shop == null ? null : new WorldPoint(shop.x(), shop.y(), shop.plane());
 	}
 
 	/** The overlays and the bank layout read config through here. */

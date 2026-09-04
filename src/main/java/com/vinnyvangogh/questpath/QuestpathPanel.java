@@ -15,14 +15,17 @@ import java.awt.Window;
 import java.awt.image.BufferedImage;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
@@ -42,6 +45,7 @@ import javax.swing.ToolTipManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import net.runelite.api.Skill;
+import net.runelite.api.coords.WorldPoint;
 import net.runelite.client.game.SpriteManager;
 import net.runelite.client.ui.ColorScheme;
 import net.runelite.client.ui.FontManager;
@@ -209,13 +213,32 @@ class QuestpathPanel extends PluginPanel
 	 */
 	private final QuestHelperBridge questHelperBridge;
 
+	/**
+	 * Answers whether the current shop route can be handed to Shortest
+	 * Path, and does the handing-off. See {@link ShortestPathBridge}'s class
+	 * doc for exactly how strong a claim {@link
+	 * ShortestPathBridge.RouteOutcome#SENT} is.
+	 */
+	private final ShortestPathBridge shortestPathBridge;
+
+	/**
+	 * Where to walk for a shop by name, or null when the bundled graph
+	 * carries no coordinate for it. A callback rather than a graph of its
+	 * own for the same reason {@link #planner} is one: the panel should not
+	 * learn to hold the bundle, only ask the one question it needs answered.
+	 */
+	private final java.util.function.Function<String, WorldPoint> shopLocator;
+
 	QuestpathPanel(SpriteManager sprites, OverlaySettingsPanel overlaySettings,
 		java.util.function.BiFunction<String, Integer, SkillPlan> planner,
-		QuestHelperBridge questHelperBridge)
+		QuestHelperBridge questHelperBridge, ShortestPathBridge shortestPathBridge,
+		java.util.function.Function<String, WorldPoint> shopLocator)
 	{
 		this.overlaySettings = overlaySettings;
 		this.planner = planner;
 		this.questHelperBridge = questHelperBridge;
+		this.shortestPathBridge = shortestPathBridge;
+		this.shopLocator = shopLocator;
 		setLayout(new BorderLayout());
 		setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
 
@@ -651,17 +674,20 @@ class QuestpathPanel extends PluginPanel
 		{
 			clearBodies(PanelSections.Tab.QUESTS);
 			JPanel quests = tabBodies.get(PanelSections.Tab.QUESTS);
-			quests.add(heading(PanelSections.NEXT_QUEST.title()));
-			quests.add(nextQuestBlock(nextQuest));
-			quests.add(Box.createVerticalStrut(14));
-			quests.add(heading(PanelSections.QUEST_VERDICT.title()));
+			// Search first: it filters the browser list further down, but a
+			// player reaching for it should not have to scroll past "next on
+			// your route" to find it every time.
 			if (verdicts != null)
 			{
 				quests.add(questSearch);
 				quests.add(Box.createVerticalStrut(4));
 				quests.add(questStatusFilter);
-				quests.add(Box.createVerticalStrut(6));
+				quests.add(Box.createVerticalStrut(10));
 			}
+			quests.add(heading(PanelSections.NEXT_QUEST.title()));
+			quests.add(nextQuestBlock(nextQuest));
+			quests.add(Box.createVerticalStrut(14));
+			quests.add(heading(PanelSections.QUEST_VERDICT.title()));
 			quests.add(questResults);
 			fillQuestResults(verdicts);
 			renderPlannedSectionsFor(PanelSections.Tab.QUESTS);
@@ -713,7 +739,12 @@ class QuestpathPanel extends PluginPanel
 	 */
 	private static final int MAX_QUEST_SECTIONS = 8;
 
-	private static JPanel itemsBlock(QuestItems items, String filter)
+	/**
+	 * Not static, unlike the rest of this method's history -- it needs
+	 * {@link #shortestPathBridge} and {@link #reportRouteOutcome} to draw and
+	 * wire the route button below.
+	 */
+	private JPanel itemsBlock(QuestItems items, String filter)
 	{
 		JPanel panel = column();
 
@@ -769,6 +800,12 @@ class QuestpathPanel extends PluginPanel
 				panel.add(row);
 			}
 			panel.add(Box.createVerticalStrut(12));
+		}
+
+		if (!filtering)
+		{
+			panel.add(shopRouteButton(items));
+			panel.add(Box.createVerticalStrut(8));
 		}
 
 		// One shopping list first, the per-quest breakdown after. Coins wanted
@@ -892,6 +929,110 @@ class QuestpathPanel extends PluginPanel
 		}
 
 		return panel;
+	}
+
+	/**
+	 * One button: hand the shops selling what the plan still needs to
+	 * Shortest Path as a target set.
+	 *
+	 * <p>Its label carries the reason whenever it is disabled, same as
+	 * {@link #questHelperMenu}'s items -- a disabled Swing component
+	 * receives no mouse events, so a tooltip on a disabled button would
+	 * never show either.
+	 *
+	 * <p>Destinations are drawn from every unsatisfied {@link
+	 * QuestItems.Total} on the current shopping list, resolved through
+	 * {@link #shopLocator} -- which is null-safe by name, not by shop: an
+	 * item whose {@code shopNames()} is empty, or whose names do not resolve
+	 * against the bundled graph's own shop table, simply contributes
+	 * nothing, so a wholly unplaceable list degrades to the same disabled,
+	 * honest state {@link ShortestPathBridge}'s class doc describes for a
+	 * bundle version too old to carry shop data at all.
+	 */
+	private JButton shopRouteButton(QuestItems items)
+	{
+		Set<WorldPoint> destinations = shopDestinations(items);
+
+		JButton button = new JButton();
+		button.setFont(FontManager.getRunescapeSmallFont());
+		button.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+		if (destinations.isEmpty())
+		{
+			button.setText("No known shop sells what you still need");
+			button.setEnabled(false);
+			return button;
+		}
+
+		ShortestPathBridge.Availability availability = shortestPathBridge.availability();
+		button.setText(availability.menuLabel());
+		button.setEnabled(availability == ShortestPathBridge.Availability.AVAILABLE);
+		button.addActionListener(event -> shortestPathBridge.route(destinations,
+			outcome -> SwingUtilities.invokeLater(() -> reportRouteOutcome(outcome))));
+		return button;
+	}
+
+	/**
+	 * Every shop worth walking to for the current shopping list: the shops
+	 * selling something still outstanding, resolved to a tile.
+	 *
+	 * <p>Computed only when {@link #itemsBlock} rebuilds -- which is gated
+	 * on {@link QuestItems#signature()}, not on every render -- so this never
+	 * scales with how often the panel repaints, only with how often the
+	 * shopping list actually changes.
+	 */
+	private Set<WorldPoint> shopDestinations(QuestItems items)
+	{
+		if (items == null)
+		{
+			return Collections.emptySet();
+		}
+		Set<WorldPoint> destinations = new java.util.LinkedHashSet<>();
+		for (QuestItems.Total total : items.totals())
+		{
+			if (total.satisfied())
+			{
+				continue;
+			}
+			for (String shopName : total.shopNames())
+			{
+				WorldPoint point = shopLocator.apply(shopName);
+				if (point != null)
+				{
+					destinations.add(point);
+				}
+			}
+		}
+		return destinations;
+	}
+
+	/**
+	 * Turns a {@link ShortestPathBridge.RouteOutcome} into what the player
+	 * sees. {@link ShortestPathBridge.RouteOutcome#SENT} is not confirmation
+	 * that Shortest Path acted on the route -- see that constant's own doc
+	 * -- so the toast says "sent", never "started" the way Quest Helper's
+	 * confirmed start does.
+	 */
+	private void reportRouteOutcome(ShortestPathBridge.RouteOutcome outcome)
+	{
+		switch (outcome)
+		{
+			case SENT:
+				showToast("Sent your shop route to Shortest Path.");
+				return;
+			case UNAVAILABLE:
+				warn("Shortest Path could not take the route -- it was no longer available"
+					+ " by the time the click landed.");
+				return;
+			case NO_DESTINATIONS:
+				warn("There is nothing to send -- no known shop sells what you still need.");
+				return;
+			case CALL_FAILED:
+				warn("Sending the route to Shortest Path failed. Check the client log.");
+				return;
+			default:
+				// Exhaustive over a closed enum; nothing else to report.
+		}
 	}
 
 	/**
@@ -1351,7 +1492,7 @@ class QuestpathPanel extends PluginPanel
 		JOptionPane.showMessageDialog(this, message, "Quest Path", JOptionPane.WARNING_MESSAGE);
 	}
 
-	/** How long the "started" toast stays up before it dismisses itself. */
+	/** How long a toast stays up before it dismisses itself. */
 	private static final int START_TOAST_MILLIS = 2500;
 
 	/**
@@ -1362,13 +1503,23 @@ class QuestpathPanel extends PluginPanel
 	 */
 	private void showStartConfirmation(String questName)
 	{
+		showToast("Started \"" + questName + "\" in Quest Helper.");
+	}
+
+	/**
+	 * The same brief, non-modal toast {@link #showStartConfirmation} shows,
+	 * generalised for any other "this went fine, no decision to make" line
+	 * -- currently also used by {@link #reportRouteOutcome}.
+	 */
+	private void showToast(String message)
+	{
 		Window owner = SwingUtilities.getWindowAncestor(this);
 		JDialog toast = new JDialog(owner);
 		toast.setUndecorated(true);
 		toast.setModal(false);
 		toast.setFocusableWindowState(false);
 
-		JLabel label = new JLabel(wrap("Started \"" + questName + "\" in Quest Helper."));
+		JLabel label = new JLabel(wrap(message));
 		label.setFont(FontManager.getRunescapeSmallFont());
 		label.setForeground(Color.WHITE);
 		label.setOpaque(true);
@@ -1619,7 +1770,13 @@ class QuestpathPanel extends PluginPanel
 	 * else can produce is what is left after the quests this account can
 	 * actually still do have paid out.
 	 */
-	private static JPanel skillPlanBlock(SkillPlan plan)
+	/**
+	 * Not static, unlike the rest of this method's history -- {@link #band}
+	 * below needs {@link #attachQuestHelperInteractions} to wire its rows up
+	 * to Quest Helper, the same reason {@link #itemsBlock} stopped being
+	 * static.
+	 */
+	private JPanel skillPlanBlock(SkillPlan plan)
 	{
 		JPanel panel = column();
 
@@ -1695,9 +1852,16 @@ class QuestpathPanel extends PluginPanel
 			panel.add(lost);
 		}
 
-		band(panel, "READY NOW", plan.ready(), ColorScheme.PROGRESS_COMPLETE_COLOR);
-		band(panel, "AFTER MORE WORK", plan.later(), ColorScheme.BRAND_ORANGE);
-		band(panel, "OFF THE TABLE", plan.lost(), ColorScheme.PROGRESS_ERROR_COLOR);
+		// Only READY NOW is wired to Quest Helper. SkillPlan has already done
+		// the split that matters: ready() holds only ELIGIBLE/BOOSTABLE
+		// entries, and every later() or lost() entry exists precisely because
+		// it is not startable right now, for reasons this tab already states
+		// as the blocker chain or the build-break warning above. Wiring
+		// those to Quest Helper would only ever open a popup whose one item
+		// is disabled, saying nothing this tab has not already said better.
+		band(panel, "READY NOW", plan.ready(), ColorScheme.PROGRESS_COMPLETE_COLOR, true);
+		band(panel, "AFTER MORE WORK", plan.later(), ColorScheme.BRAND_ORANGE, false);
+		band(panel, "OFF THE TABLE", plan.lost(), ColorScheme.PROGRESS_ERROR_COLOR, false);
 
 		return panel;
 	}
@@ -1705,8 +1869,19 @@ class QuestpathPanel extends PluginPanel
 	/** How many quests one band lists before it says how many more there are. */
 	private static final int MAX_PLAN_ROWS = 8;
 
-	private static void band(JPanel panel, String title, List<SkillPlan.Entry> entries,
-		Color colour)
+	/**
+	 * Not static, unlike the rest of this method's history -- a {@code
+	 * questHelperLinked} band needs {@link #attachQuestHelperInteractions}
+	 * to wire its rows up, the same left-click-to-start, right-click-for-a-
+	 * reason handoff the route panel already gets.
+	 *
+	 * @param questHelperLinked whether this band's rows should be wired to
+	 *     Quest Helper. True only for {@code entries} that are actually
+	 *     startable -- see the call site in {@link #skillPlanBlock} for why
+	 *     that is READY NOW alone.
+	 */
+	private void band(JPanel panel, String title, List<SkillPlan.Entry> entries,
+		Color colour, boolean questHelperLinked)
 	{
 		if (entries.isEmpty())
 		{
@@ -1723,8 +1898,12 @@ class QuestpathPanel extends PluginPanel
 		for (int i = 0; i < shown; i++)
 		{
 			SkillPlan.Entry entry = entries.get(i);
-			addRow(rows, entry.questName(), XpTable.format(Math.round(entry.xp())),
+			JLabel nameLabel = addRow(rows, entry.questName(), XpTable.format(Math.round(entry.xp())),
 				ColorScheme.LIGHT_GRAY_COLOR, blockerTooltip(entry));
+			if (questHelperLinked)
+			{
+				attachQuestHelperInteractions(nameLabel, entry.questName());
+			}
 		}
 		panel.add(rows);
 
@@ -2326,7 +2505,14 @@ class QuestpathPanel extends PluginPanel
 		addRow(grid, label, detail, detailColor, null);
 	}
 
-	private static void addRow(JPanel grid, String label, String detail, Color detailColor, String tooltip)
+	/**
+	 * @return the label cell, so a caller that needs to wire it up further --
+	 *     {@link #band} attaches {@link #attachQuestHelperInteractions} to
+	 *     it -- does not have to rebuild the row itself. Every other caller
+	 *     ignores the return value, which is why every one of them still
+	 *     compiles as a bare statement unchanged.
+	 */
+	private static JLabel addRow(JPanel grid, String label, String detail, Color detailColor, String tooltip)
 	{
 		GridBagConstraints c = new GridBagConstraints();
 		c.gridx = 0;
@@ -2349,6 +2535,7 @@ class QuestpathPanel extends PluginPanel
 			right.setToolTipText(tooltip);
 		}
 		grid.add(right, c);
+		return left;
 	}
 
 	private static String skillName(Skill skill)

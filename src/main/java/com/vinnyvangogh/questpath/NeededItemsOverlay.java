@@ -34,14 +34,36 @@ class NeededItemsOverlay extends QuestpathOverlay
 	/** Held-item grid slots before the panel switches to "and N more". */
 	private static final int MAX_HELD_CELLS = 12;
 
-	NeededItemsOverlay(QuestpathPlugin plugin, QuestpathConfig config, OverlayIcons icons)
+	/** Held only to ask whether the bank is open; see {@link #enabled}. */
+	private final net.runelite.api.Client client;
+
+	NeededItemsOverlay(QuestpathPlugin plugin, QuestpathConfig config, OverlayIcons icons,
+		net.runelite.api.Client client)
 	{
 		super(plugin, config, icons, "Everything you need");
+		this.client = client;
 	}
 
+	/**
+	 * On, except while the bank list is up.
+	 *
+	 * <p>{@link BankListOverlay} draws the same merged list, ordered for a
+	 * bank screen. With both switched on and the bank open the player got two
+	 * near-identical panels on top of each other. This is one feature with
+	 * two presentations rather than two features: opening the bank swaps
+	 * which one is showing instead of adding a second.
+	 *
+	 * <p>The bank test is BankListOverlay's own, called rather than copied.
+	 * Two copies would be free to disagree, and both ways they could are
+	 * visible -- overlapping panels, or no panel at all.
+	 */
 	@Override
 	boolean enabled(QuestpathConfig config)
 	{
+		if (config.bankList() && BankListOverlay.bankIsOpen(client))
+		{
+			return false;
+		}
 		return config.overlayItems();
 	}
 
@@ -122,7 +144,7 @@ class NeededItemsOverlay extends QuestpathOverlay
 
 		// The shopping trip's size, first thing on the panel: how much of the
 		// merged list is already covered.
-		rows.add(OverlayRow.bar("Items held", satisfiedCount + " / " + totals.size(),
+		rows.add(OverlayRow.bar("Covered", satisfiedCount + " / " + totals.size(),
 			totals.isEmpty() ? 1.0 : (double) satisfiedCount / totals.size(),
 			// Green only when nothing is outstanding at all. Started items are
 			// no longer in shortItems, so testing that alone would turn the

@@ -69,6 +69,21 @@ class BankListOverlay extends QuestpathOverlay
 	 */
 	private boolean bankOpen()
 	{
+		return bankIsOpen(client);
+	}
+
+	/**
+	 * Whether the bank is on screen, as the single place that decides it.
+	 *
+	 * <p>Shared with {@link NeededItemsOverlay}, which stands down while this
+	 * panel is up so the two near-identical lists are never drawn at once. A
+	 * second copy of this test would be free to disagree with this one, and
+	 * both ways it could disagree are visible to the player: two overlapping
+	 * panels, or -- worse, because it reads as the feature being broken
+	 * rather than the check -- no panel at all.
+	 */
+	static boolean bankIsOpen(Client client)
+	{
 		if (client == null)
 		{
 			return false;

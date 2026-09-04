@@ -5,6 +5,7 @@ import java.util.List;
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -84,22 +85,33 @@ public class QuestGraphTest
 	 * would silently start parsing an old bundle's missing field as an
 	 * absence rather than refusing the bundle outright -- 2 added
 	 * Item.sources(), 3 added Item.itemId(), 4 added Item.unresolved(),
-	 * 5 added boosts(), 6 added prerequisites_started_only.
+	 * 5 added boosts(), 6 added prerequisites_started_only, 7 added shops
+	 * and Item.shop_names, 8 added Quest.start_x/start_y.
 	 *
-	 * <p>5 and 6 are the two that most need refusing rather than tolerating,
-	 * and for the same reason: both carry information whose *absence* reads
-	 * as a confident answer rather than as a gap. A requirement's boostable
-	 * flag permits a boost and never says how large one can be, so a bundle
-	 * without the boost table cannot tell a one-level shortfall from a
-	 * fifty-level one. A bundle without prerequisites_started_only cannot
-	 * tell "needs Desert Treasure I finished" from "needs it merely begun",
-	 * so it demands completion of a quest that only has to be started, and
-	 * blocks something the account can genuinely do.
+	 * <p>5, 6, 7 and 8 are the four that most need refusing rather than
+	 * tolerating, and for the same reason: each carries information whose
+	 * *absence* reads as a confident answer rather than as a gap. A
+	 * requirement's boostable flag permits a boost and never says how large
+	 * one can be, so a bundle without the boost table cannot tell a
+	 * one-level shortfall from a fifty-level one. A bundle without
+	 * prerequisites_started_only cannot tell "needs Desert Treasure I
+	 * finished" from "needs it merely begun", so it demands completion of a
+	 * quest that only has to be started, and blocks something the account
+	 * can genuinely do. A bundle without shops and shop_names would parse an
+	 * item's outstanding shops as "cannot be bought anywhere" rather than
+	 * "this build does not carry that field yet" -- and the first of those
+	 * is exactly the wrong answer to feed a shortest-path button. A bundle
+	 * without start_x/start_y has nothing for {@link QuestGraph.Quest#hasStart()}
+	 * to read but absence either way, which happens to degrade safely here --
+	 * the arrival prompt simply never fires -- but only because {@code
+	 * hasStart()} exists to be checked at all; refusing the version outright
+	 * is what stops a future field from being added the same way and quietly
+	 * misread.
 	 */
 	@Test
-	public void supportedVersionWasBumpedForStartedOnlyPrerequisites()
+	public void supportedVersionWasBumpedForQuestStartPoints()
 	{
-		assertEquals(6, QuestGraph.SUPPORTED_VERSION);
+		assertEquals(8, QuestGraph.SUPPORTED_VERSION);
 	}
 
 	/**
@@ -134,5 +146,123 @@ public class QuestGraphTest
 			+ "\"items\":[{\"name\":\"Ashes\",\"item_id\":592}]}]}", QuestGraph.class);
 
 		assertFalse(graph.quests().get(0).items().get(0).unresolved());
+	}
+
+	/**
+	 * The top-level shop table version 7 introduced: a name to match against
+	 * an item's shop_names and a tile a pathfinder can actually walk to.
+	 */
+	@Test
+	public void parsesTheShopTable()
+	{
+		QuestGraph graph = GSON.fromJson("{\"version\":7,\"quests\":[],"
+			+ "\"shops\":[{\"name\":\"Tynan's Fishing Supplies\",\"x\":3053,\"y\":3237,\"town\":\"Catherby\"}]}",
+			QuestGraph.class);
+
+		QuestGraph.Shop shop = graph.shops().get(0);
+		assertEquals("Tynan's Fishing Supplies", shop.name());
+		assertEquals(3053, shop.x());
+		assertEquals(3237, shop.y());
+		assertEquals("Catherby", shop.town());
+		assertEquals(0, shop.plane());
+	}
+
+	/** A graph with no shops key at all -- an older export -- parses to an empty list, never null. */
+	@Test
+	public void aGraphWithNoShopsKeyParsesToAnEmptyList()
+	{
+		QuestGraph graph = GSON.fromJson("{\"version\":7,\"quests\":[]}", QuestGraph.class);
+
+		assertTrue(graph.shops().isEmpty());
+	}
+
+	/**
+	 * An item's shop_names names shops in the graph's own shop table by exact
+	 * string, which {@link QuestGraph#shop} resolves back to a tile.
+	 */
+	@Test
+	public void anItemsShopNamesResolveAgainstTheShopTable()
+	{
+		QuestGraph graph = GSON.fromJson("{\"version\":7,\"quests\":[{\"id\":1,\"slug\":\"a\",\"name\":\"A\","
+			+ "\"items\":[{\"name\":\"Bucket\",\"shop_names\":[\"Tynan's Fishing Supplies\"]}]}],"
+			+ "\"shops\":[{\"name\":\"Tynan's Fishing Supplies\",\"x\":3053,\"y\":3237,\"town\":\"Catherby\"}]}",
+			QuestGraph.class);
+
+		List<String> shopNames = graph.quests().get(0).items().get(0).shopNames();
+		assertEquals(1, shopNames.size());
+		QuestGraph.Shop shop = graph.shop(shopNames.get(0));
+		assertEquals(3053, shop.x());
+		assertEquals(3237, shop.y());
+	}
+
+	/** An item with no shop_names key parses to an empty list, never null. */
+	@Test
+	public void anItemWithNoShopNamesKeyParsesToAnEmptyList()
+	{
+		QuestGraph graph = GSON.fromJson("{\"version\":7,\"quests\":[{\"id\":1,\"slug\":\"a\",\"name\":\"A\","
+			+ "\"items\":[{\"name\":\"Rope\"}]}]}", QuestGraph.class);
+
+		assertTrue(graph.quests().get(0).items().get(0).shopNames().isEmpty());
+	}
+
+	/** A shop name the graph does not carry resolves to null, never a fabricated tile. */
+	@Test
+	public void anUnknownShopNameResolvesToNull()
+	{
+		QuestGraph graph = GSON.fromJson("{\"version\":7,\"quests\":[]}", QuestGraph.class);
+
+		assertNull(graph.shop("Nobody's Shop"));
+	}
+
+	/**
+	 * The quest start point version 8 introduced: where the quest begins,
+	 * not any per-step location -- see {@link QuestGraph#SUPPORTED_VERSION}'s
+	 * own doc for why that distinction matters.
+	 */
+	@Test
+	public void parsesAQuestsStartPoint()
+	{
+		QuestGraph graph = GSON.fromJson("{\"version\":8,\"quests\":[{\"id\":1,\"slug\":\"a\",\"name\":\"A\","
+			+ "\"start_x\":3208,\"start_y\":3214}]}", QuestGraph.class);
+
+		QuestGraph.Quest quest = graph.quests().get(0);
+		assertTrue(quest.hasStart());
+		assertEquals(3208, quest.startX());
+		assertEquals(3214, quest.startY());
+	}
+
+	/**
+	 * A quest with neither start_x nor start_y -- 13 of 218 in the real
+	 * bundle -- must report hasStart() false rather than a fabricated (0, 0),
+	 * which is itself a real, walkable tile.
+	 */
+	@Test
+	public void aQuestWithNoStartKeysReportsNoStart()
+	{
+		QuestGraph graph = GSON.fromJson("{\"version\":8,\"quests\":[{\"id\":1,\"slug\":\"a\",\"name\":\"A\"}]}",
+			QuestGraph.class);
+
+		QuestGraph.Quest quest = graph.quests().get(0);
+		assertFalse(quest.hasStart());
+	}
+
+	/** One quest by its exact name, the lookup the arrival trigger reads from. */
+	@Test
+	public void resolvesAQuestByExactName()
+	{
+		QuestGraph graph = GSON.fromJson("{\"version\":8,\"quests\":[{\"id\":1,\"slug\":\"a\",\"name\":\"Cook's Assistant\","
+			+ "\"start_x\":3208,\"start_y\":3214}]}", QuestGraph.class);
+
+		QuestGraph.Quest quest = graph.byName("Cook's Assistant");
+		assertEquals(3208, quest.startX());
+	}
+
+	/** A quest name the graph does not carry resolves to null, never a fabricated quest. */
+	@Test
+	public void anUnknownQuestNameResolvesToNull()
+	{
+		QuestGraph graph = GSON.fromJson("{\"version\":8,\"quests\":[]}", QuestGraph.class);
+
+		assertNull(graph.byName("Nobody's Quest"));
 	}
 }

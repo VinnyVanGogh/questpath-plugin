@@ -495,6 +495,23 @@ public interface QuestpathConfig extends Config
 		return OverlayTheme.WARN;
 	}
 
+	@ConfigItem(
+		keyName = "shopArrivalPrompt",
+		name = "Say when a shop sells what you need",
+		description = "One chat line the moment you open a shop selling something your plan"
+			+ " still needs. Not distance-based proximity -- this only notices a shop once its"
+			+ " interface is open, never before you walk up to it -- and it says so once per"
+			+ " visit, not every tick.",
+		section = shopSection,
+		position = 4
+	)
+	default boolean shopArrivalPrompt()
+	{
+		// Off by default, like every notification-shaped toggle in this
+		// plugin -- see chatOnItemComplete and autoAdvanceQuestHelper.
+		return false;
+	}
+
 	// ------------------------------------------------------------------
 	// Ground items.
 	//
@@ -653,6 +670,25 @@ public interface QuestpathConfig extends Config
 		// Off by default. Starting something in another plugin unasked is
 		// intrusive, however welcome it usually is a moment after finishing
 		// the quest before it.
+		return false;
+	}
+
+	@ConfigItem(
+		keyName = "questHelperArrivalPrompt",
+		name = "Open Quest Helper on arrival",
+		description = "When you walk within a few tiles of the start of the next quest on your"
+			+ " saved route, open it in Quest Helper automatically -- only if Quest Helper reports"
+			+ " it available. Says what it did in the chat, once per arrival, never on login or a"
+			+ " resync. This gets you to the door; Quest Helper's own arrow does the rest, because"
+			+ " questpath has no per-step locations to guide you with.",
+		section = questHelperSection,
+		position = 2
+	)
+	default boolean questHelperArrivalPrompt()
+	{
+		// Off by default, same reason autoAdvanceQuestHelper is: opening
+		// another plugin's UI unasked is intrusive, however welcome it
+		// usually is the moment you actually arrive.
 		return false;
 	}
 

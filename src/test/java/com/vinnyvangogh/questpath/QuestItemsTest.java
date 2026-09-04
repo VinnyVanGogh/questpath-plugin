@@ -632,6 +632,109 @@ public class QuestItemsTest
 	}
 
 	/**
+	 * The bundled graph carries shop names -- resolvable against {@link
+	 * QuestGraph#shop} -- for most items with a known shop source, and
+	 * QuestItems must carry them through onto both the per-quest line and
+	 * the merged total, the same path {@link #obtainSourcesReachBothTheLineAndItsTotal}
+	 * pins for the display-string sources. This is the path {@link
+	 * QuestpathPanel}'s shop-route button reads to build a real {@code
+	 * Set<WorldPoint>} for Shortest Path.
+	 */
+	@Test
+	public void shopNamesReachBothTheLineAndItsTotal() throws Exception
+	{
+		QuestGraph graph = graph();
+
+		String itemWithShop = null;
+		for (QuestGraph.Quest quest : graph.quests())
+		{
+			for (QuestGraph.Item item : quest.items())
+			{
+				if (!item.shopNames().isEmpty())
+				{
+					itemWithShop = item.name();
+					break;
+				}
+			}
+			if (itemWithShop != null)
+			{
+				break;
+			}
+		}
+		assertNotNull("the bundled graph carries no item with a known shop at all", itemWithShop);
+
+		QuestItems items = QuestItems.of(graph, freshAccount(), Collections.emptyMap(), true);
+
+		boolean lineHadShop = false;
+		for (QuestItems.QuestNeeds needs : items.quests())
+		{
+			for (QuestItems.Line line : needs.lines())
+			{
+				if (line.name().equals(itemWithShop))
+				{
+					assertFalse(line.shopNames().isEmpty());
+					for (String shopName : line.shopNames())
+					{
+						assertNotNull("every shop name a Line carries must resolve against the graph's own"
+							+ " shop table", graph.shop(shopName));
+					}
+					lineHadShop = true;
+				}
+			}
+		}
+		assertTrue("the item was in the graph with a shop but no line carried it", lineHadShop);
+
+		boolean totalHadShop = false;
+		for (QuestItems.Total total : items.totals())
+		{
+			if (total.name().equals(itemWithShop))
+			{
+				assertFalse(total.shopNames().isEmpty());
+				totalHadShop = true;
+			}
+		}
+		assertTrue("the item's total did not carry its shop names", totalHadShop);
+	}
+
+	/**
+	 * An item the wiki gives no shop for must carry none through -- never an
+	 * empty placeholder mistaken for "not loaded" and never an invented one.
+	 */
+	@Test
+	public void anItemWithNoKnownShopCarriesAnEmptyListNotNull() throws Exception
+	{
+		QuestGraph graph = graph();
+
+		String itemWithoutShop = null;
+		outer:
+		for (QuestGraph.Quest quest : graph.quests())
+		{
+			for (QuestGraph.Item item : quest.items())
+			{
+				if (item.shopNames().isEmpty())
+				{
+					itemWithoutShop = item.name();
+					break outer;
+				}
+			}
+		}
+		assertNotNull("the bundled graph has no item lacking a shop; nothing to pin here", itemWithoutShop);
+
+		QuestItems items = QuestItems.of(graph, freshAccount(), Collections.emptyMap(), true);
+		for (QuestItems.QuestNeeds needs : items.quests())
+		{
+			for (QuestItems.Line line : needs.lines())
+			{
+				if (line.name().equals(itemWithoutShop))
+				{
+					assertNotNull(line.shopNames());
+					assertTrue(line.shopNames().isEmpty());
+				}
+			}
+		}
+	}
+
+	/**
 	 * A line questpath could not match to an item is listed but not counted.
 	 *
 	 * It cannot be ticked -- there is nothing to tick it against -- so

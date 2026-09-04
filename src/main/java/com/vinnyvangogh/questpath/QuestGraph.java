@@ -41,9 +41,38 @@ class QuestGraph
 	 * one. 4 added Item.unresolved(), the wiki lines the catalogue could not
 	 * place -- 354 of 1,301 -- which used to be dropped from the bundle
 	 * without trace, leaving every quest's item list quietly short while
-	 * presenting itself as the list.
+	 * presenting itself as the list. 5 added boosts(). 6 added
+	 * prerequisitesStartedOnly().
+	 *
+	 * <p>7 added shops() and Item.shopNames(): a top-level table of 166 shops
+	 * with a walkable tile, and per-item the names of the shops in that table
+	 * which sell it. Before this, an item's sources() were display strings
+	 * only -- "Shop: Tynan's Fishing Supplies (2 Coins)" -- with nothing a
+	 * pathfinder could walk to, which is why {@link ShortestPathBridge} had
+	 * no real destinations to hand Shortest Path and the Items tab's own
+	 * route button stayed permanently disabled. A bundle missing this field
+	 * would parse an item's shop names as absent rather than "not sent yet",
+	 * which is indistinguishable from "this item cannot be bought" -- exactly
+	 * the confident-wrong-answer shape every earlier bump exists to refuse.
+	 *
+	 * <p>8 added Quest.startX()/startY(): where the quest itself begins, for
+	 * 205 of 218 quests. These are the quest's *start*, never a per-step
+	 * location -- the wiki publishes no per-step coordinates, questpath's own
+	 * attempt to derive them placed only 16% of 7,327 steps, and Quest
+	 * Helper hand-writes every step location instead, fifteen {@code
+	 * WorldPoint}s in Cook's Assistant alone. That gap is exactly why this
+	 * plugin hands a quest off to Quest Helper once the player reaches its
+	 * door rather than trying to guide them through it: getting someone to
+	 * the start is a coordinate this bundle can carry honestly, and guiding
+	 * them through the quest is not. (0, 0) is a real tile on the game's own
+	 * grid, so the 13 quests with no known start omit both keys rather than
+	 * sending zeros, and a parser that read a missing key as zero would send
+	 * someone confidently to the game's origin. A bundle older than 8 has no
+	 * start field to fall back to at all, which is exactly why an older
+	 * bundle must be refused rather than read as "no quest has a start" --
+	 * that is a different, false claim from "this build does not know yet".
 	 */
-	static final int SUPPORTED_VERSION = 6;
+	static final int SUPPORTED_VERSION = 8;
 
 	@SerializedName("version")
 	private int version;
@@ -53,6 +82,63 @@ class QuestGraph
 
 	@SerializedName("boosts")
 	private List<Boost> boosts;
+
+	@SerializedName("shops")
+	private List<Shop> shops;
+
+	/**
+	 * One place to buy something, as the verdict engine's caller needs it: a
+	 * name to match against {@link Item#shopNames()} and a tile to hand a
+	 * pathfinder.
+	 *
+	 * Only shops questpath could place carry a coordinate at all -- see
+	 * {@link #shops()} -- so every {@code Shop} this class parses is a real,
+	 * walkable destination, never a placeholder.
+	 */
+	static class Shop
+	{
+		@SerializedName("name")
+		private String name;
+
+		@SerializedName("x")
+		private int x;
+
+		@SerializedName("y")
+		private int y;
+
+		@SerializedName("plane")
+		private int plane;
+
+		@SerializedName("town")
+		private String town;
+
+		String name()
+		{
+			return name == null ? "" : name;
+		}
+
+		int x()
+		{
+			return x;
+		}
+
+		int y()
+		{
+			return y;
+		}
+
+		/** The height level. 0 for ground floor, which is nearly every shop. */
+		int plane()
+		{
+			return plane;
+		}
+
+		/** The wiki's own name for where this is, or empty when it resolved to none. */
+		String town()
+		{
+			return town == null ? "" : town;
+		}
+	}
 
 	/**
 	 * One temporary skill boost, with the size the requirement flag never
@@ -133,6 +219,19 @@ class QuestGraph
 		@SerializedName("members")
 		private boolean members;
 
+		/**
+		 * Boxed, not primitive: 13 of 218 quests carry neither key at all
+		 * rather than a zero, because (0, 0) is a real, walkable tile on the
+		 * game's own grid and a primitive default of 0 would be
+		 * indistinguishable from it. {@link #hasStart()} is the only safe way
+		 * to ask whether this quest has one.
+		 */
+		@SerializedName("start_x")
+		private Integer startX;
+
+		@SerializedName("start_y")
+		private Integer startY;
+
 		@SerializedName("prerequisites")
 		private List<Long> prerequisites;
 
@@ -166,6 +265,44 @@ class QuestGraph
 		boolean members()
 		{
 			return members;
+		}
+
+		/**
+		 * Whether this quest carries a start point at all.
+		 *
+		 * 13 of 218 quests do not -- the wiki gave questpath's exporter
+		 * nothing to place -- and {@link #startX()}/{@link #startY()} are
+		 * meaningless for those; a caller must check this first, the same
+		 * way a shop lookup must check for null rather than trust a zeroed
+		 * coordinate.
+		 */
+		boolean hasStart()
+		{
+			return startX != null && startY != null;
+		}
+
+		/**
+		 * The quest's start point x tile. Meaningless unless {@link
+		 * #hasStart()} -- see that method's doc for why 0 is never a safe
+		 * default here.
+		 *
+		 * <p>This is where the quest <i>begins</i>, never a per-step location:
+		 * the wiki publishes no per-step coordinates, questpath's own attempt
+		 * to derive them placed only 16% of 7,327 steps, and Quest Helper
+		 * hand-writes every step location instead -- fifteen {@code
+		 * WorldPoint}s in Cook's Assistant alone. The honest use of this
+		 * field is getting a player to the door and handing off, never
+		 * drawing a route through the quest itself.
+		 */
+		int startX()
+		{
+			return startX == null ? 0 : startX;
+		}
+
+		/** The quest's start point y tile. See {@link #startX()}. */
+		int startY()
+		{
+			return startY == null ? 0 : startY;
 		}
 
 		List<Long> prerequisites()
@@ -227,6 +364,9 @@ class QuestGraph
 
 		@SerializedName("sources")
 		private List<String> sources;
+
+		@SerializedName("shop_names")
+		private List<String> shopNames;
 
 		String name()
 		{
@@ -295,6 +435,20 @@ class QuestGraph
 		{
 			return sources == null ? Collections.emptyList() : sources;
 		}
+
+		/**
+		 * The shops in {@link QuestGraph#shops()} that sell this, best first.
+		 *
+		 * Names only, matched against {@link Shop#name()} exactly -- questpath
+		 * emits both from the same lookup, so every name here is guaranteed to
+		 * resolve against the graph's own shop table. Empty when nothing
+		 * placeable sells this, which the caller must render as no route
+		 * available, never as one with a shop that goes nowhere.
+		 */
+		List<String> shopNames()
+		{
+			return shopNames == null ? Collections.emptyList() : shopNames;
+		}
 	}
 
 	/** A skill level a quest demands. */
@@ -351,6 +505,8 @@ class QuestGraph
 	}
 
 	private Map<Long, Quest> byId;
+	private Map<String, Quest> byName;
+	private Map<String, Shop> shopsByName;
 
 	int version()
 	{
@@ -368,6 +524,33 @@ class QuestGraph
 		return boosts == null ? Collections.emptyList() : boosts;
 	}
 
+	/**
+	 * Every shop the bundle's items can actually be bought at.
+	 *
+	 * Only shops with a real coordinate appear at all -- questpath does not
+	 * export one it could not place -- so every entry here is a genuine
+	 * destination, never a placeholder waiting on a tile nobody supplied.
+	 */
+	List<Shop> shops()
+	{
+		return shops == null ? Collections.emptyList() : shops;
+	}
+
+	/** One shop by its exact name, or null when the graph does not carry it. */
+	Shop shop(String name)
+	{
+		if (shopsByName == null)
+		{
+			Map<String, Shop> index = new LinkedHashMap<>();
+			for (Shop shop : shops())
+			{
+				index.put(shop.name(), shop);
+			}
+			shopsByName = index;
+		}
+		return shopsByName.get(name);
+	}
+
 	/** One quest by id, or null when the graph does not carry it. */
 	Quest get(long id)
 	{
@@ -381,6 +564,28 @@ class QuestGraph
 			byId = index;
 		}
 		return byId.get(id);
+	}
+
+	/**
+	 * One quest by its exact name, or null when the graph does not carry it.
+	 *
+	 * Names rather than ids because that is what the client and the saved
+	 * route both speak -- {@code net.runelite.api.Quest#getName()} and
+	 * {@code NextQuestStatus.Step#questName()} are both game-name strings,
+	 * never questpath's rowids.
+	 */
+	Quest byName(String name)
+	{
+		if (byName == null)
+		{
+			Map<String, Quest> index = new LinkedHashMap<>();
+			for (Quest quest : quests())
+			{
+				index.put(quest.name(), quest);
+			}
+			byName = index;
+		}
+		return byName.get(name);
 	}
 
 	/**

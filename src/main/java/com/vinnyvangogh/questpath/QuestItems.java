@@ -135,6 +135,7 @@ class QuestItems
 		private final boolean optional;
 		private final boolean unresolved;
 		private final List<String> sources;
+		private final List<String> shopNames;
 
 		Line(String name, int itemId, int wanted, long owned, boolean optional, List<String> sources)
 		{
@@ -144,6 +145,13 @@ class QuestItems
 		Line(String name, int itemId, int wanted, long owned, boolean optional, boolean unresolved,
 			List<String> sources)
 		{
+			this(name, itemId, wanted, owned, optional, unresolved, sources, null);
+		}
+
+		/** The full shape: every line the bundle can carry, including where to walk to buy it. */
+		Line(String name, int itemId, int wanted, long owned, boolean optional, boolean unresolved,
+			List<String> sources, List<String> shopNames)
+		{
 			this.name = name;
 			this.itemId = itemId;
 			this.wanted = wanted;
@@ -151,6 +159,7 @@ class QuestItems
 			this.optional = optional;
 			this.unresolved = unresolved;
 			this.sources = sources;
+			this.shopNames = shopNames;
 		}
 
 		/**
@@ -196,6 +205,16 @@ class QuestItems
 		List<String> sources()
 		{
 			return sources == null ? java.util.Collections.emptyList() : sources;
+		}
+
+		/**
+		 * The shops -- by name, matched against {@link QuestGraph#shop} -- that
+		 * sell this. Empty when questpath knows no placeable shop for it, which
+		 * a shortest-path caller must render as no route, never as an empty one.
+		 */
+		List<String> shopNames()
+		{
+			return shopNames == null ? java.util.Collections.emptyList() : shopNames;
 		}
 
 		long owned()
@@ -490,7 +509,7 @@ class QuestItems
 			{
 				long owned = held.getOrDefault(item.name().toLowerCase(), 0L);
 				needs.lines.add(new Line(item.name(), item.itemId(), item.quantity(), owned,
-					item.optional(), item.unresolved(), item.sources()));
+					item.optional(), item.unresolved(), item.sources(), item.shopNames()));
 			}
 			out.quests.add(needs);
 		}
@@ -646,7 +665,7 @@ class QuestItems
 						held.getOrDefault(name.toLowerCase(), 0L),
 						carried == null ? 0L : carried.getOrDefault(name.toLowerCase(), 0L),
 						placeholders != null && placeholders.contains(name.toLowerCase()),
-						line.sources()));
+						line.sources(), line.shopNames()));
 				total.add(line, needs.questName());
 			}
 		}
@@ -734,6 +753,7 @@ class QuestItems
 		private final long carried;
 		private final boolean placeholder;
 		private final List<String> sources;
+		private final List<String> shopNames;
 		private final List<String> questNames = new ArrayList<>();
 		private int wanted;
 		private int quests;
@@ -742,12 +762,20 @@ class QuestItems
 		Total(String name, int itemId, long owned, long carried, boolean placeholder,
 			List<String> sources)
 		{
+			this(name, itemId, owned, carried, placeholder, sources, null);
+		}
+
+		/** The full shape: every field a Total can carry, including where to walk to buy it. */
+		Total(String name, int itemId, long owned, long carried, boolean placeholder,
+			List<String> sources, List<String> shopNames)
+		{
 			this.name = name;
 			this.itemId = itemId;
 			this.owned = owned;
 			this.carried = carried;
 			this.placeholder = placeholder;
 			this.sources = sources;
+			this.shopNames = shopNames;
 		}
 
 		/** Convenience for callers with no placeholder to report -- mainly tests. */
@@ -786,6 +814,16 @@ class QuestItems
 		List<String> sources()
 		{
 			return sources == null ? java.util.Collections.emptyList() : sources;
+		}
+
+		/**
+		 * The shops -- see {@link Line#shopNames()} -- that sell this. Every
+		 * Line folded into a Total shares one item name and therefore one shop
+		 * list; this is simply the first one seen.
+		 */
+		List<String> shopNames()
+		{
+			return shopNames == null ? java.util.Collections.emptyList() : shopNames;
 		}
 
 		/**
