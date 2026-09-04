@@ -46,6 +46,7 @@ import net.runelite.client.game.SkillIconManager;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
+import net.runelite.client.plugins.PluginManager;
 import net.runelite.api.gameval.VarPlayerID;
 import net.runelite.client.ui.ClientToolbar;
 import net.runelite.client.ui.NavigationButton;
@@ -76,6 +77,10 @@ public class QuestpathPlugin extends Plugin
 
 	@Inject
 	private ClientToolbar clientToolbar;
+
+	/** Used to find the running Quest Helper plugin, if any -- see {@link QuestHelperBridge}. */
+	@Inject
+	private PluginManager pluginManager;
 
 	@Inject
 	private ClientThread clientThread;
@@ -256,6 +261,13 @@ public class QuestpathPlugin extends Plugin
 	private NavigationButton navButton;
 
 	/**
+	 * Built once in {@link #startUp}, not injected: it needs
+	 * {@code pluginManager} wired into two lambdas, not a RuneLite instance
+	 * of its own. See its class doc for why it exists at all.
+	 */
+	private QuestHelperBridge questHelperBridge;
+
+	/**
 	 * The bank, inventory and equipment as last seen. Not re-read on demand:
 	 * the client does not hold the bank's contents until it has been opened.
 	 */
@@ -338,8 +350,10 @@ public class QuestpathPlugin extends Plugin
 	{
 		watchdog = new EdtWatchdog(scheduler);
 		watchdog.start();
+		questHelperBridge = new QuestHelperBridge(pluginManager::getPlugins,
+			plugin -> pluginManager.isPluginEnabled((Plugin) plugin));
 		panel = new QuestpathPanel(sprites, new OverlaySettingsPanel(config, configManager),
-			this::skillPlan);
+			this::skillPlan, questHelperBridge);
 		navButton = NavigationButton.builder()
 			.tooltip("Quest Path")
 			.icon(icon())

@@ -23,7 +23,10 @@ import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JProgressBar;
 import javax.swing.JSpinner;
 import javax.swing.SpinnerNumberModel;
@@ -191,11 +194,23 @@ class QuestpathPanel extends PluginPanel
 	private final JPanel itemResults = new JPanel();
 	private QuestItems lastItems;
 
+	/**
+	 * Answers whether a quest can be handed to Quest Helper, and does the
+	 * handing-off. Queried lazily, on the right-click that needs it, never at
+	 * render time -- the quest browser lists all 218 quests and rebuilds on
+	 * every quest completion, and none of them should pay for a plugin scan
+	 * and two reflective calls when the popup for the other 217 will never
+	 * open. See {@link QuestHelperBridge}.
+	 */
+	private final QuestHelperBridge questHelperBridge;
+
 	QuestpathPanel(SpriteManager sprites, OverlaySettingsPanel overlaySettings,
-		java.util.function.BiFunction<String, Integer, SkillPlan> planner)
+		java.util.function.BiFunction<String, Integer, SkillPlan> planner,
+		QuestHelperBridge questHelperBridge)
 	{
 		this.overlaySettings = overlaySettings;
 		this.planner = planner;
+		this.questHelperBridge = questHelperBridge;
 		setLayout(new BorderLayout());
 		setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
 
@@ -1021,7 +1036,7 @@ class QuestpathPanel extends PluginPanel
 		questResults.add(verdictBlock(verdicts, questSearch.getText(), selectedStatusFilter()));
 	}
 
-	private static JPanel verdictBlock(QuestVerdicts verdicts, String filter, QuestStatus statusFilter)
+	private JPanel verdictBlock(QuestVerdicts verdicts, String filter, QuestStatus statusFilter)
 	{
 		JPanel panel = column();
 
@@ -1103,6 +1118,7 @@ class QuestpathPanel extends PluginPanel
 				JLabel row = row(quest.name());
 				row.setFont(FontManager.getRunescapeSmallFont());
 				row.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
+				attachQuestHelperMenu(row, quest.name());
 				panel.add(row);
 			}
 		}
@@ -1114,6 +1130,75 @@ class QuestpathPanel extends PluginPanel
 		}
 
 		return panel;
+	}
+
+	/**
+	 * Right-click a quest row to send it to Quest Helper, when Quest Helper
+	 * can be reached at all.
+	 *
+	 * <p>The popup is built in {@link #questHelperMenu}, on the click --
+	 * never here, and never once per row at render time. See
+	 * {@link #questHelperBridge}'s own doc for why that matters at 218 rows.
+	 */
+	private void attachQuestHelperMenu(JLabel row, String questName)
+	{
+		row.addMouseListener(new java.awt.event.MouseAdapter()
+		{
+			@Override
+			public void mousePressed(java.awt.event.MouseEvent event)
+			{
+				maybeShow(event);
+			}
+
+			@Override
+			public void mouseReleased(java.awt.event.MouseEvent event)
+			{
+				maybeShow(event);
+			}
+
+			private void maybeShow(java.awt.event.MouseEvent event)
+			{
+				// The popup trigger is mousePressed on macOS and
+				// mouseReleased on Windows/Linux; checking both is the
+				// portable way to catch either.
+				if (!event.isPopupTrigger())
+				{
+					return;
+				}
+				questHelperMenu(questName).show(event.getComponent(), event.getX(), event.getY());
+			}
+		});
+	}
+
+	/**
+	 * One menu item, its label doubling as the reason when it is disabled.
+	 *
+	 * <p>A disabled Swing component receives no mouse events, so a tooltip on
+	 * a disabled {@code JMenuItem} never shows -- which is why the reason
+	 * lives in the label itself rather than behind a hover that would never
+	 * fire.
+	 */
+	private JPopupMenu questHelperMenu(String questName)
+	{
+		JPopupMenu menu = new JPopupMenu();
+		QuestHelperBridge.Availability availability = questHelperBridge.availability(questName);
+		JMenuItem item = new JMenuItem(availability.menuLabel());
+		item.setEnabled(availability == QuestHelperBridge.Availability.AVAILABLE);
+		item.addActionListener(event ->
+		{
+			if (!questHelperBridge.start(questName))
+			{
+				// Availability said AVAILABLE a moment ago; if the actual
+				// handoff still failed, that is Quest Helper's integration
+				// breaking between the click and the call, not a state this
+				// menu item can pre-empt. Said plainly rather than swallowed.
+				JOptionPane.showMessageDialog(this,
+					"Quest Helper could not start \"" + questName + "\". Check the client log.",
+					"Quest Path", JOptionPane.WARNING_MESSAGE);
+			}
+		});
+		menu.add(item);
+		return menu;
 	}
 
 	/**
