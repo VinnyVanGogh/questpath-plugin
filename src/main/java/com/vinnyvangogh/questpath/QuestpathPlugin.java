@@ -318,6 +318,25 @@ public class QuestpathPlugin extends Plugin
 	private final QuestStartArrivalWatcher questStartArrival = new QuestStartArrivalWatcher();
 
 	/**
+	 * The quests worth checking the player's distance to this tick, name to
+	 * start point -- rebuilt once per {@link #refresh}, never per tick.
+	 *
+	 * <p>Every remaining step of the saved route, plus every quest {@link
+	 * QuestVerdicts} currently calls {@link QuestStatus#ELIGIBLE} -- doable
+	 * right now, not merely with a boost or after more levels. That is the
+	 * whole cap: no arbitrary size limit on top of it, because neither half
+	 * scales with the 218-quest graph on a real account -- a route is a few
+	 * dozen quests at most and ELIGIBLE quests are bounded by how much of the
+	 * prerequisite tree is actually open, typically far fewer than that.
+	 * {@link #checkQuestStartArrival} spends one {@code WorldPoint#distanceTo}
+	 * per entry here, per tick, and nothing else -- no classification, no
+	 * graph lookup, no per-tick allocation beyond the watcher's own arrival
+	 * list. Cleared to empty, never null, so {@link QuestStartArrivalWatcher}
+	 * never has to special-case "not computed yet" versus "nothing to track".
+	 */
+	private Map<String, WorldPoint> questStartCandidates = Collections.emptyMap();
+
+	/**
 	 * The bank, inventory and equipment as last seen. Not re-read on demand:
 	 * the client does not hold the bank's contents until it has been opened.
 	 */
@@ -629,22 +648,19 @@ public class QuestpathPlugin extends Plugin
 	}
 
 	/**
-	 * Reads the route's current head, its start point, and the player's
-	 * position, and hands all three to {@link #questStartArrival} -- see
-	 * that class's doc for why this is safe every tick and why it only ever
-	 * checks the one quest actually queued next.
+	 * Hands the player's current position and the precomputed {@link
+	 * #questStartCandidates} to {@link #questStartArrival} -- see that
+	 * class's doc for why this is safe and cheap every tick even though it
+	 * now checks more than one quest.
 	 *
-	 * <p>Cost: one field read for the route head (already computed by the
-	 * last refresh), one lazy, memoised graph lookup by name, and one
-	 * distance comparison. Nothing here scales with the quest list.
+	 * <p>Cost: one field read for the candidate map (already computed by the
+	 * last {@link #refresh}) and one distance comparison per candidate.
+	 * Nothing here classifies a quest or scans the graph -- that happened
+	 * once, in {@link #questStartCandidates(NextQuestStatus, QuestVerdicts)},
+	 * the last time an account-state change ran {@link #refresh}.
 	 */
 	private void checkQuestStartArrival()
 	{
-		NextQuestStatus route = overlaySnapshot == null ? null : overlaySnapshot.route();
-		String nextQuestName = route != null && route.state() == NextQuestStatus.State.NEXT
-			? route.questName() : null;
-
-		WorldPoint start = questStartPoint(nextQuestName);
 		WorldPoint player = client.getLocalPlayer() == null ? null : client.getLocalPlayer().getWorldLocation();
 
 		// Always observed, whatever the toggle says -- same discipline as
@@ -653,10 +669,63 @@ public class QuestpathPlugin extends Plugin
 		// it on mid-session would see a stale baseline and could fire the
 		// moment it is switched on for wherever the player already happens
 		// to be standing.
-		QuestStartArrivalWatcher.Decision decision = questStartArrival.observe(nextQuestName, start, player);
-		if (config.questHelperArrivalPrompt() && decision.action() == QuestStartArrivalWatcher.Action.ARRIVED)
+		List<String> arrived = questStartArrival.observe(questStartCandidates, player);
+		if (!config.questHelperArrivalPrompt() || arrived.isEmpty())
 		{
-			handleQuestStartArrival(decision.questName());
+			return;
+		}
+		for (String questName : arrived)
+		{
+			handleQuestStartArrival(questName);
+		}
+	}
+
+	/**
+	 * Every quest worth checking the player's distance to this tick -- see
+	 * {@link #questStartCandidates}'s own doc for what is and is not
+	 * included, and why that is the whole cap.
+	 *
+	 * @param route the account's saved route, or null when none is saved or
+	 *     the client has not loaded quest states yet
+	 * @param verdicts this refresh's judgement of every quest in the graph,
+	 *     or null when the account is not known yet (no rules received, no
+	 *     snapshot read)
+	 */
+	private Map<String, WorldPoint> questStartCandidates(NextQuestStatus route, QuestVerdicts verdicts)
+	{
+		if (questGraph == null)
+		{
+			return Collections.emptyMap();
+		}
+		Map<String, WorldPoint> candidates = new java.util.LinkedHashMap<>();
+		if (route != null)
+		{
+			for (NextQuestStatus.Step step : route.upcoming())
+			{
+				addStartCandidate(candidates, step.questName());
+			}
+		}
+		if (verdicts != null)
+		{
+			for (QuestGraph.Quest quest : verdicts.quests(QuestStatus.ELIGIBLE))
+			{
+				addStartCandidate(candidates, quest.name());
+			}
+		}
+		return candidates;
+	}
+
+	/** Adds questName's start point to candidates if the bundle knows one and it is not already there. */
+	private void addStartCandidate(Map<String, WorldPoint> candidates, String questName)
+	{
+		if (questName == null || candidates.containsKey(questName))
+		{
+			return;
+		}
+		WorldPoint start = questStartPoint(questName);
+		if (start != null)
+		{
+			candidates.put(questName, start);
 		}
 	}
 
@@ -819,6 +888,9 @@ public class QuestpathPlugin extends Plugin
 			// different account's route, and that first sighting must not be
 			// read as an arrival.
 			questStartArrival.reset();
+			// The next login may be a different account entirely; this
+			// account's route and eligible quests are not candidates for it.
+			questStartCandidates = Collections.emptyMap();
 		}
 	}
 
@@ -837,6 +909,12 @@ public class QuestpathPlugin extends Plugin
 			// shortfalls the first time anything changed.
 			completions.reset();
 			accountSnapshot = null;
+			// No account logged in to stand near anything as. Left non-empty
+			// here, checkQuestStartArrival would keep comparing the previous
+			// account's candidates against a player position that also reads
+			// null -- harmless, but a stale set is still the wrong thing to
+			// be holding onto.
+			questStartCandidates = Collections.emptyMap();
 			return;
 		}
 
@@ -870,6 +948,11 @@ public class QuestpathPlugin extends Plugin
 		// that is impossible to reproduce later.
 		overlaySnapshot = new OverlaySnapshot(stats, xp, route, items, buildRules,
 			characterName(), questPoints());
+
+		// Rebuilt here, once per account-state change, so the per-tick check
+		// in checkQuestStartArrival never has to reclassify anything -- see
+		// questStartCandidates' own doc.
+		questStartCandidates = questStartCandidates(route, questVerdicts);
 
 		announce(completions.observe(items));
 

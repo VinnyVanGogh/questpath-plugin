@@ -45,7 +45,7 @@ class NeededItemsOverlay extends QuestpathOverlay
 	}
 
 	/**
-	 * On, except while the bank list is up.
+	 * On, except while the bank list is actually up.
 	 *
 	 * <p>{@link BankListOverlay} draws the same merged list, ordered for a
 	 * bank screen. With both switched on and the bank open the player got two
@@ -53,14 +53,26 @@ class NeededItemsOverlay extends QuestpathOverlay
 	 * two presentations rather than two features: opening the bank swaps
 	 * which one is showing instead of adding a second.
 	 *
-	 * <p>The bank test is BankListOverlay's own, called rather than copied.
-	 * Two copies would be free to disagree, and both ways they could are
-	 * visible -- overlapping panels, or no panel at all.
+	 * <p><b>Was:</b> stood down whenever {@code config.bankList()} was true
+	 * and the bank was open, regardless of whether the in-bank title-bar
+	 * button was actually lit. {@link BankListOverlay} itself refuses to draw
+	 * anything while that button is off, so with the button off and both
+	 * config toggles on, this overlay stood down for a panel that was never
+	 * showing -- both lists gone, and the only way back was to untick {@code
+	 * bankList}, which brought this one back but could never bring the other
+	 * one back, because unticking {@code overlayItems} does nothing to the
+	 * title-bar button either. That was the actual coupling, not the two
+	 * config toggles disagreeing with each other.
+	 *
+	 * <p>Fixed by asking {@link BankListOverlay#isShowing}, its own full
+	 * "would I actually draw right now" test, rather than re-deriving two
+	 * thirds of it here. Two copies would be free to disagree, and both ways
+	 * they could are visible -- overlapping panels, or no panel at all.
 	 */
 	@Override
 	boolean enabled(QuestpathConfig config)
 	{
-		if (config.bankList() && BankListOverlay.bankIsOpen(client))
+		if (BankListOverlay.isShowing(plugin(), config, client))
 		{
 			return false;
 		}

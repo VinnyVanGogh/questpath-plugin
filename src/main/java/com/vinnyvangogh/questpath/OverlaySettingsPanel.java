@@ -12,7 +12,10 @@ import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JSpinner;
+import javax.swing.SpinnerNumberModel;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.ui.ColorScheme;
 import net.runelite.client.ui.FontManager;
@@ -93,6 +96,8 @@ class OverlaySettingsPanel extends JPanel
 		setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
 		setAlignmentX(LEFT_ALIGNMENT);
 
+		add(syncSection(config));
+		add(spacer());
 		add(sharedGroup(config));
 		add(spacer());
 		add(overlaysSection(config));
@@ -100,6 +105,44 @@ class OverlaySettingsPanel extends JPanel
 		add(extrasSection(config));
 
 		populating = false;
+	}
+
+	/**
+	 * The SYNC top-level section: the one setting that leaves the client at
+	 * all -- see this file's own class doc's second paragraph, and {@link
+	 * QuestpathConfig}'s.
+	 *
+	 * <p>Only {@code syncEnabled} lives here. {@code serverUrl} and {@code
+	 * pairingToken} are the two settings this file deliberately never
+	 * duplicates -- a URL and a secret token are exactly the free-text and
+	 * masked-field controls RuneLite's own config panel already renders
+	 * correctly, and {@link OverlaySettingsPanelConfigParityTest} enforces
+	 * that exemption by name rather than by a filter nobody has to notice
+	 * growing. {@code syncEnabled} itself does not get the same pass: it is
+	 * a plain on/off switch, exactly the shape every other toggle in this
+	 * panel already is, and it was the one a player would look here for
+	 * first -- "am I sending my data anywhere" -- and not find, because it
+	 * used to live only behind RuneLite's own gear icon.
+	 */
+	private CollapsibleGroup syncSection(QuestpathConfig config)
+	{
+		JPanel panel = column();
+		panel.add(warningToggle(
+			"Send my account state",
+			"Push quest completion, levels and diaries to your questpath instance when they"
+				+ " change. questpath then stops polling WikiSync for this account.",
+			"This feature submits your IP address to a 3rd-party server not controlled or"
+				+ " verified by RuneLite developers.\n\nTurn it on anyway?",
+			config.syncEnabled(), "syncEnabled"));
+		panel.add(Box.createRigidArea(new Dimension(0, 6)));
+		JLabel note = new JLabel(wrap("The address to push to, and the pairing token from"
+			+ " questpath -plugin-token, are set in RuneLite's own Configuration panel for this"
+			+ " plugin -- not duplicated here."));
+		note.setFont(FontManager.getRunescapeSmallFont());
+		note.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
+		note.setAlignmentX(LEFT_ALIGNMENT);
+		panel.add(note);
+		return sectionGroup("Sync", panel);
 	}
 
 	/**
@@ -217,6 +260,12 @@ class OverlaySettingsPanel extends JPanel
 			{
 				addField(sub, "Width", widthCombo(config.overlayPickupsWidth(), "overlayPickupsWidth"));
 				addField(sub, "Length", lengthCombo(config.overlayPickupsLength(), "overlayPickupsLength"));
+				addField(sub, "How far ahead",
+					intField(config.pickupsLookahead(), 1, 12,
+						"How many quests down the route count as \"here\": the one in hand plus the"
+							+ " next few. Higher catches more detours worth making; lower keeps the"
+							+ " list about where you actually are.",
+						"pickupsLookahead"));
 			}));
 		body.add(spacer());
 		body.add(toggleGroup(
@@ -261,8 +310,9 @@ class OverlaySettingsPanel extends JPanel
 	}
 
 	/**
-	 * The EXTRAS top-level section: the two marker groups, Shops and Ground
-	 * items, nested under one shared heading.
+	 * The EXTRAS top-level section: the marker groups -- Shops, Ground items,
+	 * Bank -- plus the flat Quest Helper automation toggles and the item-done
+	 * chat line, nested under one shared heading.
 	 */
 	private CollapsibleGroup extrasSection(QuestpathConfig config)
 	{
@@ -272,6 +322,26 @@ class OverlaySettingsPanel extends JPanel
 		body.add(groundItemsGroup(config));
 		body.add(spacer());
 		body.add(bankGroup(config));
+		body.add(spacer());
+		// Flat, like the chat toggle below: neither of these two gates the
+		// other, so a shared enable checkbox would have nothing to gate --
+		// they are just two independent yes/no automations around Quest
+		// Helper's own start-quest flow, previously only reachable from
+		// RuneLite's own config panel, which is exactly the gap this file
+		// exists to close (see this file's own class doc).
+		body.add(toggle(
+			"Auto-start the next quest",
+			"When the quest you just finished was the current step on your saved route,"
+				+ " automatically start the next one in Quest Helper -- only if Quest Helper"
+				+ " reports it available. Always says what it did (or why it could not) in the"
+				+ " chat, and never retries on its own.",
+			config.autoAdvanceQuestHelper(), "autoAdvanceQuestHelper"));
+		body.add(toggle(
+			"Open Quest Helper on arrival",
+			"When you walk within a few tiles of the start of a quest you could begin, open it"
+				+ " in Quest Helper automatically -- only if Quest Helper reports it available."
+				+ " Says what it did in the chat, once per arrival, never on login or a resync.",
+			config.questHelperArrivalPrompt(), "questHelperArrivalPrompt"));
 		body.add(spacer());
 		// Flat rather than a group of its own: one checkbox behind a
 		// collapsible header is a header that costs more rows than it hides.
@@ -360,6 +430,12 @@ class OverlaySettingsPanel extends JPanel
 						"The colour a needed item is outlined in. The buy count is drawn in green"
 							+ " above the slot regardless.",
 						"Shop outline colour", "shopHighlightColour"));
+				sub.add(toggle(
+					"Say when a shop sells what you need",
+					"One chat line the moment you open a shop selling something your plan still"
+						+ " needs. Not distance-based -- this only notices a shop once its interface"
+						+ " is open -- and it says so once per visit, not every tick.",
+					config.shopArrivalPrompt(), "shopArrivalPrompt"));
 			});
 	}
 
@@ -415,6 +491,32 @@ class OverlaySettingsPanel extends JPanel
 	}
 
 	/**
+	 * A spinner wired straight to a bounded {@code int} config key.
+	 *
+	 * <p>The only numeric setting in this panel today -- {@code
+	 * pickupsLookahead} -- so this exists as its own method rather than
+	 * folded into {@link #toggle}/{@link #combo} the way those two are
+	 * shared by a dozen keys each.
+	 */
+	private JSpinner intField(int initial, int min, int max, String tooltip, String keyName)
+	{
+		JSpinner spinner = new JSpinner(new SpinnerNumberModel(initial, min, max, 1));
+		spinner.setToolTipText(tooltip);
+		spinner.setFont(FontManager.getRunescapeSmallFont());
+		spinner.setAlignmentX(LEFT_ALIGNMENT);
+		spinner.setMaximumSize(CONTROL_MAX);
+		spinner.addChangeListener(e ->
+		{
+			if (populating)
+			{
+				return;
+			}
+			configManager.setConfiguration(QuestpathConfig.GROUP, keyName, (Integer) spinner.getValue());
+		});
+		return spinner;
+	}
+
+	/**
 	 * A stacked label-then-control block.
 	 *
 	 * <p>At 225px a label and its combo do not fit side by side once the
@@ -457,6 +559,55 @@ class OverlaySettingsPanel extends JPanel
 			if (populating)
 			{
 				return;
+			}
+			configManager.setConfiguration(QuestpathConfig.GROUP, keyName, box.isSelected());
+		});
+		return box;
+	}
+
+	/**
+	 * A checkbox wired to a boolean config key that submits data to a
+	 * third-party server, gated the same way RuneLite's own config panel
+	 * gates any {@code @ConfigItem} carrying a {@code warning}: switching it
+	 * on shows that exact warning as a confirm dialog first, and the config
+	 * is written only if the player confirms. Switching it back off never
+	 * asks -- there is nothing to warn about in stopping a push.
+	 *
+	 * <p>{@code syncEnabled} is the only key this panel uses this for today.
+	 * If a future key needs it too, keep the warning text passed in here in
+	 * sync with that key's own {@code @ConfigItem(warning = ...)} by hand --
+	 * the annotation value is not read reflectively, so RuneLite's own
+	 * config panel and this dialog can drift if one changes without the
+	 * other.
+	 */
+	private JCheckBox warningToggle(String label, String tooltip, String warning, boolean initial, String keyName)
+	{
+		JCheckBox box = new JCheckBox(label);
+		box.setToolTipText(tooltip);
+		box.setSelected(initial);
+		box.setForeground(Color.WHITE);
+		box.setBackground(ColorScheme.DARK_GRAY_COLOR);
+		box.setFont(FontManager.getRunescapeSmallFont());
+		box.setFocusPainted(false);
+		box.setAlignmentX(LEFT_ALIGNMENT);
+		box.setMaximumSize(CONTROL_MAX);
+		box.addActionListener(e ->
+		{
+			if (populating)
+			{
+				return;
+			}
+			if (box.isSelected())
+			{
+				int choice = JOptionPane.showConfirmDialog(this, warning, "Quest Path",
+					JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE);
+				if (choice != JOptionPane.OK_OPTION)
+				{
+					// Declined: the checkbox must not visibly stay ticked for
+					// a setting that was not actually turned on.
+					box.setSelected(false);
+					return;
+				}
 			}
 			configManager.setConfiguration(QuestpathConfig.GROUP, keyName, box.isSelected());
 		});
@@ -573,5 +724,22 @@ class OverlaySettingsPanel extends JPanel
 	private static Component spacer()
 	{
 		return Box.createRigidArea(new Dimension(0, 10));
+	}
+
+	/**
+	 * Forces a plain label to wrap at the sidebar's own width, matching
+	 * {@code QuestpathPanel}'s own {@code wrap}: Swing only wraps a label's
+	 * HTML at a width the markup states explicitly, never at whatever the
+	 * container happens to be.
+	 */
+	private static String wrap(String text)
+	{
+		return "<html><body style='width:150px'>" + escape(text) + "</body></html>";
+	}
+
+	/** A stray angle bracket in one of this file's own strings would otherwise be read as markup. */
+	private static String escape(String text)
+	{
+		return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
 	}
 }

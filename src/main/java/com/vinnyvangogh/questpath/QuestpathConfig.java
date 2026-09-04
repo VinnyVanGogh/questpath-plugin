@@ -676,11 +676,12 @@ public interface QuestpathConfig extends Config
 	@ConfigItem(
 		keyName = "questHelperArrivalPrompt",
 		name = "Open Quest Helper on arrival",
-		description = "When you walk within a few tiles of the start of the next quest on your"
-			+ " saved route, open it in Quest Helper automatically -- only if Quest Helper reports"
-			+ " it available. Says what it did in the chat, once per arrival, never on login or a"
-			+ " resync. This gets you to the door; Quest Helper's own arrow does the rest, because"
-			+ " questpath has no per-step locations to guide you with.",
+		description = "When you walk within a few tiles of the start of a quest you could begin"
+			+ " -- the next one on your saved route, or anything else currently doable -- open it"
+			+ " in Quest Helper automatically, only if Quest Helper reports it available. Says"
+			+ " what it did in the chat, once per arrival, never on login or a resync. This gets"
+			+ " you to the door; Quest Helper's own arrow does the rest, because questpath has no"
+			+ " per-step locations to guide you with.",
 		section = questHelperSection,
 		position = 2
 	)

@@ -967,8 +967,9 @@ class QuestpathPanel extends PluginPanel
 		ShortestPathBridge.Availability availability = shortestPathBridge.availability();
 		button.setText(availability.menuLabel());
 		button.setEnabled(availability == ShortestPathBridge.Availability.AVAILABLE);
+		int destinationCount = destinations.size();
 		button.addActionListener(event -> shortestPathBridge.route(destinations,
-			outcome -> SwingUtilities.invokeLater(() -> reportRouteOutcome(outcome))));
+			outcome -> SwingUtilities.invokeLater(() -> reportRouteOutcome(outcome, destinationCount))));
 		return button;
 	}
 
@@ -1012,13 +1013,22 @@ class QuestpathPanel extends PluginPanel
 	 * that Shortest Path acted on the route -- see that constant's own doc
 	 * -- so the toast says "sent", never "started" the way Quest Helper's
 	 * confirmed start does.
+	 *
+	 * <p>The count rides along on every branch that has one to give, not just
+	 * SENT: "0 destinations, so nothing was sent" and "sent 4 destinations"
+	 * are different reports of an otherwise identical-looking button click,
+	 * and a player who clicked twice with a different shopping list deserves
+	 * to be able to tell them apart without opening the client log. {@link
+	 * ShortestPathBridge#route} logs the same number at info for exactly the
+	 * report a silent toast could never leave a trace of afterwards.
 	 */
-	private void reportRouteOutcome(ShortestPathBridge.RouteOutcome outcome)
+	private void reportRouteOutcome(ShortestPathBridge.RouteOutcome outcome, int destinationCount)
 	{
 		switch (outcome)
 		{
 			case SENT:
-				showToast("Sent your shop route to Shortest Path.");
+				showToast("Sent " + destinationCount + " shop stop" + (destinationCount == 1 ? "" : "s")
+					+ " to Shortest Path.");
 				return;
 			case UNAVAILABLE:
 				warn("Shortest Path could not take the route -- it was no longer available"

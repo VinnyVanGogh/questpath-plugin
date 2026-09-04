@@ -184,6 +184,26 @@ class ShortestPathBridge
 		 * returns, whether zero of them were Shortest Path or one of them
 		 * was and quietly declined the target. This is the strongest claim
 		 * honestly available.
+		 *
+		 * <p>It is blinder than that description alone suggests. {@code
+		 * javap -c} against {@code net.runelite.client.eventbus.EventBus} in
+		 * the installed {@code client-1.12.37.jar} confirms {@code post}
+		 * wraps <i>each subscriber's invocation individually</i> in a
+		 * try/catch that hands any thrown exception to an internal handler
+		 * and continues to the next subscriber -- it never rethrows to the
+		 * poster. So a genuine failure inside Shortest Path's own {@code
+		 * onPluginMessage} -- it was disassembled too, and does real work
+		 * with the target set before handing it to its pathfinder -- would
+		 * never surface here as {@link #CALL_FAILED}; this method's own
+		 * try/catch can only ever catch an exception from building the
+		 * {@code PluginMessage} itself or from {@code post} before it
+		 * reaches a subscriber, not from the subscriber's body. {@code SENT}
+		 * therefore means exactly "the call reached {@code EventBus#post}
+		 * without incident", nothing stronger, however the report from
+		 * inside Shortest Path may have actually gone -- which is why
+		 * {@link #route} logs the destination count at info on this outcome:
+		 * it is the only thing left to check when a player reports the
+		 * button did nothing.
 		 */
 		SENT,
 	}
@@ -262,11 +282,13 @@ class ShortestPathBridge
 	{
 		if (availability() != Availability.AVAILABLE)
 		{
+			log.info("Not sending a shop route to Shortest Path -- {}", availability());
 			onOutcome.accept(RouteOutcome.UNAVAILABLE);
 			return;
 		}
 		if (destinations == null || destinations.isEmpty())
 		{
+			log.info("Not sending a shop route to Shortest Path -- no destinations to send");
 			onOutcome.accept(RouteOutcome.NO_DESTINATIONS);
 			return;
 		}
@@ -277,11 +299,23 @@ class ShortestPathBridge
 		}
 		catch (RuntimeException e)
 		{
-			log.warn("Posting PluginMessage(\"{}\", \"{}\", ...) failed -- Shortest Path may be out of date",
-				CONFIG_GROUP, MESSAGE_NAME, e);
+			log.warn("Posting PluginMessage(\"{}\", \"{}\", ...) with {} destination(s) failed"
+				+ " -- Shortest Path may be out of date", CONFIG_GROUP, MESSAGE_NAME, destinations.size(), e);
 			onOutcome.accept(RouteOutcome.CALL_FAILED);
 			return;
 		}
+		// The only confirmation this call can honestly give -- see
+		// RouteOutcome#SENT's own doc for exactly how much it is worth.
+		// Logged at info, not debug, because "was a route actually sent, and
+		// how many stops did it carry" is precisely the question a report of
+		// "the button does nothing" needs answered from the client log,
+		// and EventBus#post itself gives no other way to answer it: a
+		// subscriber that throws is caught and silently swallowed by
+		// RuneLite's own EventBus before it ever reaches this method's catch
+		// block, so SENT here means "the event went out", never "Shortest
+		// Path definitely acted on it".
+		log.info("Sent {} destination(s) to Shortest Path via PluginMessage(\"{}\", \"{}\", ...)",
+			destinations.size(), CONFIG_GROUP, MESSAGE_NAME);
 		onOutcome.accept(RouteOutcome.SENT);
 	}
 

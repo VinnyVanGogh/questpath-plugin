@@ -44,7 +44,7 @@ class BankListOverlay extends QuestpathOverlay
 	@Override
 	boolean enabled(QuestpathConfig config)
 	{
-		return config.bankList() && bankOpen();
+		return isShowing(plugin(), config, client);
 	}
 
 	@Override
@@ -67,21 +67,6 @@ class BankListOverlay extends QuestpathOverlay
 	 * happened to be open a minute ago would make it one more thing to move
 	 * out of the way.
 	 */
-	private boolean bankOpen()
-	{
-		return bankIsOpen(client);
-	}
-
-	/**
-	 * Whether the bank is on screen, as the single place that decides it.
-	 *
-	 * <p>Shared with {@link NeededItemsOverlay}, which stands down while this
-	 * panel is up so the two near-identical lists are never drawn at once. A
-	 * second copy of this test would be free to disagree with this one, and
-	 * both ways it could disagree are visible to the player: two overlapping
-	 * panels, or -- worse, because it reads as the feature being broken
-	 * rather than the check -- no panel at all.
-	 */
 	static boolean bankIsOpen(Client client)
 	{
 		if (client == null)
@@ -92,17 +77,34 @@ class BankListOverlay extends QuestpathOverlay
 		return bank != null && !bank.isHidden();
 	}
 
+	/**
+	 * Whether this panel actually draws right now: the config toggle is on,
+	 * the bank is open, <b>and</b> the in-bank title-bar button
+	 * ({@link QuestpathPlugin#bankNeedsShown()}) is lit.
+	 *
+	 * <p>Shared with {@link NeededItemsOverlay}, which stands down while this
+	 * panel is up so the two near-identical lists are never drawn at once --
+	 * and has to test the exact same three conditions to know that, not just
+	 * the config toggle and the bank being open. Missing the title-bar button
+	 * here is exactly the bug that method existing fixes: {@code bankList()}
+	 * can be true and the bank can be open while the button is switched off
+	 * for this trip, in which case this panel draws nothing at all ({@link
+	 * #rows} below never even runs) -- and {@link NeededItemsOverlay} used to
+	 * stand down anyway, believing this panel had it covered, leaving
+	 * neither list on screen. A second, slightly different copy of this test
+	 * would be free to disagree with this one, and both ways it could
+	 * disagree are visible to the player: two overlapping panels, or two
+	 * panels both refusing to draw because each believes the other is
+	 * showing.
+	 */
+	static boolean isShowing(QuestpathPlugin plugin, QuestpathConfig config, Client client)
+	{
+		return config.bankList() && bankIsOpen(client) && plugin != null && plugin.bankNeedsShown();
+	}
+
 	@Override
 	List<OverlayRow> rows(OverlaySnapshot snapshot, OverlayContext ctx)
 	{
-		QuestpathPlugin plugin = plugin();
-		if (plugin != null && !plugin.bankNeedsShown())
-		{
-			// Switched off at the title bar. Nothing to say, and saying
-			// nothing is how the button reads as off.
-			return List.of();
-		}
-
 		QuestItems items = snapshot.items();
 		if (items == null)
 		{
