@@ -84,18 +84,22 @@ public class QuestGraphTest
 	 * would silently start parsing an old bundle's missing field as an
 	 * absence rather than refusing the bundle outright -- 2 added
 	 * Item.sources(), 3 added Item.itemId(), 4 added Item.unresolved(),
-	 * 5 added boosts().
+	 * 5 added boosts(), 6 added prerequisites_started_only.
 	 *
-	 * <p>5 is the one that most needs refusing rather than tolerating. A
-	 * requirement's boostable flag permits a boost and never says how large
-	 * one can be, so a bundle without the boost table leaves the classifier
-	 * unable to tell a one-level shortfall from a fifty-level one, which is
-	 * exactly the bug the table exists to close.
+	 * <p>5 and 6 are the two that most need refusing rather than tolerating,
+	 * and for the same reason: both carry information whose *absence* reads
+	 * as a confident answer rather than as a gap. A requirement's boostable
+	 * flag permits a boost and never says how large one can be, so a bundle
+	 * without the boost table cannot tell a one-level shortfall from a
+	 * fifty-level one. A bundle without prerequisites_started_only cannot
+	 * tell "needs Desert Treasure I finished" from "needs it merely begun",
+	 * so it demands completion of a quest that only has to be started, and
+	 * blocks something the account can genuinely do.
 	 */
 	@Test
-	public void supportedVersionWasBumpedForTheBoostTable()
+	public void supportedVersionWasBumpedForStartedOnlyPrerequisites()
 	{
-		assertEquals(5, QuestGraph.SUPPORTED_VERSION);
+		assertEquals(6, QuestGraph.SUPPORTED_VERSION);
 	}
 
 	/**

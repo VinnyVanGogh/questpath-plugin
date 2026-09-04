@@ -25,10 +25,26 @@ class PlayerState
 	private final Map<String, Integer> levels;
 	private final Map<String, Long> experience;
 	private final Set<String> completed;
+	private final Set<String> inProgress;
 	private final Map<String, BuildRule> rules;
 
+	/**
+	 * Without in-progress information.
+	 *
+	 * <p>An empty in-progress set is not a claim that nothing is started; it
+	 * is the absence of a claim. A started-only prerequisite is then judged on
+	 * completion alone, which errs towards blocking rather than towards a
+	 * false "eligible". The golden vectors are built this way, because the
+	 * exported account carries completed quests and nothing else.
+	 */
 	PlayerState(Map<String, Integer> levels, Map<String, Long> experience,
 		Set<String> completedQuestNames, List<BuildRule> rules)
+	{
+		this(levels, experience, completedQuestNames, Collections.emptySet(), rules);
+	}
+
+	PlayerState(Map<String, Integer> levels, Map<String, Long> experience,
+		Set<String> completedQuestNames, Set<String> inProgressQuestNames, List<BuildRule> rules)
 	{
 		this.levels = lowerKeys(levels);
 		this.experience = lowerKeys(experience);
@@ -51,6 +67,19 @@ class PlayerState
 				if (name != null)
 				{
 					this.completed.add(name.toLowerCase());
+				}
+			}
+		}
+
+		// Matched by name for exactly the same reason as completed above.
+		this.inProgress = new HashSet<>();
+		if (inProgressQuestNames != null)
+		{
+			for (String name : inProgressQuestNames)
+			{
+				if (name != null)
+				{
+					this.inProgress.add(name.toLowerCase());
 				}
 			}
 		}
@@ -105,6 +134,24 @@ class PlayerState
 	boolean isComplete(String questName)
 	{
 		return questName != null && completed.contains(questName.toLowerCase());
+	}
+
+	/**
+	 * Whether the account has at least begun this quest.
+	 *
+	 * <p>Complete counts as started, which is what makes this the right test
+	 * for a prerequisite the wiki says need only be *started* -- Curse of the
+	 * Empty Lord asks that Desert Treasure I be begun, and someone who has
+	 * finished it has certainly begun it.
+	 */
+	boolean hasStarted(String questName)
+	{
+		if (questName == null)
+		{
+			return false;
+		}
+		String key = questName.toLowerCase();
+		return completed.contains(key) || inProgress.contains(key);
 	}
 
 	/** The account's rule for a skill, or null when it has declared none. */

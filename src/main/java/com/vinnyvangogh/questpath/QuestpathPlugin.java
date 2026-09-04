@@ -1300,7 +1300,12 @@ public class QuestpathPlugin extends Plugin
 		// than there because this is already the pass that has the client's
 		// levels, and because a snapshot the panel builds itself would be a
 		// second, subtly different account.
-		PlayerState account = new PlayerState(levels, experience, completed, buildRules);
+		// In-progress quests as well as finished ones, because a prerequisite
+		// the wiki states as "Started [[X]]" is satisfied by one of these.
+		// Passing only the completed set would judge those on completion
+		// alone and disagree with the Go planner, which has the distinction.
+		PlayerState account = new PlayerState(levels, experience, completed,
+			inProgressQuestNames(), buildRules);
 		accountSnapshot = account;
 		return QuestVerdicts.of(questGraph, account);
 	}
@@ -1440,7 +1445,7 @@ public class QuestpathPlugin extends Plugin
 		}
 
 		return QuestItems.of(questGraph,
-			new PlayerState(levels, experience, completed, buildRules),
+			new PlayerState(levels, experience, completed, inProgressQuestNames(), buildRules),
 			owned.heldByName(), owned.bankSeen(), pickupScope(),
 			new HashSet<>(routeOrder), knownItems, owned.carriedByName(),
 			owned.bankPlaceholders());

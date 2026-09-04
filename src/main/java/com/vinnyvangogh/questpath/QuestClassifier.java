@@ -123,6 +123,21 @@ class QuestClassifier
 				anyMissing = true;
 				continue;
 			}
+			// A started-only prerequisite is satisfied by having begun it, and
+			// is asked of the account directly rather than through classify():
+			// its own status is beside the point, because this quest never
+			// asked for it to be finished. Demanding COMPLETE would block a
+			// quest the account can genuinely do. The Go planner applies
+			// exactly this rule; the two must agree or the golden vectors
+			// diverge, which is what PlannerVectorsTest is for.
+			if (quest.requiresStartedOnly(prerequisiteId))
+			{
+				if (!account.hasStarted(prerequisite.name()))
+				{
+					anyMissing = true;
+				}
+				continue;
+			}
 			QuestStatus prerequisiteStatus = classify(prerequisite);
 			if (prerequisiteStatus.permanent())
 			{

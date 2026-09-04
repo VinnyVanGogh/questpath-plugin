@@ -43,7 +43,7 @@ class QuestGraph
 	 * without trace, leaving every quest's item list quietly short while
 	 * presenting itself as the list.
 	 */
-	static final int SUPPORTED_VERSION = 5;
+	static final int SUPPORTED_VERSION = 6;
 
 	@SerializedName("version")
 	private int version;
@@ -136,6 +136,9 @@ class QuestGraph
 		@SerializedName("prerequisites")
 		private List<Long> prerequisites;
 
+		@SerializedName("prerequisites_started_only")
+		private List<Long> prerequisitesStartedOnly;
+
 		@SerializedName("requirements")
 		private List<Requirement> requirements;
 
@@ -168,6 +171,21 @@ class QuestGraph
 		List<Long> prerequisites()
 		{
 			return prerequisites == null ? Collections.emptyList() : prerequisites;
+		}
+
+		/**
+		 * The subset of {@link #prerequisites()} satisfied by having *started*
+		 * the quest rather than finished it -- the wiki's "Started [[X]]"
+		 * phrasing. Both planners must apply this identically or their
+		 * verdicts diverge, which is what PlannerVectorsTest exists to catch.
+		 */
+		boolean requiresStartedOnly(long prerequisiteId)
+		{
+			if (prerequisitesStartedOnly == null)
+			{
+				return false;
+			}
+			return prerequisitesStartedOnly.contains(prerequisiteId);
 		}
 
 		List<Requirement> requirements()

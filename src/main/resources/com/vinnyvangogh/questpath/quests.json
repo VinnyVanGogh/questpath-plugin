@@ -1,5 +1,5 @@
 {
-  "version": 5,
+  "version": 6,
   "quests": [
     {
       "id": 1,
@@ -6646,12 +6646,16 @@
         25,
         45,
         47,
+        48,
         53,
         55,
         62,
         64,
         76,
         89
+      ],
+      "prerequisites_started_only": [
+        48
       ],
       "requirements": [
         {
@@ -9911,6 +9915,14 @@
       "slug": "curse_of_the_empty_lord",
       "name": "Curse of the Empty Lord",
       "members": true,
+      "prerequisites": [
+        6,
+        76
+      ],
+      "prerequisites_started_only": [
+        6,
+        76
+      ],
       "requirements": [
         {
           "skill": "prayer",
@@ -10887,8 +10899,12 @@
         85,
         114,
         122,
+        130,
         146,
         148
+      ],
+      "prerequisites_started_only": [
+        130
       ],
       "requirements": [
         {
@@ -11521,8 +11537,12 @@
         24,
         37,
         40,
+        48,
         125,
         151
+      ],
+      "prerequisites_started_only": [
+        48
       ],
       "rewards": [
         {
@@ -13432,9 +13452,13 @@
       "name": "Hopespear's Will",
       "members": true,
       "prerequisites": [
+        6,
         76,
         105,
         135
+      ],
+      "prerequisites_started_only": [
+        6
       ],
       "requirements": [
         {
