@@ -50,10 +50,11 @@ import net.runelite.client.ui.components.colorpicker.RuneliteColorPicker;
  * entire section is a different intent from collapsing one overlay inside
  * it, so the two must not follow the same rule.
  *
- * <p>The inner level is the eight feature groups -- five overlays under
- * OVERLAYS, Shops and Ground items under EXTRAS, plus Shared's own controls
- * (which have no further nesting; Shared has no per-feature toggles to
- * group). Every one of those eight is headed by its own enable checkbox
+ * <p>The inner level is the nine feature groups -- five overlays under
+ * OVERLAYS, Shops, Ground items, Bank and "Open Quest Helper on arrival"
+ * under EXTRAS, plus Shared's own controls (which have no further nesting;
+ * Shared has no per-feature toggles to group). Every one of those nine is
+ * headed by its own enable checkbox
  * rather than a plain label, and starts expanded only if that checkbox is
  * already ticked -- collapsed otherwise. That checkbox's own listener also
  * expands or collapses the group afterwards ("smart-close"), so ticking a
@@ -323,12 +324,11 @@ class OverlaySettingsPanel extends JPanel
 		body.add(spacer());
 		body.add(bankGroup(config));
 		body.add(spacer());
-		// Flat, like the chat toggle below: neither of these two gates the
-		// other, so a shared enable checkbox would have nothing to gate --
-		// they are just two independent yes/no automations around Quest
-		// Helper's own start-quest flow, previously only reachable from
-		// RuneLite's own config panel, which is exactly the gap this file
-		// exists to close (see this file's own class doc).
+		// Flat: nothing gates autoAdvanceQuestHelper, it is just one
+		// independent yes/no automation around Quest Helper's own
+		// start-quest flow, previously only reachable from RuneLite's own
+		// config panel, which is exactly the gap this file exists to close
+		// (see this file's own class doc).
 		body.add(toggle(
 			"Auto-start the next quest",
 			"When the quest you just finished was the current step on your saved route,"
@@ -336,12 +336,24 @@ class OverlaySettingsPanel extends JPanel
 				+ " reports it available. Always says what it did (or why it could not) in the"
 				+ " chat, and never retries on its own.",
 			config.autoAdvanceQuestHelper(), "autoAdvanceQuestHelper"));
-		body.add(toggle(
+		body.add(spacer());
+		// A toggleGroup, not a flat toggle, because questStartArrivalDepth
+		// only means anything while this is on -- the same dependent-setting
+		// shape as Shops/Ground items/Bank above, just with a spinner instead
+		// of a colour.
+		body.add(toggleGroup(
 			"Open Quest Helper on arrival",
 			"When you walk within a few tiles of the start of a quest you could begin, open it"
 				+ " in Quest Helper automatically -- only if Quest Helper reports it available."
 				+ " Says what it did in the chat, once per arrival, never on login or a resync.",
-			config.questHelperArrivalPrompt(), "questHelperArrivalPrompt"));
+			config.questHelperArrivalPrompt(), "questHelperArrivalPrompt",
+			sub -> addField(sub, "How far down the route",
+				intField(config.questStartArrivalDepth(), 0, 218,
+					"Only the next N outstanding quests on your saved route can ever prompt --"
+						+ " 1 is just the next one, 3 is the next few. 0 means no limit, every"
+						+ " outstanding route quest. Quests that are startable but not on your"
+						+ " saved route are never affected by this number, at any depth.",
+					"questStartArrivalDepth"))));
 		body.add(spacer());
 		// Flat rather than a group of its own: one checkbox behind a
 		// collapsible header is a header that costs more rows than it hides.
@@ -493,10 +505,10 @@ class OverlaySettingsPanel extends JPanel
 	/**
 	 * A spinner wired straight to a bounded {@code int} config key.
 	 *
-	 * <p>The only numeric setting in this panel today -- {@code
-	 * pickupsLookahead} -- so this exists as its own method rather than
-	 * folded into {@link #toggle}/{@link #combo} the way those two are
-	 * shared by a dozen keys each.
+	 * <p>Shared by the two numeric settings in this panel -- {@code
+	 * pickupsLookahead} and {@code questStartArrivalDepth} -- so this exists
+	 * as its own method rather than folded into {@link #toggle}/{@link
+	 * #combo} the way those two are shared by a dozen keys each.
 	 */
 	private JSpinner intField(int initial, int min, int max, String tooltip, String keyName)
 	{

@@ -96,6 +96,37 @@ import net.runelite.client.events.PluginMessage;
  * the same reason {@link QuestHelperBridge}'s three-way split matters: a
  * silent no-op reads as "nothing needed" to a player, whichever feature it
  * is attached to.
+ *
+ * <p><b>{@link #eventPoster} must land the actual {@code EventBus#post} call
+ * on the client thread -- this class does not do that for you.</b> This is
+ * the opposite convention from {@link QuestHelperBridge}: {@code
+ * QuestManager.startUpQuest} checks {@code client.isClientThread()} itself
+ * and defers internally, so {@link QuestHelperBridge#start} is safe to call
+ * from any thread, including the panel button's own Swing EDT. Shortest
+ * Path's {@code onPluginMessage} does no such check -- disassembling it
+ * shows an unconditional assertion that it is already running on the client
+ * thread, with nothing to get itself there if it is not, and {@code
+ * EventBus#post} invokes every subscriber synchronously on whatever thread
+ * called {@code post} itself. A bare {@code eventBus::post} reference used
+ * to be wired in here, straight from a Swing button's action listener, and
+ * every click threw {@code AssertionError} out of Shortest Path's handler
+ * before {@link #route} ever returned -- fixed by building {@link
+ * #eventPoster} with {@link #clientThreadEventPoster} instead, see that
+ * method's own doc for the shape of the fix and {@code
+ * QuestpathPlugin#startUp} for where it is actually wired. That {@code
+ * AssertionError} is also the reason {@link #route}'s catch
+ * below is not narrowed to {@code RuntimeException} alone: {@code
+ * AssertionError} extends {@code Error}, not {@code Exception}, so a bare
+ * {@code catch (RuntimeException e)} never saw it. Confirmed the same way
+ * everything else in this class was: {@code javap -c} against {@code
+ * EventBus.post} in the installed jar shows its per-subscriber exception
+ * table covers only {@code java.lang.Exception} -- so {@link
+ * RouteOutcome#SENT}'s own doc, which describes {@code post} swallowing a
+ * subscriber's thrown exception, was correspondingly narrower than it read:
+ * true for anything under {@code Exception}, never true for an {@code
+ * Error}, which is exactly the class {@code AssertionError} belongs to and
+ * exactly why this one reached all the way up to RuneLite's own top-level
+ * uncaught-exception handler instead of being quietly absorbed.
  */
 @Slf4j
 class ShortestPathBridge
@@ -172,33 +203,74 @@ class ShortestPathBridge
 		 * checked.
 		 */
 		NO_DESTINATIONS,
-		/** {@code EventBus#post} itself threw. Logged at warn already. */
+		/**
+		 * {@link #eventPoster} threw while this method's own try/catch could
+		 * still see it. Logged at warn already.
+		 *
+		 * <p>What that catch can actually see now depends entirely on which
+		 * thread called {@link #route}, because a correctly-wired {@link
+		 * #eventPoster} hands the real {@code EventBus#post} call off to the
+		 * client thread rather than making it inline -- see the class doc's
+		 * client-thread paragraph for why that hand-off exists at all.
+		 * Called already on the client thread (rare for this button, which
+		 * is Swing), {@code ClientThread#invoke} runs the post immediately
+		 * and inline, so a failure at or below {@code post} -- including a
+		 * subscriber-level {@code AssertionError}, per {@link #route}'s own
+		 * multi-catch -- surfaces here as {@code CALL_FAILED} exactly as it
+		 * always could. Called off the client thread -- the normal case,
+		 * the panel button's own Swing action listener -- {@code
+		 * ClientThread#invoke} only enqueues the runnable and returns
+		 * immediately without running it, so this catch cannot see a
+		 * failure inside {@code post} or the subscriber at all; that
+		 * deferred runnable is instead run, and any exception from it
+		 * caught and merely logged, by RuneLite's own {@code
+		 * ClientThread#invokeList} on a later game tick, confirmed by {@code
+		 * javap -c} against the installed jar to wrap each queued task in
+		 * {@code catch (Throwable e)} before logging {@code "Exception in
+		 * invoke"} and moving on -- {@code Throwable}, not the narrower
+		 * {@code Exception} {@code EventBus#post} itself catches (see {@link
+		 * #SENT}'s own doc), which is exactly why routing through the client
+		 * thread also fixed the original {@code AssertionError} propagating
+		 * all the way out to RuneLite's top-level uncaught-exception
+		 * handler, not merely relocated where it surfaced. In that deferred
+		 * case, {@code CALL_FAILED} can only ever mean the hand-off itself
+		 * failed to enqueue -- essentially never, in practice.
+		 */
 		CALL_FAILED,
 		/**
-		 * The event was built and handed to {@code EventBus#post} without
+		 * The event was built and handed to {@link #eventPoster} without
 		 * throwing. <b>Not</b> confirmation that Shortest Path received or
 		 * acted on it -- there is no public read-back for that, unlike
 		 * {@link QuestHelperBridge#start}, which can ask Quest Helper what
-		 * it actually selected. {@code EventBus#post} is fire-and-forget by
-		 * design: it delivers to every current subscriber synchronously and
-		 * returns, whether zero of them were Shortest Path or one of them
-		 * was and quietly declined the target. This is the strongest claim
-		 * honestly available.
+		 * it actually selected. Off the client thread (see {@link
+		 * #CALL_FAILED}'s own doc for why that is the normal case for this
+		 * button), {@code SENT} means only "handed off for posting on the
+		 * client thread", weaker even than "reached {@code EventBus#post}" --
+		 * the actual post has not necessarily happened yet when this fires.
+		 * Once it does run, {@code EventBus#post} is fire-and-forget by
+		 * design regardless of which thread called it: it delivers to every
+		 * current subscriber synchronously and returns, whether zero of them
+		 * were Shortest Path or one of them was and quietly declined the
+		 * target. This is the strongest claim honestly available.
 		 *
 		 * <p>It is blinder than that description alone suggests. {@code
 		 * javap -c} against {@code net.runelite.client.eventbus.EventBus} in
 		 * the installed {@code client-1.12.37.jar} confirms {@code post}
 		 * wraps <i>each subscriber's invocation individually</i> in a
-		 * try/catch that hands any thrown exception to an internal handler
-		 * and continues to the next subscriber -- it never rethrows to the
-		 * poster. So a genuine failure inside Shortest Path's own {@code
-		 * onPluginMessage} -- it was disassembled too, and does real work
-		 * with the target set before handing it to its pathfinder -- would
-		 * never surface here as {@link #CALL_FAILED}; this method's own
-		 * try/catch can only ever catch an exception from building the
-		 * {@code PluginMessage} itself or from {@code post} before it
-		 * reaches a subscriber, not from the subscriber's body. {@code SENT}
-		 * therefore means exactly "the call reached {@code EventBus#post}
+		 * try/catch whose exception table covers only {@code
+		 * java.lang.Exception} -- not the broader {@code Throwable} an
+		 * uninformed reading of "fire-and-forget" might suggest -- handing
+		 * anything caught to an internal handler and continuing to the next
+		 * subscriber, never rethrowing to the poster. An {@code Exception}
+		 * from Shortest Path's own {@code onPluginMessage} -- it was
+		 * disassembled too, and does real work with the target set before
+		 * handing it to its pathfinder -- would therefore never surface here
+		 * as {@link #CALL_FAILED} even when this method's own try/catch runs
+		 * inline; an {@code Error} from it (an {@code AssertionError}, say)
+		 * is the one thing that exception table does not cover, which is
+		 * exactly what this class shipped without a thread hand-off for
+		 * before it was fixed -- see the class doc. Beyond that one gap,
+		 * {@code SENT} means exactly "the call reached {@code EventBus#post}
 		 * without incident", nothing stronger, however the report from
 		 * inside Shortest Path may have actually gone -- which is why
 		 * {@link #route} logs the destination count at info on this outcome:
@@ -213,11 +285,13 @@ class ShortestPathBridge
 	private final String pluginClassName;
 
 	/**
-	 * Posts an event to every current subscriber, e.g. {@code eventBus::post}.
-	 * A {@code Consumer<Object>} rather than a narrower {@code
-	 * Consumer<PluginMessage>} only so production wiring can pass the method
-	 * reference directly; every real call still only ever posts a {@link
-	 * PluginMessage}.
+	 * Posts an event to every current subscriber -- <b>not</b> safely a bare
+	 * {@code eventBus::post} reference in production; see the class doc's
+	 * client-thread paragraph for why a real caller must route this through
+	 * {@code ClientThread#invoke} instead. A {@code Consumer<Object>} rather
+	 * than a narrower {@code Consumer<PluginMessage>} only so production
+	 * wiring can pass a lambda around that hand-off directly; every real
+	 * call still only ever posts a {@link PluginMessage}.
 	 */
 	private final Consumer<Object> eventPoster;
 
@@ -228,11 +302,41 @@ class ShortestPathBridge
 	 *     {@code pluginManager::getPlugins}
 	 * @param pluginEnabled whether a given plugin instance is switched on,
 	 *     e.g. {@code plugin -> pluginManager.isPluginEnabled((Plugin) plugin)}
-	 * @param eventPoster posts to RuneLite's shared event bus, e.g. {@code eventBus::post}
+	 * @param eventPoster posts to RuneLite's shared event bus -- build this
+	 *     with {@link #clientThreadEventPoster}, e.g. {@code
+	 *     ShortestPathBridge.clientThreadEventPoster(clientThread::invoke,
+	 *     eventBus::post)}, never a bare {@code eventBus::post} reference;
+	 *     see the class doc's client-thread paragraph for why
 	 */
 	ShortestPathBridge(Supplier<Collection<?>> plugins, Predicate<Object> pluginEnabled, Consumer<Object> eventPoster)
 	{
 		this(plugins, pluginEnabled, PLUGIN_CLASS_NAME, eventPoster);
+	}
+
+	/**
+	 * Builds an {@link #eventPoster} that always lands {@code post} on the
+	 * client thread, whichever thread calls the returned {@code Consumer} --
+	 * see this class's own doc for why that hand-off is required at all and
+	 * what happened here without it.
+	 *
+	 * <p>Takes the hand-off itself as a plain {@code Consumer<Runnable>}
+	 * rather than the concrete {@code ClientThread}, the same reason {@link
+	 * QuestHelperBridge}'s own {@code postVerification} seam does: it lets a
+	 * test stand in for "the client thread" with a small fixture instead of
+	 * a real, Guice-injected {@code ClientThread} instance, which cannot be
+	 * constructed usably outside RuneLite's own container. Production
+	 * wiring passes {@code clientThread::invoke}, whose signature already
+	 * matches {@code Consumer<Runnable>} exactly.
+	 *
+	 * @param onClientThread runs a task on the client thread, deferring it
+	 *     if the caller is not already on that thread -- production wiring
+	 *     passes {@code clientThread::invoke}
+	 * @param post the actual post call once on the client thread, e.g.
+	 *     {@code eventBus::post}
+	 */
+	static Consumer<Object> clientThreadEventPoster(Consumer<Runnable> onClientThread, Consumer<Object> post)
+	{
+		return object -> onClientThread.accept(() -> post.accept(object));
 	}
 
 	/**
@@ -276,7 +380,13 @@ class ShortestPathBridge
 	 *     as-is; picking the nearest is Shortest Path's own job, not this
 	 *     class's.
 	 * @param onOutcome called exactly once, before this method returns --
-	 *     everything here is synchronous, unlike {@link QuestHelperBridge#start}.
+	 *     this method itself never defers, unlike {@link
+	 *     QuestHelperBridge#start}. That is narrower than "everything here is
+	 *     synchronous", though: a correctly-wired {@link #eventPoster} hands
+	 *     the actual {@code EventBus#post} call off to the client thread, so
+	 *     when this is called off that thread (the normal case for the panel
+	 *     button) the real post has usually not happened yet by the time
+	 *     {@code onOutcome} fires -- see {@link RouteOutcome#SENT}'s own doc.
 	 */
 	void route(Set<WorldPoint> destinations, Consumer<RouteOutcome> onOutcome)
 	{
@@ -297,7 +407,19 @@ class ShortestPathBridge
 			Map<String, Object> data = Map.of(TARGET_KEY, destinations);
 			eventPoster.accept(new PluginMessage(CONFIG_GROUP, MESSAGE_NAME, data));
 		}
-		catch (RuntimeException e)
+		// RuntimeException | AssertionError, not a bare RuntimeException and
+		// not the broader Throwable: this class doc's client-thread
+		// paragraph explains exactly why AssertionError specifically must be
+		// caught here (Shortest Path's own onPluginMessage asserts it is on
+		// the client thread, and that assertion is an Error, not an
+		// Exception, so a RuntimeException-only catch silently let it
+		// through before this fix). Not widened to Throwable: something like
+		// OutOfMemoryError or StackOverflowError surfacing from a post this
+		// deep means the JVM itself is in trouble, and reporting that as an
+		// ordinary CALL_FAILED chat line -- rather than letting it propagate
+		// to whatever crash handling exists above this -- would hide a
+		// problem far bigger than "Shortest Path didn't get the route".
+		catch (RuntimeException | AssertionError e)
 		{
 			log.warn("Posting PluginMessage(\"{}\", \"{}\", ...) with {} destination(s) failed"
 				+ " -- Shortest Path may be out of date", CONFIG_GROUP, MESSAGE_NAME, destinations.size(), e);

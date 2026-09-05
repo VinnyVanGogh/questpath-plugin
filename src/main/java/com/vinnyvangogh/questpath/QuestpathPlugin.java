@@ -322,18 +322,21 @@ public class QuestpathPlugin extends Plugin
 	 * start point -- rebuilt once per {@link #refresh}, never per tick, by
 	 * {@link QuestStartCandidates#of}.
 	 *
-	 * <p>Every remaining step of the saved route, plus every quest {@link
-	 * QuestVerdicts} currently calls {@link QuestStatus#ELIGIBLE} or {@link
-	 * QuestStatus#BOOSTABLE} -- startable right now, boost genuinely covering
-	 * any shortfall included -- and, either way, not already begun. See
-	 * {@link QuestStartCandidates}'s own class doc for the bug this
-	 * double filter closes: an earlier version added every route step with
-	 * no eligibility check at all, which is how Shadow of the Storm started
-	 * on an account well short of its levels. No arbitrary size limit on top
-	 * of either filter, because neither half scales with the 218-quest graph
-	 * on a real account -- a route is a few dozen quests at most and
-	 * startable quests are bounded by how much of the prerequisite tree is
-	 * actually open, typically far fewer than that.
+	 * <p>Every remaining step of the saved route, capped to {@link
+	 * QuestpathConfig#questStartArrivalDepth} route positions when that is
+	 * non-zero, plus every quest {@link QuestVerdicts} currently calls {@link
+	 * QuestStatus#ELIGIBLE} or {@link QuestStatus#BOOSTABLE} -- startable
+	 * right now, boost genuinely covering any shortfall included -- and,
+	 * either way, not already begun. The depth setting only narrows the
+	 * route half; off-route ELIGIBLE/BOOSTABLE candidates are unaffected at
+	 * any depth, see {@link QuestStartCandidates}'s own class doc. See that
+	 * same doc for the bug this double filter closes: an earlier version
+	 * added every route step with no eligibility check at all, which is how
+	 * Shadow of the Storm started on an account well short of its levels. No
+	 * arbitrary size limit on top of either filter, because neither half
+	 * scales with the 218-quest graph on a real account -- a route is a few
+	 * dozen quests at most and startable quests are bounded by how much of
+	 * the prerequisite tree is actually open, typically far fewer than that.
 	 * {@link #checkQuestStartArrival} spends one {@code WorldPoint#distanceTo}
 	 * per entry here, per tick, and nothing else -- no classification, no
 	 * graph lookup, no per-tick allocation beyond the watcher's own arrival
@@ -450,9 +453,18 @@ public class QuestpathPlugin extends Plugin
 		shortestPathBridge = new ShortestPathBridge(pluginManager::getPlugins,
 			plugin -> pluginManager.isPluginEnabled((Plugin) plugin),
 			// PluginMessage/EventBus#post is RuneLite's own public API, not
-			// Shortest Path's -- see ShortestPathBridge's class doc for why
-			// that means no reflection and no thread hand-off are needed here.
-			eventBus::post);
+			// Shortest Path's, so no reflection is needed here -- but a
+			// thread hand-off still is: Shortest Path's own onPluginMessage
+			// handler asserts it is running on the client thread and does
+			// nothing to get itself there if it is not, the opposite
+			// convention from Quest Helper's startUpQuest, which defers
+			// internally. This button is Swing, so route() is called from
+			// the EDT, and a bare eventBus::post reference here used to run
+			// Shortest Path's assertion on the EDT and throw AssertionError
+			// on every click -- see ShortestPathBridge's own class doc and
+			// clientThreadEventPoster's doc for the fix and why it works
+			// from either thread.
+			ShortestPathBridge.clientThreadEventPoster(clientThread::invoke, eventBus::post));
 		panel = new QuestpathPanel(sprites, new OverlaySettingsPanel(config, configManager),
 			this::skillPlan, questHelperBridge, shortestPathBridge, this::shopLocation);
 		navButton = NavigationButton.builder()
@@ -706,7 +718,8 @@ public class QuestpathPlugin extends Plugin
 	 */
 	private Map<String, WorldPoint> questStartCandidates(NextQuestStatus route, QuestVerdicts verdicts)
 	{
-		return QuestStartCandidates.of(questGraph, route, verdicts, inProgressQuestNames());
+		return QuestStartCandidates.of(questGraph, route, verdicts, inProgressQuestNames(),
+			config.questStartArrivalDepth());
 	}
 
 	/**

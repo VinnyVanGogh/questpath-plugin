@@ -693,6 +693,36 @@ public interface QuestpathConfig extends Config
 		return false;
 	}
 
+	@Range(min = 0, max = 218)
+	@ConfigItem(
+		keyName = "questStartArrivalDepth",
+		name = "- how far down the route",
+		description = "Limits the prompt above to the next N outstanding quests on your saved"
+			+ " route, counted by position -- 1 means only the very next route quest can ever"
+			+ " prompt, 3 means the next three, and so on. 0 means no limit, which is every"
+			+ " outstanding route quest and questpath's previous behaviour. This only narrows the"
+			+ " route: a quest that is startable but not on your saved route -- an off-route"
+			+ " ELIGIBLE or BOOSTABLE quest -- is never affected by this number, at any depth,"
+			+ " because \"how far down the route\" has no meaning for a quest that is not on it."
+			+ " A quest a depth would otherwise include but that is not actually startable right"
+			+ " now (blocked on a skill, a quest, or your build rules) still never prompts --"
+			+ " this setting only narrows which route positions are checked at all, it never"
+			+ " overrides that filter.",
+		section = questHelperSection,
+		position = 3
+	)
+	default int questStartArrivalDepth()
+	{
+		// 0 (no limit) rather than a small default: this is a narrowing of an
+		// already-off-by-default feature, and anyone who already had
+		// questHelperArrivalPrompt turned on before this setting existed must
+		// not see their prompts quietly shrink to "next few" the moment they
+		// update. Zero reproduces exactly what shipped before this existed;
+		// picking it narrower is now one spinner click away for anyone who
+		// wants "just the next one or two".
+		return 0;
+	}
+
 	@ConfigItem(
 		keyName = "chatOnItemComplete",
 		name = "Say when an item is fully collected",

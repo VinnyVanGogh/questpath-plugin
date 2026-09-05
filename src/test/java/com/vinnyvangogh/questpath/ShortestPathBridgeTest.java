@@ -172,4 +172,62 @@ public class ShortestPathBridgeTest
 		assertEquals(ShortestPathBridge.RouteOutcome.UNAVAILABLE, routeOf(bridge, oneDestination()));
 		assertTrue("an unavailable bridge must never post", posted.isEmpty());
 	}
+
+	/**
+	 * Regression pin for the real bug this class shipped with: a Swing
+	 * button called {@link ShortestPathBridge#route} straight from the EDT
+	 * with a bare {@code eventBus::post} reference as its poster, and
+	 * Shortest Path's own {@code onPluginMessage} -- which asserts it is
+	 * running on the client thread and does nothing to get itself there --
+	 * threw {@code AssertionError} on every click. {@link
+	 * ShortestPathBridge#clientThreadEventPoster} is the fix: this pins that
+	 * the actual post always happens <i>through</i> the client-thread
+	 * stand-in, never before or instead of it, so a future refactor that
+	 * quietly went back to posting inline cannot pass this.
+	 */
+	@Test
+	public void clientThreadEventPosterRunsThePostOnlyThroughTheHandoff()
+	{
+		List<String> order = new ArrayList<>();
+		// Stands in for ClientThread#invoke: real production wiring passes
+		// clientThread::invoke, which cannot be constructed usably here --
+		// see clientThreadEventPoster's own doc for why the seam is a plain
+		// Consumer<Runnable> instead of the concrete, Guice-injected type.
+		Consumer<Runnable> clientThreadStandIn = task ->
+		{
+			order.add("handed off to the client thread");
+			task.run();
+		};
+
+		Consumer<Object> poster = ShortestPathBridge.clientThreadEventPoster(clientThreadStandIn,
+			event -> order.add("posted"));
+		poster.accept(new PluginMessage("shortestpath", "path", java.util.Map.of()));
+
+		assertEquals("the post must happen strictly after the client-thread hand-off, never before it",
+			List.of("handed off to the client thread", "posted"), order);
+	}
+
+	/**
+	 * The other half of the same pin: if the client-thread stand-in never
+	 * actually runs the task it was handed (exactly what a real off-thread
+	 * {@code ClientThread#invoke} call does until its next tick), the post
+	 * itself must not have happened either -- proving the post is genuinely
+	 * nested inside the hand-off's own task, not merely sequenced next to it.
+	 */
+	@Test
+	public void clientThreadEventPosterNeverPostsWithoutTheHandoffRunningItsTask()
+	{
+		List<Runnable> capturedTasks = new ArrayList<>();
+		List<Object> posted = new ArrayList<>();
+
+		Consumer<Object> poster = ShortestPathBridge.clientThreadEventPoster(capturedTasks::add, posted::add);
+		poster.accept(new PluginMessage("shortestpath", "path", java.util.Map.of()));
+
+		assertEquals("exactly one task must be handed to the client-thread stand-in", 1, capturedTasks.size());
+		assertTrue("nothing should be posted until the client-thread hand-off actually runs its task",
+			posted.isEmpty());
+
+		capturedTasks.get(0).run();
+		assertEquals(1, posted.size());
+	}
 }

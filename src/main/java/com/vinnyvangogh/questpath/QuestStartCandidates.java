@@ -3,6 +3,7 @@ package com.vinnyvangogh.questpath;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import net.runelite.api.coords.WorldPoint;
@@ -37,6 +38,23 @@ import net.runelite.api.coords.WorldPoint;
  * been started, so an in-progress quest that still meets every requirement
  * classifies exactly as a fresh one would and would otherwise keep
  * re-arriving every time the player walked back through its start area.
+ *
+ * <p><b>{@code routeDepth} narrows positions, not eligibility.</b> {@link
+ * QuestpathConfig#questStartArrivalDepth} lets the player cap how far down
+ * their saved route this method even looks -- {@code routeDepth} route
+ * steps, counted from the route's own head, whether or not each one turns
+ * out startable. A depth of 1 means only {@code route.upcoming().get(0)} is
+ * ever considered, however many further steps are themselves eligible; a
+ * {@code SKILL_BLOCKED} step sitting at position 0 is still excluded by the
+ * {@code startable} filter, exactly as it always was, so narrowing the
+ * position window can never let a blocked quest through. It only ever
+ * removes from what {@link #of} would otherwise offer, never adds. <b>It
+ * does not touch off-route candidates at all</b> -- an {@code ELIGIBLE} or
+ * {@code BOOSTABLE} quest that is not on the saved route has no "position"
+ * for a depth to be measured against, so every one of those is offered
+ * regardless of {@code routeDepth}'s value. A depth of {@code 0} means no
+ * limit: every outstanding route step is checked, which is this method's
+ * behaviour from before this parameter existed.
  */
 final class QuestStartCandidates
 {
@@ -57,11 +75,16 @@ final class QuestStartCandidates
 	 * @param inProgressQuestNames quest names the client reports as started
 	 *     but not finished, per {@code QuestpathPlugin#inProgressQuestNames}.
 	 *     Never null; pass an empty set when nothing is known.
+	 * @param routeDepth how many of the route's outstanding steps, counted
+	 *     from the head, are even considered -- see this class's own doc for
+	 *     what that does and, just as importantly, what it leaves alone.
+	 *     {@code 0} or negative means no limit: every outstanding route step
+	 *     is considered, same as before this parameter existed.
 	 * @return quest name to its start point, for every quest the account can
 	 *     actually begin and has not already begun. Never null.
 	 */
 	static Map<String, WorldPoint> of(QuestGraph graph, NextQuestStatus route, QuestVerdicts verdicts,
-		Set<String> inProgressQuestNames)
+		Set<String> inProgressQuestNames, int routeDepth)
 	{
 		if (graph == null || verdicts == null)
 		{
@@ -79,19 +102,41 @@ final class QuestStartCandidates
 		}
 		startable.removeAll(inProgressQuestNames);
 
+		// Route steps at or past routeDepth are dropped from the final result
+		// outright, not merely left off this loop's insertion order: startable
+		// is a flat set with no notion of route position, so without this,
+		// the unconditional pass over startable below would simply re-add a
+		// too-far route step anyway, the moment it noticed the step was
+		// otherwise eligible -- silently undoing the whole cap. Only route
+		// step names go in here; an off-route quest is never a route step at
+		// any position, so it can never be excluded by this and always
+		// survives to the final pass regardless of routeDepth.
+		Set<String> routeStepsBeyondDepth = new HashSet<>();
+
 		Map<String, WorldPoint> candidates = new LinkedHashMap<>();
 		if (route != null)
 		{
-			for (NextQuestStatus.Step step : route.upcoming())
+			List<NextQuestStatus.Step> upcoming = route.upcoming();
+			int limit = routeDepth <= 0 ? upcoming.size() : Math.min(routeDepth, upcoming.size());
+			for (int i = 0; i < limit; i++)
 			{
-				if (startable.contains(step.questName()))
+				String questName = upcoming.get(i).questName();
+				if (startable.contains(questName))
 				{
-					addStartCandidate(graph, candidates, step.questName());
+					addStartCandidate(graph, candidates, questName);
 				}
+			}
+			for (int i = limit; i < upcoming.size(); i++)
+			{
+				routeStepsBeyondDepth.add(upcoming.get(i).questName());
 			}
 		}
 		for (String name : startable)
 		{
+			if (routeStepsBeyondDepth.contains(name))
+			{
+				continue;
+			}
 			addStartCandidate(graph, candidates, name);
 		}
 		return candidates;
