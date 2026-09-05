@@ -94,7 +94,10 @@ class OverlaySettingsPanel extends JPanel
 
 		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 		setBackground(ColorScheme.DARK_GRAY_COLOR);
-		setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
+		// Deeper at the bottom than the sides on purpose: the last control in
+		// the last group otherwise ends flush against the scroll viewport's
+		// edge, which is indistinguishable from the panel being clipped.
+		setBorder(BorderFactory.createEmptyBorder(8, 8, 24, 8));
 		setAlignmentX(LEFT_ALIGNMENT);
 
 		add(syncSection(config));
@@ -382,6 +385,13 @@ class OverlaySettingsPanel extends JPanel
 				+ " finish gathering something. Fades after a few seconds, never more than"
 				+ " three at once.",
 			config.floatingNotes(), "floatingNotes"));
+		addField(body, "Float notes",
+			combo(NotePlacement.values(), config.floatingNotePlacement(),
+				"Where a floating note appears. Above the shopkeeper reads as that NPC"
+					+ " speaking. There is not always one -- items get finished by chopping"
+					+ " trees too -- so the shopkeeper options fall back to above you rather"
+					+ " than showing nothing.",
+				"floatingNotePlacement"));
 		return sectionGroup("Extras", body);
 	}
 

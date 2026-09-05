@@ -26,6 +26,8 @@ import net.runelite.api.GameState;
 import net.runelite.api.Quest;
 import net.runelite.api.QuestState;
 import net.runelite.api.Skill;
+import net.runelite.api.Actor;
+import net.runelite.api.NPC;
 import net.runelite.api.coords.WorldPoint;
 import net.runelite.api.events.GameStateChanged;
 import net.runelite.client.chat.ChatColorType;
@@ -215,6 +217,7 @@ public class QuestpathPlugin extends Plugin
 	 */
 	private final ItemCompletionWatcher completions = new ItemCompletionWatcher();
 	private final FloatingNotes floatingNotes = new FloatingNotes();
+	private final ShopkeeperMemory shopkeeper = new ShopkeeperMemory();
 
 	/**
 	 * Watches for a shop opening that sells something outstanding -- see its
@@ -583,6 +586,7 @@ public class QuestpathPlugin extends Plugin
 		// so a handful left over from a previous session would otherwise be
 		// waiting, already expired, for the next one to read them.
 		floatingNotes.clear();
+		shopkeeper.forget();
 		if (groundOverlay != null)
 		{
 			overlayManager.remove(groundOverlay);
@@ -704,6 +708,7 @@ public class QuestpathPlugin extends Plugin
 			// route they sent, so automatic Quest Helper starts no longer
 			// need to be held back for it.
 			shopRouteSentAt = null;
+			rememberShopkeeper();
 		}
 
 		Set<Integer> shopItemIds = Collections.emptySet();
@@ -724,7 +729,10 @@ public class QuestpathPlugin extends Plugin
 		}
 
 		QuestItems items = overlaySnapshot == null ? null : overlaySnapshot.items();
-		announceShopArrival(shopArrival.observe(shopOpenNow, shopItemIds, items));
+		java.util.List<QuestItems.Total> selling =
+			shopArrival.observe(shopOpenNow, shopItemIds, items);
+		announceShopArrival(selling);
+		floatShopOffer(selling);
 	}
 
 	/**
@@ -1211,14 +1219,14 @@ public class QuestpathPlugin extends Plugin
 	 */
 
 	/**
-	 * Floats a line in the world for each item just finished -- see {@link
-	 * FloatingNotes} for why the chat line alone was not enough.
+	 * Floats a line for each item just finished -- see {@link FloatingNotes}
+	 * for why the chat line alone was not enough.
 	 *
-	 * <p>Placed where the player is standing rather than over the item or the
-	 * shopkeeper. Those would both be guesses: the item is in the bags by the
-	 * time this runs, and nothing here knows which NPC, if any, handed it
-	 * over. Text floating over an NPC also reads as something that NPC said,
-	 * which is a claim this plugin has no business making.
+	 * <p>Where it lands is {@link NotePlacement}'s call, and above the
+	 * shopkeeper is the default because that is what the feature is for. The
+	 * fallback matters as much as the placement: an item finished by chopping
+	 * a tree has no NPC in the picture, and a note that simply failed to
+	 * appear at those moments would read as the feature being broken.
 	 */
 	private void floatCompletions(java.util.List<ItemCompletionWatcher.Completion> completed)
 	{
@@ -1226,17 +1234,75 @@ public class QuestpathPlugin extends Plugin
 		{
 			return;
 		}
-		WorldPoint where = playerLocation();
-		if (where == null)
+		Instant now = Instant.now();
+		WorldPoint you = playerLocation();
+		WorldPoint shopkeeperAt = shopkeeper.location(now);
+		NotePlacement placement = config.floatingNotePlacement();
+
+		for (ItemCompletionWatcher.Completion done : completed)
+		{
+			String praise = FloatingNotes.praiseFor(done.itemName());
+			if (placement.overShopkeeper(shopkeeperAt != null))
+			{
+				floatingNotes.add(praise, shopkeeperAt, now);
+			}
+			if (placement.overPlayer(shopkeeperAt != null))
+			{
+				floatingNotes.add(praise, you, now);
+			}
+		}
+	}
+
+	/**
+	 * Has the shopkeeper mention what they stock that the plan still needs.
+	 *
+	 * <p>The NPC half of the same plan the completion notes serve: "NPCs
+	 * greet people ... while you're here, you should buy this item." Said
+	 * only over the shopkeeper, never over the player -- an offer to sell you
+	 * something is the shopkeeper's line, and putting it over your own head
+	 * would be nonsense rather than merely misplaced.
+	 */
+	private void floatShopOffer(java.util.List<QuestItems.Total> matches)
+	{
+		if (matches.isEmpty() || config == null || !config.floatingNotes()
+			|| config.floatingNotePlacement() == NotePlacement.ABOVE_YOU)
 		{
 			return;
 		}
 		Instant now = Instant.now();
-		for (ItemCompletionWatcher.Completion done : completed)
+		WorldPoint where = shopkeeper.location(now);
+		if (where == null)
 		{
-			floatingNotes.add(FloatingNotes.praiseFor(done.itemName()), where, now);
+			return;
+		}
+		for (QuestItems.Total match : matches)
+		{
+			floatingNotes.add(FloatingNotes.offerFor(match.name(), match.outstanding()), where, now);
 		}
 	}
+
+	/**
+	 * Remembers whoever this shop belongs to, so a note can be put over them
+	 * -- see {@link ShopkeeperMemory} for why by tile rather than by
+	 * reference.
+	 *
+	 * <p>Read from what the player is interacting with rather than from the
+	 * nearest NPC: opening a shop means talking to its owner, and "nearest"
+	 * in a busy bank would pick somebody at random.
+	 */
+	private void rememberShopkeeper()
+	{
+		if (client.getLocalPlayer() == null)
+		{
+			return;
+		}
+		Actor talkingTo = client.getLocalPlayer().getInteracting();
+		if (talkingTo instanceof NPC)
+		{
+			shopkeeper.remember(talkingTo.getName(), talkingTo.getWorldLocation(), Instant.now());
+		}
+	}
+
 
 	private WorldPoint playerLocation()
 	{

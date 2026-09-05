@@ -552,6 +552,23 @@ public interface QuestpathConfig extends Config
 	}
 
 	@ConfigItem(
+		keyName = "floatingNotePlacement",
+		name = "Float notes",
+		description = "Where a floating note appears. Above the shopkeeper reads as that NPC"
+			+ " speaking, which is the point -- but items get finished by chopping trees as"
+			+ " often as by buying things, and there is no shopkeeper then, so both shopkeeper"
+			+ " options fall back to above you rather than showing nothing.",
+		section = shopSection,
+		position = 6
+	)
+	default NotePlacement floatingNotePlacement()
+	{
+		// Above the shopkeeper is what this was asked for; the fallback above
+		// means it still says something when there is nobody to say it.
+		return NotePlacement.ABOVE_SHOPKEEPER;
+	}
+
+	@ConfigItem(
 		keyName = "shopArrivalPrompt",
 		name = "Say when a shop sells what you need",
 		description = "One chat line the moment you open a shop selling something your plan"

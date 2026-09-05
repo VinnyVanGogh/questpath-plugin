@@ -122,6 +122,26 @@ class FloatingNotes
 	}
 
 	/**
+	 * The line a shopkeeper says when you walk in and they stock something
+	 * your plan still needs.
+	 *
+	 * <p>States the count rather than only the item, because "I sell rope" is
+	 * something the shelf already says, and "you still need 2" is the part
+	 * that is actually this plugin's to know.
+	 *
+	 * @param outstanding how many more are wanted; at or below zero yields
+	 *     nothing, since there is no offer to make about an item in hand
+	 */
+	static String offerFor(String itemName, long outstanding)
+	{
+		if (itemName == null || itemName.isEmpty() || outstanding <= 0)
+		{
+			return "";
+		}
+		return "I sell " + itemName + " -- you still need " + outstanding + ".";
+	}
+
+	/**
 	 * Floats a line at a world point. An empty line or a missing point is
 	 * dropped rather than shown blank or at the origin.
 	 */

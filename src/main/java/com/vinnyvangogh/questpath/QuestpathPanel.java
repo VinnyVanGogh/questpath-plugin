@@ -1119,7 +1119,7 @@ class QuestpathPanel extends PluginPanel
 			// a fourth should not have to give all three back to undo one.
 			for (String skippedName : skipped)
 			{
-				JButton undo = new JButton(skippedName + "  → restore");
+				JButton undo = new JButton(skippedName + "  ·  restore");
 				undo.setFont(FontManager.getRunescapeSmallFont());
 				undo.setAlignmentX(Component.LEFT_ALIGNMENT);
 				undo.addActionListener(event ->
