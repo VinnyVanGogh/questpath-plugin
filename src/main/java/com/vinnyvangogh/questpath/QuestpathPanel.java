@@ -250,6 +250,9 @@ class QuestpathPanel extends PluginPanel
 	 * knows whether there is a trip to redirect. Supplied by the plugin
 	 * rather than tracked here: the panel does not own that window.
 	 */
+	/** Calls off a running shop trip -- see QuestpathPlugin#cancelShopRoute. */
+	private final Runnable onCancelShopRoute;
+
 	/** Resolves a monster name to a tile, for an item no shop sells. */
 	private final java.util.function.Function<String, WorldPoint> dropLocator;
 	private final java.util.function.BooleanSupplier shopRouteActive;
@@ -260,6 +263,7 @@ class QuestpathPanel extends PluginPanel
 		QuestHelperBridge questHelperBridge, ShortestPathBridge shortestPathBridge,
 		java.util.function.Function<String, WorldPoint> shopLocator,
 		java.util.function.Function<String, WorldPoint> dropLocator, Runnable onShopRouteSent,
+		Runnable onCancelShopRoute,
 		java.util.function.BooleanSupplier shopRouteActive, ShopItemSkips shopItemSkips)
 	{
 		this.overlaySettings = overlaySettings;
@@ -269,6 +273,7 @@ class QuestpathPanel extends PluginPanel
 		this.shopLocator = shopLocator;
 		this.dropLocator = dropLocator;
 		this.onShopRouteSent = onShopRouteSent;
+		this.onCancelShopRoute = onCancelShopRoute;
 		this.shopRouteActive = shopRouteActive;
 		this.shopItemSkips = shopItemSkips;
 		setLayout(new BorderLayout());
@@ -874,6 +879,13 @@ class QuestpathPanel extends PluginPanel
 		if (!filtering)
 		{
 			panel.add(shopRouteButton(items));
+			if (shopRouteActive.getAsBoolean())
+			{
+				// Only while a trip is running. A permanent "stop" beside a
+				// "start" that has never been pressed is a control that does
+				// nothing, and this panel already has enough to read.
+				panel.add(cancelShopRouteButton());
+			}
 			panel.add(skipRow(items));
 			panel.add(Box.createVerticalStrut(8));
 		}
@@ -1015,6 +1027,27 @@ class QuestpathPanel extends PluginPanel
 	 * honest state {@link ShortestPathBridge}'s class doc describes for a
 	 * bundle version too old to carry shop data at all.
 	 */
+	/**
+	 * Stops a shop trip that is under way.
+	 *
+	 * <p>Asked for directly: "we need a way to disable the shop route after
+	 * you turn it on." Until now a trip ended only by expiring or by a shop
+	 * interface opening, and neither of those is the player changing their
+	 * mind about the whole errand.
+	 */
+	private JButton cancelShopRouteButton()
+	{
+		JButton button = new JButton("Stop the shop route");
+		button.setFont(FontManager.getRunescapeSmallFont());
+		button.setAlignmentX(Component.LEFT_ALIGNMENT);
+		button.addActionListener(event ->
+		{
+			onCancelShopRoute.run();
+			repaintAll();
+		});
+		return button;
+	}
+
 	private JButton shopRouteButton(QuestItems items)
 	{
 		Set<WorldPoint> destinations = shopDestinations(items);

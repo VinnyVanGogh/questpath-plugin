@@ -410,6 +410,43 @@ class ShortestPathBridge
 	 *     button) the real post has usually not happened yet by the time
 	 *     {@code onOutcome} fires -- see {@link RouteOutcome#SENT}'s own doc.
 	 */
+	/**
+	 * Clears whatever path Shortest Path is currently drawing.
+	 *
+	 * <p>Sends the same message {@link #route} does with an empty target set,
+	 * which is how Shortest Path's own "clear" works. Deliberately a separate
+	 * method rather than {@code route(emptySet())}: that call is guarded to
+	 * report {@link RouteOutcome#NO_DESTINATIONS} precisely so a shopping
+	 * list with nowhere to go cannot silently wipe the player's path, and
+	 * routing a cancel through the same door would remove that guard for
+	 * everyone. Cancelling is a thing the player asked for; having nothing to
+	 * send is not.
+	 *
+	 * @return whether the message went out
+	 */
+	boolean clear()
+	{
+		if (availability() != Availability.AVAILABLE)
+		{
+			log.info("Not clearing the Shortest Path route -- {}", availability());
+			return false;
+		}
+		try
+		{
+			eventPoster.accept(new PluginMessage(CONFIG_GROUP, MESSAGE_NAME,
+				Map.of(TARGET_KEY, Set.<WorldPoint>of())));
+			log.info("Cleared the Shortest Path route");
+			return true;
+		}
+		catch (RuntimeException | AssertionError e)
+		{
+			// Same two throwables route() catches, for the reasons its own
+			// catch documents at length.
+			log.warn("Clearing the Shortest Path route threw", e);
+			return false;
+		}
+	}
+
 	void route(Set<WorldPoint> destinations, Consumer<RouteOutcome> onOutcome)
 	{
 		if (availability() != Availability.AVAILABLE)

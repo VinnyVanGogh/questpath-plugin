@@ -242,11 +242,7 @@ final class ShopRouteStops
 			}
 			for (String shopName : stop.total().shopNames())
 			{
-				WorldPoint point = shopLocator.apply(shopName);
-				if (point != null)
-				{
-					out.add(point);
-				}
+				addApproaches(out, shopLocator.apply(shopName));
 			}
 			if (out.isEmpty())
 			{
@@ -255,16 +251,60 @@ final class ShopRouteStops
 				// the shops above get, for the same reason.
 				for (String dropper : stop.total().dropSourceNames())
 				{
-					WorldPoint point = dropLocator.apply(dropper);
-					if (point != null)
-					{
-						out.add(point);
-					}
+					addApproaches(out, dropLocator.apply(dropper));
 				}
 			}
 			break;
 		}
 		return out;
+	}
+
+	/**
+	 * How far around a destination tile to offer as alternatives.
+	 *
+	 * <p>One ring. A shop's recorded tile is where the shopkeeper stands,
+	 * which is usually behind a counter and therefore not somewhere a player
+	 * can be -- and Shortest Path answers "destination could not be reached"
+	 * for a tile nobody can stand on, even one you are already next to.
+	 */
+	private static final int APPROACH_RING = 1;
+
+	/**
+	 * Adds a destination and the tiles around it.
+	 *
+	 * <p>This exists because of a real regression. While the trip sent every
+	 * shop for every outstanding item -- thirty-one destinations -- an
+	 * unwalkable one cost nothing: Shortest Path simply routed to one of the
+	 * thirty that were fine, and nobody noticed that shop tiles are the
+	 * shopkeeper's square. Narrowing the trip to one stop made that the only
+	 * destination, so a counter tile became a dead trip, and nine stops
+	 * skipped in a row all failed the same way.
+	 *
+	 * <p>Offering the ring around it is the fix rather than moving the tile:
+	 * the recorded position is correct and useful for saying where a shop is,
+	 * and which side of a counter a player can stand on is a fact about the
+	 * map that this plugin has no business guessing. Shortest Path already
+	 * chooses the nearest reachable destination it is given, so handing it
+	 * the neighbours lets it answer that question with the map in front of
+	 * it.
+	 */
+	private static void addApproaches(Set<WorldPoint> out, WorldPoint at)
+	{
+		if (at == null)
+		{
+			return;
+		}
+		out.add(at);
+		for (int dx = -APPROACH_RING; dx <= APPROACH_RING; dx++)
+		{
+			for (int dy = -APPROACH_RING; dy <= APPROACH_RING; dy++)
+			{
+				if (dx != 0 || dy != 0)
+				{
+					out.add(new WorldPoint(at.getX() + dx, at.getY() + dy, at.getPlane()));
+				}
+			}
+		}
 	}
 
 	/**

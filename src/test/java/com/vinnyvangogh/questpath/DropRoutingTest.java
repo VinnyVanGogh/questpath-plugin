@@ -59,7 +59,6 @@ public class DropRoutingTest
 		Set<WorldPoint> destinations =
 			ShopRouteStops.destinations(totals, new ShopItemSkips(), shops, drops);
 
-		assertEquals(1, destinations.size());
 		assertTrue("the trip used to say nothing at all here", destinations.contains(LAIR));
 	}
 
@@ -138,7 +137,8 @@ public class DropRoutingTest
 		Set<WorldPoint> destinations = ShopRouteStops.destinations(totals, new ShopItemSkips(),
 			places(), places("Giant bat", LAIR, "Albino bat", second));
 
-		assertEquals(2, destinations.size());
+		assertTrue(destinations.contains(LAIR));
+		assertTrue("both droppers are offered, not just the first", destinations.contains(second));
 	}
 
 	/**

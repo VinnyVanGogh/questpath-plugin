@@ -292,8 +292,10 @@ public class ShopRouteStopsTest
 		Set<WorldPoint> destinations =
 			ShopRouteStops.destinations(totals, new ShopItemSkips(), shops);
 
-		assertEquals("one stop, not both", 1, destinations.size());
+		// The ring around each tile rides along -- see addApproaches. What
+		// matters is that only one stop's shops are in here at all.
 		assertTrue(destinations.contains(NEARBY));
+		assertFalse("the other stop's shop leaked in", destinations.contains(FAR));
 	}
 
 	/** And skipping the current stop actually moves where the line goes. */
@@ -309,8 +311,8 @@ public class ShopRouteStopsTest
 		skips.skip("Rope");
 
 		Set<WorldPoint> after = ShopRouteStops.destinations(totals, skips, shops);
-		assertEquals(1, after.size());
 		assertTrue("the destination changed, which it did not before", after.contains(FAR));
+		assertFalse("and the skipped stop is gone", after.contains(NEARBY));
 	}
 
 	/**
