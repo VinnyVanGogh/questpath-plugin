@@ -22,6 +22,9 @@ class PushResponse
 	@SerializedName("build_rules")
 	private List<BuildRule> buildRules;
 
+	@SerializedName("constraints")
+	private List<PlayerConstraint> constraints;
+
 	@SerializedName("route_order")
 	private List<String> routeOrder;
 
@@ -43,6 +46,16 @@ class PushResponse
 	List<String> unmatched()
 	{
 		return unmatched == null ? Collections.emptyList() : unmatched;
+	}
+
+	/**
+	 * What this account has declared it will not do -- empty from a questpath
+	 * older than the constraints field, which is the same thing as having
+	 * declared nothing and is handled identically.
+	 */
+	List<PlayerConstraint> constraints()
+	{
+		return constraints == null ? Collections.emptyList() : constraints;
 	}
 
 	List<BuildRule> buildRules()

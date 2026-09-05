@@ -220,6 +220,7 @@ public class QuestpathPlugin extends Plugin
 	private final ShopkeeperMemory shopkeeper = new ShopkeeperMemory();
 	private Boosts cachedShopBoosts;
 	private Map<String, WorldPoint> dropsByName;
+	private Map<String, String> dropRegionsByName;
 	private final ShopApproachWatcher shopApproach = new ShopApproachWatcher();
 
 	/**
@@ -420,6 +421,12 @@ public class QuestpathPlugin extends Plugin
 	 * inventing a default set would be inventing someone's build.
 	 */
 	private volatile List<BuildRule> buildRules = Collections.emptyList();
+	/**
+	 * What this account has declared it will not do. questpath owns these
+	 * exactly as it owns the build rules, and the push response is the only
+	 * place the plugin learns them.
+	 */
+	private volatile List<PlayerConstraint> constraints = Collections.emptyList();
 
 	/**
 	 * Quest names this plugin sent that questpath could not resolve. A real
@@ -1610,10 +1617,53 @@ public class QuestpathPlugin extends Plugin
 		}
 	}
 
+
+	/**
+	 * The region a dropper lives in -- "general", "wilderness" -- or empty
+	 * when the bundle carries none for it.
+	 *
+	 * <p>Kept beside {@link #dropLocation} because they read the same table
+	 * and must agree about which row a name resolves to.
+	 */
+	private String dropRegion(String sourceName)
+	{
+		if (questGraph == null || sourceName == null)
+		{
+			return "";
+		}
+		if (dropRegionsByName == null)
+		{
+			Map<String, String> index = new HashMap<>();
+			for (QuestGraph.DropLocation drop : questGraph.dropLocations())
+			{
+				index.putIfAbsent(drop.sourceName().toLowerCase(), drop.region());
+			}
+			dropRegionsByName = index;
+		}
+		return dropRegionsByName.getOrDefault(sourceName.toLowerCase(), "");
+	}
+
+	/**
+	 * A region worth naming beside a destination, or empty. Handed to the
+	 * overlay so a warned region is said out loud rather than walked into.
+	 */
+	String dropRegionNote(String sourceName)
+	{
+		return DropRegionPolicy.noteFor(dropRegion(sourceName), constraints);
+	}
+
 	private WorldPoint dropLocation(String sourceName)
 	{
 		if (questGraph == null || sourceName == null)
 		{
+			return null;
+		}
+		if (DropRegionPolicy.of(dropRegion(sourceName), constraints)
+			== DropRegionPolicy.Verdict.BLOCKED)
+		{
+			// Declared off-limits outright. Filtered in the same place shop
+			// reachability is filtered, so a route, a label and a stop cannot
+			// disagree about whether somewhere is on the table.
 			return null;
 		}
 		if (dropsByName == null)
@@ -1947,6 +1997,7 @@ public class QuestpathPlugin extends Plugin
 					// questpath owns the build rules; this is the only place
 					// the plugin learns them.
 					buildRules = BuildRule.ordered(accepted.buildRules());
+					constraints = accepted.constraints();
 					unmatchedQuests = accepted.unmatched();
 					// Same story for the saved route -- questpath owns the
 					// plan, and this push response is the only place it is
