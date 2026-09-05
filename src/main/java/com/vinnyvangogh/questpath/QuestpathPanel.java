@@ -245,13 +245,19 @@ class QuestpathPanel extends PluginPanel
 	 * which is handed the identical instance by {@code QuestpathPlugin}, so a
 	 * skip made here is reflected there without either polling the other.
 	 */
+	/**
+	 * Whether a shop route sent to Shortest Path is still live, so a skip
+	 * knows whether there is a trip to redirect. Supplied by the plugin
+	 * rather than tracked here: the panel does not own that window.
+	 */
+	private final java.util.function.BooleanSupplier shopRouteActive;
 	private final ShopItemSkips shopItemSkips;
 
 	QuestpathPanel(SpriteManager sprites, OverlaySettingsPanel overlaySettings,
 		java.util.function.BiFunction<String, Integer, SkillPlan> planner,
 		QuestHelperBridge questHelperBridge, ShortestPathBridge shortestPathBridge,
 		java.util.function.Function<String, WorldPoint> shopLocator, Runnable onShopRouteSent,
-		ShopItemSkips shopItemSkips)
+		java.util.function.BooleanSupplier shopRouteActive, ShopItemSkips shopItemSkips)
 	{
 		this.overlaySettings = overlaySettings;
 		this.planner = planner;
@@ -259,6 +265,7 @@ class QuestpathPanel extends PluginPanel
 		this.shortestPathBridge = shortestPathBridge;
 		this.shopLocator = shopLocator;
 		this.onShopRouteSent = onShopRouteSent;
+		this.shopRouteActive = shopRouteActive;
 		this.shopItemSkips = shopItemSkips;
 		setLayout(new BorderLayout());
 		setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
@@ -990,8 +997,38 @@ class QuestpathPanel extends PluginPanel
 		ShortestPathBridge.Availability availability = shortestPathBridge.availability();
 		button.setText(availability.menuLabel());
 		button.setEnabled(availability == ShortestPathBridge.Availability.AVAILABLE);
+		button.addActionListener(event -> sendShopRoute(items, true));
+		return button;
+	}
+
+	/**
+	 * Sends the current shopping list's destinations to Shortest Path.
+	 *
+	 * <p>One place, used by the button and by a skip. A skip that changed the
+	 * list without re-sending left Shortest Path walking to a shop for an item
+	 * no longer on the trip -- the panel said one thing and the line on the
+	 * ground said another, which is the same mismatch this whole feature keeps
+	 * producing in new places.
+	 *
+	 * @param announce whether to report the outcome in the panel. The button
+	 *     does; a skip does not, because the path visibly changes on screen
+	 *     and a line per skip is noise -- but a FAILURE is always reported,
+	 *     since a skip that silently did not re-route is exactly the state
+	 *     this method exists to prevent
+	 */
+	private void sendShopRoute(QuestItems items, boolean announce)
+	{
+		if (shortestPathBridge == null || items == null)
+		{
+			return;
+		}
+		Set<WorldPoint> destinations = shopDestinations(items);
+		if (destinations.isEmpty())
+		{
+			return;
+		}
 		int destinationCount = destinations.size();
-		button.addActionListener(event -> shortestPathBridge.route(destinations, outcome ->
+		shortestPathBridge.route(destinations, outcome ->
 		{
 			if (outcome == ShortestPathBridge.RouteOutcome.SENT)
 			{
@@ -1002,10 +1039,13 @@ class QuestpathPanel extends PluginPanel
 				// that reacts to a route actually going out.
 				onShopRouteSent.run();
 			}
-			SwingUtilities.invokeLater(() -> reportRouteOutcome(outcome, destinationCount));
-		}));
-		return button;
+			if (announce || outcome != ShortestPathBridge.RouteOutcome.SENT)
+			{
+				SwingUtilities.invokeLater(() -> reportRouteOutcome(outcome, destinationCount));
+			}
+		});
 	}
+
 
 	/**
 	 * One row of the "EVERYTHING YOU NEED" grid: the item, its count, and
@@ -1101,6 +1141,10 @@ class QuestpathPanel extends PluginPanel
 				shopItemSkips.skip(currentName);
 				fillItemResults(lastItems);
 				repaintAll();
+				if (shopRouteActive.getAsBoolean())
+				{
+					sendShopRoute(lastItems, false);
+				}
 			});
 			panel.add(skip);
 		}
@@ -1127,6 +1171,13 @@ class QuestpathPanel extends PluginPanel
 					shopItemSkips.unskip(skippedName);
 					fillItemResults(lastItems);
 					repaintAll();
+					// Restoring puts a stop back on the trip, so the line on
+					// the ground has to learn about it too -- the same reason
+					// the skip above re-sends.
+					if (shopRouteActive.getAsBoolean())
+					{
+						sendShopRoute(lastItems, false);
+					}
 				});
 				panel.add(undo);
 			}

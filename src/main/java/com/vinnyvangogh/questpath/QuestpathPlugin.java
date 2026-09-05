@@ -506,6 +506,7 @@ public class QuestpathPlugin extends Plugin
 			ShortestPathBridge.clientThreadEventPoster(clientThread::invoke, eventBus::post));
 		panel = new QuestpathPanel(sprites, new OverlaySettingsPanel(config, configManager),
 			this::skillPlan, questHelperBridge, shortestPathBridge, this::shopLocation, this::onShopRouteSent,
+			this::shopRouteActive,
 			shopItemSkips);
 		navButton = NavigationButton.builder()
 			.tooltip("Quest Path")
