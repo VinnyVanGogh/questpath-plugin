@@ -1205,12 +1205,26 @@ class QuestpathPanel extends PluginPanel
 	{
 		JPanel panel = column();
 
+		// The stop the trip is actually walking to, not simply the first
+		// outstanding item. Those are different whenever the first item
+		// cannot be routed to, and this button used to name the second while
+		// the line on the ground went to the first.
+		//
+		// That is what "I don't know where it's taking me for the black
+		// candle" was. No shop in the database sells a black candle and
+		// nothing is known to drop one, so it cannot be a destination; the
+		// route quietly moved on to Bones, whose only known dropper is a cave
+		// goblin in the Lumbridge Swamp Caves. The button said black candle,
+		// the path went to the swamp, and skipping did nothing visible
+		// because every following item was unroutable too and the route never
+		// moved off Bones.
 		QuestItems.Total current = null;
-		for (QuestItems.Total total : items.totals())
+		for (ShopRouteStops.Stop stop
+			: ShopRouteStops.next(items.totals(), shopItemSkips, shopLocator, dropLocator))
 		{
-			if (!total.satisfied() && !shopItemSkips.isSkipped(total.name()))
+			if (stop.current())
 			{
-				current = total;
+				current = stop.total();
 				break;
 			}
 		}
