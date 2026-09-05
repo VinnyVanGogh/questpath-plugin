@@ -136,6 +136,7 @@ class QuestItems
 		private final boolean unresolved;
 		private final List<String> sources;
 		private final List<String> shopNames;
+		private final List<String> dropSourceNames;
 
 		Line(String name, int itemId, int wanted, long owned, boolean optional, List<String> sources)
 		{
@@ -152,6 +153,13 @@ class QuestItems
 		Line(String name, int itemId, int wanted, long owned, boolean optional, boolean unresolved,
 			List<String> sources, List<String> shopNames)
 		{
+			this(name, itemId, wanted, owned, optional, unresolved, sources, shopNames, null);
+		}
+
+		/** The full shape, including the monsters that drop it. */
+		Line(String name, int itemId, int wanted, long owned, boolean optional, boolean unresolved,
+			List<String> sources, List<String> shopNames, List<String> dropSourceNames)
+		{
 			this.name = name;
 			this.itemId = itemId;
 			this.wanted = wanted;
@@ -160,6 +168,19 @@ class QuestItems
 			this.unresolved = unresolved;
 			this.sources = sources;
 			this.shopNames = shopNames;
+			this.dropSourceNames = dropSourceNames;
+		}
+
+		/**
+		 * The monsters that drop this, for an item no shop sells.
+		 *
+		 * <p>Bat bones are the case: nothing stocks them, so the shopping
+		 * trip used to step over the item entirely and say nothing about
+		 * where to get it. Matched against the bundle's drop locations.
+		 */
+		List<String> dropSourceNames()
+		{
+			return dropSourceNames == null ? java.util.Collections.emptyList() : dropSourceNames;
 		}
 
 		/**
@@ -509,7 +530,8 @@ class QuestItems
 			{
 				long owned = held.getOrDefault(item.name().toLowerCase(), 0L);
 				needs.lines.add(new Line(item.name(), item.itemId(), item.quantity(), owned,
-					item.optional(), item.unresolved(), item.sources(), item.shopNames()));
+					item.optional(), item.unresolved(), item.sources(), item.shopNames(),
+					item.dropSourceNames()));
 			}
 			out.quests.add(needs);
 		}
@@ -665,7 +687,7 @@ class QuestItems
 						held.getOrDefault(name.toLowerCase(), 0L),
 						carried == null ? 0L : carried.getOrDefault(name.toLowerCase(), 0L),
 						placeholders != null && placeholders.contains(name.toLowerCase()),
-						line.sources(), line.shopNames()));
+						line.sources(), line.shopNames(), line.dropSourceNames()));
 				total.add(line, needs.questName());
 			}
 		}
@@ -754,6 +776,7 @@ class QuestItems
 		private final boolean placeholder;
 		private final List<String> sources;
 		private final List<String> shopNames;
+		private final List<String> dropSourceNames;
 		private final List<String> questNames = new ArrayList<>();
 		private int wanted;
 		private int quests;
@@ -769,6 +792,13 @@ class QuestItems
 		Total(String name, int itemId, long owned, long carried, boolean placeholder,
 			List<String> sources, List<String> shopNames)
 		{
+			this(name, itemId, owned, carried, placeholder, sources, shopNames, null);
+		}
+
+		/** The full shape, including the monsters that drop it. */
+		Total(String name, int itemId, long owned, long carried, boolean placeholder,
+			List<String> sources, List<String> shopNames, List<String> dropSourceNames)
+		{
 			this.name = name;
 			this.itemId = itemId;
 			this.owned = owned;
@@ -776,6 +806,17 @@ class QuestItems
 			this.placeholder = placeholder;
 			this.sources = sources;
 			this.shopNames = shopNames;
+			this.dropSourceNames = dropSourceNames;
+		}
+
+		/**
+		 * The monsters that drop this -- see {@link Line#dropSourceNames()}.
+		 * Empty for anything a shop sells, and for anything the bundle could
+		 * not place a dropper for.
+		 */
+		List<String> dropSourceNames()
+		{
+			return dropSourceNames == null ? java.util.Collections.emptyList() : dropSourceNames;
 		}
 
 		/** Convenience for callers with no placeholder to report -- mainly tests. */

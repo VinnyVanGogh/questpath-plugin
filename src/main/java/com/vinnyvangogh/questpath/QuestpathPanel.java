@@ -250,13 +250,16 @@ class QuestpathPanel extends PluginPanel
 	 * knows whether there is a trip to redirect. Supplied by the plugin
 	 * rather than tracked here: the panel does not own that window.
 	 */
+	/** Resolves a monster name to a tile, for an item no shop sells. */
+	private final java.util.function.Function<String, WorldPoint> dropLocator;
 	private final java.util.function.BooleanSupplier shopRouteActive;
 	private final ShopItemSkips shopItemSkips;
 
 	QuestpathPanel(SpriteManager sprites, OverlaySettingsPanel overlaySettings,
 		java.util.function.BiFunction<String, Integer, SkillPlan> planner,
 		QuestHelperBridge questHelperBridge, ShortestPathBridge shortestPathBridge,
-		java.util.function.Function<String, WorldPoint> shopLocator, Runnable onShopRouteSent,
+		java.util.function.Function<String, WorldPoint> shopLocator,
+		java.util.function.Function<String, WorldPoint> dropLocator, Runnable onShopRouteSent,
 		java.util.function.BooleanSupplier shopRouteActive, ShopItemSkips shopItemSkips)
 	{
 		this.overlaySettings = overlaySettings;
@@ -264,6 +267,7 @@ class QuestpathPanel extends PluginPanel
 		this.questHelperBridge = questHelperBridge;
 		this.shortestPathBridge = shortestPathBridge;
 		this.shopLocator = shopLocator;
+		this.dropLocator = dropLocator;
 		this.onShopRouteSent = onShopRouteSent;
 		this.shopRouteActive = shopRouteActive;
 		this.shopItemSkips = shopItemSkips;
@@ -1057,12 +1061,12 @@ class QuestpathPanel extends PluginPanel
 		Set<WorldPoint> destinations = shopDestinations(items);
 		ShopRouteStops.Destination named = null;
 		String stopName = "nothing";
-		for (ShopRouteStops.Stop stop : ShopRouteStops.next(items.totals(), shopItemSkips, shopLocator))
+		for (ShopRouteStops.Stop stop : ShopRouteStops.next(items.totals(), shopItemSkips, shopLocator, dropLocator))
 		{
 			if (stop.current())
 			{
 				stopName = stop.total().name();
-				named = ShopRouteStops.destinationOf(stop.total(), shopLocator, null);
+				named = ShopRouteStops.destinationOf(stop.total(), shopLocator, dropLocator, null);
 				break;
 			}
 		}
@@ -1256,7 +1260,7 @@ class QuestpathPanel extends PluginPanel
 		{
 			return Collections.emptySet();
 		}
-		return ShopRouteStops.destinations(items.totals(), shopItemSkips, shopLocator);
+		return ShopRouteStops.destinations(items.totals(), shopItemSkips, shopLocator, dropLocator);
 	}
 
 	/**

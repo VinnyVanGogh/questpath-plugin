@@ -67,15 +67,17 @@ class ShopRouteOverlay extends QuestpathOverlay
 	private static final int BASE_STOPS = 3;
 
 	private final Function<String, WorldPoint> shopLocator;
+	private final Function<String, WorldPoint> dropLocator;
 	private final Supplier<WorldPoint> playerLocation;
 	private final ShopItemSkips skips;
 
 	ShopRouteOverlay(QuestpathPlugin plugin, QuestpathConfig config, OverlayIcons icons,
-		Function<String, WorldPoint> shopLocator, Supplier<WorldPoint> playerLocation,
-		ShopItemSkips skips)
+		Function<String, WorldPoint> shopLocator, Function<String, WorldPoint> dropLocator,
+		Supplier<WorldPoint> playerLocation, ShopItemSkips skips)
 	{
 		super(plugin, config, icons, "Shop route");
 		this.shopLocator = shopLocator;
+		this.dropLocator = dropLocator;
 		this.playerLocation = playerLocation;
 		this.skips = skips;
 	}
@@ -162,7 +164,7 @@ class ShopRouteOverlay extends QuestpathOverlay
 			return rows;
 		}
 
-		List<ShopRouteStops.Stop> next = ShopRouteStops.next(totals, skips, shopLocator);
+		List<ShopRouteStops.Stop> next = ShopRouteStops.next(totals, skips, shopLocator, dropLocator);
 		int skippedCount = outstanding.size() - next.size();
 
 		if (next.isEmpty())
@@ -192,7 +194,7 @@ class ShopRouteOverlay extends QuestpathOverlay
 			rows.add(OverlayRow.item(total.itemId(), total.name(),
 				total.outstanding() + " short", false,
 				stop.current() ? OverlayTheme.ACCENT : OverlayTheme.TEXT, OverlayTheme.WARN));
-			rows.add(OverlayRow.note(ShopRouteStops.destinationLine(total, shopLocator, playerLocation.get()), OverlayTheme.MUTED));
+			rows.add(OverlayRow.note(ShopRouteStops.destinationLine(total, shopLocator, dropLocator, playerLocation.get()), OverlayTheme.MUTED));
 		}
 		int remaining = next.size() - shown;
 		if (remaining > 0)

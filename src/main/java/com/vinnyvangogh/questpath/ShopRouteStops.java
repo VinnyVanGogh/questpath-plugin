@@ -79,12 +79,34 @@ final class ShopRouteStops
 		private final String shopName;
 		private final WorldPoint point;
 		private final int alternatives;
+		private final boolean monster;
 
 		Destination(String shopName, WorldPoint point, int alternatives)
+		{
+			this(shopName, point, alternatives, false);
+		}
+
+		Destination(String shopName, WorldPoint point, int alternatives, boolean monster)
 		{
 			this.shopName = shopName;
 			this.point = point;
 			this.alternatives = alternatives;
+			this.monster = monster;
+		}
+
+		/**
+		 * Whether this is somewhere to kill something rather than somewhere
+		 * to buy something.
+		 *
+		 * <p>Worth distinguishing in the label and nowhere else: the trip is
+		 * the same walk either way, but "-> General store" and "-> kill Giant
+		 * bat" want very different things once you arrive, and a player
+		 * reading the first while facing the second has been told the wrong
+		 * thing.
+		 */
+		boolean monster()
+		{
+			return monster;
 		}
 
 		/** The shop's name, as the wiki spells it. */
@@ -135,6 +157,13 @@ final class ShopRouteStops
 	static List<Stop> next(List<QuestItems.Total> totals, ShopItemSkips skips,
 		Function<String, WorldPoint> shopLocator)
 	{
+		return next(totals, skips, shopLocator, name -> null);
+	}
+
+	/** The same, counting a monster you can kill for it as somewhere to go. */
+	static List<Stop> next(List<QuestItems.Total> totals, ShopItemSkips skips,
+		Function<String, WorldPoint> shopLocator, Function<String, WorldPoint> dropLocator)
+	{
 		List<QuestItems.Total> outstanding = new ArrayList<>();
 		for (QuestItems.Total total : totals)
 		{
@@ -152,7 +181,7 @@ final class ShopRouteStops
 		int current = -1;
 		for (int i = 0; i < outstanding.size(); i++)
 		{
-			if (destinationOf(outstanding.get(i), shopLocator, null) != null)
+			if (destinationOf(outstanding.get(i), shopLocator, dropLocator, null) != null)
 			{
 				current = i;
 				break;
@@ -197,8 +226,15 @@ final class ShopRouteStops
 	static Set<WorldPoint> destinations(List<QuestItems.Total> totals, ShopItemSkips skips,
 		Function<String, WorldPoint> shopLocator)
 	{
+		return destinations(totals, skips, shopLocator, name -> null);
+	}
+
+	/** The same, falling back to somewhere the item can be killed for. */
+	static Set<WorldPoint> destinations(List<QuestItems.Total> totals, ShopItemSkips skips,
+		Function<String, WorldPoint> shopLocator, Function<String, WorldPoint> dropLocator)
+	{
 		Set<WorldPoint> out = new LinkedHashSet<>();
-		for (Stop stop : next(totals, skips, shopLocator))
+		for (Stop stop : next(totals, skips, shopLocator, dropLocator))
 		{
 			if (!stop.current())
 			{
@@ -210,6 +246,20 @@ final class ShopRouteStops
 				if (point != null)
 				{
 					out.add(point);
+				}
+			}
+			if (out.isEmpty())
+			{
+				// Nothing sells it, so every place it drops is a destination
+				// and Shortest Path picks between them -- the same treatment
+				// the shops above get, for the same reason.
+				for (String dropper : stop.total().dropSourceNames())
+				{
+					WorldPoint point = dropLocator.apply(dropper);
+					if (point != null)
+					{
+						out.add(point);
+					}
 				}
 			}
 			break;
@@ -235,14 +285,55 @@ final class ShopRouteStops
 	static Destination destinationOf(QuestItems.Total total,
 		Function<String, WorldPoint> shopLocator, WorldPoint from)
 	{
+		return destinationOf(total, shopLocator, name -> null, from);
+	}
+
+	/**
+	 * The same, with a fallback to somewhere the item can be killed for.
+	 *
+	 * <p>Reported from play: "for something like Bat bones, if there is no
+	 * shop, it should route me to the nearest bats." Nothing stocks bat
+	 * bones, so the trip used to step over the item and say nothing at all
+	 * about where to get it -- which is the shape of unhelpfulness this whole
+	 * feature exists to remove.
+	 *
+	 * <p>Shops are still tried first and that is not arbitrary: a shop is
+	 * repeatable and predictable, a drop is a grind, so for an ironman a shop
+	 * is the answer whenever there is one. The same ordering item_sources
+	 * already applies on the server.
+	 *
+	 * @param dropLocator resolves a monster name to a tile, or null when the
+	 *     bundle carries none for it
+	 */
+	static Destination destinationOf(QuestItems.Total total,
+		Function<String, WorldPoint> shopLocator, Function<String, WorldPoint> dropLocator,
+		WorldPoint from)
+	{
+		Destination shop = shopDestinationOf(total, shopLocator, from);
+		if (shop != null)
+		{
+			return shop;
+		}
+		return nearestOf(total.dropSourceNames(), dropLocator, from, true);
+	}
+
+	private static Destination shopDestinationOf(QuestItems.Total total,
+		Function<String, WorldPoint> shopLocator, WorldPoint from)
+	{
+		return nearestOf(total.shopNames(), shopLocator, from, false);
+	}
+
+	private static Destination nearestOf(java.util.List<String> names,
+		Function<String, WorldPoint> locator, WorldPoint from, boolean monster)
+	{
 		String bestName = null;
 		WorldPoint bestPoint = null;
 		long bestDistance = Long.MAX_VALUE;
 		int placeable = 0;
 
-		for (String shopName : total.shopNames())
+		for (String shopName : names)
 		{
-			WorldPoint point = shopLocator.apply(shopName);
+			WorldPoint point = locator.apply(shopName);
 			if (point == null)
 			{
 				continue;
@@ -262,7 +353,9 @@ final class ShopRouteStops
 			}
 		}
 
-		return bestPoint == null ? null : new Destination(bestName, bestPoint, placeable - 1);
+		return bestPoint == null
+			? null
+			: new Destination(bestName, bestPoint, placeable - 1, monster);
 	}
 
 	private static long squaredDistance(WorldPoint a, WorldPoint b)
@@ -295,17 +388,26 @@ final class ShopRouteStops
 	static String destinationLine(QuestItems.Total total,
 		Function<String, WorldPoint> shopLocator, WorldPoint from)
 	{
+		return destinationLine(total, shopLocator, name -> null, from);
+	}
+
+	/** The same, able to name a monster when no shop sells it. */
+	static String destinationLine(QuestItems.Total total,
+		Function<String, WorldPoint> shopLocator, Function<String, WorldPoint> dropLocator,
+		WorldPoint from)
+	{
 		String quest = total.questSummary();
 		String forQuest = quest.isEmpty() ? "" : " -- for " + quest;
 
-		Destination destination = destinationOf(total, shopLocator, from);
+		Destination destination = destinationOf(total, shopLocator, dropLocator, from);
 		if (destination != null)
 		{
 			int others = destination.alternatives();
 			String orOthers = others == 0
 				? ""
 				: " or " + others + " other" + (others == 1 ? "" : "s");
-			return "-> " + destination.shopName() + orOthers + forQuest;
+			String lead = destination.monster() ? "-> kill " : "-> ";
+			return lead + destination.shopName() + orOthers + forQuest;
 		}
 		if (!total.shopNames().isEmpty())
 		{

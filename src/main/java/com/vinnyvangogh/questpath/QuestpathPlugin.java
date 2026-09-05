@@ -219,6 +219,7 @@ public class QuestpathPlugin extends Plugin
 	private final FloatingNotes floatingNotes = new FloatingNotes();
 	private final ShopkeeperMemory shopkeeper = new ShopkeeperMemory();
 	private Boosts cachedShopBoosts;
+	private Map<String, WorldPoint> dropsByName;
 
 	/**
 	 * Watches for a shop opening that sells something outstanding -- see its
@@ -506,8 +507,8 @@ public class QuestpathPlugin extends Plugin
 			// from either thread.
 			ShortestPathBridge.clientThreadEventPoster(clientThread::invoke, eventBus::post));
 		panel = new QuestpathPanel(sprites, new OverlaySettingsPanel(config, configManager),
-			this::skillPlan, questHelperBridge, shortestPathBridge, this::shopLocation, this::onShopRouteSent,
-			this::shopRouteActive,
+			this::skillPlan, questHelperBridge, shortestPathBridge, this::shopLocation,
+			this::dropLocation, this::onShopRouteSent, this::shopRouteActive,
 			shopItemSkips);
 		navButton = NavigationButton.builder()
 			.tooltip("Quest Path")
@@ -520,8 +521,8 @@ public class QuestpathPlugin extends Plugin
 		overlays.add(new NextQuestOverlay(this, config, overlayIcons));
 		overlays.add(new PickupsOverlay(this, config, overlayIcons));
 		overlays.add(new NeededItemsOverlay(this, config, overlayIcons, client));
-		overlays.add(new ShopRouteOverlay(this, config, overlayIcons, this::shopLocation, this::playerLocation,
-			shopItemSkips));
+		overlays.add(new ShopRouteOverlay(this, config, overlayIcons, this::shopLocation,
+			this::dropLocation, this::playerLocation, shopItemSkips));
 		overlays.add(new CombatXpOverlay(this, config, overlayIcons));
 		overlays.add(new BuildRulesOverlay(this, config, overlayIcons));
 		for (QuestpathOverlay overlay : overlays)
@@ -1580,6 +1581,44 @@ public class QuestpathPlugin extends Plugin
 	 * is: the panel has no graph of its own and should not learn to hold
 	 * one, and this is the one question it needs answered from it.
 	 */
+
+	/**
+	 * Where a monster that drops something can be found, or null when the
+	 * bundle carries nowhere for it.
+	 *
+	 * <p>Answers "for something like Bat bones, if there is no shop, it
+	 * should route me to the nearest bats". Only consulted once no shop can
+	 * supply the item -- a shop is repeatable and a drop is a grind, so a
+	 * shop wins whenever there is one.
+	 *
+	 * <p>Wilderness locations are not filtered out here even though this is a
+	 * hardcore account, because that is a decision for whoever is reading the
+	 * route rather than one to make silently: a dropper that only appears in
+	 * the Wilderness would otherwise vanish with no explanation, which is the
+	 * same quiet omission this whole feature exists to stop. The region is
+	 * carried on the row for a caller that wants to say so.
+	 */
+	private WorldPoint dropLocation(String sourceName)
+	{
+		if (questGraph == null || sourceName == null)
+		{
+			return null;
+		}
+		if (dropsByName == null)
+		{
+			Map<String, WorldPoint> index = new HashMap<>();
+			for (QuestGraph.DropLocation drop : questGraph.dropLocations())
+			{
+				// First wins: the bundle lists a monster once per place it
+				// appears, and they are in the order the wiki gave.
+				index.putIfAbsent(drop.sourceName().toLowerCase(),
+					new WorldPoint(drop.x(), drop.y(), drop.plane()));
+			}
+			dropsByName = index;
+		}
+		return dropsByName.get(sourceName.toLowerCase());
+	}
+
 	private WorldPoint shopLocation(String shopName)
 	{
 		if (questGraph == null || shopName == null)
