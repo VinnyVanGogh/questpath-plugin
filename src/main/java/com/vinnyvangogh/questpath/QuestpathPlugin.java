@@ -179,9 +179,9 @@ public class QuestpathPlugin extends Plugin
 	private boolean bankNeedsShown;
 
 	/**
-	 * The five in-game overlays, held so they can be removed again.
+	 * The six in-game overlays, held so they can be removed again.
 	 *
-	 * All five are registered whatever the config says: an Overlay that is
+	 * All six are registered whatever the config says: an Overlay that is
 	 * switched off returns null from render and costs a method call per
 	 * frame, whereas adding and removing them as toggles change would mean
 	 * reacting to config events and getting the ordering right for no gain.
@@ -371,6 +371,15 @@ public class QuestpathPlugin extends Plugin
 	private Instant shopRouteSentAt;
 
 	/**
+	 * Items skipped on the current shop trip -- see {@link ShopItemSkips}'s
+	 * class doc. Handed to both {@link QuestpathPanel} (the skip button and
+	 * its undo list) and {@link ShopRouteOverlay} (which stops must not be
+	 * shown as "next"), the one instance so a skip made from either surface
+	 * is immediately visible from the other.
+	 */
+	private final ShopItemSkips shopItemSkips = new ShopItemSkips();
+
+	/**
 	 * The bank, inventory and equipment as last seen. Not re-read on demand:
 	 * the client does not hold the bank's contents until it has been opened.
 	 */
@@ -491,7 +500,8 @@ public class QuestpathPlugin extends Plugin
 			// from either thread.
 			ShortestPathBridge.clientThreadEventPoster(clientThread::invoke, eventBus::post));
 		panel = new QuestpathPanel(sprites, new OverlaySettingsPanel(config, configManager),
-			this::skillPlan, questHelperBridge, shortestPathBridge, this::shopLocation, this::onShopRouteSent);
+			this::skillPlan, questHelperBridge, shortestPathBridge, this::shopLocation, this::onShopRouteSent,
+			shopItemSkips);
 		navButton = NavigationButton.builder()
 			.tooltip("Quest Path")
 			.icon(icon())
@@ -503,6 +513,7 @@ public class QuestpathPlugin extends Plugin
 		overlays.add(new NextQuestOverlay(this, config, overlayIcons));
 		overlays.add(new PickupsOverlay(this, config, overlayIcons));
 		overlays.add(new NeededItemsOverlay(this, config, overlayIcons, client));
+		overlays.add(new ShopRouteOverlay(this, config, overlayIcons, this::shopLocation, shopItemSkips));
 		overlays.add(new CombatXpOverlay(this, config, overlayIcons));
 		overlays.add(new BuildRulesOverlay(this, config, overlayIcons));
 		for (QuestpathOverlay overlay : overlays)
@@ -820,6 +831,21 @@ public class QuestpathPlugin extends Plugin
 	}
 
 	/**
+	 * Whether a shop route sent to Shortest Path is still active enough for
+	 * {@link ShopRouteOverlay} to have something to say -- the identical
+	 * window {@link #shopRouteBlocksQuestRouting} gates automatic Quest
+	 * Helper starts on. One clock serves both: "still walking a shop trip" is
+	 * exactly the state that should hold an unrelated quest-start prompt back
+	 * and exactly the state this overlay exists to describe, so a second,
+	 * independently tracked "is the overlay's trip still active" would only
+	 * be free to drift from the one {@link ShopRouteGuard} already answers.
+	 */
+	boolean shopRouteActive()
+	{
+		return shopRouteBlocksQuestRouting();
+	}
+
+	/**
 	 * Starts questName in Quest Helper on arrival, reusing {@link
 	 * QuestHelperBridge}'s own availability check rather than calling {@link
 	 * QuestHelperBridge#start} blind -- the same rule {@link
@@ -974,6 +1000,11 @@ public class QuestpathPlugin extends Plugin
 			// through no trip of its own -- a route sent for this account
 			// must not hold back that account's first genuine arrival.
 			shopRouteSentAt = null;
+			// The next login's shopping list has nothing to do with this
+			// account's -- a skip chosen against one account's items means
+			// nothing for another account's, and could even hide a genuine
+			// shortfall on it by coincidence of a shared item name.
+			shopItemSkips.clear();
 		}
 	}
 

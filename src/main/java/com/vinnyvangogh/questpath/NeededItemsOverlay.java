@@ -68,11 +68,20 @@ class NeededItemsOverlay extends QuestpathOverlay
 	 * "would I actually draw right now" test, rather than re-deriving two
 	 * thirds of it here. Two copies would be free to disagree, and both ways
 	 * they could are visible -- overlapping panels, or no panel at all.
+	 *
+	 * <p>{@link ShopRouteOverlay#isShowing} is asked the same way and for the
+	 * same reason: while a shop route sent to Shortest Path is active, "where
+	 * you're going and why" replaces "everything you need" rather than
+	 * stacking beside it, for exactly the span that route stays active.
 	 */
 	@Override
 	boolean enabled(QuestpathConfig config)
 	{
 		if (BankListOverlay.isShowing(plugin(), config, client))
+		{
+			return false;
+		}
+		if (ShopRouteOverlay.isShowing(plugin(), config))
 		{
 			return false;
 		}

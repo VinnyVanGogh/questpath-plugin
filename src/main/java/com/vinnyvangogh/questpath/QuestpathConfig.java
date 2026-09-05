@@ -362,6 +362,45 @@ public interface QuestpathConfig extends Config
 	}
 
 	@ConfigItem(
+		keyName = "overlayShopRoute",
+		name = "Shop route: where and why",
+		description = "While a shop route sent to Shortest Path is active, the next few stops:"
+			+ " the item, how many short you are, the shop it sends you to, and which quest"
+			+ " wants it. Replaces \"Everything you need\" for as long as the route is active.",
+		section = overlaySection,
+		position = 34
+	)
+	default boolean overlayShopRoute()
+	{
+		return false;
+	}
+
+	@ConfigItem(
+		keyName = "overlayShopRouteWidth",
+		name = "- width",
+		description = "Width for the shop route panel alone.",
+		section = overlaySection,
+		position = 35
+	)
+	default PanelWidth overlayShopRouteWidth()
+	{
+		return PanelWidth.MATCH_SHARED;
+	}
+
+	@ConfigItem(
+		keyName = "overlayShopRouteLength",
+		name = "- length",
+		description = "How many stops ahead to show. Three is the baseline at Normal --"
+			+ " enough to say where you are heading without turning into the whole shopping list.",
+		section = overlaySection,
+		position = 36
+	)
+	default PanelListLength overlayShopRouteLength()
+	{
+		return PanelListLength.MATCH_SHARED;
+	}
+
+	@ConfigItem(
 		keyName = "overlayCombatXp",
 		name = "Combat XP to next level",
 		description = "What each stat would cost to buy the next combat level, cheapest first.",

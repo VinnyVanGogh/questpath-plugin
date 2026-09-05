@@ -50,10 +50,10 @@ import net.runelite.client.ui.components.colorpicker.RuneliteColorPicker;
  * entire section is a different intent from collapsing one overlay inside
  * it, so the two must not follow the same rule.
  *
- * <p>The inner level is the nine feature groups -- five overlays under
+ * <p>The inner level is the ten feature groups -- six overlays under
  * OVERLAYS, Shops, Ground items, Bank and "Open Quest Helper on arrival"
  * under EXTRAS, plus Shared's own controls (which have no further nesting;
- * Shared has no per-feature toggles to group). Every one of those nine is
+ * Shared has no per-feature toggles to group). Every one of those ten is
  * headed by its own enable checkbox
  * rather than a plain label, and starts expanded only if that checkbox is
  * already ticked -- collapsed otherwise. That checkbox's own listener also
@@ -201,7 +201,7 @@ class OverlaySettingsPanel extends JPanel
 	}
 
 	/**
-	 * A group headed by its own enable checkbox: one of the five overlays,
+	 * A group headed by its own enable checkbox: one of the six overlays,
 	 * Shops, or Ground items.
 	 *
 	 * <p>The checkbox doubles as the group's heading -- it already carries
@@ -282,6 +282,19 @@ class OverlaySettingsPanel extends JPanel
 					"Drop the \"already held\" section, leaving only what you are short of."
 						+ " The running total still counts them.",
 					config.overlayItemsHideHeld(), "overlayItemsHideHeld"));
+			}));
+		body.add(spacer());
+		body.add(toggleGroup(
+			"Shop route: where and why",
+			"While a shop route sent to Shortest Path is active, the next few stops:"
+				+ " the item, how many short you are, the shop it sends you to, and which"
+				+ " quest wants it. Replaces \"Everything you need\" for as long as the"
+				+ " route is active.",
+			config.overlayShopRoute(), "overlayShopRoute",
+			sub ->
+			{
+				addField(sub, "Width", widthCombo(config.overlayShopRouteWidth(), "overlayShopRouteWidth"));
+				addField(sub, "Length", lengthCombo(config.overlayShopRouteLength(), "overlayShopRouteLength"));
 			}));
 		body.add(spacer());
 		body.add(toggleGroup(

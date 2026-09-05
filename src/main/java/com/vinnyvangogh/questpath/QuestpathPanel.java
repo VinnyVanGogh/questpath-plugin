@@ -238,10 +238,20 @@ class QuestpathPanel extends PluginPanel
 	 */
 	private final Runnable onShopRouteSent;
 
+	/**
+	 * Which items the player has chosen to skip on the current shop trip, and
+	 * the one place both the skip button and its undo list act -- see
+	 * {@link ShopItemSkips}'s own doc. Shared with {@link ShopRouteOverlay},
+	 * which is handed the identical instance by {@code QuestpathPlugin}, so a
+	 * skip made here is reflected there without either polling the other.
+	 */
+	private final ShopItemSkips shopItemSkips;
+
 	QuestpathPanel(SpriteManager sprites, OverlaySettingsPanel overlaySettings,
 		java.util.function.BiFunction<String, Integer, SkillPlan> planner,
 		QuestHelperBridge questHelperBridge, ShortestPathBridge shortestPathBridge,
-		java.util.function.Function<String, WorldPoint> shopLocator, Runnable onShopRouteSent)
+		java.util.function.Function<String, WorldPoint> shopLocator, Runnable onShopRouteSent,
+		ShopItemSkips shopItemSkips)
 	{
 		this.overlaySettings = overlaySettings;
 		this.planner = planner;
@@ -249,6 +259,7 @@ class QuestpathPanel extends PluginPanel
 		this.shortestPathBridge = shortestPathBridge;
 		this.shopLocator = shopLocator;
 		this.onShopRouteSent = onShopRouteSent;
+		this.shopItemSkips = shopItemSkips;
 		setLayout(new BorderLayout());
 		setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
 
@@ -820,6 +831,7 @@ class QuestpathPanel extends PluginPanel
 		if (!filtering)
 		{
 			panel.add(shopRouteButton(items));
+			panel.add(skipRow(items));
 			panel.add(Box.createVerticalStrut(8));
 		}
 
@@ -833,33 +845,29 @@ class QuestpathPanel extends PluginPanel
 
 		JPanel totalsGrid = grid();
 		int shownTotals = 0;
+		// Skipped items are drawn last within this list rather than in their
+		// ordinary shopping-priority place -- "move to the back", not merely
+		// "mark differently" -- so the two-pass split below, not a single
+		// pass appending straight into totalsGrid.
+		List<QuestItems.Total> skippedTotals = new ArrayList<>();
 		for (QuestItems.Total total : items.totals())
 		{
 			if (filtering && !total.name().toLowerCase().contains(needle))
 			{
 				continue;
 			}
+			if (!filtering && shopItemSkips.isSkipped(total.name()))
+			{
+				skippedTotals.add(total);
+				continue;
+			}
 			shownTotals++;
-			// The count of quests goes in the tooltip, not the label. "Ball of
-			// wool x3" beside "5 / 24" read as a multiplication rather than as
-			// "three quests want this", which is what it meant. Where to buy
-			// or find it rides in the same tooltip -- one hover answers both
-			// "why do I need several" and "where do I get it".
-			String sharedNote = total.sharedAcrossQuests()
-				? "Needed by " + total.quests() + " quests you can do"
-				: null;
-			// Three colours for three states, not two. Orange is the one you
-			// are part way through -- some in your bags and still short --
-			// which the sort has already floated to the top of the list; the
-			// colour is what stops it reading as just another grey row that
-			// happens to be first.
-			Color totalColour = total.satisfied()
-				? ColorScheme.PROGRESS_COMPLETE_COLOR
-				: total.inProgress()
-					? ColorScheme.PROGRESS_INPROGRESS_COLOR
-					: ColorScheme.LIGHT_GRAY_COLOR;
-			addRow(totalsGrid, total.name(), total.describe(), totalColour,
-				itemTooltip(sharedNote, total.sources()));
+			addTotalRow(totalsGrid, total);
+		}
+		for (QuestItems.Total total : skippedTotals)
+		{
+			shownTotals++;
+			addTotalRow(totalsGrid, total);
 		}
 		panel.add(totalsGrid);
 		if (filtering && shownTotals == 0)
@@ -1000,6 +1008,134 @@ class QuestpathPanel extends PluginPanel
 	}
 
 	/**
+	 * One row of the "EVERYTHING YOU NEED" grid: the item, its count, and
+	 * whichever colour its state earns -- including a fourth state beyond
+	 * the usual three, for an item {@link ShopItemSkips#isSkipped}.
+	 *
+	 * <p>A skip does not change what the item needs or how much of it is
+	 * held, so it earns a colour and a tooltip note on top of whichever of
+	 * the ordinary three still applies, never in place of it -- "skipped"
+	 * beside "3 / 5 -- still short" is a different fact from the count
+	 * itself.
+	 */
+	private void addTotalRow(JPanel totalsGrid, QuestItems.Total total)
+	{
+		// The count of quests goes in the tooltip, not the label. "Ball of
+		// wool x3" beside "5 / 24" read as a multiplication rather than as
+		// "three quests want this", which is what it meant. Where to buy
+		// or find it rides in the same tooltip -- one hover answers both
+		// "why do I need several" and "where do I get it".
+		String sharedNote = total.sharedAcrossQuests()
+			? "Needed by " + total.quests() + " quests you can do"
+			: null;
+		boolean skipped = shopItemSkips.isSkipped(total.name());
+		if (skipped)
+		{
+			sharedNote = sharedNote == null
+				? "Skipped for this shop trip -- moved to the back, not routed to."
+				: sharedNote + ". Skipped for this shop trip -- moved to the back, not routed to.";
+		}
+		// Three colours for three states, not two. Orange is the one you
+		// are part way through -- some in your bags and still short --
+		// which the sort has already floated to the top of the list; the
+		// colour is what stops it reading as just another grey row that
+		// happens to be first. Skipped overrides all three with the same
+		// muted grey the rest of this panel already uses for "set aside" --
+		// visible as different without inventing a fifth colour nobody else
+		// on this panel means the same thing by.
+		Color totalColour = skipped
+			? ColorScheme.MEDIUM_GRAY_COLOR
+			: total.satisfied()
+				? ColorScheme.PROGRESS_COMPLETE_COLOR
+				: total.inProgress()
+					? ColorScheme.PROGRESS_INPROGRESS_COLOR
+					: ColorScheme.LIGHT_GRAY_COLOR;
+		String label = skipped ? total.name() + "  (skipped)" : total.name();
+		addRow(totalsGrid, label, total.describe(), totalColour,
+			itemTooltip(sharedNote, total.sources()));
+	}
+
+	/**
+	 * "Skip this item (move to back)" for whichever item {@link
+	 * ShopRouteOverlay} would currently call the current stop, plus the undo
+	 * list for anything already skipped.
+	 *
+	 * <p>Right under the shop route button, per the brief this answers: a
+	 * skip is a decision made in the moment of looking at that button, not a
+	 * separate settings-style control buried elsewhere. "Current" is defined
+	 * exactly the way {@link ShopRouteOverlay} defines its own first stop --
+	 * the first unsatisfied, unskipped {@link QuestItems.Total} in {@link
+	 * QuestItems#totals()}'s own order -- so the button always names the
+	 * thing the overlay is actually pointing at, never a different item the
+	 * two surfaces disagree about.
+	 *
+	 * <p>Skipping and undoing both call {@link #fillItemResults} and {@link
+	 * #repaintAll} directly rather than waiting for the next natural refresh:
+	 * a skip changes nothing {@link QuestItems#signature()} covers -- no
+	 * quantity, no held count -- so the tab's own signature gate would never
+	 * notice one on its own, and a click that visibly did nothing until the
+	 * next inventory change would read as broken.
+	 */
+	private JPanel skipRow(QuestItems items)
+	{
+		JPanel panel = column();
+
+		QuestItems.Total current = null;
+		for (QuestItems.Total total : items.totals())
+		{
+			if (!total.satisfied() && !shopItemSkips.isSkipped(total.name()))
+			{
+				current = total;
+				break;
+			}
+		}
+
+		if (current != null)
+		{
+			String currentName = current.name();
+			JButton skip = new JButton("Skip \"" + currentName + "\" (move to back)");
+			skip.setFont(FontManager.getRunescapeSmallFont());
+			skip.setAlignmentX(Component.LEFT_ALIGNMENT);
+			skip.addActionListener(event ->
+			{
+				shopItemSkips.skip(currentName);
+				fillItemResults(lastItems);
+				repaintAll();
+			});
+			panel.add(skip);
+		}
+
+		List<String> skipped = shopItemSkips.names();
+		if (!skipped.isEmpty())
+		{
+			panel.add(Box.createVerticalStrut(4));
+			JLabel heading = new JLabel("SKIPPED THIS TRIP  ·  " + skipped.size());
+			heading.setFont(FontManager.getRunescapeSmallFont().deriveFont(Font.BOLD));
+			heading.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
+			panel.add(heading);
+			// Each its own small button rather than one combined "restore
+			// all": a skip is reversible one at a time because it was made
+			// one at a time, and a player who skipped three items to get to
+			// a fourth should not have to give all three back to undo one.
+			for (String skippedName : skipped)
+			{
+				JButton undo = new JButton(skippedName + "  → restore");
+				undo.setFont(FontManager.getRunescapeSmallFont());
+				undo.setAlignmentX(Component.LEFT_ALIGNMENT);
+				undo.addActionListener(event ->
+				{
+					shopItemSkips.unskip(skippedName);
+					fillItemResults(lastItems);
+					repaintAll();
+				});
+				panel.add(undo);
+			}
+		}
+
+		return panel;
+	}
+
+	/**
 	 * Every shop worth walking to for the current shopping list: the shops
 	 * selling something still outstanding, resolved to a tile.
 	 *
@@ -1007,6 +1143,13 @@ class QuestpathPanel extends PluginPanel
 	 * on {@link QuestItems#signature()}, not on every render -- so this never
 	 * scales with how often the panel repaints, only with how often the
 	 * shopping list actually changes.
+	 *
+	 * <p>A skipped item ({@link ShopItemSkips#isSkipped}) contributes no shop
+	 * of its own -- "skip this item" means routing past it, not merely
+	 * hiding it from the overlay while still sending Shortest Path there.
+	 * Its shop can still appear in the set if some other, unskipped item also
+	 * sells there: skipping is per item, not per shop, so a stop still worth
+	 * making for a different reason is not removed along with it.
 	 */
 	private Set<WorldPoint> shopDestinations(QuestItems items)
 	{
@@ -1017,7 +1160,7 @@ class QuestpathPanel extends PluginPanel
 		Set<WorldPoint> destinations = new java.util.LinkedHashSet<>();
 		for (QuestItems.Total total : items.totals())
 		{
-			if (total.satisfied())
+			if (total.satisfied() || shopItemSkips.isSkipped(total.name()))
 			{
 				continue;
 			}
