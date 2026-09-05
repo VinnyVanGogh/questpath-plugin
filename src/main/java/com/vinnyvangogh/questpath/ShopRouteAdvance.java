@@ -137,7 +137,7 @@ final class ShopRouteAdvance
 			return Decision.nothing();
 		}
 
-		List<ShopRouteStops.Stop> stops = ShopRouteStops.next(totals, skips);
+		List<ShopRouteStops.Stop> stops = ShopRouteStops.next(totals, skips, shopLocator);
 		if (stops.isEmpty())
 		{
 			return new Decision(Action.FINISHED, Set.of(), "", "", 0);
@@ -157,6 +157,16 @@ final class ShopRouteAdvance
 		}
 
 		QuestItems.Total nextTotal = stops.get(0).total();
+		for (ShopRouteStops.Stop stop : stops)
+		{
+			if (stop.current())
+			{
+				// The stop being routed to, which is the first one that can be
+				// walked to rather than the first one listed.
+				nextTotal = stop.total();
+				break;
+			}
+		}
 		ShopRouteStops.Destination destination =
 			ShopRouteStops.destinationOf(nextTotal, shopLocator, from);
 		return new Decision(Action.REROUTE, destinations, nextTotal.name(),

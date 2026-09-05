@@ -132,37 +132,78 @@ final class ShopRouteStops
 	 *     typically {@link QuestItems#totals()}
 	 * @param skips which items to leave out of the answer
 	 */
-	static List<Stop> next(List<QuestItems.Total> totals, ShopItemSkips skips)
+	static List<Stop> next(List<QuestItems.Total> totals, ShopItemSkips skips,
+		Function<String, WorldPoint> shopLocator)
 	{
-		List<Stop> out = new ArrayList<>();
+		List<QuestItems.Total> outstanding = new ArrayList<>();
 		for (QuestItems.Total total : totals)
 		{
-			if (total.satisfied() || skips.isSkipped(total.name()))
+			if (!total.satisfied() && !skips.isSkipped(total.name()))
 			{
-				continue;
+				outstanding.add(total);
 			}
-			out.add(new Stop(total, out.isEmpty()));
+		}
+
+		// The current stop is the first one that can actually be walked to,
+		// not simply the first one listed. Bat bones sit at the top of this
+		// list because the list's last tiebreak is alphabetical, and no shop
+		// sells them -- calling that the current stop names a destination
+		// that does not exist and leaves the trip pointing at nothing.
+		int current = -1;
+		for (int i = 0; i < outstanding.size(); i++)
+		{
+			if (destinationOf(outstanding.get(i), shopLocator, null) != null)
+			{
+				current = i;
+				break;
+			}
+		}
+		if (current < 0 && !outstanding.isEmpty())
+		{
+			// Nothing on the list can be routed to at all. The first is still
+			// named, so the overlay can say what it is and why there is no
+			// route, rather than showing an empty panel.
+			current = 0;
+		}
+
+		List<Stop> out = new ArrayList<>();
+		for (int i = 0; i < outstanding.size(); i++)
+		{
+			out.add(new Stop(outstanding.get(i), i == current));
 		}
 		return out;
 	}
 
 	/**
-	 * Every tile worth walking to for the whole outstanding list -- what
+	 * The tiles for the current stop, and only the current stop -- what
 	 * Shortest Path is handed.
 	 *
-	 * <p>Deliberately every placeable shop for every outstanding item, not
-	 * one per item: Shortest Path chooses between destinations by real path
-	 * distance, over a map where a straight line and a walk are very
-	 * different things, and it is far better at that than this class is.
-	 * {@link #destinationOf} is the one that has to commit to a single name
-	 * for the label, and it says so when it is guessing.
+	 * <p><b>This used to be every shop for every outstanding item, and that
+	 * was the bug.</b> Measured from a real session: the button sent 31
+	 * destinations, and three consecutive skips sent 29, 29 and 29. Skipping
+	 * an item almost never removes a destination, because the shop selling it
+	 * also sells a dozen other things still on the list -- so the path on the
+	 * ground never moved and the feature looked broken. It was: with 31
+	 * scattered destinations, Shortest Path walks to whichever is nearest,
+	 * which has nothing to do with the item the panel names.
+	 *
+	 * <p>One stop at a time is what makes the rest of this coherent. The
+	 * overlay names a shop and that is the shop the line goes to; a skip
+	 * moves the line because the stop changed; arriving and buying advances
+	 * to the next one. Every placeable shop for that one item is still sent,
+	 * because Shortest Path chooses between those by real path distance far
+	 * better than {@link #destinationOf}'s straight line can.
 	 */
 	static Set<WorldPoint> destinations(List<QuestItems.Total> totals, ShopItemSkips skips,
 		Function<String, WorldPoint> shopLocator)
 	{
 		Set<WorldPoint> out = new LinkedHashSet<>();
-		for (Stop stop : next(totals, skips))
+		for (Stop stop : next(totals, skips, shopLocator))
 		{
+			if (!stop.current())
+			{
+				continue;
+			}
 			for (String shopName : stop.total().shopNames())
 			{
 				WorldPoint point = shopLocator.apply(shopName);
@@ -171,6 +212,7 @@ final class ShopRouteStops
 					out.add(point);
 				}
 			}
+			break;
 		}
 		return out;
 	}

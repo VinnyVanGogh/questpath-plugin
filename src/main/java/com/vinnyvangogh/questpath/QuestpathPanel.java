@@ -1023,6 +1023,22 @@ class QuestpathPanel extends PluginPanel
 			return;
 		}
 		Set<WorldPoint> destinations = shopDestinations(items);
+		ShopRouteStops.Destination named = null;
+		String stopName = "nothing";
+		for (ShopRouteStops.Stop stop : ShopRouteStops.next(items.totals(), shopItemSkips, shopLocator))
+		{
+			if (stop.current())
+			{
+				stopName = stop.total().name();
+				named = ShopRouteStops.destinationOf(stop.total(), shopLocator, null);
+				break;
+			}
+		}
+		// Named in the log, not just counted. A count alone said "29" three
+		// skips running while the stop never moved, which read as working.
+		log.info("questpath shop route: stop \"{}\" -> {} ({} destination(s), {} skipped)",
+			stopName, named == null ? "nowhere placeable" : named.shopName(),
+			destinations.size(), shopItemSkips.size());
 		if (destinations.isEmpty())
 		{
 			return;

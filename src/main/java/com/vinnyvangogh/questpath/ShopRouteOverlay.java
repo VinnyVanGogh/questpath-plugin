@@ -162,7 +162,7 @@ class ShopRouteOverlay extends QuestpathOverlay
 			return rows;
 		}
 
-		List<ShopRouteStops.Stop> next = ShopRouteStops.next(totals, skips);
+		List<ShopRouteStops.Stop> next = ShopRouteStops.next(totals, skips, shopLocator);
 		int skippedCount = outstanding.size() - next.size();
 
 		if (next.isEmpty())

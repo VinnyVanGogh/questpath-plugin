@@ -132,9 +132,20 @@ public class ShopRouteAdvanceTest
 		assertEquals("and it still knows a stop is outstanding", 1, decision.remaining());
 	}
 
-	/** A next stop this plugin cannot place is left unnamed, never guessed. */
+	/**
+	 * A stop nothing sells is stepped over, and the trip names one it can
+	 * actually walk to.
+	 *
+	 * <p>This test previously asserted the opposite -- that the unbuyable
+	 * item became the next stop with an empty shop name. That was the
+	 * behaviour on screen and it was the bug: Bat bones headed a real
+	 * shopping list purely because the list's last tiebreak is alphabetical,
+	 * so the trip announced an item no shop stocks and pointed nowhere. It is
+	 * still on the list and still outstanding; it is just not what the line
+	 * on the ground leads to.
+	 */
 	@Test
-	public void anUnplaceableNextStopIsLeftUnnamed()
+	public void anUnplaceableStopIsSteppedOverRatherThanNamed()
 	{
 		List<QuestItems.Total> totals = Arrays.asList(
 			total("Rope", 1, 1, Collections.singletonList("Near shop")),
@@ -144,7 +155,9 @@ public class ShopRouteAdvanceTest
 		ShopRouteAdvance.Decision decision = observe(true, completed(), totals);
 
 		assertEquals(ShopRouteAdvance.Action.REROUTE, decision.action());
-		assertEquals("Raw chompy", decision.nextItem());
-		assertEquals("", decision.nextShop());
+		assertEquals("Bucket", decision.nextItem());
+		assertEquals("Near shop", decision.nextShop());
+		assertEquals("the unbuyable one is still counted as outstanding",
+			2, decision.remaining());
 	}
 }

@@ -79,7 +79,7 @@ public class ShopRouteStopsTest
 			total("Bucket", 2, 2),
 			total("Rope", 1, 0));
 
-		List<ShopRouteStops.Stop> next = ShopRouteStops.next(totals, new ShopItemSkips());
+		List<ShopRouteStops.Stop> next = ShopRouteStops.next(totals, new ShopItemSkips(), locates("General store"));
 
 		assertEquals(1, next.size());
 		assertEquals("Rope", next.get(0).total().name());
@@ -94,7 +94,7 @@ public class ShopRouteStopsTest
 			total("Bucket", 2, 0),
 			total("Spade", 1, 0));
 
-		List<ShopRouteStops.Stop> next = ShopRouteStops.next(totals, new ShopItemSkips());
+		List<ShopRouteStops.Stop> next = ShopRouteStops.next(totals, new ShopItemSkips(), locates("General store"));
 
 		assertEquals(3, next.size());
 		assertTrue("the first outstanding item is the one being walked to",
@@ -116,7 +116,7 @@ public class ShopRouteStopsTest
 		ShopItemSkips skips = new ShopItemSkips();
 		skips.skip("Rope");
 
-		List<ShopRouteStops.Stop> next = ShopRouteStops.next(totals, skips);
+		List<ShopRouteStops.Stop> next = ShopRouteStops.next(totals, skips, locates("General store"));
 
 		assertEquals(1, next.size());
 		assertEquals("Bucket", next.get(0).total().name());
@@ -132,7 +132,7 @@ public class ShopRouteStopsTest
 		ShopItemSkips skips = new ShopItemSkips();
 		skips.skip("bUcKeT");
 
-		assertTrue(ShopRouteStops.next(totals, skips).isEmpty());
+		assertTrue(ShopRouteStops.next(totals, skips, locates("General store")).isEmpty());
 	}
 
 	/** Undoing a skip puts the stop back. */
@@ -144,7 +144,7 @@ public class ShopRouteStopsTest
 		skips.skip("Bucket");
 		skips.unskip("Bucket");
 
-		assertEquals(1, ShopRouteStops.next(totals, skips).size());
+		assertEquals(1, ShopRouteStops.next(totals, skips, locates("General store")).size());
 	}
 
 	/** A placeable shop is named, with the quest that wants it. */
@@ -268,37 +268,88 @@ public class ShopRouteStopsTest
 	}
 
 	/**
-	 * Shortest Path is handed every placeable shop for every outstanding
-	 * item, so it can choose between them by real path distance -- not one
-	 * per item, which would throw away the choice.
+	 * The trip goes to one stop at a time, not to every shop at once.
+	 *
+	 * <p>This is the bug the logs caught: the button sent 31 destinations and
+	 * three consecutive skips sent 29, 29 and 29, because the shops selling a
+	 * skipped item also sell a dozen other things still on the list. The path
+	 * never moved, so skipping looked broken. Sending only the current stop's
+	 * shops is what makes a skip visible.
 	 */
 	@Test
-	public void everyPlaceableShopIsOfferedToTheRouter()
+	public void onlyTheCurrentStopIsRoutedTo()
 	{
 		List<QuestItems.Total> totals = Arrays.asList(
-			total("Rope", 1, 0, "Sheep Herder", Arrays.asList("Far shop", "Near shop")),
-			total("Bucket", 1, 0, "Sheep Herder", Collections.singletonList("Near shop")));
+			total("Rope", 1, 0, "Sheep Herder", Collections.singletonList("Near shop")),
+			total("Bucket", 1, 0, "Sheep Herder", Collections.singletonList("Far shop")));
 		Function<String, WorldPoint> shops = placing("Far shop", FAR, "Near shop", NEARBY);
 
 		Set<WorldPoint> destinations =
 			ShopRouteStops.destinations(totals, new ShopItemSkips(), shops);
 
-		assertEquals("both tiles, and the shared one only once", 2, destinations.size());
-		assertTrue(destinations.contains(FAR));
+		assertEquals("one stop, not both", 1, destinations.size());
 		assertTrue(destinations.contains(NEARBY));
 	}
 
-	/** Satisfied and skipped items send nobody anywhere. */
+	/** And skipping the current stop actually moves where the line goes. */
 	@Test
-	public void theRouterIsNotSentToItemsAlreadyHeldOrSetAside()
+	public void skippingTheCurrentStopMovesTheRoute()
 	{
 		List<QuestItems.Total> totals = Arrays.asList(
-			total("Rope", 1, 1, "Sheep Herder", Collections.singletonList("Far shop")),
-			total("Bucket", 1, 0, "Sheep Herder", Collections.singletonList("Near shop")));
-		ShopItemSkips skips = new ShopItemSkips();
-		skips.skip("Bucket");
+			total("Rope", 1, 0, "Sheep Herder", Collections.singletonList("Near shop")),
+			total("Bucket", 1, 0, "Sheep Herder", Collections.singletonList("Far shop")));
 		Function<String, WorldPoint> shops = placing("Far shop", FAR, "Near shop", NEARBY);
 
-		assertTrue(ShopRouteStops.destinations(totals, skips, shops).isEmpty());
+		ShopItemSkips skips = new ShopItemSkips();
+		skips.skip("Rope");
+
+		Set<WorldPoint> after = ShopRouteStops.destinations(totals, skips, shops);
+		assertEquals(1, after.size());
+		assertTrue("the destination changed, which it did not before", after.contains(FAR));
+	}
+
+	/**
+	 * An item nothing sells is stepped over rather than becoming a stop with
+	 * no destination.
+	 *
+	 * <p>Bat bones sit at the top of a real shopping list purely because the
+	 * list's last tiebreak is alphabetical and the bank had not been read, so
+	 * everything tied. Naming that the current stop points the trip nowhere.
+	 */
+	@Test
+	public void anItemNoShopSellsIsNotTheCurrentStop()
+	{
+		List<QuestItems.Total> totals = Arrays.asList(
+			total("Bat bones", 1, 0, "Merlin's Crystal", Collections.emptyList()),
+			total("Rope", 1, 0, "Sheep Herder", Collections.singletonList("Near shop")));
+		Function<String, WorldPoint> shops = placing("Near shop", NEARBY);
+
+		List<ShopRouteStops.Stop> stops = ShopRouteStops.next(totals, new ShopItemSkips(), shops);
+
+		assertEquals("both still listed", 2, stops.size());
+		assertFalse("the unbuyable one is not what the trip heads for",
+			stops.get(0).current());
+		assertTrue(stops.get(1).current());
+		assertTrue(ShopRouteStops.destinations(totals, new ShopItemSkips(), shops)
+			.contains(NEARBY));
+	}
+
+	/**
+	 * With nothing routable at all, the first stop is still named so the
+	 * overlay can say what is outstanding instead of going blank.
+	 */
+	@Test
+	public void withNothingRoutableTheFirstStopIsStillNamed()
+	{
+		List<QuestItems.Total> totals = Collections.singletonList(
+			total("Bat bones", 1, 0, "Merlin's Crystal", Collections.emptyList()));
+
+		List<ShopRouteStops.Stop> stops =
+			ShopRouteStops.next(totals, new ShopItemSkips(), locates());
+
+		assertEquals(1, stops.size());
+		assertTrue(stops.get(0).current());
+		assertTrue("but there is nowhere to send anybody",
+			ShopRouteStops.destinations(totals, new ShopItemSkips(), locates()).isEmpty());
 	}
 }
