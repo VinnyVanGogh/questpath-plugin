@@ -411,4 +411,61 @@ public class QuestHelperBridgeTest
 			assertFalse(availability.name(), availability.menuLabel().trim().isEmpty());
 		}
 	}
+
+	/**
+	 * {@link QuestHelperBridge#hasSelectedQuest()} is the signal {@link
+	 * QuestStartArrivalGate} gates on for "don't hijack what's already
+	 * open" -- these pin the read-back itself, independent of any
+	 * particular quest name or {@link #availability} check.
+	 */
+	@Test
+	public void hasSelectedQuestIsFalseWhenQuestHelperIsNotInstalled()
+	{
+		QuestHelperBridge bridge = bridge(java.util.Collections::emptyList, plugin -> true);
+		assertFalse(bridge.hasSelectedQuest());
+	}
+
+	@Test
+	public void hasSelectedQuestIsFalseWhenQuestHelperIsNotEnabled()
+	{
+		FakePlugin plugin = new FakePlugin();
+		select(plugin, "Cook's Assistant");
+		QuestHelperBridge bridge = bridge(() -> List.of(plugin), p -> false);
+		assertFalse(bridge.hasSelectedQuest());
+	}
+
+	@Test
+	public void hasSelectedQuestIsFalseWhenNothingIsSelected()
+	{
+		FakePlugin plugin = new FakePlugin();
+		select(plugin, null);
+		QuestHelperBridge bridge = bridge(() -> List.of(plugin), p -> true);
+		assertFalse(bridge.hasSelectedQuest());
+	}
+
+	@Test
+	public void hasSelectedQuestIsTrueWhenQuestHelperHasAQuestSelected()
+	{
+		FakePlugin plugin = new FakePlugin();
+		select(plugin, "Prince Ali Rescue");
+		QuestHelperBridge bridge = bridge(() -> List.of(plugin), p -> true);
+		assertTrue(bridge.hasSelectedQuest());
+	}
+
+	/**
+	 * A broken read-back must not be mistaken for "something is selected" --
+	 * that would block every future arrival forever on a Quest Helper
+	 * refactor. It degrades to false, the same conservative direction
+	 * {@link Availability#UNAVAILABLE} takes elsewhere in this class.
+	 */
+	@Test
+	public void hasSelectedQuestIsFalseWhenTheReadBackCannotBeReached()
+	{
+		FakePlugin plugin = new FakePlugin();
+		select(plugin, "Cook's Assistant");
+		QuestHelperBridge bridge = bridge(() -> List.of(plugin), p -> true,
+			"getQuestManager", "startUpQuest", QUEST_HELPER_CLASS_NAME, FakeLookup.class.getName(), "lookup",
+			"noSuchSelectedQuestMethod", "getQuest", "getName", Runnable::run, () -> true);
+		assertFalse(bridge.hasSelectedQuest());
+	}
 }

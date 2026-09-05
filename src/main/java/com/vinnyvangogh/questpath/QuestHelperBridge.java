@@ -324,6 +324,52 @@ class QuestHelperBridge
 	}
 
 	/**
+	 * Whether Quest Helper currently has any quest selected -- the signal
+	 * {@link QuestStartArrivalGate} uses for "the player is already using
+	 * Quest Helper for something", so an arrival at a different quest's
+	 * start does not hijack it. See {@link QuestStartArrivalGate}'s class
+	 * doc for why this, and not an account-level {@code IN_PROGRESS} quest,
+	 * is the right signal.
+	 *
+	 * <p>Reuses the same {@code getSelectedQuest()}/{@code getQuest()}/
+	 * {@code getName()} read-back chain {@link #verify} already depends on
+	 * -- see the class doc for how that was confirmed public. Unlike {@link
+	 * #availability}, this asks nothing about a specific quest, so there is
+	 * no per-quest pre-check to run first.
+	 *
+	 * <p>Not gated on {@link #resolve}: Quest Helper being not installed or
+	 * not enabled trivially has nothing selected, so both answer false with
+	 * no warning. Only a genuine failure to read back a plugin that is
+	 * present and enabled logs one, the same as every other reflective read
+	 * in this class.
+	 *
+	 * @return true only when Quest Helper is present, enabled, and reports a
+	 *     non-null selected quest. A reflection failure -- a renamed or
+	 *     removed method -- is logged and treated as false rather than true:
+	 *     a bridge that cannot answer must not be the reason an
+	 *     otherwise-legitimate arrival is silently blocked forever.
+	 */
+	boolean hasSelectedQuest()
+	{
+		Object plugin = findPlugin();
+		if (plugin == null || !isEnabledSafely(plugin))
+		{
+			return false;
+		}
+		try
+		{
+			return selectedQuestName(plugin) != null;
+		}
+		catch (ReflectiveOperationException | RuntimeException e)
+		{
+			log.warn("Quest Helper's {}.{}()/{}()/{}() read-back is missing or unreachable"
+					+ " -- could not tell whether a quest is already selected",
+				pluginClassName, selectedQuestMethodName, questMethodName, questNameMethodName, e);
+			return false;
+		}
+	}
+
+	/**
 	 * Hands questName to Quest Helper's own start flow, and reports what
 	 * actually happened once Quest Helper has had a chance to react --
 	 * never at the moment the reflective call returns, because that call is

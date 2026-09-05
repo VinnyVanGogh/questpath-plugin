@@ -319,15 +319,21 @@ public class QuestpathPlugin extends Plugin
 
 	/**
 	 * The quests worth checking the player's distance to this tick, name to
-	 * start point -- rebuilt once per {@link #refresh}, never per tick.
+	 * start point -- rebuilt once per {@link #refresh}, never per tick, by
+	 * {@link QuestStartCandidates#of}.
 	 *
 	 * <p>Every remaining step of the saved route, plus every quest {@link
-	 * QuestVerdicts} currently calls {@link QuestStatus#ELIGIBLE} -- doable
-	 * right now, not merely with a boost or after more levels. That is the
-	 * whole cap: no arbitrary size limit on top of it, because neither half
-	 * scales with the 218-quest graph on a real account -- a route is a few
-	 * dozen quests at most and ELIGIBLE quests are bounded by how much of the
-	 * prerequisite tree is actually open, typically far fewer than that.
+	 * QuestVerdicts} currently calls {@link QuestStatus#ELIGIBLE} or {@link
+	 * QuestStatus#BOOSTABLE} -- startable right now, boost genuinely covering
+	 * any shortfall included -- and, either way, not already begun. See
+	 * {@link QuestStartCandidates}'s own class doc for the bug this
+	 * double filter closes: an earlier version added every route step with
+	 * no eligibility check at all, which is how Shadow of the Storm started
+	 * on an account well short of its levels. No arbitrary size limit on top
+	 * of either filter, because neither half scales with the 218-quest graph
+	 * on a real account -- a route is a few dozen quests at most and
+	 * startable quests are bounded by how much of the prerequisite tree is
+	 * actually open, typically far fewer than that.
 	 * {@link #checkQuestStartArrival} spends one {@code WorldPoint#distanceTo}
 	 * per entry here, per tick, and nothing else -- no classification, no
 	 * graph lookup, no per-tick allocation beyond the watcher's own arrival
@@ -656,8 +662,11 @@ public class QuestpathPlugin extends Plugin
 	 * <p>Cost: one field read for the candidate map (already computed by the
 	 * last {@link #refresh}) and one distance comparison per candidate.
 	 * Nothing here classifies a quest or scans the graph -- that happened
-	 * once, in {@link #questStartCandidates(NextQuestStatus, QuestVerdicts)},
-	 * the last time an account-state change ran {@link #refresh}.
+	 * once, in {@link QuestStartCandidates#of}, the last time an
+	 * account-state change ran {@link #refresh}. {@link
+	 * QuestHelperBridge#hasSelectedQuest()} only runs when {@code arrived} is
+	 * non-empty -- almost never -- so the reflective read it costs is not a
+	 * per-tick expense either.
 	 */
 	private void checkQuestStartArrival()
 	{
@@ -674,7 +683,10 @@ public class QuestpathPlugin extends Plugin
 		{
 			return;
 		}
-		for (String questName : arrived)
+		// Never hijack a quest already in progress on Quest Helper's own
+		// screen -- see QuestStartArrivalGate's class doc for why that
+		// signal, not an account-level IN_PROGRESS quest, is the right one.
+		for (String questName : QuestStartArrivalGate.allow(arrived, questHelperBridge.hasSelectedQuest()))
 		{
 			handleQuestStartArrival(questName);
 		}
@@ -682,8 +694,9 @@ public class QuestpathPlugin extends Plugin
 
 	/**
 	 * Every quest worth checking the player's distance to this tick -- see
-	 * {@link #questStartCandidates}'s own doc for what is and is not
-	 * included, and why that is the whole cap.
+	 * {@link #questStartCandidates}'s own doc and {@link
+	 * QuestStartCandidates}'s class doc for what is and is not included, and
+	 * why that is the whole cap.
 	 *
 	 * @param route the account's saved route, or null when none is saved or
 	 *     the client has not loaded quest states yet
@@ -693,66 +706,7 @@ public class QuestpathPlugin extends Plugin
 	 */
 	private Map<String, WorldPoint> questStartCandidates(NextQuestStatus route, QuestVerdicts verdicts)
 	{
-		if (questGraph == null)
-		{
-			return Collections.emptyMap();
-		}
-		Map<String, WorldPoint> candidates = new java.util.LinkedHashMap<>();
-		if (route != null)
-		{
-			for (NextQuestStatus.Step step : route.upcoming())
-			{
-				addStartCandidate(candidates, step.questName());
-			}
-		}
-		if (verdicts != null)
-		{
-			for (QuestGraph.Quest quest : verdicts.quests(QuestStatus.ELIGIBLE))
-			{
-				addStartCandidate(candidates, quest.name());
-			}
-		}
-		return candidates;
-	}
-
-	/** Adds questName's start point to candidates if the bundle knows one and it is not already there. */
-	private void addStartCandidate(Map<String, WorldPoint> candidates, String questName)
-	{
-		if (questName == null || candidates.containsKey(questName))
-		{
-			return;
-		}
-		WorldPoint start = questStartPoint(questName);
-		if (start != null)
-		{
-			candidates.put(questName, start);
-		}
-	}
-
-	/**
-	 * Where to walk for nextQuestName's start point, or null when the
-	 * bundled graph carries no start for it -- 13 of 218 quests, or when the
-	 * graph is missing or the name resolves to nothing.
-	 *
-	 * <p>Plane is always 0: questpath's export carries none, so every start
-	 * point is treated as ground level, and {@link
-	 * QuestStartArrivalWatcher}'s use of {@code WorldPoint#distanceTo} means
-	 * a player standing on a different plane -- indoors, upstairs -- above
-	 * or below the real door correctly never reads as arrived, rather than
-	 * firing confidently for the wrong floor.
-	 */
-	private WorldPoint questStartPoint(String nextQuestName)
-	{
-		if (questGraph == null || nextQuestName == null)
-		{
-			return null;
-		}
-		QuestGraph.Quest quest = questGraph.byName(nextQuestName);
-		if (quest == null || !quest.hasStart())
-		{
-			return null;
-		}
-		return new WorldPoint(quest.startX(), quest.startY(), 0);
+		return QuestStartCandidates.of(questGraph, route, verdicts, inProgressQuestNames());
 	}
 
 	/**
