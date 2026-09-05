@@ -218,6 +218,7 @@ public class QuestpathPlugin extends Plugin
 	private final ItemCompletionWatcher completions = new ItemCompletionWatcher();
 	private final FloatingNotes floatingNotes = new FloatingNotes();
 	private final ShopkeeperMemory shopkeeper = new ShopkeeperMemory();
+	private Boosts cachedShopBoosts;
 
 	/**
 	 * Watches for a shop opening that sells something outstanding -- see its
@@ -1586,7 +1587,45 @@ public class QuestpathPlugin extends Plugin
 			return null;
 		}
 		QuestGraph.Shop shop = questGraph.shop(shopName);
-		return shop == null ? null : new WorldPoint(shop.x(), shop.y(), shop.plane());
+		if (shop == null)
+		{
+			return null;
+		}
+		// A shop this account cannot be served at is not a destination, and
+		// this is the one place every route, label and stop resolves a shop
+		// name -- so filtering here is what keeps them from disagreeing.
+		// See ShopReachability for the report: the Fishing Guild Shop was
+		// named for a big fishing net behind 68 Fishing while a Catherby shop
+		// selling the same net, that the account could walk into, went
+		// unmentioned.
+		//
+		// Boostable counts as reachable. Walking somewhere with a fishing
+		// potion is a real plan, and refusing to route there would hide a
+		// shop the account can genuinely use.
+		if (!ShopReachability.of(shop, accountSnapshot, questGraph, shopBoosts()).usable())
+		{
+			return null;
+		}
+		return new WorldPoint(shop.x(), shop.y(), shop.plane());
+	}
+
+	/**
+	 * The boost table, for sizing a boostable entry requirement.
+	 *
+	 * Built from the same graph the quest classifier uses, so the two cannot
+	 * disagree about whether a potion closes a gap.
+	 */
+	private Boosts shopBoosts()
+	{
+		if (questGraph == null)
+		{
+			return null;
+		}
+		if (cachedShopBoosts == null)
+		{
+			cachedShopBoosts = new Boosts(questGraph.boosts());
+		}
+		return cachedShopBoosts;
 	}
 
 	/** The overlays and the bank layout read config through here. */

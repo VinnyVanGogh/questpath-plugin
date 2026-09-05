@@ -1,5 +1,5 @@
 {
-  "version": 8,
+  "version": 9,
   "quests": [
     {
       "id": 1,
@@ -27,6 +27,10 @@
           "shop_names": [
             "Tynan's Fishing Supplies",
             "Alice's Farming shop."
+          ],
+          "drop_source_names": [
+            "Borrokar",
+            "Freidir"
           ]
         },
         {
@@ -121,6 +125,10 @@
           "sources": [
             "Drop: Chicken (Always)",
             "Drop: Crimson swift (Always)"
+          ],
+          "drop_source_names": [
+            "Undead cow",
+            "Cave goblin (monster)"
           ]
         },
         {
@@ -130,6 +138,10 @@
           "sources": [
             "Drop: Anja (Always)",
             "Drop: Citizen (Aldarin) (Always)"
+          ],
+          "drop_source_names": [
+            "Borrokar",
+            "Freidir"
           ]
         }
       ]
@@ -178,6 +190,9 @@
           "shop_names": [
             "Hamab's Crafting Emporium",
             "Neitiznot supplies."
+          ],
+          "drop_source_names": [
+            "Baby impling"
           ]
         },
         {
@@ -259,6 +274,10 @@
           "shop_names": [
             "King's Axe Inn",
             "The Asp \u0026 Snake Bar."
+          ],
+          "drop_source_names": [
+            "Goblin guard",
+            "Borrokar"
           ]
         },
         {
@@ -271,6 +290,10 @@
           "shop_names": [
             "Jiminua's Jungle Store.",
             "Neitiznot supplies."
+          ],
+          "drop_source_names": [
+            "Goblin guard",
+            "Baby impling"
           ]
         },
         {
@@ -339,6 +362,10 @@
           "sources": [
             "Drop: Air wizard (Always)",
             "Drop: Earth wizard (Always)"
+          ],
+          "drop_source_names": [
+            "Abyssal leech",
+            "Abyssal guardian"
           ]
         },
         {
@@ -352,6 +379,9 @@
           "shop_names": [
             "Hamab's Crafting Emporium",
             "Neitiznot supplies."
+          ],
+          "drop_source_names": [
+            "Baby impling"
           ]
         },
         {
@@ -365,6 +395,10 @@
           "shop_names": [
             "King's Axe Inn",
             "The Asp \u0026 Snake Bar."
+          ],
+          "drop_source_names": [
+            "Goblin guard",
+            "Borrokar"
           ]
         },
         {
@@ -377,6 +411,9 @@
           "shop_names": [
             "Drogo's Mining Emporium.",
             "Jiminua's Jungle Store."
+          ],
+          "drop_source_names": [
+            "Duke Sucellus"
           ]
         },
         {
@@ -399,6 +436,10 @@
           "sources": [
             "Drop: Anja (Always)",
             "Drop: Citizen (Aldarin) (Always)"
+          ],
+          "drop_source_names": [
+            "Borrokar",
+            "Freidir"
           ]
         },
         {
@@ -456,6 +497,10 @@
           "sources": [
             "Drop: Soft clay rocks (Always)",
             "Drop: Soft clay pack (Always)"
+          ],
+          "drop_source_names": [
+            "Frost Nagua",
+            "Baby impling"
           ]
         },
         {
@@ -493,6 +538,10 @@
           "sources": [
             "Drop: Clay rocks (Always)",
             "Drop: Flawed Golem (8/52)"
+          ],
+          "drop_source_names": [
+            "Flawed Golem",
+            "Mind Golem"
           ]
         },
         {
@@ -506,6 +555,10 @@
           "shop_names": [
             "Deepfin Point Ore Exchange",
             "TzHaar-Hur-Rin's Ore and Gem Store"
+          ],
+          "drop_source_names": [
+            "Flawed Golem",
+            "Mind Golem"
           ]
         },
         {
@@ -519,6 +572,10 @@
           "shop_names": [
             "Drogo's Mining Emporium.",
             "Hendor's Awesome Ores"
+          ],
+          "drop_source_names": [
+            "Mind Golem",
+            "Body Golem"
           ]
         }
       ]
@@ -541,6 +598,9 @@
           "shop_names": [
             "Blair's Armour",
             "Helmet Shop."
+          ],
+          "drop_source_names": [
+            "Wall beast"
           ]
         },
         {
@@ -553,6 +613,9 @@
           "shop_names": [
             "Cobado's Groceries",
             "Faustus' Fruit and Veg"
+          ],
+          "drop_source_names": [
+            "Tortoise#With riders"
           ]
         },
         {
@@ -565,6 +628,10 @@
           "shop_names": [
             "Blair's Armour",
             "Horvik's Armour Shop."
+          ],
+          "drop_source_names": [
+            "Cyclops (Catacombs of Kourend)",
+            "Cyclops#Warriors' Guild Rooftop"
           ]
         }
       ]
@@ -600,6 +667,10 @@
           "shop_names": [
             "Jatix's Herblore Shop.",
             "Betty's Magic Emporium"
+          ],
+          "drop_source_names": [
+            "Cave bug#Level 6",
+            "Borrokar"
           ]
         },
         {
@@ -773,6 +844,10 @@
           "sources": [
             "Drop: Anja (Always)",
             "Drop: Citizen (Aldarin) (Always)"
+          ],
+          "drop_source_names": [
+            "Borrokar",
+            "Freidir"
           ]
         },
         {
@@ -856,6 +931,10 @@
           "sources": [
             "Drop: Anja (Always)",
             "Drop: Citizen (Aldarin) (Always)"
+          ],
+          "drop_source_names": [
+            "Borrokar",
+            "Freidir"
           ]
         },
         {
@@ -872,6 +951,10 @@
           "shop_names": [
             "Jiminua's Jungle Store.",
             "Neitiznot supplies."
+          ],
+          "drop_source_names": [
+            "Goblin guard",
+            "Baby impling"
           ]
         },
         {
@@ -928,6 +1011,9 @@
           ],
           "shop_names": [
             "Construction supplies"
+          ],
+          "drop_source_names": [
+            "Ogre Coffin"
           ]
         },
         {
@@ -996,6 +1082,10 @@
           "shop_names": [
             "Ali's Discount Wares.",
             "Darkmeyer Meat Shop"
+          ],
+          "drop_source_names": [
+            "H.A.M. Guard",
+            "Guard (H.A.M. Storerooms)"
           ]
         },
         {
@@ -1042,6 +1132,10 @@
           "shop_names": [
             "Martin Thwait's Lost and Found.",
             "Neitiznot supplies."
+          ],
+          "drop_source_names": [
+            "Baby impling",
+            "Ogre Coffin"
           ]
         },
         {
@@ -1074,6 +1168,9 @@
           "shop_names": [
             "Culinaromancer's Chest",
             "Cobado's Groceries"
+          ],
+          "drop_source_names": [
+            "Baby impling"
           ]
         },
         {
@@ -1106,6 +1203,10 @@
           "sources": [
             "Drop: Bat (Always)",
             "Drop: Giant bat (Always)"
+          ],
+          "drop_source_names": [
+            "Giant bat (Brine Rat Cavern)",
+            "Albino bat"
           ]
         },
         {
@@ -1135,6 +1236,10 @@
           "shop_names": [
             "Ali's Discount Wares.",
             "Aurel's Supplies"
+          ],
+          "drop_source_names": [
+            "Cave goblin (monster)",
+            "Wall beast"
           ]
         }
       ]
@@ -1234,6 +1339,9 @@
           ],
           "shop_names": [
             "Valaine's Shop of Champions."
+          ],
+          "drop_source_names": [
+            "Cyclops#Warriors' Guild Basement"
           ]
         },
         {
@@ -1285,6 +1393,10 @@
           "shop_names": [
             "Fishing Guild Shop.",
             "Henderson's Catch of the Day"
+          ],
+          "drop_source_names": [
+            "Mogre",
+            "Sea Snake Hatchling"
           ]
         },
         {
@@ -1310,6 +1422,9 @@
           "obtainable": true,
           "sources": [
             "Drop: Ice Queen (Always)"
+          ],
+          "drop_source_names": [
+            "Ice Queen"
           ]
         },
         {
@@ -1404,6 +1519,10 @@
           "shop_names": [
             "Prifddinas Foodstuffs",
             "Fishing Guild Shop."
+          ],
+          "drop_source_names": [
+            "Gourmet impling",
+            "Dagannoth Rex"
           ]
         },
         {
@@ -1467,6 +1586,10 @@
           "shop_names": [
             "Fishing Guild Shop.",
             "Keepa Kettilon's store"
+          ],
+          "drop_source_names": [
+            "Dagannoth Rex",
+            "Cave kraken"
           ]
         },
         {
@@ -1479,6 +1602,9 @@
           "shop_names": [
             "Fishing Guild Shop.",
             "Keepa Kettilon's store"
+          ],
+          "drop_source_names": [
+            "Gourmet impling"
           ]
         },
         {
@@ -1515,6 +1641,10 @@
           "sources": [
             "Drop: Anja (Always)",
             "Drop: Citizen (Aldarin) (Always)"
+          ],
+          "drop_source_names": [
+            "Borrokar",
+            "Freidir"
           ]
         },
         {
@@ -1609,6 +1739,9 @@
           "shop_names": [
             "Bandit Bargains",
             "Bedabin Village Bartering"
+          ],
+          "drop_source_names": [
+            "Frost Nagua"
           ]
         },
         {
@@ -1617,6 +1750,10 @@
           "sources": [
             "Drop: Dead tree (2021 Christmas event) (Always)",
             "Drop: Jungle tree (Always)"
+          ],
+          "drop_source_names": [
+            "Brutus",
+            "H.A.M. Guard"
           ]
         }
       ]
@@ -1669,6 +1806,10 @@
           "sources": [
             "Drop: Limpwurt plant (Always)",
             "Drop: Hobgoblin#Unarmed (22/128)"
+          ],
+          "drop_source_names": [
+            "The Hueycoatl",
+            "Phantom Muspah"
           ]
         },
         {
@@ -1773,6 +1914,10 @@
           "sources": [
             "Drop: Dead tree (2021 Christmas event) (Always)",
             "Drop: Jungle tree (Always)"
+          ],
+          "drop_source_names": [
+            "Brutus",
+            "H.A.M. Guard"
           ]
         }
       ]
@@ -1802,6 +1947,10 @@
           "sources": [
             "Drop: Anja (Always)",
             "Drop: Citizen (Aldarin) (Always)"
+          ],
+          "drop_source_names": [
+            "Borrokar",
+            "Freidir"
           ]
         }
       ]
@@ -1835,6 +1984,10 @@
           "sources": [
             "Drop: Anja (Always)",
             "Drop: Citizen (Aldarin) (Always)"
+          ],
+          "drop_source_names": [
+            "Borrokar",
+            "Freidir"
           ]
         }
       ]
@@ -1924,6 +2077,10 @@
           "shop_names": [
             "Martin Thwait's Lost and Found.",
             "Neitiznot supplies."
+          ],
+          "drop_source_names": [
+            "Baby impling",
+            "Ogre Coffin"
           ]
         },
         {
@@ -1948,6 +2105,10 @@
           "sources": [
             "Drop: Snape grass plant (Always)",
             "Drop: Chest (alchemist's signet) (5/25)"
+          ],
+          "drop_source_names": [
+            "Cave bug#Level 6",
+            "Chaos druid warrior"
           ]
         },
         {
@@ -2028,6 +2189,10 @@
           "shop_names": [
             "Amlodd's Magical Supplies",
             "Aubury's Rune Shop."
+          ],
+          "drop_source_names": [
+            "Brutus",
+            "Thermonuclear smoke devil"
           ]
         },
         {
@@ -2041,6 +2206,10 @@
           "shop_names": [
             "Amlodd's Magical Supplies",
             "Aubury's Rune Shop."
+          ],
+          "drop_source_names": [
+            "Cave goblin (monster)",
+            "Tortoise#With riders"
           ]
         },
         {
@@ -2066,6 +2235,10 @@
           "shop_names": [
             "Amlodd's Magical Supplies",
             "Aubury's Rune Shop."
+          ],
+          "drop_source_names": [
+            "Cave goblin (monster)",
+            "Frost Nagua"
           ]
         }
       ]
@@ -2130,6 +2303,10 @@
           "sources": [
             "Drop: Anja (Always)",
             "Drop: Citizen (Aldarin) (Always)"
+          ],
+          "drop_source_names": [
+            "Borrokar",
+            "Freidir"
           ]
         }
       ]
@@ -2177,6 +2354,10 @@
           "shop_names": [
             "Tynan's Fishing Supplies",
             "Alice's Farming shop."
+          ],
+          "drop_source_names": [
+            "Borrokar",
+            "Freidir"
           ]
         },
         {
@@ -2214,6 +2395,10 @@
           "shop_names": [
             "Ali's Discount Wares.",
             "Aurel's Supplies"
+          ],
+          "drop_source_names": [
+            "Cave goblin (monster)",
+            "Wall beast"
           ]
         },
         {
@@ -2247,6 +2432,9 @@
           "shop_names": [
             "Drogo's Mining Emporium.",
             "Jiminua's Jungle Store."
+          ],
+          "drop_source_names": [
+            "Duke Sucellus"
           ]
         },
         {
@@ -2255,6 +2443,10 @@
           "sources": [
             "Drop: Phantom Muspah (15/235)",
             "Drop: Monumental chest (1/30)"
+          ],
+          "drop_source_names": [
+            "Phantom Muspah",
+            "Thermonuclear smoke devil"
           ]
         },
         {
@@ -2307,6 +2499,9 @@
           "shop_names": [
             "Drogo's Mining Emporium.",
             "Jiminua's Jungle Store."
+          ],
+          "drop_source_names": [
+            "Duke Sucellus"
           ]
         },
         {
@@ -2323,6 +2518,10 @@
           "shop_names": [
             "Jiminua's Jungle Store.",
             "Neitiznot supplies."
+          ],
+          "drop_source_names": [
+            "Goblin guard",
+            "Baby impling"
           ]
         },
         {
@@ -2392,6 +2591,10 @@
           "sources": [
             "Drop: Bat (Always)",
             "Drop: Giant bat (Always)"
+          ],
+          "drop_source_names": [
+            "Giant bat (Brine Rat Cavern)",
+            "Albino bat"
           ]
         },
         {
@@ -2401,6 +2604,10 @@
           "sources": [
             "Drop: Anja (Always)",
             "Drop: Citizen (Aldarin) (Always)"
+          ],
+          "drop_source_names": [
+            "Borrokar",
+            "Freidir"
           ]
         },
         {
@@ -2414,6 +2621,10 @@
           "shop_names": [
             "Battle Runes",
             "The Runic Emporium"
+          ],
+          "drop_source_names": [
+            "Cave kraken",
+            "Kraken"
           ]
         },
         {
@@ -2422,6 +2633,10 @@
           "sources": [
             "Drop: Green dragon#Regular (Always)",
             "Drop: Elvarg (Nightmare Zone) (Always)"
+          ],
+          "drop_source_names": [
+            "The Hueycoatl",
+            "Cerberus"
           ]
         },
         {
@@ -2434,6 +2649,10 @@
           "shop_names": [
             "Drogo's Mining Emporium.",
             "Durrik's Goods"
+          ],
+          "drop_source_names": [
+            "Skeleton thug",
+            "Skeleton brute"
           ]
         },
         {
@@ -2452,6 +2671,10 @@
           "sources": [
             "Drop: Jangerberry bush (Always)",
             "Drop: Fruit Stall (5/100)"
+          ],
+          "drop_source_names": [
+            "Borrokar",
+            "Freidir"
           ]
         },
         {
@@ -2495,6 +2718,10 @@
           "shop_names": [
             "Ali's Discount Wares.",
             "Aurel's Supplies"
+          ],
+          "drop_source_names": [
+            "Cave goblin (monster)",
+            "Wall beast"
           ]
         }
       ]
@@ -2524,6 +2751,10 @@
           "shop_names": [
             "Jiminua's Jungle Store.",
             "Neitiznot supplies."
+          ],
+          "drop_source_names": [
+            "Goblin guard",
+            "Baby impling"
           ]
         }
       ]
@@ -2674,6 +2905,9 @@
           "sources": [
             "Drop: Cupboard (specimen jar) (Always)",
             "Drop: Sacks (Digsite) (Always)"
+          ],
+          "drop_source_names": [
+            "Sacks (Digsite)"
           ]
         },
         {
@@ -2686,6 +2920,10 @@
           "shop_names": [
             "Ali's Discount Wares.",
             "Aurel's Supplies"
+          ],
+          "drop_source_names": [
+            "Cave goblin (monster)",
+            "Wall beast"
           ]
         },
         {
@@ -2707,6 +2945,10 @@
           "shop_names": [
             "Jatix's Herblore Shop.",
             "Elder Raley's Herblore Stall"
+          ],
+          "drop_source_names": [
+            "Borrokar",
+            "Freidir"
           ]
         }
       ]
@@ -2744,6 +2986,10 @@
           "sources": [
             "Drop: Anja (Always)",
             "Drop: Citizen (Aldarin) (Always)"
+          ],
+          "drop_source_names": [
+            "Borrokar",
+            "Freidir"
           ]
         },
         {
@@ -2761,6 +3007,9 @@
           "shop_names": [
             "Frankie's Fishing Emporium",
             "Gerrant's Fishy Business."
+          ],
+          "drop_source_names": [
+            "Mogre"
           ]
         }
       ]
@@ -2860,6 +3109,10 @@
           "shop_names": [
             "Conara's Jewels",
             "Elder Coco's Crafting Stall"
+          ],
+          "drop_source_names": [
+            "Thermonuclear smoke devil",
+            "Kraken"
           ]
         },
         {
@@ -2872,6 +3125,10 @@
           "shop_names": [
             "Amlodd's Magical Supplies",
             "Aubury's Rune Shop."
+          ],
+          "drop_source_names": [
+            "Cave goblin (monster)",
+            "Tortoise#With riders"
           ]
         },
         {
@@ -2884,6 +3141,9 @@
           "shop_names": [
             "Conara's Jewels",
             "Toci's Gem Store"
+          ],
+          "drop_source_names": [
+            "Duke Sucellus"
           ]
         },
         {
@@ -2897,6 +3157,10 @@
           "shop_names": [
             "Drogo's Mining Emporium.",
             "Durrik's Goods"
+          ],
+          "drop_source_names": [
+            "Skeleton thug",
+            "Skeleton brute"
           ]
         },
         {
@@ -2909,6 +3173,10 @@
           "shop_names": [
             "Jiminua's Jungle Store.",
             "Neitiznot supplies."
+          ],
+          "drop_source_names": [
+            "Goblin guard",
+            "Baby impling"
           ]
         },
         {
@@ -2938,6 +3206,10 @@
           "shop_names": [
             "The Runic Emporium",
             "Amlodd's Magical Supplies"
+          ],
+          "drop_source_names": [
+            "Chest (Dorgesh-Kaan Average)#Oldak's chests",
+            "Phantom Muspah"
           ]
         },
         {
@@ -2974,6 +3246,10 @@
           "shop_names": [
             "Amlodd's Magical Supplies",
             "Aubury's Rune Shop."
+          ],
+          "drop_source_names": [
+            "Mind Golem",
+            "Brutus"
           ]
         },
         {
@@ -3040,6 +3316,9 @@
           "shop_names": [
             "Conara's Jewels",
             "Elder Coco's Crafting Stall"
+          ],
+          "drop_source_names": [
+            "Duke Sucellus"
           ]
         },
         {
@@ -3052,6 +3331,10 @@
           "shop_names": [
             "Conara's Jewels",
             "Toci's Gem Store"
+          ],
+          "drop_source_names": [
+            "Baby impling",
+            "Duke Sucellus"
           ]
         },
         {
@@ -3069,6 +3352,10 @@
           "shop_names": [
             "Baba Yaga's Magic Shop.",
             "Magic Guild Store (Runes and Staves)"
+          ],
+          "drop_source_names": [
+            "Thermonuclear smoke devil",
+            "Amoxliatl#Post-quest"
           ]
         },
         {
@@ -3085,6 +3372,10 @@
           "shop_names": [
             "Jatix's Herblore Shop.",
             "Aemad's Adventuring Supplies."
+          ],
+          "drop_source_names": [
+            "Borrokar",
+            "Freidir"
           ]
         }
       ]
@@ -3107,6 +3398,10 @@
           "sources": [
             "Drop: Anja (Always)",
             "Drop: Citizen (Aldarin) (Always)"
+          ],
+          "drop_source_names": [
+            "Borrokar",
+            "Freidir"
           ]
         },
         {
@@ -3116,6 +3411,9 @@
           "sources": [
             "Drop: Alpaca (Always)",
             "Drop: Sheep (Always)"
+          ],
+          "drop_source_names": [
+            "Alpaca"
           ]
         }
       ]
@@ -3137,6 +3435,10 @@
           ],
           "shop_names": [
             "Temple Supplies"
+          ],
+          "drop_source_names": [
+            "Chest (Dorgesh-Kaan Average)#Oldak's chests",
+            "Abyssal leech"
           ]
         }
       ]
@@ -3186,6 +3488,10 @@
           "sources": [
             "Drop: Anja (Always)",
             "Drop: Citizen (Aldarin) (Always)"
+          ],
+          "drop_source_names": [
+            "Borrokar",
+            "Freidir"
           ]
         },
         {
@@ -3263,6 +3569,10 @@
           "sources": [
             "Drop: Dead tree (2021 Christmas event) (Always)",
             "Drop: Jungle tree (Always)"
+          ],
+          "drop_source_names": [
+            "Brutus",
+            "H.A.M. Guard"
           ]
         },
         {
@@ -3299,6 +3609,10 @@
           "shop_names": [
             "Ali's Discount Wares.",
             "Darkmeyer Meat Shop"
+          ],
+          "drop_source_names": [
+            "H.A.M. Guard",
+            "Guard (H.A.M. Storerooms)"
           ]
         },
         {
@@ -3372,6 +3686,9 @@
           "shop_names": [
             "Cobado's Groceries",
             "Faustus' Fruit and Veg"
+          ],
+          "drop_source_names": [
+            "Tortoise#With riders"
           ]
         },
         {
@@ -3384,6 +3701,9 @@
           "shop_names": [
             "Martin Thwait's Lost and Found.",
             "Gwyn's Mining Emporium"
+          ],
+          "drop_source_names": [
+            "Baby impling"
           ]
         },
         {
@@ -3414,6 +3734,10 @@
           "shop_names": [
             "Fishing Guild Shop.",
             "Ava's Odds and Ends"
+          ],
+          "drop_source_names": [
+            "H.A.M. Guard",
+            "Guard (H.A.M. Storerooms)"
           ]
         },
         {
@@ -3426,6 +3750,10 @@
           "shop_names": [
             "Martin Thwait's Lost and Found.",
             "Neitiznot supplies."
+          ],
+          "drop_source_names": [
+            "Baby impling",
+            "Ogre Coffin"
           ]
         },
         {
@@ -3525,6 +3853,10 @@
           "shop_names": [
             "Drogo's Mining Emporium.",
             "Hendor's Awesome Ores"
+          ],
+          "drop_source_names": [
+            "Frost Nagua",
+            "Amoxliatl#Post-quest"
           ]
         },
         {
@@ -3537,6 +3869,10 @@
           "shop_names": [
             "Jiminua's Jungle Store.",
             "Neitiznot supplies."
+          ],
+          "drop_source_names": [
+            "Goblin guard",
+            "Baby impling"
           ]
         },
         {
@@ -3550,6 +3886,10 @@
           "shop_names": [
             "Martin Thwait's Lost and Found.",
             "Neitiznot supplies."
+          ],
+          "drop_source_names": [
+            "Baby impling",
+            "Ogre Coffin"
           ]
         },
         {
@@ -3572,6 +3912,10 @@
           "shop_names": [
             "Moon Clan Fine Clothes.",
             "Raetul and Co's Cloth Store."
+          ],
+          "drop_source_names": [
+            "Baby impling",
+            "H.A.M. Guard"
           ]
         },
         {
@@ -3588,6 +3932,10 @@
           "shop_names": [
             "Moon Clan Fine Clothes.",
             "Carefree Crafting Stall"
+          ],
+          "drop_source_names": [
+            "Baby impling",
+            "H.A.M. Guard"
           ]
         }
       ]
@@ -3666,6 +4014,10 @@
           "shop_names": [
             "Tynan's Fishing Supplies",
             "Alice's Farming shop."
+          ],
+          "drop_source_names": [
+            "Borrokar",
+            "Freidir"
           ]
         },
         {
@@ -3678,6 +4030,10 @@
           ],
           "shop_names": [
             "Dom Onion's Reward Shop"
+          ],
+          "drop_source_names": [
+            "Flawed Golem",
+            "Mind Golem"
           ]
         }
       ]
@@ -3798,6 +4154,10 @@
           "shop_names": [
             "Ali's Discount Wares.",
             "Aurel's Supplies"
+          ],
+          "drop_source_names": [
+            "Cave goblin (monster)",
+            "Wall beast"
           ]
         },
         {
@@ -3891,6 +4251,10 @@
           "shop_names": [
             "Martin Thwait's Lost and Found.",
             "Neitiznot supplies."
+          ],
+          "drop_source_names": [
+            "Baby impling",
+            "Ogre Coffin"
           ]
         },
         {
@@ -3926,6 +4290,10 @@
           "shop_names": [
             "Durrik's Goods",
             "Dom Onion's Reward Shop"
+          ],
+          "drop_source_names": [
+            "Lobstrosity",
+            "Giant lobster"
           ]
         },
         {
@@ -3956,6 +4324,10 @@
           "shop_names": [
             "Ali's Discount Wares.",
             "Aurel's Supplies"
+          ],
+          "drop_source_names": [
+            "Cave goblin (monster)",
+            "Wall beast"
           ]
         }
       ]
@@ -4037,6 +4409,10 @@
           "sources": [
             "Drop: Air wizard (Always)",
             "Drop: Earth wizard (Always)"
+          ],
+          "drop_source_names": [
+            "Abyssal leech",
+            "Abyssal guardian"
           ]
         },
         {
@@ -4046,6 +4422,10 @@
           "sources": [
             "Drop: Anja (Always)",
             "Drop: Citizen (Aldarin) (Always)"
+          ],
+          "drop_source_names": [
+            "Borrokar",
+            "Freidir"
           ]
         },
         {
@@ -4059,6 +4439,10 @@
           "shop_names": [
             "Jiminua's Jungle Store.",
             "Neitiznot supplies."
+          ],
+          "drop_source_names": [
+            "Goblin guard",
+            "Baby impling"
           ]
         },
         {
@@ -4067,6 +4451,10 @@
           "sources": [
             "Drop: Dead tree (2021 Christmas event) (Always)",
             "Drop: Jungle tree (Always)"
+          ],
+          "drop_source_names": [
+            "Brutus",
+            "H.A.M. Guard"
           ]
         },
         {
@@ -4085,6 +4473,10 @@
           "shop_names": [
             "Ali's Discount Wares.",
             "Aurel's Supplies"
+          ],
+          "drop_source_names": [
+            "Cave goblin (monster)",
+            "Wall beast"
           ]
         },
         {
@@ -4165,6 +4557,9 @@
           "shop_names": [
             "Cobado's Groceries",
             "Faustus' Fruit and Veg"
+          ],
+          "drop_source_names": [
+            "Tortoise#With riders"
           ]
         },
         {
@@ -4174,6 +4569,10 @@
           "sources": [
             "Drop: Anja (Always)",
             "Drop: Citizen (Aldarin) (Always)"
+          ],
+          "drop_source_names": [
+            "Borrokar",
+            "Freidir"
           ]
         },
         {
@@ -4191,6 +4590,10 @@
           "shop_names": [
             "Martin Thwait's Lost and Found.",
             "Neitiznot supplies."
+          ],
+          "drop_source_names": [
+            "Baby impling",
+            "Ogre Coffin"
           ]
         },
         {
@@ -4225,6 +4628,9 @@
           "sources": [
             "Drop: Bowl of fish (2/3)",
             "Drop: Chest (Ancient Vault)#Ice quartz (1/5)"
+          ],
+          "drop_source_names": [
+            "Duke Sucellus"
           ]
         },
         {
@@ -4237,6 +4643,10 @@
           "shop_names": [
             "Ali's Discount Wares.",
             "Aurel's Supplies"
+          ],
+          "drop_source_names": [
+            "Cave goblin (monster)",
+            "Wall beast"
           ]
         },
         {
@@ -4287,6 +4697,10 @@
           "shop_names": [
             "Amlodd's Magical Supplies",
             "Aubury's Rune Shop."
+          ],
+          "drop_source_names": [
+            "Brutus",
+            "Thermonuclear smoke devil"
           ]
         },
         {
@@ -4307,6 +4721,10 @@
           "shop_names": [
             "Amlodd's Magical Supplies",
             "Aubury's Rune Shop."
+          ],
+          "drop_source_names": [
+            "Cave goblin (monster)",
+            "Tortoise#With riders"
           ]
         },
         {
@@ -4319,6 +4737,10 @@
           "shop_names": [
             "Amlodd's Magical Supplies",
             "Aubury's Rune Shop."
+          ],
+          "drop_source_names": [
+            "Lava dragon",
+            "Chest (Dorgesh-Kaan Average)#Oldak's chests"
           ]
         },
         {
@@ -4331,6 +4753,10 @@
           "shop_names": [
             "Jiminua's Jungle Store.",
             "Neitiznot supplies."
+          ],
+          "drop_source_names": [
+            "Goblin guard",
+            "Baby impling"
           ]
         },
         {
@@ -4343,6 +4769,10 @@
           "sources": [
             "Drop: Phantom Muspah (15/235)",
             "Drop: Monumental chest (1/30)"
+          ],
+          "drop_source_names": [
+            "Phantom Muspah",
+            "Thermonuclear smoke devil"
           ]
         },
         {
@@ -4367,6 +4797,9 @@
           ],
           "shop_names": [
             "Construction supplies"
+          ],
+          "drop_source_names": [
+            "Ogre Coffin"
           ]
         },
         {
@@ -4375,6 +4808,9 @@
           "sources": [
             "Drop: Cave slime (Always)",
             "Drop: Tar barrel#Full (Always)"
+          ],
+          "drop_source_names": [
+            "Cave kraken"
           ]
         },
         {
@@ -4391,6 +4827,10 @@
           "shop_names": [
             "Ali's Discount Wares.",
             "Aurel's Supplies"
+          ],
+          "drop_source_names": [
+            "Cave goblin (monster)",
+            "Wall beast"
           ]
         },
         {
@@ -4403,6 +4843,10 @@
           "shop_names": [
             "Amlodd's Magical Supplies",
             "Aubury's Rune Shop."
+          ],
+          "drop_source_names": [
+            "Cave goblin (monster)",
+            "Frost Nagua"
           ]
         },
         {
@@ -4453,6 +4897,9 @@
           "shop_names": [
             "Elder Krill's Fishing Stall",
             "Henderson's Catch of the Day"
+          ],
+          "drop_source_names": [
+            "Kraken"
           ]
         },
         {
@@ -4473,6 +4920,10 @@
           "sources": [
             "Drop: Dead tree (2021 Christmas event) (Always)",
             "Drop: Jungle tree (Always)"
+          ],
+          "drop_source_names": [
+            "Brutus",
+            "H.A.M. Guard"
           ]
         },
         {
@@ -4504,6 +4955,9 @@
           "shop_names": [
             "Hamab's Crafting Emporium",
             "Neitiznot supplies."
+          ],
+          "drop_source_names": [
+            "Baby impling"
           ]
         },
         {
@@ -4533,6 +4987,10 @@
           "shop_names": [
             "Drogo's Mining Emporium.",
             "Durrik's Goods"
+          ],
+          "drop_source_names": [
+            "Skeleton thug",
+            "Skeleton brute"
           ]
         },
         {
@@ -4580,6 +5038,9 @@
           "shop_names": [
             "Martin Thwait's Lost and Found.",
             "Gwyn's Mining Emporium"
+          ],
+          "drop_source_names": [
+            "Baby impling"
           ]
         }
       ]
@@ -4669,6 +5130,9 @@
           "sources": [
             "Drop: Cave slime (Always)",
             "Drop: Tar barrel#Full (Always)"
+          ],
+          "drop_source_names": [
+            "Cave kraken"
           ]
         },
         {
@@ -4681,6 +5145,10 @@
           "sources": [
             "Drop: Yew tree (Always)",
             "Drop: Yew tree (Farming) (Always)"
+          ],
+          "drop_source_names": [
+            "Skeleton thug",
+            "Skeleton brute"
           ]
         }
       ]
@@ -4740,6 +5208,10 @@
           "sources": [
             "Drop: Anja (Always)",
             "Drop: Citizen (Aldarin) (Always)"
+          ],
+          "drop_source_names": [
+            "Borrokar",
+            "Freidir"
           ]
         },
         {
@@ -4752,6 +5224,10 @@
           "shop_names": [
             "Jiminua's Jungle Store.",
             "Neitiznot supplies."
+          ],
+          "drop_source_names": [
+            "Goblin guard",
+            "Baby impling"
           ]
         },
         {
@@ -4761,6 +5237,10 @@
           "sources": [
             "Drop: Swamp Crab (Always)",
             "Drop: Ancient Zygomite (Always)"
+          ],
+          "drop_source_names": [
+            "Venator",
+            "Zygomite#Level 86"
           ]
         },
         {
@@ -4785,6 +5265,10 @@
           "shop_names": [
             "Briget's Weapons",
             "Varrock Swordshop"
+          ],
+          "drop_source_names": [
+            "Cyclops (Catacombs of Kourend)",
+            "Ogre Coffin"
           ]
         },
         {
@@ -4797,6 +5281,10 @@
           "shop_names": [
             "Fortis Blacksmith",
             "Briget's Weapons"
+          ],
+          "drop_source_names": [
+            "Skeleton thug",
+            "Skeleton brute"
           ]
         },
         {
@@ -4809,6 +5297,10 @@
           "shop_names": [
             "Briget's Weapons",
             "Flynn's Mace Market."
+          ],
+          "drop_source_names": [
+            "Skeleton (Tarn's Lair)#Low level",
+            "Cyclops (Catacombs of Kourend)"
           ]
         },
         {
@@ -4821,6 +5313,9 @@
           ],
           "shop_names": [
             "Construction supplies"
+          ],
+          "drop_source_names": [
+            "Ogre Coffin"
           ]
         },
         {
@@ -4834,6 +5329,10 @@
           "shop_names": [
             "Briget's Weapons",
             "Cam Torum Blacksmith"
+          ],
+          "drop_source_names": [
+            "Cyclops (Catacombs of Kourend)",
+            "Cyclops#Warriors' Guild Rooftop"
           ]
         },
         {
@@ -4892,6 +5391,10 @@
           "sources": [
             "Drop: Anja (Always)",
             "Drop: Citizen (Aldarin) (Always)"
+          ],
+          "drop_source_names": [
+            "Borrokar",
+            "Freidir"
           ]
         },
         {
@@ -4908,6 +5411,10 @@
           "shop_names": [
             "Moon Clan Fine Clothes.",
             "Raetul and Co's Cloth Store."
+          ],
+          "drop_source_names": [
+            "Baby impling",
+            "H.A.M. Guard"
           ]
         },
         {
@@ -4920,6 +5427,10 @@
           "shop_names": [
             "Port Roberts Silver Stall",
             "Ardougne Silver Stall."
+          ],
+          "drop_source_names": [
+            "Silver stall (Port Roberts)",
+            "Skeleton thug"
           ]
         },
         {
@@ -4945,6 +5456,10 @@
           "shop_names": [
             "Moon Clan Fine Clothes.",
             "Carefree Crafting Stall"
+          ],
+          "drop_source_names": [
+            "Baby impling",
+            "H.A.M. Guard"
           ]
         }
       ]
@@ -5076,6 +5591,10 @@
           "sources": [
             "Drop: Anja (Always)",
             "Drop: Citizen (Aldarin) (Always)"
+          ],
+          "drop_source_names": [
+            "Borrokar",
+            "Freidir"
           ]
         },
         {
@@ -5110,6 +5629,10 @@
           "shop_names": [
             "Martin Thwait's Lost and Found.",
             "Neitiznot supplies."
+          ],
+          "drop_source_names": [
+            "Baby impling",
+            "Ogre Coffin"
           ]
         },
         {
@@ -5130,6 +5653,9 @@
           "shop_names": [
             "Dargaud's Bow and Arrows.",
             "Brian's Archery Supplies."
+          ],
+          "drop_source_names": [
+            "Skeleton (Tarn's Lair)#Low level"
           ]
         },
         {
@@ -5216,6 +5742,9 @@
           "shop_names": [
             "Drogo's Mining Emporium.",
             "Jiminua's Jungle Store."
+          ],
+          "drop_source_names": [
+            "Duke Sucellus"
           ]
         },
         {
@@ -5243,6 +5772,10 @@
           "shop_names": [
             "Jiminua's Jungle Store.",
             "Neitiznot supplies."
+          ],
+          "drop_source_names": [
+            "Goblin guard",
+            "Baby impling"
           ]
         },
         {
@@ -5342,6 +5875,10 @@
           "shop_names": [
             "Conara's Jewels",
             "Toci's Gem Store"
+          ],
+          "drop_source_names": [
+            "Baby impling",
+            "Duke Sucellus"
           ]
         },
         {
@@ -5351,6 +5888,10 @@
           "sources": [
             "Drop: Soft clay rocks (Always)",
             "Drop: Soft clay pack (Always)"
+          ],
+          "drop_source_names": [
+            "Frost Nagua",
+            "Baby impling"
           ]
         },
         {
@@ -5360,6 +5901,10 @@
           "sources": [
             "Drop: Steel dragon#Standard (Always)",
             "Drop: Marlo's crate (Always)"
+          ],
+          "drop_source_names": [
+            "Skeleton thug",
+            "Skeleton brute"
           ]
         },
         {
@@ -5509,6 +6054,10 @@
           "sources": [
             "Drop: Anja (Always)",
             "Drop: Citizen (Aldarin) (Always)"
+          ],
+          "drop_source_names": [
+            "Borrokar",
+            "Freidir"
           ]
         },
         {
@@ -5522,6 +6071,10 @@
           "shop_names": [
             "Drogo's Mining Emporium.",
             "Durrik's Goods"
+          ],
+          "drop_source_names": [
+            "Skeleton thug",
+            "Skeleton brute"
           ]
         },
         {
@@ -5534,6 +6087,10 @@
           "shop_names": [
             "Jiminua's Jungle Store.",
             "Neitiznot supplies."
+          ],
+          "drop_source_names": [
+            "Goblin guard",
+            "Baby impling"
           ]
         }
       ]
@@ -5570,6 +6127,10 @@
           "shop_names": [
             "King's Axe Inn",
             "The Asp \u0026 Snake Bar."
+          ],
+          "drop_source_names": [
+            "Goblin guard",
+            "Borrokar"
           ]
         },
         {
@@ -5583,6 +6144,10 @@
           "shop_names": [
             "Tynan's Fishing Supplies",
             "Alice's Farming shop."
+          ],
+          "drop_source_names": [
+            "Borrokar",
+            "Freidir"
           ]
         },
         {
@@ -5592,6 +6157,10 @@
           "sources": [
             "Drop: Anja (Always)",
             "Drop: Citizen (Aldarin) (Always)"
+          ],
+          "drop_source_names": [
+            "Borrokar",
+            "Freidir"
           ]
         },
         {
@@ -5710,6 +6279,10 @@
           "sources": [
             "Drop: Soft clay rocks (Always)",
             "Drop: Soft clay pack (Always)"
+          ],
+          "drop_source_names": [
+            "Frost Nagua",
+            "Baby impling"
           ]
         },
         {
@@ -5722,6 +6295,10 @@
           "shop_names": [
             "Jatix's Herblore Shop.",
             "Elder Raley's Herblore Stall"
+          ],
+          "drop_source_names": [
+            "Borrokar",
+            "Freidir"
           ]
         }
       ]
@@ -5777,6 +6354,10 @@
           "sources": [
             "Drop: Air wizard (Always)",
             "Drop: Earth wizard (Always)"
+          ],
+          "drop_source_names": [
+            "Abyssal leech",
+            "Abyssal guardian"
           ]
         },
         {
@@ -5790,6 +6371,10 @@
           "shop_names": [
             "Battle Runes",
             "Amlodd's Magical Supplies"
+          ],
+          "drop_source_names": [
+            "Kraken",
+            "Amoxliatl#Post-quest"
           ]
         },
         {
@@ -5798,6 +6383,10 @@
           "sources": [
             "Drop: Chicken (Always)",
             "Drop: Crimson swift (Always)"
+          ],
+          "drop_source_names": [
+            "Undead cow",
+            "Cave goblin (monster)"
           ]
         },
         {
@@ -5832,6 +6421,10 @@
           "sources": [
             "Drop: Anja (Always)",
             "Drop: Citizen (Aldarin) (Always)"
+          ],
+          "drop_source_names": [
+            "Borrokar",
+            "Freidir"
           ]
         },
         {
@@ -5844,6 +6437,10 @@
           "sources": [
             "Drop: Mourner#Level 11 (Always)",
             "Drop: Mourner#Level 108 (Always)"
+          ],
+          "drop_source_names": [
+            "Mourner#Level 11",
+            "Mourner#Level 108"
           ]
         },
         {
@@ -5865,6 +6462,10 @@
           "sources": [
             "Drop: Magic tree (Always)",
             "Drop: Magic tree (Farming) (Always)"
+          ],
+          "drop_source_names": [
+            "Skeletal Wyvern",
+            "Thermonuclear smoke devil"
           ]
         },
         {
@@ -5874,6 +6475,10 @@
           "sources": [
             "Drop: Phantom Muspah (15/235)",
             "Drop: Monumental chest (1/30)"
+          ],
+          "drop_source_names": [
+            "Phantom Muspah",
+            "Thermonuclear smoke devil"
           ]
         },
         {
@@ -5891,6 +6496,10 @@
           "shop_names": [
             "Port Roberts Silver Stall",
             "Ardougne Silver Stall."
+          ],
+          "drop_source_names": [
+            "Silver stall (Port Roberts)",
+            "Skeleton thug"
           ]
         },
         {
@@ -5903,6 +6512,10 @@
           "shop_names": [
             "Fortis Spice Stall",
             "Port Roberts Spice Stall"
+          ],
+          "drop_source_names": [
+            "Gourmet impling",
+            "Baby impling"
           ]
         },
         {
@@ -5917,6 +6530,10 @@
           "sources": [
             "Drop: Steel dragon#Standard (Always)",
             "Drop: Marlo's crate (Always)"
+          ],
+          "drop_source_names": [
+            "Skeleton thug",
+            "Skeleton brute"
           ]
         },
         {
@@ -5929,6 +6546,10 @@
           "shop_names": [
             "Ali's Discount Wares.",
             "Aurel's Supplies"
+          ],
+          "drop_source_names": [
+            "Cave goblin (monster)",
+            "Wall beast"
           ]
         }
       ]
@@ -6002,6 +6623,10 @@
           "shop_names": [
             "Ali's Discount Wares.",
             "Aurel's Supplies"
+          ],
+          "drop_source_names": [
+            "Cave goblin (monster)",
+            "Wall beast"
           ]
         },
         {
@@ -6066,6 +6691,9 @@
           "shop_names": [
             "Martin Thwait's Lost and Found.",
             "Gwyn's Mining Emporium"
+          ],
+          "drop_source_names": [
+            "Baby impling"
           ]
         },
         {
@@ -6103,6 +6731,10 @@
           "shop_names": [
             "Ali's Discount Wares.",
             "Aurel's Supplies"
+          ],
+          "drop_source_names": [
+            "Cave goblin (monster)",
+            "Wall beast"
           ]
         }
       ]
@@ -6219,6 +6851,10 @@
           "shop_names": [
             "Drogo's Mining Emporium.",
             "Hendor's Awesome Ores"
+          ],
+          "drop_source_names": [
+            "Frost Nagua",
+            "Amoxliatl#Post-quest"
           ]
         },
         {
@@ -6228,6 +6864,10 @@
           "sources": [
             "Drop: Anja (Always)",
             "Drop: Citizen (Aldarin) (Always)"
+          ],
+          "drop_source_names": [
+            "Borrokar",
+            "Freidir"
           ]
         },
         {
@@ -6247,6 +6887,10 @@
           "sources": [
             "Drop: Dead tree (2021 Christmas event) (Always)",
             "Drop: Jungle tree (Always)"
+          ],
+          "drop_source_names": [
+            "Brutus",
+            "H.A.M. Guard"
           ]
         },
         {
@@ -6275,6 +6919,10 @@
           "shop_names": [
             "Ali's Discount Wares.",
             "Aurel's Supplies"
+          ],
+          "drop_source_names": [
+            "Cave goblin (monster)",
+            "Wall beast"
           ]
         },
         {
@@ -6393,6 +7041,10 @@
           "shop_names": [
             "Fishing Guild Shop.",
             "Ava's Odds and Ends"
+          ],
+          "drop_source_names": [
+            "H.A.M. Guard",
+            "Guard (H.A.M. Storerooms)"
           ]
         },
         {
@@ -6409,6 +7061,10 @@
           "sources": [
             "Drop: Magic tree (Always)",
             "Drop: Magic tree (Farming) (Always)"
+          ],
+          "drop_source_names": [
+            "Skeletal Wyvern",
+            "Thermonuclear smoke devil"
           ]
         },
         {
@@ -6426,6 +7082,9 @@
           "sources": [
             "Drop: Barrel (cooking apples)#Rotten (Always)",
             "Drop: Rotten Apple Pile (Always)"
+          ],
+          "drop_source_names": [
+            "Rotten Apple Pile"
           ]
         },
         {
@@ -6446,6 +7105,9 @@
           "item_id": 2217,
           "sources": [
             "Drop: Tortoise#With riders (10/128)"
+          ],
+          "drop_source_names": [
+            "Tortoise#With riders"
           ]
         },
         {
@@ -6527,6 +7189,10 @@
           "shop_names": [
             "King's Axe Inn",
             "The Asp \u0026 Snake Bar."
+          ],
+          "drop_source_names": [
+            "Goblin guard",
+            "Borrokar"
           ]
         },
         {
@@ -6561,6 +7227,10 @@
           "sources": [
             "Drop: Anja (Always)",
             "Drop: Citizen (Aldarin) (Always)"
+          ],
+          "drop_source_names": [
+            "Borrokar",
+            "Freidir"
           ]
         },
         {
@@ -6645,6 +7315,10 @@
           "shop_names": [
             "Amelia's Seed Shop",
             "Draynor Seed Market"
+          ],
+          "drop_source_names": [
+            "Tortoise#With riders",
+            "H.A.M. Guard"
           ]
         },
         {
@@ -6681,6 +7355,10 @@
           "shop_names": [
             "Jiminua's Jungle Store.",
             "Neitiznot supplies."
+          ],
+          "drop_source_names": [
+            "Goblin guard",
+            "Baby impling"
           ]
         },
         {
@@ -6693,6 +7371,9 @@
           "shop_names": [
             "Amelia's Seed Shop",
             "Draynor Seed Market"
+          ],
+          "drop_source_names": [
+            "Tortoise#With riders"
           ]
         },
         {
@@ -6706,6 +7387,10 @@
           "shop_names": [
             "Amelia's Seed Shop",
             "Draynor Seed Market"
+          ],
+          "drop_source_names": [
+            "H.A.M. Guard",
+            "Tortoise#With riders"
           ]
         },
         {
@@ -6844,6 +7529,10 @@
           "sources": [
             "Drop: Kamil (Always)",
             "Drop: Kamil (Nightmare Zone) (Always)"
+          ],
+          "drop_source_names": [
+            "Gourmet impling",
+            "Lava dragon"
           ]
         },
         {
@@ -6857,6 +7546,10 @@
           "shop_names": [
             "Battle Runes",
             "The Runic Emporium"
+          ],
+          "drop_source_names": [
+            "Cave kraken",
+            "Kraken"
           ]
         },
         {
@@ -6891,6 +7584,10 @@
           "sources": [
             "Drop: Dead tree (2021 Christmas event) (Always)",
             "Drop: Jungle tree (Always)"
+          ],
+          "drop_source_names": [
+            "Brutus",
+            "H.A.M. Guard"
           ]
         },
         {
@@ -6904,6 +7601,10 @@
           "shop_names": [
             "Amelia's Seed Shop",
             "Draynor Seed Market"
+          ],
+          "drop_source_names": [
+            "Brutus",
+            "H.A.M. Guard"
           ]
         },
         {
@@ -6952,6 +7653,10 @@
           "shop_names": [
             "Ali's Discount Wares.",
             "Aurel's Supplies"
+          ],
+          "drop_source_names": [
+            "Cave goblin (monster)",
+            "Wall beast"
           ]
         },
         {
@@ -6964,6 +7669,10 @@
           "shop_names": [
             "Jatix's Herblore Shop.",
             "Aemad's Adventuring Supplies."
+          ],
+          "drop_source_names": [
+            "Borrokar",
+            "Freidir"
           ]
         }
       ]
@@ -7005,6 +7714,10 @@
           "shop_names": [
             "The Runic Emporium",
             "Amlodd's Magical Supplies"
+          ],
+          "drop_source_names": [
+            "Chest (Dorgesh-Kaan Average)#Oldak's chests",
+            "Phantom Muspah"
           ]
         },
         {
@@ -7017,6 +7730,10 @@
           "sources": [
             "Drop: Phantom Muspah (15/235)",
             "Drop: Monumental chest (1/30)"
+          ],
+          "drop_source_names": [
+            "Phantom Muspah",
+            "Thermonuclear smoke devil"
           ]
         },
         {
@@ -7030,6 +7747,10 @@
           "shop_names": [
             "Jiminua's Jungle Store.",
             "Jiminua's Jungle Store."
+          ],
+          "drop_source_names": [
+            "Abyssal leech",
+            "Abyssal guardian"
           ]
         },
         {
@@ -7069,6 +7790,9 @@
           "shop_names": [
             "Martin Thwait's Lost and Found.",
             "Gwyn's Mining Emporium"
+          ],
+          "drop_source_names": [
+            "Baby impling"
           ]
         },
         {
@@ -7152,6 +7876,10 @@
           "shop_names": [
             "Tynan's Fishing Supplies",
             "Alice's Farming shop."
+          ],
+          "drop_source_names": [
+            "Borrokar",
+            "Freidir"
           ]
         },
         {
@@ -7232,6 +7960,10 @@
           "shop_names": [
             "Port Roberts Silver Stall",
             "Ardougne Silver Stall."
+          ],
+          "drop_source_names": [
+            "Silver stall (Port Roberts)",
+            "Skeleton thug"
           ]
         },
         {
@@ -7368,6 +8100,9 @@
           "shop_names": [
             "Culinaromancer's Chest",
             "Cobado's Groceries"
+          ],
+          "drop_source_names": [
+            "Baby impling"
           ]
         },
         {
@@ -7385,6 +8120,10 @@
           "sources": [
             "Drop: Anja (Always)",
             "Drop: Citizen (Aldarin) (Always)"
+          ],
+          "drop_source_names": [
+            "Borrokar",
+            "Freidir"
           ]
         },
         {
@@ -7401,6 +8140,9 @@
           "sources": [
             "Drop: Spidine (Always)",
             "Drop: Giant egg sac (Always)"
+          ],
+          "drop_source_names": [
+            "Cave bug#Level 6"
           ]
         },
         {
@@ -7421,6 +8163,10 @@
           "shop_names": [
             "Ali's Discount Wares.",
             "Aurel's Supplies"
+          ],
+          "drop_source_names": [
+            "Cave goblin (monster)",
+            "Wall beast"
           ]
         },
         {
@@ -7429,6 +8175,10 @@
           "sources": [
             "Drop: Cave bug#Level 6 (2/128)",
             "Drop: Cave crawler (2/128)"
+          ],
+          "drop_source_names": [
+            "Cave bug#Level 6",
+            "Chaos druid warrior"
           ]
         },
         {
@@ -7501,6 +8251,10 @@
           "shop_names": [
             "Martin Thwait's Lost and Found.",
             "Neitiznot supplies."
+          ],
+          "drop_source_names": [
+            "Baby impling",
+            "Ogre Coffin"
           ]
         },
         {
@@ -7517,6 +8271,10 @@
           "shop_names": [
             "Moon Clan Fine Clothes.",
             "Raetul and Co's Cloth Store."
+          ],
+          "drop_source_names": [
+            "Baby impling",
+            "H.A.M. Guard"
           ]
         },
         {
@@ -7559,6 +8317,10 @@
           "shop_names": [
             "Moon Clan Fine Clothes.",
             "Carefree Crafting Stall"
+          ],
+          "drop_source_names": [
+            "Baby impling",
+            "H.A.M. Guard"
           ]
         }
       ]
@@ -7631,6 +8393,9 @@
           "shop_names": [
             "Briget's Weapons",
             "Gaius' Two Handed Shop."
+          ],
+          "drop_source_names": [
+            "Dagannoth Rex"
           ]
         }
       ]
@@ -7674,6 +8439,10 @@
           "shop_names": [
             "King's Axe Inn",
             "The Asp \u0026 Snake Bar."
+          ],
+          "drop_source_names": [
+            "Goblin guard",
+            "Borrokar"
           ]
         },
         {
@@ -7696,6 +8465,10 @@
           "sources": [
             "Drop: Anja (Always)",
             "Drop: Citizen (Aldarin) (Always)"
+          ],
+          "drop_source_names": [
+            "Borrokar",
+            "Freidir"
           ]
         },
         {
@@ -7709,6 +8482,10 @@
           "shop_names": [
             "Amlodd's Magical Supplies",
             "Aubury's Rune Shop."
+          ],
+          "drop_source_names": [
+            "Cave goblin (monster)",
+            "Tortoise#With riders"
           ]
         },
         {
@@ -7721,6 +8498,9 @@
           "item_id": 4542,
           "sources": [
             "Drop: Wall beast (12/128)"
+          ],
+          "drop_source_names": [
+            "Wall beast"
           ]
         },
         {
@@ -7742,6 +8522,10 @@
           "sources": [
             "Drop: Whiteberry bush (Always)",
             "Drop: Deranged archaeologist (7/131)"
+          ],
+          "drop_source_names": [
+            "Crazy archaeologist",
+            "Chaos druid warrior"
           ]
         }
       ]
@@ -7802,6 +8586,9 @@
           "shop_names": [
             "Darkmeyer Lantern Shop",
             "Candle Shop"
+          ],
+          "drop_source_names": [
+            "Cave bug#Level 6"
           ]
         },
         {
@@ -7814,6 +8601,9 @@
           "shop_names": [
             "Martin Thwait's Lost and Found.",
             "Gwyn's Mining Emporium"
+          ],
+          "drop_source_names": [
+            "Baby impling"
           ]
         },
         {
@@ -7827,6 +8617,10 @@
           "shop_names": [
             "Drogo's Mining Emporium.",
             "Hendor's Awesome Ores"
+          ],
+          "drop_source_names": [
+            "Frost Nagua",
+            "Amoxliatl#Post-quest"
           ]
         },
         {
@@ -7839,6 +8633,10 @@
           "sources": [
             "Drop: Dead tree (2021 Christmas event) (Always)",
             "Drop: Jungle tree (Always)"
+          ],
+          "drop_source_names": [
+            "Brutus",
+            "H.A.M. Guard"
           ]
         },
         {
@@ -7855,6 +8653,9 @@
           "sources": [
             "Drop: Oak tree (Always)",
             "Drop: Oak tree (2024 Christmas event) (Always)"
+          ],
+          "drop_source_names": [
+            "Brutus"
           ]
         },
         {
@@ -7884,6 +8685,10 @@
           "sources": [
             "Drop: Soft clay rocks (Always)",
             "Drop: Soft clay pack (Always)"
+          ],
+          "drop_source_names": [
+            "Frost Nagua",
+            "Baby impling"
           ]
         },
         {
@@ -7896,6 +8701,10 @@
           "shop_names": [
             "Ali's Discount Wares.",
             "Aurel's Supplies"
+          ],
+          "drop_source_names": [
+            "Cave goblin (monster)",
+            "Wall beast"
           ]
         },
         {
@@ -8158,6 +8967,10 @@
           "sources": [
             "Drop: Air wizard (Always)",
             "Drop: Earth wizard (Always)"
+          ],
+          "drop_source_names": [
+            "Abyssal leech",
+            "Abyssal guardian"
           ]
         },
         {
@@ -8170,6 +8983,9 @@
           "shop_names": [
             "Hamab's Crafting Emporium",
             "Neitiznot supplies."
+          ],
+          "drop_source_names": [
+            "Baby impling"
           ]
         },
         {
@@ -8271,6 +9087,10 @@
           "sources": [
             "Drop: Anja (Always)",
             "Drop: Citizen (Aldarin) (Always)"
+          ],
+          "drop_source_names": [
+            "Borrokar",
+            "Freidir"
           ]
         },
         {
@@ -8300,6 +9120,10 @@
           "shop_names": [
             "Jatix's Herblore Shop.",
             "Betty's Magic Emporium"
+          ],
+          "drop_source_names": [
+            "Cave bug#Level 6",
+            "Borrokar"
           ]
         },
         {
@@ -8307,6 +9131,9 @@
           "item_id": 6668,
           "sources": [
             "Drop: Mogre (1/128)"
+          ],
+          "drop_source_names": [
+            "Mogre"
           ]
         },
         {
@@ -8319,6 +9146,10 @@
           "shop_names": [
             "Fishing Guild Shop.",
             "Henderson's Catch of the Day"
+          ],
+          "drop_source_names": [
+            "Mogre",
+            "Sea Snake Hatchling"
           ]
         },
         {
@@ -8368,6 +9199,10 @@
           "shop_names": [
             "Martin Thwait's Lost and Found.",
             "Neitiznot supplies."
+          ],
+          "drop_source_names": [
+            "Baby impling",
+            "Ogre Coffin"
           ]
         },
         {
@@ -8376,6 +9211,10 @@
           "sources": [
             "Drop: Dead tree (2021 Christmas event) (Always)",
             "Drop: Jungle tree (Always)"
+          ],
+          "drop_source_names": [
+            "Brutus",
+            "H.A.M. Guard"
           ]
         },
         {
@@ -8414,6 +9253,10 @@
           "shop_names": [
             "Moon Clan Fine Clothes.",
             "Raetul and Co's Cloth Store."
+          ],
+          "drop_source_names": [
+            "Baby impling",
+            "H.A.M. Guard"
           ]
         },
         {
@@ -8503,6 +9346,10 @@
           "shop_names": [
             "Ali's Discount Wares.",
             "Darkmeyer Meat Shop"
+          ],
+          "drop_source_names": [
+            "H.A.M. Guard",
+            "Guard (H.A.M. Storerooms)"
           ]
         },
         {
@@ -8565,6 +9412,10 @@
           "shop_names": [
             "Fortis Spice Stall",
             "Port Roberts Spice Stall"
+          ],
+          "drop_source_names": [
+            "Gourmet impling",
+            "Baby impling"
           ]
         },
         {
@@ -8577,6 +9428,10 @@
           "shop_names": [
             "Ali's Discount Wares.",
             "Aurel's Supplies"
+          ],
+          "drop_source_names": [
+            "Cave goblin (monster)",
+            "Wall beast"
           ]
         }
       ]
@@ -8653,6 +9508,10 @@
           "shop_names": [
             "Bandit Duty Free",
             "Bob's Brilliant Axes."
+          ],
+          "drop_source_names": [
+            "Skeleton (Tarn's Lair)#Low level",
+            "Ogre Coffin"
           ]
         },
         {
@@ -8666,6 +9525,10 @@
           "shop_names": [
             "Tynan's Fishing Supplies",
             "Alice's Farming shop."
+          ],
+          "drop_source_names": [
+            "Borrokar",
+            "Freidir"
           ]
         },
         {
@@ -8678,6 +9541,10 @@
           "shop_names": [
             "Drogo's Mining Emporium.",
             "Hendor's Awesome Ores"
+          ],
+          "drop_source_names": [
+            "Frost Nagua",
+            "Amoxliatl#Post-quest"
           ]
         },
         {
@@ -8690,6 +9557,10 @@
           "shop_names": [
             "Amlodd's Magical Supplies",
             "Tal Teklan Rune Shop"
+          ],
+          "drop_source_names": [
+            "Shadow warrior",
+            "Chest (Dorgesh-Kaan Average)#Oldak's chests"
           ]
         },
         {
@@ -8710,6 +9581,10 @@
           "shop_names": [
             "Jiminua's Jungle Store.",
             "Neitiznot supplies."
+          ],
+          "drop_source_names": [
+            "Goblin guard",
+            "Baby impling"
           ]
         },
         {
@@ -8718,6 +9593,10 @@
           "sources": [
             "Drop: Mithril dragon (Always)",
             "Drop: Muddy chest (Always)"
+          ],
+          "drop_source_names": [
+            "Shadow warrior",
+            "Thermonuclear smoke devil"
           ]
         },
         {
@@ -8767,6 +9646,10 @@
           "shop_names": [
             "Conara's Jewels",
             "Toci's Gem Store"
+          ],
+          "drop_source_names": [
+            "Baby impling",
+            "Duke Sucellus"
           ]
         },
         {
@@ -8779,6 +9662,10 @@
           "shop_names": [
             "Port Roberts Silver Stall",
             "Ardougne Silver Stall."
+          ],
+          "drop_source_names": [
+            "Silver stall (Port Roberts)",
+            "Skeleton thug"
           ]
         },
         {
@@ -8811,6 +9698,10 @@
           "sources": [
             "Drop: Soft clay rocks (Always)",
             "Drop: Soft clay pack (Always)"
+          ],
+          "drop_source_names": [
+            "Frost Nagua",
+            "Baby impling"
           ]
         },
         {
@@ -8832,6 +9723,10 @@
           "sources": [
             "Drop: Steel dragon#Standard (Always)",
             "Drop: Marlo's crate (Always)"
+          ],
+          "drop_source_names": [
+            "Skeleton thug",
+            "Skeleton brute"
           ]
         },
         {
@@ -8844,6 +9739,10 @@
           "shop_names": [
             "Blair's Armour",
             "Horvik's Armour Shop."
+          ],
+          "drop_source_names": [
+            "Cyclops#Warriors' Guild Basement",
+            "Cyclops (Catacombs of Kourend)"
           ]
         },
         {
@@ -8856,6 +9755,10 @@
           "shop_names": [
             "Blair's Armour",
             "Helmet Shop."
+          ],
+          "drop_source_names": [
+            "Wall beast",
+            "Cyclops (Catacombs of Kourend)"
           ]
         },
         {
@@ -8868,6 +9771,9 @@
           "shop_names": [
             "Fortis Blacksmith",
             "Blair's Armour"
+          ],
+          "drop_source_names": [
+            "Gorak#Full"
           ]
         },
         {
@@ -8893,6 +9799,10 @@
           "shop_names": [
             "Ali's Discount Wares.",
             "Aurel's Supplies"
+          ],
+          "drop_source_names": [
+            "Cave goblin (monster)",
+            "Wall beast"
           ]
         },
         {
@@ -8905,6 +9815,10 @@
           "shop_names": [
             "Amlodd's Magical Supplies",
             "Aubury's Rune Shop."
+          ],
+          "drop_source_names": [
+            "Cave goblin (monster)",
+            "Frost Nagua"
           ]
         },
         {
@@ -8990,6 +9904,10 @@
           "sources": [
             "Drop: Anja (Always)",
             "Drop: Citizen (Aldarin) (Always)"
+          ],
+          "drop_source_names": [
+            "Borrokar",
+            "Freidir"
           ]
         },
         {
@@ -9015,6 +9933,10 @@
           "shop_names": [
             "Ali's Discount Wares.",
             "Aurel's Supplies"
+          ],
+          "drop_source_names": [
+            "Cave goblin (monster)",
+            "Wall beast"
           ]
         },
         {
@@ -9097,6 +10019,10 @@
           "shop_names": [
             "Battle Runes",
             "Amlodd's Magical Supplies"
+          ],
+          "drop_source_names": [
+            "Kraken",
+            "Amoxliatl#Post-quest"
           ]
         },
         {
@@ -9107,6 +10033,10 @@
           "sources": [
             "Drop: Chicken (Always)",
             "Drop: Crimson swift (Always)"
+          ],
+          "drop_source_names": [
+            "Undead cow",
+            "Cave goblin (monster)"
           ]
         },
         {
@@ -9133,6 +10063,10 @@
           "shop_names": [
             "Jiminua's Jungle Store.",
             "Neitiznot supplies."
+          ],
+          "drop_source_names": [
+            "Goblin guard",
+            "Baby impling"
           ]
         },
         {
@@ -9142,6 +10076,9 @@
           "sources": [
             "Drop: Vardorvis (8/100)",
             "Drop: Spiritual mage#Zaros (9/128)"
+          ],
+          "drop_source_names": [
+            "Lava dragon"
           ]
         },
         {
@@ -9151,6 +10088,10 @@
           "sources": [
             "Drop: Chest (Ancient Vault)#Ice quartz (1/5)",
             "Drop: Duke Sucellus (8/100)"
+          ],
+          "drop_source_names": [
+            "Duke Sucellus",
+            "Kraken"
           ]
         },
         {
@@ -9181,6 +10122,10 @@
           "shop_names": [
             "Ali's Discount Wares.",
             "Aurel's Supplies"
+          ],
+          "drop_source_names": [
+            "Cave goblin (monster)",
+            "Wall beast"
           ]
         },
         {
@@ -9258,6 +10203,10 @@
           "shop_names": [
             "Drogo's Mining Emporium.",
             "Hendor's Awesome Ores"
+          ],
+          "drop_source_names": [
+            "Frost Nagua",
+            "Amoxliatl#Post-quest"
           ]
         },
         {
@@ -9414,6 +10363,10 @@
           "shop_names": [
             "Jatix's Herblore Shop.",
             "Aemad's Adventuring Supplies."
+          ],
+          "drop_source_names": [
+            "Borrokar",
+            "Freidir"
           ]
         }
       ]
@@ -9525,6 +10478,10 @@
           "shop_names": [
             "Jiminua's Jungle Store.",
             "Neitiznot supplies."
+          ],
+          "drop_source_names": [
+            "Goblin guard",
+            "Baby impling"
           ]
         },
         {
@@ -9570,6 +10527,10 @@
           "shop_names": [
             "Ali's Discount Wares.",
             "Aurel's Supplies"
+          ],
+          "drop_source_names": [
+            "Cave goblin (monster)",
+            "Wall beast"
           ]
         }
       ]
@@ -9634,6 +10595,10 @@
           "shop_names": [
             "Jiminua's Jungle Store.",
             "Neitiznot supplies."
+          ],
+          "drop_source_names": [
+            "Goblin guard",
+            "Baby impling"
           ]
         },
         {
@@ -9650,6 +10615,9 @@
           "sources": [
             "Drop: Warped Tortoise (5/64)",
             "Drop: Mutated Tortoise (5/64)"
+          ],
+          "drop_source_names": [
+            "Crazy archaeologist"
           ]
         },
         {
@@ -9658,6 +10626,9 @@
           "sources": [
             "Drop: Oak tree (Always)",
             "Drop: Oak tree (2024 Christmas event) (Always)"
+          ],
+          "drop_source_names": [
+            "Brutus"
           ]
         },
         {
@@ -9753,6 +10724,10 @@
           "shop_names": [
             "Jiminua's Jungle Store.",
             "Neitiznot supplies."
+          ],
+          "drop_source_names": [
+            "Goblin guard",
+            "Baby impling"
           ]
         },
         {
@@ -9766,6 +10741,10 @@
           "shop_names": [
             "Martin Thwait's Lost and Found.",
             "Neitiznot supplies."
+          ],
+          "drop_source_names": [
+            "Baby impling",
+            "Ogre Coffin"
           ]
         },
         {
@@ -9854,6 +10833,9 @@
           "shop_names": [
             "Martin Thwait's Lost and Found.",
             "Gwyn's Mining Emporium"
+          ],
+          "drop_source_names": [
+            "Baby impling"
           ]
         },
         {
@@ -9866,6 +10848,9 @@
           "obtainable": true,
           "sources": [
             "Drop: Giant lobster (1/128)"
+          ],
+          "drop_source_names": [
+            "Giant lobster"
           ]
         },
         {
@@ -9874,6 +10859,10 @@
           "sources": [
             "Drop: Abyssal leech (1/256)",
             "Drop: Abyssal guardian (1/256)"
+          ],
+          "drop_source_names": [
+            "Abyssal leech",
+            "Abyssal guardian"
           ]
         },
         {
@@ -9885,6 +10874,10 @@
           ],
           "shop_names": [
             "Temple Supplies"
+          ],
+          "drop_source_names": [
+            "Abyssal leech",
+            "Abyssal guardian"
           ]
         },
         {
@@ -9967,6 +10960,10 @@
           "shop_names": [
             "Drogo's Mining Emporium.",
             "Hendor's Awesome Ores"
+          ],
+          "drop_source_names": [
+            "Frost Nagua",
+            "Amoxliatl#Post-quest"
           ]
         },
         {
@@ -9976,6 +10973,9 @@
           "obtainable": true,
           "sources": [
             "Drop: Earth elemental#Ore (Always)"
+          ],
+          "drop_source_names": [
+            "Earth elemental#Ore"
           ]
         },
         {
@@ -9988,6 +10988,10 @@
           "shop_names": [
             "Jiminua's Jungle Store.",
             "Neitiznot supplies."
+          ],
+          "drop_source_names": [
+            "Goblin guard",
+            "Baby impling"
           ]
         },
         {
@@ -10047,6 +11051,10 @@
           "shop_names": [
             "Tynan's Fishing Supplies",
             "Alice's Farming shop."
+          ],
+          "drop_source_names": [
+            "Borrokar",
+            "Freidir"
           ]
         },
         {
@@ -10201,6 +11209,9 @@
           "shop_names": [
             "Hamab's Crafting Emporium",
             "Neitiznot supplies."
+          ],
+          "drop_source_names": [
+            "Baby impling"
           ]
         },
         {
@@ -10229,6 +11240,10 @@
           "sources": [
             "Drop: Dead tree (2021 Christmas event) (Always)",
             "Drop: Jungle tree (Always)"
+          ],
+          "drop_source_names": [
+            "Brutus",
+            "H.A.M. Guard"
           ]
         },
         {
@@ -10326,6 +11341,10 @@
           "shop_names": [
             "Ali's Discount Wares.",
             "Aurel's Supplies"
+          ],
+          "drop_source_names": [
+            "Cave goblin (monster)",
+            "Wall beast"
           ]
         },
         {
@@ -10383,6 +11402,10 @@
           "sources": [
             "Drop: Anja (Always)",
             "Drop: Citizen (Aldarin) (Always)"
+          ],
+          "drop_source_names": [
+            "Borrokar",
+            "Freidir"
           ]
         },
         {
@@ -10391,6 +11414,9 @@
           "sources": [
             "Drop: Cave slime (Always)",
             "Drop: Tar barrel#Full (Always)"
+          ],
+          "drop_source_names": [
+            "Cave kraken"
           ]
         },
         {
@@ -10475,6 +11501,10 @@
           "shop_names": [
             "Jiminua's Jungle Store.",
             "Neitiznot supplies."
+          ],
+          "drop_source_names": [
+            "Goblin guard",
+            "Baby impling"
           ]
         },
         {
@@ -10483,6 +11513,10 @@
           "sources": [
             "Drop: Blood-starved venator (6/131)",
             "Drop: Venator (6/131)"
+          ],
+          "drop_source_names": [
+            "Venator",
+            "Baby impling"
           ]
         },
         {
@@ -10552,6 +11586,10 @@
           "shop_names": [
             "Ali's Discount Wares.",
             "Aurel's Supplies"
+          ],
+          "drop_source_names": [
+            "Cave goblin (monster)",
+            "Wall beast"
           ]
         }
       ]
@@ -10624,6 +11662,10 @@
           "shop_names": [
             "Fishing Guild Shop.",
             "Ava's Odds and Ends"
+          ],
+          "drop_source_names": [
+            "H.A.M. Guard",
+            "Guard (H.A.M. Storerooms)"
           ]
         },
         {
@@ -10636,6 +11678,10 @@
           "shop_names": [
             "Jiminua's Jungle Store.",
             "Neitiznot supplies."
+          ],
+          "drop_source_names": [
+            "Goblin guard",
+            "Baby impling"
           ]
         },
         {
@@ -10661,6 +11707,9 @@
           "sources": [
             "Drop: Marlo's crate (Always)",
             "Drop: Gangster (40/256)"
+          ],
+          "drop_source_names": [
+            "Kraken"
           ]
         },
         {
@@ -10720,6 +11769,9 @@
           ],
           "shop_names": [
             "Construction supplies"
+          ],
+          "drop_source_names": [
+            "Ogre Coffin"
           ]
         },
         {
@@ -10728,6 +11780,9 @@
           "sources": [
             "Drop: Cave slime (Always)",
             "Drop: Tar barrel#Full (Always)"
+          ],
+          "drop_source_names": [
+            "Cave kraken"
           ]
         }
       ]
@@ -10771,6 +11826,10 @@
           "sources": [
             "Drop: Anja (Always)",
             "Drop: Citizen (Aldarin) (Always)"
+          ],
+          "drop_source_names": [
+            "Borrokar",
+            "Freidir"
           ]
         },
         {
@@ -10791,6 +11850,10 @@
           "shop_names": [
             "Martin Thwait's Lost and Found.",
             "Neitiznot supplies."
+          ],
+          "drop_source_names": [
+            "Baby impling",
+            "Ogre Coffin"
           ]
         },
         {
@@ -10808,6 +11871,9 @@
           "shop_names": [
             "Frankie's Fishing Emporium",
             "Elder Krill's Fishing Stall"
+          ],
+          "drop_source_names": [
+            "Mogre"
           ]
         },
         {
@@ -10911,6 +11977,10 @@
           "shop_names": [
             "Jiminua's Jungle Store.",
             "Neitiznot supplies."
+          ],
+          "drop_source_names": [
+            "Goblin guard",
+            "Baby impling"
           ]
         },
         {
@@ -11023,6 +12093,10 @@
           "shop_names": [
             "The Runic Emporium",
             "Battle Runes"
+          ],
+          "drop_source_names": [
+            "Chaos Golem",
+            "Duke Sucellus"
           ]
         },
         {
@@ -11100,6 +12174,10 @@
           "shop_names": [
             "Ali's Discount Wares.",
             "Aurel's Supplies"
+          ],
+          "drop_source_names": [
+            "Cave goblin (monster)",
+            "Wall beast"
           ]
         },
         {
@@ -11205,6 +12283,9 @@
           ],
           "shop_names": [
             "Baba Yaga's Magic Shop."
+          ],
+          "drop_source_names": [
+            "Skeleton (Tarn's Lair)#Low level"
           ]
         },
         {
@@ -11225,6 +12306,10 @@
           "shop_names": [
             "Jiminua's Jungle Store.",
             "Neitiznot supplies."
+          ],
+          "drop_source_names": [
+            "Goblin guard",
+            "Baby impling"
           ]
         },
         {
@@ -11253,6 +12338,10 @@
           "shop_names": [
             "Ali's Discount Wares.",
             "Aurel's Supplies"
+          ],
+          "drop_source_names": [
+            "Cave goblin (monster)",
+            "Wall beast"
           ]
         },
         {
@@ -11431,6 +12520,9 @@
           "shop_names": [
             "Blair's Armour",
             "Helmet Shop."
+          ],
+          "drop_source_names": [
+            "Wall beast"
           ]
         },
         {
@@ -11451,6 +12543,10 @@
           "shop_names": [
             "Blair's Armour",
             "Horvik's Armour Shop."
+          ],
+          "drop_source_names": [
+            "Cyclops (Catacombs of Kourend)",
+            "Cyclops#Warriors' Guild Rooftop"
           ]
         },
         {
@@ -11501,6 +12597,10 @@
           "sources": [
             "Drop: Chicken (Always)",
             "Drop: Crimson swift (Always)"
+          ],
+          "drop_source_names": [
+            "Undead cow",
+            "Cave goblin (monster)"
           ]
         },
         {
@@ -11521,6 +12621,9 @@
           "shop_names": [
             "Martin Thwait's Lost and Found.",
             "Gwyn's Mining Emporium"
+          ],
+          "drop_source_names": [
+            "Baby impling"
           ]
         },
         {
@@ -11572,6 +12675,10 @@
           "sources": [
             "Drop: Mourner#Level 11 (Always)",
             "Drop: Mourner#Level 108 (Always)"
+          ],
+          "drop_source_names": [
+            "Mourner#Level 11",
+            "Mourner#Level 108"
           ]
         },
         {
@@ -11596,6 +12703,10 @@
           "sources": [
             "Drop: Anja (Always)",
             "Drop: Citizen (Aldarin) (Always)"
+          ],
+          "drop_source_names": [
+            "Borrokar",
+            "Freidir"
           ]
         }
       ]
@@ -11646,6 +12757,10 @@
           "sources": [
             "Drop: Anja (Always)",
             "Drop: Citizen (Aldarin) (Always)"
+          ],
+          "drop_source_names": [
+            "Borrokar",
+            "Freidir"
           ]
         },
         {
@@ -11731,6 +12846,9 @@
           "item_id": 11326,
           "sources": [
             "Drop: Lobstrosity (5/118)"
+          ],
+          "drop_source_names": [
+            "Lobstrosity"
           ]
         },
         {
@@ -11743,6 +12861,10 @@
           "shop_names": [
             "Fishing Guild Shop.",
             "Henderson's Catch of the Day"
+          ],
+          "drop_source_names": [
+            "Mogre",
+            "Sea Snake Hatchling"
           ]
         },
         {
@@ -11755,6 +12877,10 @@
           "shop_names": [
             "Jiminua's Jungle Store.",
             "Neitiznot supplies."
+          ],
+          "drop_source_names": [
+            "Goblin guard",
+            "Baby impling"
           ]
         },
         {
@@ -11767,6 +12893,10 @@
           "shop_names": [
             "Martin Thwait's Lost and Found.",
             "Neitiznot supplies."
+          ],
+          "drop_source_names": [
+            "Baby impling",
+            "Ogre Coffin"
           ]
         },
         {
@@ -11775,6 +12905,9 @@
           "sources": [
             "Drop: Oak tree (Always)",
             "Drop: Oak tree (2024 Christmas event) (Always)"
+          ],
+          "drop_source_names": [
+            "Brutus"
           ]
         },
         {
@@ -11810,6 +12943,10 @@
           "shop_names": [
             "Ali's Discount Wares.",
             "Aurel's Supplies"
+          ],
+          "drop_source_names": [
+            "Cave goblin (monster)",
+            "Wall beast"
           ]
         },
         {
@@ -11912,6 +13049,10 @@
           "shop_names": [
             "Martin Thwait's Lost and Found.",
             "Neitiznot supplies."
+          ],
+          "drop_source_names": [
+            "Baby impling",
+            "Ogre Coffin"
           ]
         },
         {
@@ -11935,6 +13076,10 @@
           "sources": [
             "Drop: Snape grass plant (Always)",
             "Drop: Chest (alchemist's signet) (5/25)"
+          ],
+          "drop_source_names": [
+            "Cave bug#Level 6",
+            "Chaos druid warrior"
           ]
         }
       ]
@@ -12023,6 +13168,10 @@
           "shop_names": [
             "King's Axe Inn",
             "The Asp \u0026 Snake Bar."
+          ],
+          "drop_source_names": [
+            "Goblin guard",
+            "Borrokar"
           ]
         },
         {
@@ -12035,6 +13184,10 @@
           "shop_names": [
             "Jiminua's Jungle Store.",
             "Neitiznot supplies."
+          ],
+          "drop_source_names": [
+            "Goblin guard",
+            "Baby impling"
           ]
         },
         {
@@ -12165,6 +13318,10 @@
           "shop_names": [
             "Ali's Discount Wares.",
             "Aurel's Supplies"
+          ],
+          "drop_source_names": [
+            "Cave goblin (monster)",
+            "Wall beast"
           ]
         },
         {
@@ -12254,6 +13411,10 @@
           "sources": [
             "Drop: Anja (Always)",
             "Drop: Citizen (Aldarin) (Always)"
+          ],
+          "drop_source_names": [
+            "Borrokar",
+            "Freidir"
           ]
         },
         {
@@ -12275,6 +13436,10 @@
           "sources": [
             "Drop: Crate (Goblin Temple) (Always)",
             "Drop: Goblin#Drop table 2 (10/128)"
+          ],
+          "drop_source_names": [
+            "Goblin (God Wars Dungeon)",
+            "Goblin guard"
           ]
         },
         {
@@ -12307,6 +13472,9 @@
           "sources": [
             "Drop: Fishing spot (frogspawn)#Bait (Common)",
             "Drop: Fishing spot (swamp) (Common)"
+          ],
+          "drop_source_names": [
+            "Fishing spot (swamp)"
           ]
         },
         {
@@ -12418,6 +13586,9 @@
           "shop_names": [
             "Blair's Armour",
             "Helmet Shop."
+          ],
+          "drop_source_names": [
+            "Wall beast"
           ]
         },
         {
@@ -12434,6 +13605,10 @@
           "shop_names": [
             "Blair's Armour",
             "Horvik's Armour Shop."
+          ],
+          "drop_source_names": [
+            "Cyclops (Catacombs of Kourend)",
+            "Cyclops#Warriors' Guild Rooftop"
           ]
         },
         {
@@ -12446,6 +13621,10 @@
           "shop_names": [
             "Martin Thwait's Lost and Found.",
             "Neitiznot supplies."
+          ],
+          "drop_source_names": [
+            "Baby impling",
+            "Ogre Coffin"
           ]
         },
         {
@@ -12453,6 +13632,9 @@
           "item_id": 4542,
           "sources": [
             "Drop: Wall beast (12/128)"
+          ],
+          "drop_source_names": [
+            "Wall beast"
           ]
         },
         {
@@ -12461,6 +13643,10 @@
           "sources": [
             "Drop: Swamp Crab (Always)",
             "Drop: Ancient Zygomite (Always)"
+          ],
+          "drop_source_names": [
+            "Venator",
+            "Zygomite#Level 86"
           ]
         },
         {
@@ -12527,6 +13713,10 @@
           "sources": [
             "Drop: Rewards Chest (Fortis Colosseum)#Wave 5 (2,725/19,250)",
             "Drop: Rewards Chest (Fortis Colosseum)#Wave 6 (2,375/16,800)"
+          ],
+          "drop_source_names": [
+            "Thermonuclear smoke devil",
+            "Phantom Muspah"
           ]
         },
         {
@@ -12535,6 +13725,10 @@
           "sources": [
             "Drop: Chest (Dorgesh-Kaan Average)#Oldak's chests (1/20)",
             "Drop: Skeleton (Tarn's Lair)#Low level (3/128)"
+          ],
+          "drop_source_names": [
+            "Chest (Dorgesh-Kaan Average)#Oldak's chests",
+            "Skeleton (Tarn's Lair)#Low level"
           ]
         },
         {
@@ -12605,6 +13799,10 @@
           "shop_names": [
             "Martin Thwait's Lost and Found.",
             "Neitiznot supplies."
+          ],
+          "drop_source_names": [
+            "Baby impling",
+            "Ogre Coffin"
           ]
         },
         {
@@ -12644,6 +13842,10 @@
           "sources": [
             "Drop: Anja (Always)",
             "Drop: Citizen (Aldarin) (Always)"
+          ],
+          "drop_source_names": [
+            "Borrokar",
+            "Freidir"
           ]
         }
       ]
@@ -12745,6 +13947,9 @@
           "shop_names": [
             "Martin Thwait's Lost and Found.",
             "Gwyn's Mining Emporium"
+          ],
+          "drop_source_names": [
+            "Baby impling"
           ]
         },
         {
@@ -12757,6 +13962,10 @@
           "shop_names": [
             "Culinaromancer's Chest",
             "Faustus' Fruit and Veg"
+          ],
+          "drop_source_names": [
+            "Thermonuclear smoke devil",
+            "Goblin (God Wars Dungeon)"
           ]
         },
         {
@@ -12770,6 +13979,10 @@
           "shop_names": [
             "Jiminua's Jungle Store.",
             "Neitiznot supplies."
+          ],
+          "drop_source_names": [
+            "Goblin guard",
+            "Baby impling"
           ]
         },
         {
@@ -12790,6 +14003,10 @@
           "sources": [
             "Drop: Dead tree (2021 Christmas event) (Always)",
             "Drop: Jungle tree (Always)"
+          ],
+          "drop_source_names": [
+            "Brutus",
+            "H.A.M. Guard"
           ]
         },
         {
@@ -12934,6 +14151,10 @@
           "sources": [
             "Drop: Anja (Always)",
             "Drop: Citizen (Aldarin) (Always)"
+          ],
+          "drop_source_names": [
+            "Borrokar",
+            "Freidir"
           ]
         }
       ]
@@ -12963,6 +14184,10 @@
           "shop_names": [
             "Tynan's Fishing Supplies",
             "Alice's Farming shop."
+          ],
+          "drop_source_names": [
+            "Borrokar",
+            "Freidir"
           ]
         },
         {
@@ -12976,6 +14201,10 @@
           "shop_names": [
             "Martin Thwait's Lost and Found.",
             "Neitiznot supplies."
+          ],
+          "drop_source_names": [
+            "Baby impling",
+            "Ogre Coffin"
           ]
         },
         {
@@ -12989,6 +14218,10 @@
           "shop_names": [
             "Ali's Discount Wares.",
             "Aurel's Supplies"
+          ],
+          "drop_source_names": [
+            "Cave goblin (monster)",
+            "Wall beast"
           ]
         }
       ]
@@ -13014,6 +14247,10 @@
           "shop_names": [
             "Fishing Guild Shop.",
             "Ava's Odds and Ends"
+          ],
+          "drop_source_names": [
+            "H.A.M. Guard",
+            "Guard (H.A.M. Storerooms)"
           ]
         }
       ]
@@ -13176,6 +14413,9 @@
           ],
           "shop_names": [
             "Baba Yaga's Magic Shop."
+          ],
+          "drop_source_names": [
+            "Skeleton (Tarn's Lair)#Low level"
           ]
         },
         {
@@ -13220,6 +14460,10 @@
           "shop_names": [
             "Jiminua's Jungle Store.",
             "Neitiznot supplies."
+          ],
+          "drop_source_names": [
+            "Goblin guard",
+            "Baby impling"
           ]
         },
         {
@@ -13241,6 +14485,10 @@
           "sources": [
             "Drop: Phantom Muspah (15/235)",
             "Drop: Monumental chest (1/30)"
+          ],
+          "drop_source_names": [
+            "Phantom Muspah",
+            "Thermonuclear smoke devil"
           ]
         },
         {
@@ -13250,6 +14498,9 @@
           "sources": [
             "Drop: Marlo's crate (Always)",
             "Drop: Gangster (40/256)"
+          ],
+          "drop_source_names": [
+            "Kraken"
           ]
         },
         {
@@ -13318,6 +14569,10 @@
           "shop_names": [
             "Ali's Discount Wares.",
             "Aurel's Supplies"
+          ],
+          "drop_source_names": [
+            "Cave goblin (monster)",
+            "Wall beast"
           ]
         },
         {
@@ -13371,6 +14626,10 @@
           "sources": [
             "Drop: Air wizard (Always)",
             "Drop: Earth wizard (Always)"
+          ],
+          "drop_source_names": [
+            "Abyssal leech",
+            "Abyssal guardian"
           ]
         },
         {
@@ -13383,6 +14642,10 @@
           "shop_names": [
             "Jatix's Herblore Shop.",
             "Betty's Magic Emporium"
+          ],
+          "drop_source_names": [
+            "Cave bug#Level 6",
+            "Borrokar"
           ]
         },
         {
@@ -13492,6 +14755,10 @@
           "shop_names": [
             "Fishing Guild Shop.",
             "Henderson's Catch of the Day"
+          ],
+          "drop_source_names": [
+            "Mogre",
+            "Sea Snake Hatchling"
           ]
         },
         {
@@ -13520,6 +14787,10 @@
           "shop_names": [
             "Fortis Spice Stall",
             "Port Roberts Spice Stall"
+          ],
+          "drop_source_names": [
+            "Gourmet impling",
+            "Baby impling"
           ]
         },
         {
@@ -13596,6 +14867,10 @@
           "sources": [
             "Drop: Anja (Always)",
             "Drop: Citizen (Aldarin) (Always)"
+          ],
+          "drop_source_names": [
+            "Borrokar",
+            "Freidir"
           ]
         },
         {
@@ -13719,6 +14994,9 @@
           "item_id": 6668,
           "sources": [
             "Drop: Mogre (1/128)"
+          ],
+          "drop_source_names": [
+            "Mogre"
           ]
         },
         {
@@ -13731,6 +15009,10 @@
           "shop_names": [
             "Martin Thwait's Lost and Found.",
             "Neitiznot supplies."
+          ],
+          "drop_source_names": [
+            "Baby impling",
+            "Ogre Coffin"
           ]
         },
         {
@@ -13743,6 +15025,10 @@
           "shop_names": [
             "Moon Clan Fine Clothes.",
             "Raetul and Co's Cloth Store."
+          ],
+          "drop_source_names": [
+            "Baby impling",
+            "H.A.M. Guard"
           ]
         },
         {
@@ -13967,6 +15253,10 @@
           "shop_names": [
             "Ali's Discount Wares.",
             "Darkmeyer Meat Shop"
+          ],
+          "drop_source_names": [
+            "H.A.M. Guard",
+            "Guard (H.A.M. Storerooms)"
           ]
         },
         {
@@ -14047,6 +15337,10 @@
           "shop_names": [
             "Martin Thwait's Lost and Found.",
             "Neitiznot supplies."
+          ],
+          "drop_source_names": [
+            "Baby impling",
+            "Ogre Coffin"
           ]
         },
         {
@@ -14146,6 +15440,9 @@
           "shop_names": [
             "Hamab's Crafting Emporium",
             "Neitiznot supplies."
+          ],
+          "drop_source_names": [
+            "Baby impling"
           ]
         },
         {
@@ -14159,6 +15456,10 @@
           "sources": [
             "Drop: Dead tree (2021 Christmas event) (Always)",
             "Drop: Jungle tree (Always)"
+          ],
+          "drop_source_names": [
+            "Brutus",
+            "H.A.M. Guard"
           ]
         },
         {
@@ -14203,6 +15504,10 @@
           "shop_names": [
             "Ali's Discount Wares.",
             "Aurel's Supplies"
+          ],
+          "drop_source_names": [
+            "Cave goblin (monster)",
+            "Wall beast"
           ]
         }
       ]
@@ -14270,6 +15575,10 @@
           "shop_names": [
             "Ali's Discount Wares.",
             "Aurel's Supplies"
+          ],
+          "drop_source_names": [
+            "Cave goblin (monster)",
+            "Wall beast"
           ]
         }
       ]
@@ -14321,6 +15630,9 @@
           "shop_names": [
             "Martin Thwait's Lost and Found.",
             "Gwyn's Mining Emporium"
+          ],
+          "drop_source_names": [
+            "Baby impling"
           ]
         },
         {
@@ -14330,6 +15642,10 @@
           "sources": [
             "Drop: Anja (Always)",
             "Drop: Citizen (Aldarin) (Always)"
+          ],
+          "drop_source_names": [
+            "Borrokar",
+            "Freidir"
           ]
         },
         {
@@ -14342,6 +15658,9 @@
           "shop_names": [
             "Conara's Jewels",
             "Toci's Gem Store"
+          ],
+          "drop_source_names": [
+            "Duke Sucellus"
           ]
         },
         {
@@ -14354,6 +15673,10 @@
           "shop_names": [
             "Martin Thwait's Lost and Found.",
             "Neitiznot supplies."
+          ],
+          "drop_source_names": [
+            "Baby impling",
+            "Ogre Coffin"
           ]
         },
         {
@@ -14385,6 +15708,10 @@
           "shop_names": [
             "Jatix's Herblore Shop.",
             "Aemad's Adventuring Supplies."
+          ],
+          "drop_source_names": [
+            "Borrokar",
+            "Freidir"
           ]
         },
         {
@@ -14562,6 +15889,10 @@
           "shop_names": [
             "Jiminua's Jungle Store.",
             "Neitiznot supplies."
+          ],
+          "drop_source_names": [
+            "Goblin guard",
+            "Baby impling"
           ]
         },
         {
@@ -14732,6 +16063,9 @@
           "shop_names": [
             "Wayne's Chains! - Chainmail specialist.",
             "Armour store."
+          ],
+          "drop_source_names": [
+            "Duke Sucellus"
           ]
         },
         {
@@ -14752,6 +16086,10 @@
           "sources": [
             "Drop: Cyclops (Catacombs of Kourend) (16/100)",
             "Drop: Cyclops#Warriors' Guild Rooftop (16/100)"
+          ],
+          "drop_source_names": [
+            "Cyclops (Catacombs of Kourend)",
+            "Cyclops#Warriors' Guild Rooftop"
           ]
         },
         {
@@ -14765,6 +16103,9 @@
           "shop_names": [
             "Cobado's Groceries",
             "Faustus' Fruit and Veg"
+          ],
+          "drop_source_names": [
+            "Tortoise#With riders"
           ]
         },
         {
@@ -14773,6 +16114,10 @@
           "sources": [
             "Drop: Aquanite (8/128)",
             "Drop: Elder aquanite (1/16)"
+          ],
+          "drop_source_names": [
+            "Lobstrosity",
+            "Cave kraken"
           ]
         },
         {
@@ -14785,6 +16130,10 @@
           "shop_names": [
             "Jiminua's Jungle Store.",
             "Neitiznot supplies."
+          ],
+          "drop_source_names": [
+            "Goblin guard",
+            "Baby impling"
           ]
         },
         {
@@ -14805,6 +16154,10 @@
           "shop_names": [
             "The Runic Emporium",
             "Amlodd's Magical Supplies"
+          ],
+          "drop_source_names": [
+            "Zygomite#Level 74",
+            "Tortoise#With riders"
           ]
         },
         {
@@ -14865,6 +16218,10 @@
           "sources": [
             "Drop: Rune dragon (Always)",
             "Drop: Lost camphor crate (1/8)"
+          ],
+          "drop_source_names": [
+            "Kraken",
+            "Dagannoth Rex"
           ]
         },
         {
@@ -14924,6 +16281,10 @@
           "shop_names": [
             "Helmet Shop.",
             "Thurid's Brain Buckets"
+          ],
+          "drop_source_names": [
+            "Skeleton (Tarn's Lair)#Low level",
+            "Wall beast"
           ]
         },
         {
@@ -14936,6 +16297,10 @@
           "shop_names": [
             "Salius' Armour Shop",
             "Fortis Blacksmith"
+          ],
+          "drop_source_names": [
+            "Cyclops#Warriors' Guild Basement",
+            "Dagannoth Rex"
           ]
         },
         {
@@ -14948,6 +16313,9 @@
           "shop_names": [
             "Fortis Blacksmith",
             "Blair's Armour"
+          ],
+          "drop_source_names": [
+            "Gorak#Full"
           ]
         },
         {
@@ -14960,6 +16328,10 @@
           "shop_names": [
             "Ali's Discount Wares.",
             "Aurel's Supplies"
+          ],
+          "drop_source_names": [
+            "Cave goblin (monster)",
+            "Wall beast"
           ]
         },
         {
@@ -14972,6 +16344,10 @@
           "shop_names": [
             "Jatix's Herblore Shop.",
             "Aemad's Adventuring Supplies."
+          ],
+          "drop_source_names": [
+            "Borrokar",
+            "Freidir"
           ]
         },
         {
@@ -14980,6 +16356,10 @@
           "sources": [
             "Drop: The Mimic#Elite (243/1,250)",
             "Drop: The Mimic#Master (221/1,140)"
+          ],
+          "drop_source_names": [
+            "Chaos Fanatic",
+            "Cerberus"
           ]
         }
       ]
@@ -15043,6 +16423,10 @@
           "shop_names": [
             "Ali's Discount Wares.",
             "Aurel's Supplies"
+          ],
+          "drop_source_names": [
+            "Cave goblin (monster)",
+            "Wall beast"
           ]
         }
       ]
@@ -15112,6 +16496,9 @@
           ],
           "shop_names": [
             "Baba Yaga's Magic Shop."
+          ],
+          "drop_source_names": [
+            "Skeleton (Tarn's Lair)#Low level"
           ]
         },
         {
@@ -15132,6 +16519,10 @@
           "shop_names": [
             "Bardur",
             "Bardur"
+          ],
+          "drop_source_names": [
+            "Dagannoth Rex",
+            "Borrokar"
           ]
         },
         {
@@ -15156,6 +16547,10 @@
           "shop_names": [
             "Jiminua's Jungle Store.",
             "Neitiznot supplies."
+          ],
+          "drop_source_names": [
+            "Goblin guard",
+            "Baby impling"
           ]
         },
         {
@@ -15163,6 +16558,9 @@
           "item_id": 1580,
           "sources": [
             "Drop: Ice Queen (Always)"
+          ],
+          "drop_source_names": [
+            "Ice Queen"
           ]
         },
         {
@@ -15198,6 +16596,10 @@
           "sources": [
             "Drop: Phantom Muspah (15/235)",
             "Drop: Monumental chest (1/30)"
+          ],
+          "drop_source_names": [
+            "Phantom Muspah",
+            "Thermonuclear smoke devil"
           ]
         },
         {
@@ -15339,6 +16741,10 @@
           "sources": [
             "Drop: Crate (Armadyl's Eyrie) (Always)",
             "Drop: Chewed bones (6/128)"
+          ],
+          "drop_source_names": [
+            "Skeleton thug",
+            "Skeleton brute"
           ]
         },
         {
@@ -15347,6 +16753,10 @@
           "sources": [
             "Drop: Chaos Fanatic (7/128)",
             "Drop: Magpie impling (1/21)"
+          ],
+          "drop_source_names": [
+            "Chaos Fanatic",
+            "Gorak#Full"
           ]
         }
       ]
@@ -15394,6 +16804,9 @@
           "item_id": 25684,
           "sources": [
             "Drop: Barronite rocks (24/100)"
+          ],
+          "drop_source_names": [
+            "Barronite rocks"
           ]
         },
         {
@@ -15402,6 +16815,9 @@
           "obtainable": true,
           "sources": [
             "Drop: Chaos Golem (2/15)"
+          ],
+          "drop_source_names": [
+            "Chaos Golem"
           ]
         }
       ]
@@ -15485,6 +16901,9 @@
           "shop_names": [
             "Martin Thwait's Lost and Found.",
             "Gwyn's Mining Emporium"
+          ],
+          "drop_source_names": [
+            "Baby impling"
           ]
         },
         {
@@ -15510,6 +16929,10 @@
           "shop_names": [
             "Martin Thwait's Lost and Found.",
             "Neitiznot supplies."
+          ],
+          "drop_source_names": [
+            "Baby impling",
+            "Ogre Coffin"
           ]
         },
         {
@@ -15522,6 +16945,9 @@
           "shop_names": [
             "Conara's Jewels",
             "Elder Coco's Crafting Stall"
+          ],
+          "drop_source_names": [
+            "Duke Sucellus"
           ]
         },
         {
@@ -15598,6 +17024,10 @@
           "sources": [
             "Drop: Phantom Muspah (15/235)",
             "Drop: Monumental chest (1/30)"
+          ],
+          "drop_source_names": [
+            "Phantom Muspah",
+            "Thermonuclear smoke devil"
           ]
         },
         {
@@ -15609,6 +17039,9 @@
           "item_id": 13571,
           "sources": [
             "Drop: Volcanic sulphur (rock) (Always)"
+          ],
+          "drop_source_names": [
+            "Volcanic sulphur (rock)"
           ]
         }
       ]
@@ -15654,6 +17087,10 @@
           "shop_names": [
             "Jiminua's Jungle Store.",
             "Neitiznot supplies."
+          ],
+          "drop_source_names": [
+            "Goblin guard",
+            "Baby impling"
           ]
         },
         {
@@ -15713,6 +17150,10 @@
           "shop_names": [
             "Martin Thwait's Lost and Found.",
             "Neitiznot supplies."
+          ],
+          "drop_source_names": [
+            "Baby impling",
+            "Ogre Coffin"
           ]
         },
         {
@@ -15787,6 +17228,10 @@
           "shop_names": [
             "Jiminua's Jungle Store.",
             "Neitiznot supplies."
+          ],
+          "drop_source_names": [
+            "Goblin guard",
+            "Baby impling"
           ]
         },
         {
@@ -15799,6 +17244,10 @@
           "shop_names": [
             "Martin Thwait's Lost and Found.",
             "Neitiznot supplies."
+          ],
+          "drop_source_names": [
+            "Baby impling",
+            "Ogre Coffin"
           ]
         },
         {
@@ -15811,6 +17260,10 @@
           "shop_names": [
             "Moon Clan Fine Clothes.",
             "Raetul and Co's Cloth Store."
+          ],
+          "drop_source_names": [
+            "Baby impling",
+            "H.A.M. Guard"
           ]
         },
         {
@@ -15866,6 +17319,10 @@
           "sources": [
             "Drop: Soft clay rocks (Always)",
             "Drop: Soft clay pack (Always)"
+          ],
+          "drop_source_names": [
+            "Frost Nagua",
+            "Baby impling"
           ]
         },
         {
@@ -15902,6 +17359,10 @@
           "shop_names": [
             "King's Axe Inn",
             "The Asp \u0026 Snake Bar."
+          ],
+          "drop_source_names": [
+            "Goblin guard",
+            "Borrokar"
           ]
         },
         {
@@ -15939,6 +17400,10 @@
           "shop_names": [
             "Martin Thwait's Lost and Found.",
             "Neitiznot supplies."
+          ],
+          "drop_source_names": [
+            "Baby impling",
+            "Ogre Coffin"
           ]
         },
         {
@@ -16045,6 +17510,10 @@
           "shop_names": [
             "Drogo's Mining Emporium.",
             "Hendor's Awesome Ores"
+          ],
+          "drop_source_names": [
+            "Frost Nagua",
+            "Amoxliatl#Post-quest"
           ]
         },
         {
@@ -16082,6 +17551,10 @@
           "shop_names": [
             "Ali's Discount Wares.",
             "Aurel's Supplies"
+          ],
+          "drop_source_names": [
+            "Cave goblin (monster)",
+            "Wall beast"
           ]
         }
       ]
@@ -16136,6 +17609,10 @@
           "shop_names": [
             "Jiminua's Jungle Store.",
             "Neitiznot supplies."
+          ],
+          "drop_source_names": [
+            "Goblin guard",
+            "Baby impling"
           ]
         },
         {
@@ -16144,6 +17621,10 @@
           "sources": [
             "Drop: Crate (Armadyl's Eyrie) (Always)",
             "Drop: Chewed bones (6/128)"
+          ],
+          "drop_source_names": [
+            "Skeleton thug",
+            "Skeleton brute"
           ]
         },
         {
@@ -16257,6 +17738,9 @@
           "shop_names": [
             "Martin Thwait's Lost and Found.",
             "Gwyn's Mining Emporium"
+          ],
+          "drop_source_names": [
+            "Baby impling"
           ]
         },
         {
@@ -16341,6 +17825,10 @@
           "sources": [
             "Drop: Crate (Armadyl's Eyrie) (Always)",
             "Drop: Chewed bones (6/128)"
+          ],
+          "drop_source_names": [
+            "Skeleton thug",
+            "Skeleton brute"
           ]
         },
         {
@@ -16394,6 +17882,9 @@
           "shop_names": [
             "Martin Thwait's Lost and Found.",
             "Gwyn's Mining Emporium"
+          ],
+          "drop_source_names": [
+            "Baby impling"
           ]
         },
         {
@@ -16406,6 +17897,10 @@
           "shop_names": [
             "Jiminua's Jungle Store.",
             "Neitiznot supplies."
+          ],
+          "drop_source_names": [
+            "Goblin guard",
+            "Baby impling"
           ]
         },
         {
@@ -16415,6 +17910,9 @@
           "sources": [
             "Drop: Oak tree (Always)",
             "Drop: Oak tree (2024 Christmas event) (Always)"
+          ],
+          "drop_source_names": [
+            "Brutus"
           ]
         },
         {
@@ -16424,6 +17922,9 @@
           "sources": [
             "Drop: Alpaca (Always)",
             "Drop: Sheep (Always)"
+          ],
+          "drop_source_names": [
+            "Alpaca"
           ]
         },
         {
@@ -16533,6 +18034,10 @@
           "shop_names": [
             "Amlodd's Magical Supplies",
             "Aubury's Rune Shop."
+          ],
+          "drop_source_names": [
+            "Brutus",
+            "Thermonuclear smoke devil"
           ]
         },
         {
@@ -16550,6 +18055,10 @@
           "shop_names": [
             "Battle Runes",
             "Amlodd's Magical Supplies"
+          ],
+          "drop_source_names": [
+            "Kraken",
+            "Amoxliatl#Post-quest"
           ]
         },
         {
@@ -16563,6 +18072,10 @@
           "shop_names": [
             "The Runic Emporium",
             "Battle Runes"
+          ],
+          "drop_source_names": [
+            "Chaos Golem",
+            "Duke Sucellus"
           ]
         },
         {
@@ -16576,6 +18089,10 @@
           "shop_names": [
             "Battle Runes",
             "The Runic Emporium"
+          ],
+          "drop_source_names": [
+            "Cave kraken",
+            "Kraken"
           ]
         },
         {
@@ -16596,6 +18113,10 @@
           "shop_names": [
             "Amlodd's Magical Supplies",
             "Aubury's Rune Shop."
+          ],
+          "drop_source_names": [
+            "Lava dragon",
+            "Chest (Dorgesh-Kaan Average)#Oldak's chests"
           ]
         },
         {
@@ -16641,6 +18162,10 @@
           "shop_names": [
             "Baba Yaga's Magic Shop.",
             "Magic Guild Store (Runes and Staves)"
+          ],
+          "drop_source_names": [
+            "Thermonuclear smoke devil",
+            "Amoxliatl#Post-quest"
           ]
         },
         {
@@ -16654,6 +18179,10 @@
           "shop_names": [
             "Ali's Discount Wares.",
             "Aurel's Supplies"
+          ],
+          "drop_source_names": [
+            "Cave goblin (monster)",
+            "Wall beast"
           ]
         },
         {
@@ -16667,6 +18196,10 @@
           "shop_names": [
             "Amlodd's Magical Supplies",
             "Aubury's Rune Shop."
+          ],
+          "drop_source_names": [
+            "Cave goblin (monster)",
+            "Frost Nagua"
           ]
         }
       ]
@@ -16720,6 +18253,10 @@
           "sources": [
             "Drop: Anja (Always)",
             "Drop: Citizen (Aldarin) (Always)"
+          ],
+          "drop_source_names": [
+            "Borrokar",
+            "Freidir"
           ]
         },
         {
@@ -16744,6 +18281,10 @@
           "shop_names": [
             "Ali's Discount Wares.",
             "Aurel's Supplies"
+          ],
+          "drop_source_names": [
+            "Cave goblin (monster)",
+            "Wall beast"
           ]
         }
       ]
@@ -16870,6 +18411,10 @@
           "shop_names": [
             "Martin Thwait's Lost and Found.",
             "Neitiznot supplies."
+          ],
+          "drop_source_names": [
+            "Baby impling",
+            "Ogre Coffin"
           ]
         },
         {
@@ -17016,6 +18561,10 @@
           "shop_names": [
             "Jiminua's Jungle Store.",
             "Neitiznot supplies."
+          ],
+          "drop_source_names": [
+            "Goblin guard",
+            "Baby impling"
           ]
         },
         {
@@ -17037,6 +18586,10 @@
           "shop_names": [
             "Moon Clan Fine Clothes.",
             "Raetul and Co's Cloth Store."
+          ],
+          "drop_source_names": [
+            "Baby impling",
+            "H.A.M. Guard"
           ]
         }
       ]
@@ -17095,6 +18648,10 @@
           "sources": [
             "Drop: Anja (Always)",
             "Drop: Citizen (Aldarin) (Always)"
+          ],
+          "drop_source_names": [
+            "Borrokar",
+            "Freidir"
           ]
         },
         {
@@ -17270,6 +18827,9 @@
           "shop_names": [
             "Martin Thwait's Lost and Found.",
             "Gwyn's Mining Emporium"
+          ],
+          "drop_source_names": [
+            "Baby impling"
           ]
         },
         {
@@ -17283,6 +18843,10 @@
           "shop_names": [
             "Jiminua's Jungle Store.",
             "Neitiznot supplies."
+          ],
+          "drop_source_names": [
+            "Goblin guard",
+            "Baby impling"
           ]
         },
         {
@@ -17296,6 +18860,10 @@
           "shop_names": [
             "Martin Thwait's Lost and Found.",
             "Neitiznot supplies."
+          ],
+          "drop_source_names": [
+            "Baby impling",
+            "Ogre Coffin"
           ]
         },
         {
@@ -17318,6 +18886,10 @@
           "shop_names": [
             "Ali's Discount Wares.",
             "Aurel's Supplies"
+          ],
+          "drop_source_names": [
+            "Cave goblin (monster)",
+            "Wall beast"
           ]
         },
         {
@@ -17382,6 +18954,10 @@
           "shop_names": [
             "King's Axe Inn",
             "The Asp \u0026 Snake Bar."
+          ],
+          "drop_source_names": [
+            "Goblin guard",
+            "Borrokar"
           ]
         },
         {
@@ -17399,6 +18975,10 @@
           "shop_names": [
             "Martin Thwait's Lost and Found.",
             "Neitiznot supplies."
+          ],
+          "drop_source_names": [
+            "Baby impling",
+            "Ogre Coffin"
           ]
         }
       ]
@@ -17432,6 +19012,10 @@
           "shop_names": [
             "Jiminua's Jungle Store.",
             "Neitiznot supplies."
+          ],
+          "drop_source_names": [
+            "Goblin guard",
+            "Baby impling"
           ]
         },
         {
@@ -17495,6 +19079,10 @@
           "shop_names": [
             "Jiminua's Jungle Store.",
             "Neitiznot supplies."
+          ],
+          "drop_source_names": [
+            "Goblin guard",
+            "Baby impling"
           ]
         },
         {
@@ -17515,6 +19103,10 @@
           "sources": [
             "Drop: Steel dragon#Standard (Always)",
             "Drop: Marlo's crate (Always)"
+          ],
+          "drop_source_names": [
+            "Skeleton thug",
+            "Skeleton brute"
           ]
         }
       ]
@@ -17570,6 +19162,10 @@
           "sources": [
             "Drop: Anja (Always)",
             "Drop: Citizen (Aldarin) (Always)"
+          ],
+          "drop_source_names": [
+            "Borrokar",
+            "Freidir"
           ]
         }
       ]
@@ -17637,6 +19233,10 @@
           "shop_names": [
             "Jiminua's Jungle Store.",
             "Neitiznot supplies."
+          ],
+          "drop_source_names": [
+            "Goblin guard",
+            "Baby impling"
           ]
         },
         {
@@ -17769,6 +19369,10 @@
           "shop_names": [
             "Jiminua's Jungle Store.",
             "Neitiznot supplies."
+          ],
+          "drop_source_names": [
+            "Goblin guard",
+            "Baby impling"
           ]
         },
         {
@@ -17857,6 +19461,10 @@
           "shop_names": [
             "Jiminua's Jungle Store.",
             "Neitiznot supplies."
+          ],
+          "drop_source_names": [
+            "Goblin guard",
+            "Baby impling"
           ]
         },
         {
@@ -17922,6 +19530,10 @@
           "shop_names": [
             "Martin Thwait's Lost and Found.",
             "Neitiznot supplies."
+          ],
+          "drop_source_names": [
+            "Baby impling",
+            "Ogre Coffin"
           ]
         },
         {
@@ -17931,6 +19543,9 @@
           "sources": [
             "Drop: Oak tree (Always)",
             "Drop: Oak tree (2024 Christmas event) (Always)"
+          ],
+          "drop_source_names": [
+            "Brutus"
           ]
         }
       ]
@@ -17952,6 +19567,10 @@
           "sources": [
             "Drop: Dead tree (2021 Christmas event) (Always)",
             "Drop: Jungle tree (Always)"
+          ],
+          "drop_source_names": [
+            "Brutus",
+            "H.A.M. Guard"
           ]
         },
         {
@@ -17965,6 +19584,10 @@
           "shop_names": [
             "Ali's Discount Wares.",
             "Aurel's Supplies"
+          ],
+          "drop_source_names": [
+            "Cave goblin (monster)",
+            "Wall beast"
           ]
         }
       ]
@@ -18105,6 +19728,9 @@
           "shop_names": [
             "Martin Thwait's Lost and Found.",
             "Gwyn's Mining Emporium"
+          ],
+          "drop_source_names": [
+            "Baby impling"
           ]
         },
         {
@@ -19999,13 +21625,27 @@
       "name": "Amelia's Seed Shop",
       "x": 1246,
       "y": 3740,
-      "town": "Farming Guild"
+      "town": "Farming Guild",
+      "reachability": {
+        "required_skills": [
+          {
+            "skill": "farming",
+            "level": 45,
+            "boostable": true
+          }
+        ]
+      }
     },
     {
       "name": "Amlodd's Magical Supplies",
       "x": 3222,
       "y": 6115,
-      "town": "Prifddinas"
+      "town": "Prifddinas",
+      "reachability": {
+        "required_quest_ids": [
+          166
+        ]
+      }
     },
     {
       "name": "Ardougne Silver Stall.",
@@ -20017,13 +21657,26 @@
       "name": "Armour store.",
       "x": 1939,
       "y": 4968,
-      "town": "Blast Furnace"
+      "town": "Blast Furnace",
+      "reachability": {
+        "required_quest_ids": [
+          80
+        ],
+        "required_quest_ids_started_only": [
+          80
+        ]
+      }
     },
     {
       "name": "Artima's Crafting Supplies",
       "x": 1766,
       "y": 3101,
-      "town": "Civitas illa Fortis"
+      "town": "Civitas illa Fortis",
+      "reachability": {
+        "required_quest_ids": [
+          192
+        ]
+      }
     },
     {
       "name": "Aubury's Rune Shop.",
@@ -20035,19 +21688,35 @@
       "name": "Aurel's Supplies",
       "x": 3515,
       "y": 3241,
-      "town": "Burgh de Rott"
+      "town": "Burgh de Rott",
+      "reachability": {
+        "required_quest_ids": [
+          99
+        ],
+        "required_quest_ids_started_only": [
+          99
+        ]
+      }
     },
     {
       "name": "Ava's Odds and Ends",
       "x": 3094,
       "y": 3358,
-      "town": "Draynor Manor"
+      "town": "Draynor Manor",
+      "reachability": {
+        "required_quest_ids": [
+          114
+        ]
+      }
     },
     {
       "name": "Baba Yaga's Magic Shop.",
       "x": 2086,
       "y": 3931,
-      "town": "Lunar Isle"
+      "town": "Lunar Isle",
+      "reachability": {
+        "unknown": true
+      }
     },
     {
       "name": "Bandit Bargains",
@@ -20112,7 +21781,12 @@
       "name": "Branwen's Farming Shop",
       "x": 3295,
       "y": 6089,
-      "town": "Prifddinas"
+      "town": "Prifddinas",
+      "reachability": {
+        "required_quest_ids": [
+          166
+        ]
+      }
     },
     {
       "name": "Brian's Archery Supplies.",
@@ -20130,7 +21804,12 @@
       "name": "Cam Torum Blacksmith",
       "x": 1449,
       "y": 9584,
-      "town": "Cam Torum"
+      "town": "Cam Torum",
+      "reachability": {
+        "required_quest_ids": [
+          192
+        ]
+      }
     },
     {
       "name": "Candle Shop",
@@ -20142,20 +21821,38 @@
       "name": "Carefree Crafting Stall",
       "x": 2887,
       "y": 10207,
-      "town": "Keldagrim"
+      "town": "Keldagrim",
+      "reachability": {
+        "required_quest_ids": [
+          80
+        ],
+        "required_quest_ids_started_only": [
+          80
+        ]
+      }
     },
     {
       "name": "Cobado's Groceries",
       "x": 1702,
       "y": 3115,
-      "town": "Civitas illa Fortis"
+      "town": "Civitas illa Fortis",
+      "reachability": {
+        "required_quest_ids": [
+          192
+        ]
+      }
     },
     {
       "name": "Conara's Jewels",
       "x": 1437,
       "y": 9560,
       "plane": 1,
-      "town": "Cam Torum"
+      "town": "Cam Torum",
+      "reachability": {
+        "required_quest_ids": [
+          192
+        ]
+      }
     },
     {
       "name": "Construction supplies",
@@ -20172,7 +21869,16 @@
       "name": "Dargaud's Bow and Arrows.",
       "x": 2672,
       "y": 3434,
-      "town": "Ranging Guild"
+      "town": "Ranging Guild",
+      "reachability": {
+        "required_skills": [
+          {
+            "skill": "ranged",
+            "level": 40,
+            "boostable": true
+          }
+        ]
+      }
     },
     {
       "name": "Darkmeyer Lantern Shop",
@@ -20214,7 +21920,15 @@
       "name": "Deepfin Point Ore Exchange",
       "x": 1946,
       "y": 2762,
-      "town": "Deepfin Point"
+      "town": "Deepfin Point",
+      "reachability": {
+        "required_skills": [
+          {
+            "skill": "sailing",
+            "level": 67
+          }
+        ]
+      }
     },
     {
       "name": "Dom Onion's Reward Shop",
@@ -20244,7 +21958,15 @@
       "name": "Durrik's Goods",
       "x": 1956,
       "y": 9172,
-      "town": "Deepfin Mine"
+      "town": "Deepfin Mine",
+      "reachability": {
+        "required_skills": [
+          {
+            "skill": "sailing",
+            "level": 67
+          }
+        ]
+      }
     },
     {
       "name": "Dyes to Die For",
@@ -20286,7 +22008,12 @@
       "name": "Elgan's Exceptional Staffs!",
       "x": 3219,
       "y": 6089,
-      "town": "Prifddinas"
+      "town": "Prifddinas",
+      "reachability": {
+        "required_quest_ids": [
+          166
+        ]
+      }
     },
     {
       "name": "Fancy Clothes Store",
@@ -20316,13 +22043,27 @@
       "name": "Fishing Guild Shop.",
       "x": 2595,
       "y": 3401,
-      "town": "Fishing Guild"
+      "town": "Fishing Guild",
+      "reachability": {
+        "required_skills": [
+          {
+            "skill": "fishing",
+            "level": 68,
+            "boostable": true
+          }
+        ]
+      }
     },
     {
       "name": "Floria's Fashion",
       "x": 1659,
       "y": 3100,
-      "town": "Civitas illa Fortis"
+      "town": "Civitas illa Fortis",
+      "reachability": {
+        "required_quest_ids": [
+          192
+        ]
+      }
     },
     {
       "name": "Flynn's Mace Market.",
@@ -20334,25 +22075,45 @@
       "name": "Fortis Baker's Stall",
       "x": 1687,
       "y": 3112,
-      "town": "Civitas illa Fortis"
+      "town": "Civitas illa Fortis",
+      "reachability": {
+        "required_quest_ids": [
+          192
+        ]
+      }
     },
     {
       "name": "Fortis Blacksmith",
       "x": 1659,
       "y": 3140,
-      "town": "Civitas illa Fortis"
+      "town": "Civitas illa Fortis",
+      "reachability": {
+        "required_quest_ids": [
+          192
+        ]
+      }
     },
     {
       "name": "Fortis Fur Stall",
       "x": 1675,
       "y": 3112,
-      "town": "Civitas illa Fortis"
+      "town": "Civitas illa Fortis",
+      "reachability": {
+        "required_quest_ids": [
+          192
+        ]
+      }
     },
     {
       "name": "Fortis Spice Stall",
       "x": 1686,
       "y": 3101,
-      "town": "Civitas illa Fortis"
+      "town": "Civitas illa Fortis",
+      "reachability": {
+        "required_quest_ids": [
+          192
+        ]
+      }
     },
     {
       "name": "Frankie's Fishing Emporium",
@@ -20414,7 +22175,12 @@
       "name": "Guinevere's Dyes",
       "x": 3229,
       "y": 6057,
-      "town": "Prifddinas"
+      "town": "Prifddinas",
+      "reachability": {
+        "required_quest_ids": [
+          166
+        ]
+      }
     },
     {
       "name": "Gulluck and Sons",
@@ -20427,13 +22193,26 @@
       "name": "Gunslik's Assorted Items",
       "x": 2871,
       "y": 10189,
-      "town": "Keldagrim"
+      "town": "Keldagrim",
+      "reachability": {
+        "required_quest_ids": [
+          80
+        ],
+        "required_quest_ids_started_only": [
+          80
+        ]
+      }
     },
     {
       "name": "Gwyn's Mining Emporium",
       "x": 3290,
       "y": 6044,
-      "town": "Prifddinas"
+      "town": "Prifddinas",
+      "reachability": {
+        "required_quest_ids": [
+          166
+        ]
+      }
     },
     {
       "name": "Hamab's Crafting Emporium",
@@ -20463,7 +22242,16 @@
       "name": "Hendor's Awesome Ores",
       "x": 3032,
       "y": 9746,
-      "town": "Mining Guild"
+      "town": "Mining Guild",
+      "reachability": {
+        "required_skills": [
+          {
+            "skill": "mining",
+            "level": 60,
+            "boostable": true
+          }
+        ]
+      }
     },
     {
       "name": "Horvik's Armour Shop.",
@@ -20510,19 +22298,40 @@
       "name": "Keepa Kettilon's store",
       "x": 2417,
       "y": 3815,
-      "town": "Jatizso"
+      "town": "Jatizso",
+      "reachability": {
+        "required_quest_ids": [
+          61
+        ]
+      }
     },
     {
       "name": "King's Axe Inn",
       "x": 2839,
       "y": 10195,
-      "town": "Keldagrim"
+      "town": "Keldagrim",
+      "reachability": {
+        "required_quest_ids": [
+          80
+        ],
+        "required_quest_ids_started_only": [
+          80
+        ]
+      }
     },
     {
       "name": "Kjut's Kebabs",
       "x": 2905,
       "y": 10216,
-      "town": "Keldagrim"
+      "town": "Keldagrim",
+      "reachability": {
+        "required_quest_ids": [
+          80
+        ],
+        "required_quest_ids_started_only": [
+          80
+        ]
+      }
     },
     {
       "name": "Kourend Castle Baker's Stall.",
@@ -20541,7 +22350,15 @@
       "x": 2726,
       "y": 3381,
       "plane": 2,
-      "town": "Legends' Guild"
+      "town": "Legends' Guild",
+      "reachability": {
+        "required_quest_ids": [
+          48
+        ],
+        "required_quest_ids_started_only": [
+          48
+        ]
+      }
     },
     {
       "name": "Little Munty's Little Shop",
@@ -20578,7 +22395,16 @@
       "x": 2595,
       "y": 3088,
       "plane": 1,
-      "town": "Wizards' Guild"
+      "town": "Wizards' Guild",
+      "reachability": {
+        "required_skills": [
+          {
+            "skill": "magic",
+            "level": 66,
+            "boostable": true
+          }
+        ]
+      }
     },
     {
       "name": "Malignius Mortifer",
@@ -20606,7 +22432,10 @@
       "name": "Moon Clan Fine Clothes.",
       "x": 2105,
       "y": 3908,
-      "town": "Lunar Isle"
+      "town": "Lunar Isle",
+      "reachability": {
+        "unknown": true
+      }
     },
     {
       "name": "Mount Karuulm Weapon Shop",
@@ -20659,19 +22488,44 @@
       "name": "Pellem's Fur Store",
       "x": 1565,
       "y": 3034,
-      "town": "Hunter Guild"
+      "town": "Hunter Guild",
+      "reachability": {
+        "required_skills": [
+          {
+            "skill": "hunter",
+            "level": 46
+          }
+        ]
+      }
     },
     {
       "name": "Perry's Chop-chop Shop",
       "x": 1652,
       "y": 3498,
-      "town": "Woodcutting Guild"
+      "town": "Woodcutting Guild",
+      "reachability": {
+        "required_skills": [
+          {
+            "skill": "woodcutting",
+            "level": 60,
+            "boostable": true
+          }
+        ]
+      }
     },
     {
       "name": "Pie Shop",
       "x": 3142,
       "y": 3447,
-      "town": "Cooks' Guild"
+      "town": "Cooks' Guild",
+      "reachability": {
+        "required_skills": [
+          {
+            "skill": "cooking",
+            "level": 32
+          }
+        ]
+      }
     },
     {
       "name": "Pollnivneach general store.",
@@ -20683,25 +22537,54 @@
       "name": "Port Roberts Fur Stall",
       "x": 1871,
       "y": 3292,
-      "town": "Port Roberts"
+      "town": "Port Roberts",
+      "reachability": {
+        "required_skills": [
+          {
+            "skill": "sailing",
+            "level": 50
+          }
+        ]
+      }
     },
     {
       "name": "Port Roberts Silver Stall",
       "x": 1867,
       "y": 3288,
-      "town": "Port Roberts"
+      "town": "Port Roberts",
+      "reachability": {
+        "required_skills": [
+          {
+            "skill": "sailing",
+            "level": 50
+          }
+        ]
+      }
     },
     {
       "name": "Port Roberts Spice Stall",
       "x": 1863,
       "y": 3288,
-      "town": "Port Roberts"
+      "town": "Port Roberts",
+      "reachability": {
+        "required_skills": [
+          {
+            "skill": "sailing",
+            "level": 50
+          }
+        ]
+      }
     },
     {
       "name": "Prifddinas Foodstuffs",
       "x": 3274,
       "y": 6105,
-      "town": "Prifddinas"
+      "town": "Prifddinas",
+      "reachability": {
+        "required_quest_ids": [
+          166
+        ]
+      }
     },
     {
       "name": "Quetzacalli Gorge General Store",
@@ -20850,7 +22733,12 @@
       "x": 1426,
       "y": 9568,
       "plane": 1,
-      "town": "Cam Torum"
+      "town": "Cam Torum",
+      "reachability": {
+        "required_quest_ids": [
+          192
+        ]
+      }
     },
     {
       "name": "The Spice Is Right.",
@@ -20935,7 +22823,12 @@
       "x": 1443,
       "y": 9559,
       "plane": 1,
-      "town": "Cam Torum"
+      "town": "Cam Torum",
+      "reachability": {
+        "required_quest_ids": [
+          192
+        ]
+      }
     },
     {
       "name": "Ye olde Tea Shoppe.",
@@ -20953,7 +22846,727 @@
       "name": "~ Uglug's stuffsies ~",
       "x": 2445,
       "y": 3049,
-      "town": "Jiggig"
+      "town": "Jiggig",
+      "reachability": {
+        "required_quest_ids": [
+          137
+        ],
+        "required_quest_ids_started_only": [
+          137
+        ]
+      }
+    }
+  ],
+  "drop_locations": [
+    {
+      "source_name": "Abyssal guardian",
+      "x": 3040,
+      "y": 4901,
+      "region": "general"
+    },
+    {
+      "source_name": "Abyssal guardian",
+      "x": 3052,
+      "y": 4833,
+      "region": "wilderness"
+    },
+    {
+      "source_name": "Abyssal leech",
+      "x": 3031,
+      "y": 4834,
+      "region": "wilderness"
+    },
+    {
+      "source_name": "Abyssal leech",
+      "x": 3037,
+      "y": 4897,
+      "region": "general"
+    },
+    {
+      "source_name": "Abyssal walker",
+      "x": 3040,
+      "y": 4897,
+      "region": "general"
+    },
+    {
+      "source_name": "Abyssal walker",
+      "x": 3041,
+      "y": 4818,
+      "region": "wilderness"
+    },
+    {
+      "source_name": "Albino bat",
+      "x": 3773,
+      "y": 9423,
+      "region": "morytania"
+    },
+    {
+      "source_name": "Alpaca",
+      "x": 1308,
+      "y": 3362,
+      "region": "varlamore"
+    },
+    {
+      "source_name": "Alpaca",
+      "x": 1493,
+      "y": 3225,
+      "region": "varlamore"
+    },
+    {
+      "source_name": "Alpaca",
+      "x": 1560,
+      "y": 3116,
+      "region": "varlamore"
+    },
+    {
+      "source_name": "Amoxliatl#Post-quest",
+      "x": 1362,
+      "y": 4511,
+      "region": "varlamore"
+    },
+    {
+      "source_name": "Angry barbarian spirit",
+      "x": 1746,
+      "y": 5326,
+      "region": "kandarin"
+    },
+    {
+      "source_name": "Baby impling",
+      "x": 2590,
+      "y": 4319,
+      "region": "general"
+    },
+    {
+      "source_name": "Barronite rocks",
+      "x": 2921,
+      "y": 5815,
+      "region": "asgarnia"
+    },
+    {
+      "source_name": "Berserk barbarian spirit",
+      "x": 1779,
+      "y": 5325,
+      "region": "kandarin"
+    },
+    {
+      "source_name": "Blurite rocks",
+      "x": 3061,
+      "y": 9573,
+      "region": "asgarnia"
+    },
+    {
+      "source_name": "Body Golem",
+      "x": 3021,
+      "y": 5808,
+      "region": "asgarnia"
+    },
+    {
+      "source_name": "Borrokar",
+      "x": 2679,
+      "y": 3690,
+      "region": "fremennik"
+    },
+    {
+      "source_name": "Brutus",
+      "x": 3263,
+      "y": 3297,
+      "region": "misthalin"
+    },
+    {
+      "source_name": "Cave bug#Level 6",
+      "x": 2723,
+      "y": 5225,
+      "region": "misthalin"
+    },
+    {
+      "source_name": "Cave bug#Level 6",
+      "x": 3184,
+      "y": 9568,
+      "region": "misthalin"
+    },
+    {
+      "source_name": "Cave goblin (monster)",
+      "x": 3251,
+      "y": 9569,
+      "region": "misthalin"
+    },
+    {
+      "source_name": "Cave kraken",
+      "x": 2271,
+      "y": 10010,
+      "region": "kandarin"
+    },
+    {
+      "source_name": "Cerberus",
+      "x": 1302,
+      "y": 1271,
+      "region": "asgarnia"
+    },
+    {
+      "source_name": "Chaos Fanatic",
+      "x": 2979,
+      "y": 3846,
+      "region": "wilderness"
+    },
+    {
+      "source_name": "Chaos Golem",
+      "x": 3020,
+      "y": 5778,
+      "region": "asgarnia"
+    },
+    {
+      "source_name": "Chaos druid warrior",
+      "x": 2584,
+      "y": 9500,
+      "region": "kandarin"
+    },
+    {
+      "source_name": "Chaos druid warrior",
+      "x": 3739,
+      "y": 3318,
+      "plane": 3,
+      "region": "morytania"
+    },
+    {
+      "source_name": "Chest (Dorgesh-Kaan Average)#Oldak's chests",
+      "x": 2736,
+      "y": 5301,
+      "region": "misthalin"
+    },
+    {
+      "source_name": "Chest (Dorgesh-Kaan Average)#Oldak's chests",
+      "x": 2783,
+      "y": 5373,
+      "region": "misthalin"
+    },
+    {
+      "source_name": "Chest (Dorgesh-Kaan Average)#Oldak's chests",
+      "x": 2838,
+      "y": 5423,
+      "region": "misthalin"
+    },
+    {
+      "source_name": "Crazy archaeologist",
+      "x": 2977,
+      "y": 3702,
+      "region": "wilderness"
+    },
+    {
+      "source_name": "Cyclops (Catacombs of Kourend)",
+      "x": 1649,
+      "y": 10017,
+      "region": "kourend"
+    },
+    {
+      "source_name": "Cyclops (God Wars Dungeon)",
+      "x": 2842,
+      "y": 5341,
+      "region": "asgarnia"
+    },
+    {
+      "source_name": "Cyclops#Warriors' Guild Basement",
+      "x": 2858,
+      "y": 3545,
+      "plane": 2,
+      "region": "asgarnia"
+    },
+    {
+      "source_name": "Cyclops#Warriors' Guild Basement",
+      "x": 2860,
+      "y": 9996,
+      "region": "asgarnia"
+    },
+    {
+      "source_name": "Cyclops#Warriors' Guild Rooftop",
+      "x": 2858,
+      "y": 3545,
+      "plane": 2,
+      "region": "asgarnia"
+    },
+    {
+      "source_name": "Cyclops#Warriors' Guild Rooftop",
+      "x": 2860,
+      "y": 9996,
+      "region": "asgarnia"
+    },
+    {
+      "source_name": "Dagannoth Rex",
+      "x": 2633,
+      "y": 9661,
+      "region": "fremennik"
+    },
+    {
+      "source_name": "Dagannoth Rex",
+      "x": 2689,
+      "y": 9661,
+      "region": "fremennik"
+    },
+    {
+      "source_name": "Dire bat",
+      "x": 2594,
+      "y": 7832
+    },
+    {
+      "source_name": "Duke Sucellus",
+      "x": 3039,
+      "y": 6454,
+      "region": "fremennik"
+    },
+    {
+      "source_name": "Earth elemental#Ore",
+      "x": 2696,
+      "y": 9872,
+      "region": "kandarin"
+    },
+    {
+      "source_name": "Earth elemental#Ore",
+      "x": 2698,
+      "y": 9906,
+      "region": "kandarin"
+    },
+    {
+      "source_name": "Enraged barbarian spirit",
+      "x": 1635,
+      "y": 5328,
+      "region": "kandarin"
+    },
+    {
+      "source_name": "Enraged barbarian spirit",
+      "x": 1763,
+      "y": 5328,
+      "region": "kandarin"
+    },
+    {
+      "source_name": "Fishing spot (swamp)",
+      "x": 3430,
+      "y": 3411,
+      "region": "morytania"
+    },
+    {
+      "source_name": "Fishing spot (swamp)",
+      "x": 3441,
+      "y": 3274,
+      "region": "morytania"
+    },
+    {
+      "source_name": "Fishing spot (swamp)",
+      "x": 3483,
+      "y": 3439,
+      "region": "morytania"
+    },
+    {
+      "source_name": "Flawed Golem",
+      "x": 2983,
+      "y": 5778,
+      "region": "asgarnia"
+    },
+    {
+      "source_name": "Freidir",
+      "x": 2674,
+      "y": 3675,
+      "region": "fremennik"
+    },
+    {
+      "source_name": "Frost Nagua",
+      "x": 1636,
+      "y": 9630,
+      "region": "varlamore"
+    },
+    {
+      "source_name": "Giant bat (Brine Rat Cavern)",
+      "x": 2728,
+      "y": 10127,
+      "region": "fremennik"
+    },
+    {
+      "source_name": "Giant lobster",
+      "x": 2328,
+      "y": 5083,
+      "region": "kandarin"
+    },
+    {
+      "source_name": "Giant lobster",
+      "x": 2774,
+      "y": 3289,
+      "plane": 1,
+      "region": "kandarin"
+    },
+    {
+      "source_name": "Giant lobster",
+      "x": 2778,
+      "y": 3283,
+      "region": "kandarin"
+    },
+    {
+      "source_name": "Goblin (God Wars Dungeon)",
+      "x": 2868,
+      "y": 5323,
+      "region": "asgarnia"
+    },
+    {
+      "source_name": "Goblin (God Wars Dungeon)",
+      "x": 2969,
+      "y": 10088,
+      "region": "wilderness"
+    },
+    {
+      "source_name": "Goblin guard",
+      "x": 2327,
+      "y": 9394,
+      "region": "kandarin"
+    },
+    {
+      "source_name": "Gorak#Full",
+      "x": 2894,
+      "y": 5322,
+      "region": "asgarnia"
+    },
+    {
+      "source_name": "Gorak#Full",
+      "x": 2973,
+      "y": 10090,
+      "region": "wilderness"
+    },
+    {
+      "source_name": "Gorak#Full",
+      "x": 3038,
+      "y": 5347,
+      "region": "general"
+    },
+    {
+      "source_name": "Gourmet impling",
+      "x": 2594,
+      "y": 4317,
+      "region": "general"
+    },
+    {
+      "source_name": "Guard (H.A.M. Storerooms)",
+      "x": 2569,
+      "y": 5198,
+      "region": "misthalin"
+    },
+    {
+      "source_name": "H.A.M. Guard",
+      "x": 3164,
+      "y": 9630,
+      "region": "misthalin"
+    },
+    {
+      "source_name": "Ice Queen",
+      "x": 2866,
+      "y": 9956,
+      "region": "asgarnia"
+    },
+    {
+      "source_name": "Jennella",
+      "x": 2640,
+      "y": 3651,
+      "region": "fremennik"
+    },
+    {
+      "source_name": "Kraken",
+      "x": 2278,
+      "y": 10034,
+      "region": "kandarin"
+    },
+    {
+      "source_name": "Lanzig",
+      "x": 2676,
+      "y": 3665,
+      "region": "fremennik"
+    },
+    {
+      "source_name": "Lava dragon",
+      "x": 3205,
+      "y": 3825,
+      "region": "wilderness"
+    },
+    {
+      "source_name": "Lensa",
+      "x": 2655,
+      "y": 3652,
+      "region": "fremennik"
+    },
+    {
+      "source_name": "Lizardman shaman",
+      "x": 1311,
+      "y": 9939,
+      "region": "kourend"
+    },
+    {
+      "source_name": "Lizardman shaman",
+      "x": 1311,
+      "y": 10096,
+      "region": "kourend"
+    },
+    {
+      "source_name": "Lizardman shaman",
+      "x": 1427,
+      "y": 3710,
+      "region": "kourend"
+    },
+    {
+      "source_name": "Lobstrosity",
+      "x": 3824,
+      "y": 10253,
+      "region": "misthalin"
+    },
+    {
+      "source_name": "Mind Golem",
+      "x": 3001,
+      "y": 5781,
+      "region": "asgarnia"
+    },
+    {
+      "source_name": "Mogre",
+      "x": 2994,
+      "y": 3112,
+      "region": "asgarnia"
+    },
+    {
+      "source_name": "Mourner#Level 108",
+      "x": 2040,
+      "y": 4640,
+      "region": "tirannwn"
+    },
+    {
+      "source_name": "Mourner#Level 108",
+      "x": 2299,
+      "y": 3328,
+      "region": "tirannwn"
+    },
+    {
+      "source_name": "Mourner#Level 11",
+      "x": 2040,
+      "y": 4640,
+      "region": "tirannwn"
+    },
+    {
+      "source_name": "Mourner#Level 11",
+      "x": 2299,
+      "y": 3328,
+      "region": "tirannwn"
+    },
+    {
+      "source_name": "Ogre Coffin",
+      "x": 2465,
+      "y": 9428,
+      "plane": 2,
+      "region": "kandarin"
+    },
+    {
+      "source_name": "Ogre Coffin",
+      "x": 2466,
+      "y": 3041,
+      "region": "kandarin"
+    },
+    {
+      "source_name": "Phantom Muspah",
+      "x": 2909,
+      "y": 10317,
+      "region": "fremennik"
+    },
+    {
+      "source_name": "Pyre fox",
+      "x": 1617,
+      "y": 2998,
+      "region": "varlamore"
+    },
+    {
+      "source_name": "Rotten Apple Pile",
+      "x": 1718,
+      "y": 3627,
+      "region": "kourend"
+    },
+    {
+      "source_name": "Rotten Apple Pile",
+      "x": 2487,
+      "y": 3371,
+      "region": "kandarin"
+    },
+    {
+      "source_name": "Rotting branch",
+      "x": 2240,
+      "y": 5041,
+      "region": "morytania"
+    },
+    {
+      "source_name": "Rotting branch",
+      "x": 3472,
+      "y": 3447,
+      "region": "morytania"
+    },
+    {
+      "source_name": "Sacks (Digsite)",
+      "x": 3352,
+      "y": 9788,
+      "region": "misthalin"
+    },
+    {
+      "source_name": "Sacks (Digsite)",
+      "x": 3363,
+      "y": 3422,
+      "region": "misthalin"
+    },
+    {
+      "source_name": "Sea Snake Hatchling",
+      "x": 2585,
+      "y": 10292,
+      "region": "fremennik"
+    },
+    {
+      "source_name": "Sea Snake Young",
+      "x": 2600,
+      "y": 10262,
+      "region": "fremennik"
+    },
+    {
+      "source_name": "Shadow warrior",
+      "x": 2703,
+      "y": 9768,
+      "region": "kandarin"
+    },
+    {
+      "source_name": "Silver stall (Port Roberts)",
+      "x": 1867,
+      "y": 3288,
+      "region": "no"
+    },
+    {
+      "source_name": "Skeletal Wyvern",
+      "x": 3066,
+      "y": 9569,
+      "region": "asgarnia"
+    },
+    {
+      "source_name": "Skeleton (Tarn's Lair)#Low level",
+      "x": 3204,
+      "y": 4573,
+      "region": "morytania"
+    },
+    {
+      "source_name": "Skeleton (Tarn's Lair)#Low level",
+      "x": 3428,
+      "y": 9651,
+      "region": "morytania"
+    },
+    {
+      "source_name": "Skeleton (Tarn's Lair)#Low level",
+      "x": 3434,
+      "y": 2842,
+      "region": "desert"
+    },
+    {
+      "source_name": "Skeleton brute",
+      "x": 1748,
+      "y": 5323,
+      "region": "kandarin"
+    },
+    {
+      "source_name": "Skeleton thug",
+      "x": 1787,
+      "y": 5340,
+      "region": "kandarin"
+    },
+    {
+      "source_name": "Skeleton warlord",
+      "x": 1808,
+      "y": 5376,
+      "region": "kandarin"
+    },
+    {
+      "source_name": "Small bush",
+      "x": 2263,
+      "y": 5035,
+      "region": "morytania"
+    },
+    {
+      "source_name": "Small bush",
+      "x": 3463,
+      "y": 3414,
+      "region": "morytania"
+    },
+    {
+      "source_name": "Soldier (Burthorpe)",
+      "x": 2898,
+      "y": 3537,
+      "region": "asgarnia"
+    },
+    {
+      "source_name": "The Hueycoatl",
+      "x": 1509,
+      "y": 3290,
+      "region": "varlamore"
+    },
+    {
+      "source_name": "Thermonuclear smoke devil",
+      "x": 2360,
+      "y": 9452,
+      "region": "kandarin"
+    },
+    {
+      "source_name": "Tortoise#With riders",
+      "x": 2417,
+      "y": 3528,
+      "region": "kandarin"
+    },
+    {
+      "source_name": "Tortoise#With riders",
+      "x": 2515,
+      "y": 3204,
+      "region": "kandarin"
+    },
+    {
+      "source_name": "Undead cow",
+      "x": 3617,
+      "y": 3526,
+      "region": "morytania"
+    },
+    {
+      "source_name": "Venator",
+      "x": 2510,
+      "y": 7751
+    },
+    {
+      "source_name": "Venator",
+      "x": 2585,
+      "y": 7756
+    },
+    {
+      "source_name": "Volcanic sulphur (rock)",
+      "x": 1437,
+      "y": 3869,
+      "region": "kourend"
+    },
+    {
+      "source_name": "Wall beast",
+      "x": 3188,
+      "y": 9564,
+      "region": "misthalin"
+    },
+    {
+      "source_name": "Zygomite#Level 74",
+      "x": 2416,
+      "y": 4471,
+      "region": "general"
+    },
+    {
+      "source_name": "Zygomite#Level 74",
+      "x": 2418,
+      "y": 4373,
+      "region": "general"
+    },
+    {
+      "source_name": "Zygomite#Level 86",
+      "x": 2416,
+      "y": 4471,
+      "region": "general"
+    },
+    {
+      "source_name": "Zygomite#Level 86",
+      "x": 2418,
+      "y": 4373,
+      "region": "general"
     }
   ]
 }

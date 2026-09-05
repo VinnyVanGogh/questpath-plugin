@@ -72,10 +72,13 @@ class QuestGraph
 	 * bundle must be refused rather than read as "no quest has a start" --
 	 * that is a different, false claim from "this build does not know yet".
 	 */
-	static final int SUPPORTED_VERSION = 8;
+	static final int SUPPORTED_VERSION = 9;
 
 	@SerializedName("version")
 	private int version;
+
+	@SerializedName("drop_locations")
+	private List<DropLocation> dropLocations;
 
 	@SerializedName("quests")
 	private List<Quest> quests;
@@ -111,6 +114,18 @@ class QuestGraph
 
 		@SerializedName("town")
 		private String town;
+
+		@SerializedName("reachability")
+		private Reachability reachability;
+
+		/**
+		 * What this shop is behind, or null when it is behind nothing --
+		 * which is most of them (47 of 166 carry anything at all).
+		 */
+		Reachability reachability()
+		{
+			return reachability;
+		}
 
 		String name()
 		{
@@ -342,6 +357,152 @@ class QuestGraph
 	}
 
 	/** One thing a quest needs, already resolved to a catalogue item name. */
+	/**
+	 * What an account must have to walk into a shop and be served.
+	 *
+	 * <p>Absent on most shops, and absent means open. Present, it is the
+	 * reason a shop must be left off a trip rather than named as a
+	 * destination -- the Fishing Guild Shop sells a big fishing net behind 68
+	 * Fishing, and an account with 59 was being sent there while a shop in
+	 * Catherby selling the same net went unmentioned.
+	 */
+	static class Reachability
+	{
+		@SerializedName("required_skills")
+		private List<SkillGate> requiredSkills;
+
+		@SerializedName("required_quest_ids")
+		private List<Integer> requiredQuestIds;
+
+		@SerializedName("required_quest_ids_started_only")
+		private List<Integer> startedOnlyQuestIds;
+
+		/** Skill levels needed to get in. Empty when none are. */
+		List<SkillGate> requiredSkills()
+		{
+			return requiredSkills == null ? List.of() : requiredSkills;
+		}
+
+		/** Quests needed to get in, by graph id. */
+		List<Integer> requiredQuestIds()
+		{
+			return requiredQuestIds == null ? List.of() : requiredQuestIds;
+		}
+
+		/**
+		 * The subset of {@link #requiredQuestIds()} satisfied by merely
+		 * having started the quest.
+		 *
+		 * <p>Uglug Nar is the case this exists for: his shop opens after
+		 * being handed a Relicym's balm *during* Zogre Flesh Eaters, which is
+		 * a moment inside a quest rather than a state of one. It cannot be
+		 * checked exactly, but "you must be able to start it" is a sound
+		 * lower bound on every moment inside it -- weaker than the truth and
+		 * never wrong in the direction that wastes a trip.
+		 */
+		List<Integer> startedOnlyQuestIds()
+		{
+			return startedOnlyQuestIds == null ? List.of() : startedOnlyQuestIds;
+		}
+	}
+
+	/** One skill level a place demands, and whether a boost counts. */
+	static class SkillGate
+	{
+		@SerializedName("skill")
+		private String skill;
+
+		@SerializedName("level")
+		private int level;
+
+		@SerializedName("boostable")
+		private boolean boostable;
+
+		/** The skill's name, lowercase as the bundle spells it. */
+		String skill()
+		{
+			return skill == null ? "" : skill;
+		}
+
+		/** The level needed. */
+		int level()
+		{
+			return level;
+		}
+
+		/**
+		 * Whether a temporary boost gets you in.
+		 *
+		 * <p>Only true where the wiki says so outright, so this under-claims:
+		 * a chef's delight really does open the Cooks' Guild and the bundle
+		 * records it as not boostable. Under-claiming costs a walk; the
+		 * opposite costs a wasted trip.
+		 */
+		boolean boostable()
+		{
+			return boostable;
+		}
+	}
+
+	/**
+	 * Somewhere a monster that drops something can be found.
+	 *
+	 * <p>The answer to "for something like Bat bones, if there is no shop, it
+	 * should route me to the nearest bats". An item names its droppers in
+	 * {@link Item#dropSourceNames()}; this places them.
+	 */
+	static class DropLocation
+	{
+		@SerializedName("source_name")
+		private String sourceName;
+
+		@SerializedName("x")
+		private int x;
+
+		@SerializedName("y")
+		private int y;
+
+		@SerializedName("plane")
+		private int plane;
+
+		@SerializedName("region")
+		private String region;
+
+		/** The monster, spelled as item_sources spells it. */
+		String sourceName()
+		{
+			return sourceName == null ? "" : sourceName;
+		}
+
+		int x()
+		{
+			return x;
+		}
+
+		int y()
+		{
+			return y;
+		}
+
+		int plane()
+		{
+			return plane;
+		}
+
+		/**
+		 * Where this is, loosely -- "general", "wilderness", and so on.
+		 *
+		 * <p>Worth carrying rather than dropping: sending someone into the
+		 * Wilderness without saying so is its own way of wasting a trip, and
+		 * on a hardcore ironman it is considerably worse than that.
+		 */
+		String region()
+		{
+			return region == null ? "" : region;
+		}
+	}
+
+
 	static class Item
 	{
 		@SerializedName("name")
@@ -367,6 +528,18 @@ class QuestGraph
 
 		@SerializedName("shop_names")
 		private List<String> shopNames;
+
+		@SerializedName("drop_source_names")
+		private List<String> dropSourceNames;
+
+		/**
+		 * The monsters that drop this, for an item no shop sells. Matched
+		 * against {@link DropLocation#sourceName()}.
+		 */
+		List<String> dropSourceNames()
+		{
+			return dropSourceNames == null ? List.of() : dropSourceNames;
+		}
 
 		String name()
 		{
@@ -597,6 +770,12 @@ class QuestGraph
 	 * @throws IOException when the resource is missing, unreadable, or carries
 	 *     a version this build does not understand
 	 */
+	/** Every known monster drop location. Empty in a bundle older than 9. */
+	List<DropLocation> dropLocations()
+	{
+		return dropLocations == null ? List.of() : dropLocations;
+	}
+
 	static QuestGraph load(Gson gson) throws IOException
 	{
 		try (InputStream stream = QuestGraph.class.getResourceAsStream("quests.json"))

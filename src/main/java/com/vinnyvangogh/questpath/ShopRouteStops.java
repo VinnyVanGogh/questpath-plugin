@@ -309,7 +309,13 @@ final class ShopRouteStops
 		}
 		if (!total.shopNames().isEmpty())
 		{
-			return "Known shop, but no location to route to" + forQuest;
+			// Two causes, deliberately said as one. A shop name resolves to
+			// nothing either because the bundle carries no tile for it or
+			// because this account cannot be served there (see
+			// ShopReachability). Naming only the first would be wrong
+			// whenever the second applies, and this line's whole job is not
+			// to claim more than is known.
+			return "A shop sells this, but none you can get to" + forQuest;
 		}
 		return "No known shop sells this yet" + forQuest;
 	}

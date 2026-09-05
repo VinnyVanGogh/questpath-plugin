@@ -109,9 +109,16 @@ public class QuestGraphTest
 	 * misread.
 	 */
 	@Test
-	public void supportedVersionWasBumpedForQuestStartPoints()
+	public void supportedVersionWasBumpedForShopReachabilityAndDropLocations()
 	{
-		assertEquals(8, QuestGraph.SUPPORTED_VERSION);
+		// 9 adds shop reachability and monster drop locations. Both are the
+		// same kind of hazard the comment above describes: a bundle without
+		// reachability parses every shop as open, which is precisely the
+		// wrong answer to hand a shortest-path button -- it is how the
+		// Fishing Guild Shop was offered to an account nine levels short of
+		// entering. Refusing the version is what stops that being read as
+		// "nothing stands in the way".
+		assertEquals(9, QuestGraph.SUPPORTED_VERSION);
 	}
 
 	/**

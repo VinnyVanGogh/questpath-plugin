@@ -240,7 +240,12 @@ public class ShopRouteStopsTest
 			Collections.singletonList("Nowhere in the bundle"));
 
 		assertNull(ShopRouteStops.destinationOf(rope, locates(), null));
-		assertEquals("Known shop, but no location to route to -- for Sheep Herder",
+		// Wording widened deliberately when shop reachability arrived. A name
+		// now resolves to nothing for two different reasons -- the bundle
+		// carries no tile, or this account cannot be served there -- and the
+		// old line claimed the first whenever the second applied. One honest
+		// sentence beats two, one of which is sometimes false.
+		assertEquals("A shop sells this, but none you can get to -- for Sheep Herder",
 			ShopRouteStops.destinationLine(rope, locates(), null));
 	}
 

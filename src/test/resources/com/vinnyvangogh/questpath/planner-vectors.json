@@ -20,7 +20,7 @@
       {
         "skill": "hitpoints",
         "level": 25,
-        "xp": 8515
+        "xp": 8525
       },
       {
         "skill": "ranged",
@@ -35,7 +35,7 @@
       {
         "skill": "magic",
         "level": 39,
-        "xp": 37145
+        "xp": 37174
       },
       {
         "skill": "cooking",
@@ -45,12 +45,12 @@
       {
         "skill": "woodcutting",
         "level": 36,
-        "xp": 27257
+        "xp": 27282
       },
       {
         "skill": "fletching",
-        "level": 24,
-        "xp": 7168
+        "level": 25,
+        "xp": 8218
       },
       {
         "skill": "fishing",
@@ -64,8 +64,8 @@
       },
       {
         "skill": "crafting",
-        "level": 24,
-        "xp": 7196
+        "level": 25,
+        "xp": 7948
       },
       {
         "skill": "smithing",
@@ -74,8 +74,8 @@
       },
       {
         "skill": "mining",
-        "level": 67,
-        "xp": 599923
+        "level": 68,
+        "xp": 646007
       },
       {
         "skill": "herblore",
@@ -85,7 +85,7 @@
       {
         "skill": "agility",
         "level": 39,
-        "xp": 33707
+        "xp": 33976
       },
       {
         "skill": "thieving",
@@ -127,9 +127,11 @@
       1,
       2,
       5,
+      10,
       11,
       14,
       15,
+      16,
       18,
       20,
       25,
@@ -327,7 +329,7 @@
     {
       "quest_id": 10,
       "slug": "prince_ali_rescue",
-      "status": "ELIGIBLE"
+      "status": "COMPLETE"
     },
     {
       "quest_id": 11,
@@ -357,7 +359,7 @@
     {
       "quest_id": 16,
       "slug": "pirates_treasure",
-      "status": "ELIGIBLE"
+      "status": "COMPLETE"
     },
     {
       "quest_id": 17,
@@ -852,7 +854,7 @@
     {
       "quest_id": 115,
       "slug": "contact",
-      "status": "QUEST_BLOCKED"
+      "status": "ELIGIBLE"
     },
     {
       "quest_id": 116,
