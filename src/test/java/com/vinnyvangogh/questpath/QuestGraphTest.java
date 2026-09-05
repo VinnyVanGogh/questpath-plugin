@@ -272,4 +272,95 @@ public class QuestGraphTest
 
 		assertNull(graph.byName("Nobody's Quest"));
 	}
+
+	// ------------------------------------------------------------------
+	// parse() -- the shared validation load() and QuestGraphFetcher both
+	// hold a document to, regardless of whether it came from the jar or the
+	// network. See docs/agent-briefs/03-self-updating-bundle.md.
+
+	/** A well-formed, correctly-versioned document parses cleanly. */
+	@Test
+	public void parseAcceptsAWellFormedGraph() throws java.io.IOException
+	{
+		QuestGraph graph = QuestGraph.parse(GSON, new java.io.StringReader(
+			"{\"version\":9,\"quests\":[{\"id\":1,\"slug\":\"a\",\"name\":\"A\"}]}"));
+
+		assertEquals(1, graph.quests().size());
+	}
+
+	/**
+	 * A graph newer than this build understands is refused, not parsed
+	 * leniently -- the exact hazard {@link #SUPPORTED_VERSION} exists to
+	 * name. The message says which direction the mismatch is in, because
+	 * that is the difference between "update the plugin" and "the server is
+	 * behind".
+	 */
+	@Test
+	public void parseRefusesAVersionNewerThanThisBuildUnderstands()
+	{
+		try
+		{
+			QuestGraph.parse(GSON, new java.io.StringReader(
+				"{\"version\":99,\"quests\":[{\"id\":1,\"slug\":\"a\",\"name\":\"A\"}]}"));
+			org.junit.Assert.fail("expected an IOException for a too-new version");
+		}
+		catch (java.io.IOException e)
+		{
+			assertTrue(e.getMessage().contains("99"));
+			assertTrue(e.getMessage().toLowerCase().contains("update the plugin"));
+		}
+	}
+
+	/**
+	 * A graph older than this build expects is refused just the same as a
+	 * newer one -- a served graph one version behind is exactly as
+	 * unreadable as a bundle one version behind, and a plugin fetching from
+	 * a questpath instance that has not been re-exported since a shape
+	 * change must not silently trust it.
+	 */
+	@Test
+	public void parseRefusesAVersionOlderThanThisBuildExpects()
+	{
+		try
+		{
+			QuestGraph.parse(GSON, new java.io.StringReader(
+				"{\"version\":8,\"quests\":[{\"id\":1,\"slug\":\"a\",\"name\":\"A\"}]}"));
+			org.junit.Assert.fail("expected an IOException for a too-old version");
+		}
+		catch (java.io.IOException e)
+		{
+			assertTrue(e.getMessage().contains("8"));
+			assertTrue(e.getMessage().toLowerCase().contains("older"));
+		}
+	}
+
+	/** A document with no quests at all is refused, the same as a missing bundle. */
+	@Test
+	public void parseRefusesAGraphWithNoQuests()
+	{
+		try
+		{
+			QuestGraph.parse(GSON, new java.io.StringReader("{\"version\":9,\"quests\":[]}"));
+			org.junit.Assert.fail("expected an IOException for an empty graph");
+		}
+		catch (java.io.IOException e)
+		{
+			assertTrue(e.getMessage().contains("no quests"));
+		}
+	}
+
+	/** Malformed JSON is refused with a message, never a null pointer downstream. */
+	@Test
+	public void parseRefusesMalformedJson()
+	{
+		try
+		{
+			QuestGraph.parse(GSON, new java.io.StringReader("{not json"));
+			org.junit.Assert.fail("expected an IOException for malformed JSON");
+		}
+		catch (java.io.IOException e)
+		{
+			assertTrue(e.getMessage().contains("did not parse"));
+		}
+	}
 }

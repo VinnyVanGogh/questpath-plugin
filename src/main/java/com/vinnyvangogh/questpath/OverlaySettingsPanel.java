@@ -112,20 +112,21 @@ class OverlaySettingsPanel extends JPanel
 	}
 
 	/**
-	 * The SYNC top-level section: the one setting that leaves the client at
-	 * all -- see this file's own class doc's second paragraph, and {@link
+	 * The SYNC top-level section: the settings that leave the client at all
+	 * -- see this file's own class doc's second paragraph, and {@link
 	 * QuestpathConfig}'s.
 	 *
-	 * <p>Only {@code syncEnabled} lives here. {@code serverUrl} and {@code
-	 * pairingToken} are the two settings this file deliberately never
-	 * duplicates -- a URL and a secret token are exactly the free-text and
-	 * masked-field controls RuneLite's own config panel already renders
-	 * correctly, and {@link OverlaySettingsPanelConfigParityTest} enforces
-	 * that exemption by name rather than by a filter nobody has to notice
-	 * growing. {@code syncEnabled} itself does not get the same pass: it is
-	 * a plain on/off switch, exactly the shape every other toggle in this
-	 * panel already is, and it was the one a player would look here for
-	 * first -- "am I sending my data anywhere" -- and not find, because it
+	 * <p>{@code syncEnabled} and {@code fetchQuestGraph} both live here.
+	 * {@code serverUrl} and {@code pairingToken} are the two settings this
+	 * file deliberately never duplicates -- a URL and a secret token are
+	 * exactly the free-text and masked-field controls RuneLite's own config
+	 * panel already renders correctly, and {@link
+	 * OverlaySettingsPanelConfigParityTest} enforces that exemption by name
+	 * rather than by a filter nobody has to notice growing. The two toggles
+	 * do not get the same pass: each is a plain on/off switch, exactly the
+	 * shape every other toggle in this panel already is, and each is
+	 * something a player would look here for first -- "am I sending my data
+	 * anywhere", "is my graph actually current" -- and not find, because it
 	 * used to live only behind RuneLite's own gear icon.
 	 */
 	private CollapsibleGroup syncSection(QuestpathConfig config)
@@ -139,8 +140,18 @@ class OverlaySettingsPanel extends JPanel
 				+ " verified by RuneLite developers.\n\nTurn it on anyway?",
 			config.syncEnabled(), "syncEnabled"));
 		panel.add(Box.createRigidArea(new Dimension(0, 6)));
-		JLabel note = new JLabel(wrap("The address to push to, and the pairing token from"
-			+ " questpath -plugin-token, are set in RuneLite's own Configuration panel for this"
+		panel.add(warningToggle(
+			"Fetch quest graph on startup",
+			"Ask questpath for its current quest graph each time this plugin starts, instead of"
+				+ " only the copy bundled with this build. Falls back to the bundled copy, and says"
+				+ " which it used, if questpath cannot be reached or answers with a graph shape this"
+				+ " build does not understand.",
+			"This feature submits your IP address to a 3rd-party server not controlled or"
+				+ " verified by RuneLite developers.\n\nTurn it on anyway?",
+			config.fetchQuestGraph(), "fetchQuestGraph"));
+		panel.add(Box.createRigidArea(new Dimension(0, 6)));
+		JLabel note = new JLabel(wrap("The address to fetch from and push to, and the pairing token"
+			+ " from questpath -plugin-token, are set in RuneLite's own Configuration panel for this"
 			+ " plugin -- not duplicated here."));
 		note.setFont(FontManager.getRunescapeSmallFont());
 		note.setForeground(ColorScheme.LIGHT_GRAY_COLOR);

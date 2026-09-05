@@ -1,10 +1,12 @@
 package com.vinnyvangogh.questpath;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 import com.google.gson.annotations.SerializedName;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -784,24 +786,64 @@ class QuestGraph
 			{
 				throw new IOException("bundled quests.json is missing from the jar");
 			}
-			QuestGraph graph = gson.fromJson(
-				new InputStreamReader(stream, StandardCharsets.UTF_8), QuestGraph.class);
-			if (graph == null)
+			try
 			{
-				throw new IOException("bundled quests.json did not parse");
+				return parse(gson, new InputStreamReader(stream, StandardCharsets.UTF_8));
 			}
-			if (graph.version() != SUPPORTED_VERSION)
+			catch (IOException e)
 			{
-				throw new IOException("bundled quests.json is version " + graph.version()
-					+ ", this build understands " + SUPPORTED_VERSION);
+				throw new IOException("bundled quests.json: " + e.getMessage(), e);
 			}
-			if (graph.quests().isEmpty())
-			{
-				// An empty graph makes every quest unknown, which renders as
-				// "not found" rather than as "the bundle is broken".
-				throw new IOException("bundled quests.json carries no quests");
-			}
-			return graph;
 		}
+	}
+
+	/**
+	 * Parses and validates a graph document already in hand, against exactly
+	 * the same rules {@link #load(Gson)} always held the bundled resource to:
+	 * it must parse, name a version this build understands, and carry at
+	 * least one quest.
+	 *
+	 * <p>Pulled out so a graph fetched live from a questpath instance (see
+	 * {@link QuestGraphFetcher}) is held to the identical bar as the one
+	 * baked into the jar. There must never be two ideas of what makes a
+	 * quest graph trustworthy -- one lenient because it came over the
+	 * network -- because the entire reason {@link #SUPPORTED_VERSION} exists
+	 * is that a graph missing a field must be refused outright rather than
+	 * parsed into a confident, wrong answer, and that has to be true no
+	 * matter where the bytes came from.
+	 *
+	 * @throws IOException when the document does not parse, or parses to a
+	 *     version this build does not understand, or carries no quests
+	 */
+	static QuestGraph parse(Gson gson, Reader reader) throws IOException
+	{
+		QuestGraph graph;
+		try
+		{
+			graph = gson.fromJson(reader, QuestGraph.class);
+		}
+		catch (JsonSyntaxException e)
+		{
+			throw new IOException("did not parse as a quest graph: " + e.getMessage(), e);
+		}
+		if (graph == null)
+		{
+			throw new IOException("did not parse as a quest graph");
+		}
+		if (graph.version() != SUPPORTED_VERSION)
+		{
+			throw new IOException(graph.version() > SUPPORTED_VERSION
+				? "is version " + graph.version() + ", which this build (" + SUPPORTED_VERSION
+					+ ") does not understand yet -- update the plugin"
+				: "is version " + graph.version() + ", which is older than this build ("
+					+ SUPPORTED_VERSION + ") expects -- questpath needs re-exporting or upgrading");
+		}
+		if (graph.quests().isEmpty())
+		{
+			// An empty graph makes every quest unknown, which renders as
+			// "not found" rather than as "the graph is broken".
+			throw new IOException("carries no quests");
+		}
+		return graph;
 	}
 }

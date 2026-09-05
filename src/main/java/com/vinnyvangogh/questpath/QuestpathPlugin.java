@@ -279,13 +279,33 @@ public class QuestpathPlugin extends Plugin
 	private FloatingNoteOverlay floatingNoteOverlay;
 
 	/**
-	 * The bundled quest graph, or null when it could not be loaded.
+	 * The quest graph currently in use -- fetched live from questpath when
+	 * {@link QuestpathConfig#fetchQuestGraph()} is on and the fetch
+	 * succeeded, the bundled jar resource otherwise -- or null when neither
+	 * is available.
 	 *
 	 * Null is rendered as a plain failure rather than as an empty quest list:
 	 * a broken bundle and a player with nothing to do look identical
 	 * otherwise, and only one of them is worth telling someone about.
 	 */
 	private QuestGraph questGraph;
+
+	@Inject
+	private QuestGraphFetcher graphFetcher;
+
+	/**
+	 * A quest-graph-source announcement waiting for a login to actually show
+	 * it in.
+	 *
+	 * {@link #fetchLiveQuestGraph}'s fetch usually resolves before the
+	 * client is logged in at all -- it starts from {@link #startUp}, and a
+	 * chat line posted while sitting at the login screen is a message nobody
+	 * saw. Held here and flushed by {@link #onGameStateChanged}'s own {@code
+	 * LOGGED_IN} branch instead of being dropped, because "say once on load"
+	 * has to mean the player actually sees it, not merely that this class
+	 * attempted to say it.
+	 */
+	private String pendingGraphAnnouncement;
 
 	private QuestpathPanel panel;
 	private NavigationButton navButton;
@@ -568,10 +588,81 @@ public class QuestpathPlugin extends Plugin
 			log.warn("questpath: bundled quest graph unavailable; the Quests tab will say so", e);
 		}
 
+		if (config.fetchQuestGraph())
+		{
+			fetchLiveQuestGraph();
+		}
+
 		// The plugin can be enabled mid-session, so there may already be a
 		// logged-in account whose StatChanged burst has been and gone.
 		refresh();
 		log.debug("questpath started");
+	}
+
+	/**
+	 * Asks the configured questpath instance for its current quest graph,
+	 * replacing the bundled copy on success.
+	 *
+	 * <p>This is the self-updating half of {@link QuestGraph}'s own doc
+	 * comment on why a bundle goes stale: the graph loaded above only
+	 * changes when this plugin is released, and this session had four
+	 * server-side corrections -- sub-area gates, shop reachability, the
+	 * shop-source cap, the teleport rewrite -- each of which reached the web
+	 * app immediately and would otherwise have waited for that. Off by
+	 * default, opt-in the same way {@link QuestpathConfig#syncEnabled()} is:
+	 * see that field's own doc for why a plugin that must talk to a
+	 * third-party server to be useful is a harder plugin to justify than one
+	 * where doing so is an extra.
+	 *
+	 * <p>Whatever happens is said exactly once, never silently: a fetched
+	 * graph swaps in with an announcement naming it, and a failure --
+	 * unreachable server, a version this build refuses either direction,
+	 * malformed JSON -- leaves {@link #questGraph} exactly as {@link
+	 * #startUp} already set it and says why. The player reported the same
+	 * already-fixed bug twice before this existed, purely because nothing
+	 * told them their bundle was stale; a fetch that fails back to the
+	 * bundle without a word would recreate exactly that hole one layer
+	 * further out.
+	 */
+	private void fetchLiveQuestGraph()
+	{
+		graphFetcher.fetch(config.serverUrl(), outcome -> clientThread.invokeLater(() ->
+		{
+			if (outcome.succeeded())
+			{
+				questGraph = outcome.graph();
+				String message = "Quest Path: using the live quest graph from questpath ("
+					+ questGraph.quests().size() + " quests).";
+				log.info("questpath: {}", message);
+				announceGraphSource(message);
+				refresh();
+				return;
+			}
+
+			String stillOn = questGraph == null
+				? "no quest graph at all -- the Quests tab will say so"
+				: questGraph.quests().size() + " quests bundled with this build";
+			String message = "Quest Path: could not fetch the quest graph from questpath (" + outcome.reason()
+				+ "); staying on " + stillOn + ".";
+			log.info("questpath: {}", message);
+			announceGraphSource(message);
+		}));
+	}
+
+	/**
+	 * Shows one quest-graph-source line in game chat, or holds it for the
+	 * next login if there is no chat to show it in yet -- see {@link
+	 * #pendingGraphAnnouncement}'s own doc for why this must not simply drop
+	 * the message when the client is not logged in.
+	 */
+	private void announceGraphSource(String message)
+	{
+		if (client.getGameState() == GameState.LOGGED_IN)
+		{
+			chat(message);
+			return;
+		}
+		pendingGraphAnnouncement = message;
 	}
 
 	@Override
@@ -981,6 +1072,15 @@ public class QuestpathPlugin extends Plugin
 		{
 			refresh();
 			maybeSync();
+			if (pendingGraphAnnouncement != null)
+			{
+				// The fetch in fetchLiveQuestGraph almost always resolves
+				// before this first login, since it starts from startUp --
+				// so this is usually where the one announcement the player
+				// actually sees happens, not a rare edge case.
+				chat(pendingGraphAnnouncement);
+				pendingGraphAnnouncement = null;
+			}
 			return;
 		}
 		if (event.getGameState() == GameState.LOGIN_SCREEN)
