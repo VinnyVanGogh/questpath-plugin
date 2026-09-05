@@ -376,6 +376,12 @@ class OverlaySettingsPanel extends JPanel
 				+ " needs, naming the quest it is for. Said once, at the moment it happens,"
 				+ " because that is when you are looking at the ground rather than at a panel.",
 			config.chatOnItemComplete(), "chatOnItemComplete"));
+		body.add(toggle(
+			"Float a note where it happened",
+			"Show a short line in the world, above where you are standing, the moment you"
+				+ " finish gathering something. Fades after a few seconds, never more than"
+				+ " three at once.",
+			config.floatingNotes(), "floatingNotes"));
 		return sectionGroup("Extras", body);
 	}
 

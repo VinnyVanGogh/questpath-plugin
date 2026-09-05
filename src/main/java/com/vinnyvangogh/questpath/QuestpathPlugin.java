@@ -214,6 +214,7 @@ public class QuestpathPlugin extends Plugin
 	 * behind the player's back.
 	 */
 	private final ItemCompletionWatcher completions = new ItemCompletionWatcher();
+	private final FloatingNotes floatingNotes = new FloatingNotes();
 
 	/**
 	 * Watches for a shop opening that sells something outstanding -- see its
@@ -269,6 +270,7 @@ public class QuestpathPlugin extends Plugin
 	 * reason: it draws into the world rather than owning a panel.
 	 */
 	private GroundItemOverlay groundOverlay;
+	private FloatingNoteOverlay floatingNoteOverlay;
 
 	/**
 	 * The bundled quest graph, or null when it could not be loaded.
@@ -527,6 +529,8 @@ public class QuestpathPlugin extends Plugin
 
 		groundOverlay = new GroundItemOverlay(this, config, client, tooltipManager);
 		overlayManager.add(groundOverlay);
+		floatingNoteOverlay = new FloatingNoteOverlay(this, config, client, floatingNotes);
+		overlayManager.add(floatingNoteOverlay);
 
 		bankOverlay = new BankNeedsOverlay(this, config, client, tooltipManager);
 		overlayManager.add(bankOverlay);
@@ -570,6 +574,15 @@ public class QuestpathPlugin extends Plugin
 			overlayManager.remove(shopOverlay);
 			shopOverlay = null;
 		}
+		if (floatingNoteOverlay != null)
+		{
+			overlayManager.remove(floatingNoteOverlay);
+			floatingNoteOverlay = null;
+		}
+		// Emptied as well as unregistered: notes are timed from wall clock,
+		// so a handful left over from a previous session would otherwise be
+		// waiting, already expired, for the next one to read them.
+		floatingNotes.clear();
 		if (groundOverlay != null)
 		{
 			overlayManager.remove(groundOverlay);
@@ -1079,6 +1092,7 @@ public class QuestpathPlugin extends Plugin
 		java.util.List<ItemCompletionWatcher.Completion> justCompleted = completions.observe(items);
 		announce(justCompleted);
 		advanceShopRoute(justCompleted, items);
+		floatCompletions(justCompleted);
 
 		if (route != null)
 		{
@@ -1195,6 +1209,35 @@ public class QuestpathPlugin extends Plugin
 	 * of several shops selling the same item rather than whichever the
 	 * bundle happened to list first.
 	 */
+
+	/**
+	 * Floats a line in the world for each item just finished -- see {@link
+	 * FloatingNotes} for why the chat line alone was not enough.
+	 *
+	 * <p>Placed where the player is standing rather than over the item or the
+	 * shopkeeper. Those would both be guesses: the item is in the bags by the
+	 * time this runs, and nothing here knows which NPC, if any, handed it
+	 * over. Text floating over an NPC also reads as something that NPC said,
+	 * which is a claim this plugin has no business making.
+	 */
+	private void floatCompletions(java.util.List<ItemCompletionWatcher.Completion> completed)
+	{
+		if (completed.isEmpty() || config == null || !config.floatingNotes())
+		{
+			return;
+		}
+		WorldPoint where = playerLocation();
+		if (where == null)
+		{
+			return;
+		}
+		Instant now = Instant.now();
+		for (ItemCompletionWatcher.Completion done : completed)
+		{
+			floatingNotes.add(FloatingNotes.praiseFor(done.itemName()), where, now);
+		}
+	}
+
 	private WorldPoint playerLocation()
 	{
 		return client.getLocalPlayer() == null ? null : client.getLocalPlayer().getWorldLocation();

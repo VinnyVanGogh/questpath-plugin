@@ -535,6 +535,23 @@ public interface QuestpathConfig extends Config
 	}
 
 	@ConfigItem(
+		keyName = "floatingNotes",
+		name = "Float a note where it happened",
+		description = "Show a short line in the world -- above you, where you are standing --"
+			+ " when you finish gathering something your plan needs. The chat box already says"
+			+ " this, and the chat box is exactly where nobody is looking at the moment it"
+			+ " happens. Fades after a few seconds and never shows more than three at once.",
+		section = shopSection,
+		position = 5
+	)
+	default boolean floatingNotes()
+	{
+		// Off by default, like every other notification-shaped toggle in this
+		// plugin -- see chatOnItemComplete and shopArrivalPrompt.
+		return false;
+	}
+
+	@ConfigItem(
 		keyName = "shopArrivalPrompt",
 		name = "Say when a shop sells what you need",
 		description = "One chat line the moment you open a shop selling something your plan"
