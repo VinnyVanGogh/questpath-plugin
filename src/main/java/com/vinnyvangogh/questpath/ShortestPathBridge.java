@@ -127,6 +127,28 @@ import net.runelite.client.events.PluginMessage;
  * Error}, which is exactly the class {@code AssertionError} belongs to and
  * exactly why this one reached all the way up to RuneLite's own top-level
  * uncaught-exception handler instead of being quietly absorbed.
+ *
+ * <p><b>Shortest Path clears its own path on arrival, on its own, with no
+ * event this plugin could react to even if it wanted to.</b> A report:
+ * talking to an NPC (the Brimhaven bartender) appeared to clear the active
+ * path. Checked rather than assumed -- {@code javap -c -p} against the
+ * installed jar's {@code ShortestPathPlugin.onGameTick} shows it comparing
+ * the player's live position against every current target every tick and
+ * calling {@code setTarget(-1)} (its own internal "clear" call) the moment
+ * any one of them is within {@code ShortestPathConfig#reachedDistance()}
+ * tiles (5, by default) -- with no reference to menu actions, dialogue, or
+ * any interaction at all. {@code onMenuOptionClicked} is the only other path
+ * clearer in that jar, and it only fires on an explicit right-click "Clear"
+ * on the path itself, matched by literal option and target text. There is
+ * no {@code onInteractingChanged}, no chat listener, and nothing else
+ * subscribed that could react to talking to an NPC. Walking up to talk to
+ * someone standing near wherever Shortest Path's own target was is, by
+ * construction, walking within a few tiles of that target -- so the path
+ * clearing at that moment is Shortest Path's own arrival detection doing
+ * exactly what it is built to do, coincident with the interaction rather
+ * than caused by it. This plugin posts a target set and nothing else; it
+ * has no path of its own to clear and nothing here reacts to arrival,
+ * interaction, or dialogue in any way.
  */
 @Slf4j
 class ShortestPathBridge

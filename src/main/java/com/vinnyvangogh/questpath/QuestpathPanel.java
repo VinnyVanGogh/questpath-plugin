@@ -229,16 +229,26 @@ class QuestpathPanel extends PluginPanel
 	 */
 	private final java.util.function.Function<String, WorldPoint> shopLocator;
 
+	/**
+	 * Told the moment the shop-route button actually sends a route -- see
+	 * {@link ShopRouteGuard}'s class doc for why {@code QuestpathPlugin}
+	 * needs to know this at all. Never told about any other outcome: {@link
+	 * ShopRouteGuard} only ever needs to know a route went out, the same
+	 * distinction {@link ShortestPathBridge.RouteOutcome#SENT} itself draws.
+	 */
+	private final Runnable onShopRouteSent;
+
 	QuestpathPanel(SpriteManager sprites, OverlaySettingsPanel overlaySettings,
 		java.util.function.BiFunction<String, Integer, SkillPlan> planner,
 		QuestHelperBridge questHelperBridge, ShortestPathBridge shortestPathBridge,
-		java.util.function.Function<String, WorldPoint> shopLocator)
+		java.util.function.Function<String, WorldPoint> shopLocator, Runnable onShopRouteSent)
 	{
 		this.overlaySettings = overlaySettings;
 		this.planner = planner;
 		this.questHelperBridge = questHelperBridge;
 		this.shortestPathBridge = shortestPathBridge;
 		this.shopLocator = shopLocator;
+		this.onShopRouteSent = onShopRouteSent;
 		setLayout(new BorderLayout());
 		setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
 
@@ -619,6 +629,7 @@ class QuestpathPanel extends PluginPanel
 			combat.add(costBlock(stats, xp));
 			renderPlannedSectionsFor(PanelSections.Tab.COMBAT);
 			lastCombatSignature = combatSignature;
+			showBodies(PanelSections.Tab.COMBAT);
 		}
 
 		JPanel syncBody = tabBodies.get(PanelSections.Tab.SYNC);
@@ -650,6 +661,7 @@ class QuestpathPanel extends PluginPanel
 			build.add(buildRulesBlock(stats, rules));
 		}
 		renderPlannedSectionsFor(PanelSections.Tab.BUILD);
+		showBodies(PanelSections.Tab.BUILD);
 		}
 
 		// Shares the Build tab's gate: both are driven by levels and rules,
@@ -692,6 +704,7 @@ class QuestpathPanel extends PluginPanel
 			fillQuestResults(verdicts);
 			renderPlannedSectionsFor(PanelSections.Tab.QUESTS);
 			lastVerdictSignature = questsSignature;
+			showBodies(PanelSections.Tab.QUESTS);
 		}
 
 		lastItems = items;
@@ -710,9 +723,11 @@ class QuestpathPanel extends PluginPanel
 			fillItemResults(items);
 			renderPlannedSectionsFor(PanelSections.Tab.ITEMS);
 			lastItemsSignature = itemsSignature;
+			showBodies(PanelSections.Tab.ITEMS);
 		}
 
 		renderPlannedSectionsFor(PanelSections.Tab.SYNC);
+		showBodies(PanelSections.Tab.SYNC);
 		repaintAll();
 	}
 
@@ -968,8 +983,19 @@ class QuestpathPanel extends PluginPanel
 		button.setText(availability.menuLabel());
 		button.setEnabled(availability == ShortestPathBridge.Availability.AVAILABLE);
 		int destinationCount = destinations.size();
-		button.addActionListener(event -> shortestPathBridge.route(destinations,
-			outcome -> SwingUtilities.invokeLater(() -> reportRouteOutcome(outcome, destinationCount))));
+		button.addActionListener(event -> shortestPathBridge.route(destinations, outcome ->
+		{
+			if (outcome == ShortestPathBridge.RouteOutcome.SENT)
+			{
+				// Told before the Swing hop below, not after: onShopRouteSent
+				// only records an Instant on the client thread (see
+				// QuestpathPlugin#onShopRouteSent), so it costs nothing to do
+				// immediately, and doing it here keeps this the one place
+				// that reacts to a route actually going out.
+				onShopRouteSent.run();
+			}
+			SwingUtilities.invokeLater(() -> reportRouteOutcome(outcome, destinationCount));
+		}));
 		return button;
 	}
 
@@ -1564,11 +1590,73 @@ class QuestpathPanel extends PluginPanel
 		return ColorScheme.PROGRESS_INPROGRESS_COLOR;
 	}
 
+	/**
+	 * Clears tabs' bodies for a rebuild, hiding each one first if it is
+	 * currently the on-screen card.
+	 *
+	 * <p><b>Why:</b> {@code Container#removeAll()} calls {@code
+	 * removeNotify()} on every direct child individually, and {@code
+	 * removeNotify()} on a lightweight component showing over RuneLite's
+	 * heavyweight game canvas runs AWT's own mixing pass -- {@code
+	 * Component#mixOnHiding} into {@code Container#recursiveApplyCurrentShape}
+	 * -- which walks that child's own subtree. Paid once per direct child
+	 * rather than once for the whole tab, that is what turned an Items-tab
+	 * rebuild (428 components, the current shopping list, changing on every
+	 * bank or inventory event) into multi-second stalls -- measured live, not
+	 * inferred: {@code questpath perf: render took 2489ms}, immediately
+	 * preceded by an {@link EdtWatchdog} dump whose stack sat inside {@code
+	 * removeAll -> removeNotify -> mixOnHiding -> recursiveApplyCurrentShape},
+	 * called from this method at the Items tab's own {@code clearBodies} site.
+	 * Three more stalls in the same 400-599ms-to-2.4-2.5s pattern followed in
+	 * the same log, each preceded by its own {@code EdtWatchdog} dump landing
+	 * in the identical stack.
+	 *
+	 * <p>This is the same fix {@link #cards}'s own class doc already
+	 * describes for switching tabs -- {@code setVisible} instead of {@code
+	 * removeAll}/{@code add} -- applied here to rebuilding a tab's contents
+	 * in place rather than to switching away from it: hiding the container
+	 * first means {@code isShowing()} is already false for it and everything
+	 * under it before a single child is removed, which is what lets AWT skip
+	 * or collapse the per-child walk. {@link #showBodies} is the other half
+	 * -- restoring visibility only once a tab's entire new content is in
+	 * place, never partway through, or the container is shown again only to
+	 * have hundreds of new children added into it one at a time, which is the
+	 * identical per-child cost on the add side instead of the remove side.
+	 */
 	private void clearBodies(PanelSections.Tab... tabs)
 	{
 		for (PanelSections.Tab tab : tabs)
 		{
-			tabBodies.get(tab).removeAll();
+			JPanel body = tabBodies.get(tab);
+			if (body.isShowing())
+			{
+				body.setVisible(false);
+			}
+			body.removeAll();
+		}
+	}
+
+	/**
+	 * Restores visibility for tabs {@link #clearBodies} hid for their own
+	 * rebuild. Call once a tab's whole new content -- including its {@link
+	 * #renderPlannedSectionsFor} call -- has been added, never in between;
+	 * see {@link #clearBodies}'s own doc for why.
+	 *
+	 * <p>Only a tab {@link #clearBodies} actually hid is touched, identified
+	 * by its own {@code isVisible()} still reading false: a tab that was
+	 * never the on-screen card had nothing to fix and nothing to restore, and
+	 * forcing it visible here would show it underneath whichever tab
+	 * CardLayout actually has selected.
+	 */
+	private void showBodies(PanelSections.Tab... tabs)
+	{
+		for (PanelSections.Tab tab : tabs)
+		{
+			JPanel body = tabBodies.get(tab);
+			if (!body.isVisible())
+			{
+				body.setVisible(true);
+			}
 		}
 	}
 

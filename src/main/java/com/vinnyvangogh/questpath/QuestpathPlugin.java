@@ -346,6 +346,31 @@ public class QuestpathPlugin extends Plugin
 	private Map<String, WorldPoint> questStartCandidates = Collections.emptyMap();
 
 	/**
+	 * Whether any quest on the account's saved route is currently {@code
+	 * IN_PROGRESS}, per the client's own quest state -- the second signal
+	 * {@link QuestStartArrivalGate} now checks alongside Quest Helper's own
+	 * selection. See that class's doc for why the route, not the whole
+	 * account, is what {@link #inProgressQuestNames()} is intersected
+	 * against, and why that scoping is the point.
+	 *
+	 * <p>Recomputed once per {@link #refresh}, the same cadence as {@link
+	 * #questStartCandidates}, and read every tick from {@link
+	 * #checkQuestStartArrival} without redoing any of that work -- {@link
+	 * QuestStartArrivalGate#allow} is a plain boolean check, not a scan.
+	 */
+	private boolean routeQuestInProgress;
+
+	/**
+	 * When the shop-route button last actually sent a route to Shortest Path
+	 * ({@link ShortestPathBridge.RouteOutcome#SENT}), or null when none has
+	 * been sent this session or the tracked send was already cleared. See
+	 * {@link ShopRouteGuard}'s class doc for why anything tracks this at all,
+	 * and {@link #checkShopArrival} and {@link #onGameStateChanged} for the
+	 * two ways it clears before {@link ShopRouteGuard#ACTIVE_WINDOW} would.
+	 */
+	private Instant shopRouteSentAt;
+
+	/**
 	 * The bank, inventory and equipment as last seen. Not re-read on demand:
 	 * the client does not hold the bank's contents until it has been opened.
 	 */
@@ -466,7 +491,7 @@ public class QuestpathPlugin extends Plugin
 			// from either thread.
 			ShortestPathBridge.clientThreadEventPoster(clientThread::invoke, eventBus::post));
 		panel = new QuestpathPanel(sprites, new OverlaySettingsPanel(config, configManager),
-			this::skillPlan, questHelperBridge, shortestPathBridge, this::shopLocation);
+			this::skillPlan, questHelperBridge, shortestPathBridge, this::shopLocation, this::onShopRouteSent);
 		navButton = NavigationButton.builder()
 			.tooltip("Quest Path")
 			.icon(icon())
@@ -644,6 +669,18 @@ public class QuestpathPlugin extends Plugin
 		Widget itemsWidget = client.getWidget(InterfaceID.Shopmain.ITEMS);
 		boolean shopOpenNow = itemsWidget != null;
 
+		if (shopOpenNow)
+		{
+			// A real "this leg of the trip is done" signal, ahead of
+			// ShopRouteGuard#ACTIVE_WINDOW's own safety-net expiry -- see
+			// that class's doc. Whichever shop it is: reaching any shop
+			// interface at all is as much confirmation as this plugin can
+			// read that the player is no longer walking a Shortest Path
+			// route they sent, so automatic Quest Helper starts no longer
+			// need to be held back for it.
+			shopRouteSentAt = null;
+		}
+
 		Set<Integer> shopItemIds = Collections.emptySet();
 		if (shopOpenNow)
 		{
@@ -696,9 +733,12 @@ public class QuestpathPlugin extends Plugin
 			return;
 		}
 		// Never hijack a quest already in progress on Quest Helper's own
-		// screen -- see QuestStartArrivalGate's class doc for why that
-		// signal, not an account-level IN_PROGRESS quest, is the right one.
-		for (String questName : QuestStartArrivalGate.allow(arrived, questHelperBridge.hasSelectedQuest()))
+		// screen, nor one the account is already working on the route --
+		// see QuestStartArrivalGate's class doc for why both signals are
+		// checked, and why neither one alone is the account-level
+		// IN_PROGRESS check that was rejected outright.
+		for (String questName : QuestStartArrivalGate.allow(
+			arrived, questHelperBridge.hasSelectedQuest(), routeQuestInProgress))
 		{
 			handleQuestStartArrival(questName);
 		}
@@ -723,6 +763,63 @@ public class QuestpathPlugin extends Plugin
 	}
 
 	/**
+	 * Whether any quest on route is currently {@code IN_PROGRESS}, per the
+	 * client's own quest state -- see {@link #routeQuestInProgress}'s own
+	 * field doc and {@link QuestStartArrivalGate}'s class doc for why the
+	 * route, not the whole account, is what {@link #inProgressQuestNames()}
+	 * is intersected against.
+	 *
+	 * <p>Checked against every outstanding route step, not only the head:
+	 * the account may have started a quest further down the route than
+	 * {@code route.questName()} names, the same reason {@link
+	 * QuestStartCandidates} itself walks {@code route.upcoming()} rather
+	 * than stopping at the first entry.
+	 *
+	 * @param route the account's saved route, or null when none is saved or
+	 *     the client has not loaded quest states yet -- answers false, the
+	 *     same "nothing to gate on" answer an empty route would give
+	 */
+	private boolean routeQuestInProgress(NextQuestStatus route)
+	{
+		if (route == null)
+		{
+			return false;
+		}
+		Set<String> inProgress = inProgressQuestNames();
+		for (NextQuestStatus.Step step : route.upcoming())
+		{
+			if (inProgress.contains(step.questName()))
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Records that the shop-route button just sent a route -- see {@link
+	 * ShopRouteGuard}'s class doc for why this plugin tracks that at all.
+	 * Handed to the panel as {@code this::onShopRouteSent}; called only for
+	 * {@link ShortestPathBridge.RouteOutcome#SENT}, never for any other
+	 * outcome.
+	 */
+	private void onShopRouteSent()
+	{
+		shopRouteSentAt = Instant.now();
+	}
+
+	/**
+	 * Whether a shop route sent to Shortest Path is still active enough that
+	 * an automatic Quest Helper start should hold off -- see {@link
+	 * ShopRouteGuard}'s class doc for the report this closes and why holding
+	 * off, rather than starting anyway, is the chosen side of that trade.
+	 */
+	private boolean shopRouteBlocksQuestRouting()
+	{
+		return ShopRouteGuard.blocksQuestRouting(shopRouteSentAt, Instant.now());
+	}
+
+	/**
 	 * Starts questName in Quest Helper on arrival, reusing {@link
 	 * QuestHelperBridge}'s own availability check rather than calling {@link
 	 * QuestHelperBridge#start} blind -- the same rule {@link
@@ -731,6 +828,17 @@ public class QuestpathPlugin extends Plugin
 	 */
 	private void handleQuestStartArrival(String questName)
 	{
+		if (shopRouteBlocksQuestRouting())
+		{
+			// Said, not silently skipped -- see ShopRouteGuard's class doc:
+			// a shop route the player deliberately sent must not be
+			// silently abandoned, but the arrival itself must not vanish
+			// with no trace either.
+			chat("Quest Path: you're at the start of \"" + questName
+				+ "\", but a shop route sent to Shortest Path is still active -- "
+				+ "start it yourself in Quest Helper if you want it now.");
+			return;
+		}
 		QuestHelperBridge.Availability availability = questHelperBridge.availability(questName);
 		if (availability != QuestHelperBridge.Availability.AVAILABLE)
 		{
@@ -858,6 +966,14 @@ public class QuestpathPlugin extends Plugin
 			// The next login may be a different account entirely; this
 			// account's route and eligible quests are not candidates for it.
 			questStartCandidates = Collections.emptyMap();
+			// Same reasoning: the next login's route, if any, has not been
+			// read yet, so there is nothing to call "in progress" until the
+			// first post-login refresh says otherwise.
+			routeQuestInProgress = false;
+			// The next login may stand at a different shop, or none, mid-way
+			// through no trip of its own -- a route sent for this account
+			// must not hold back that account's first genuine arrival.
+			shopRouteSentAt = null;
 		}
 	}
 
@@ -882,6 +998,9 @@ public class QuestpathPlugin extends Plugin
 			// null -- harmless, but a stale set is still the wrong thing to
 			// be holding onto.
 			questStartCandidates = Collections.emptyMap();
+			// No route has been read this pass, so nothing on it can be
+			// called in progress.
+			routeQuestInProgress = false;
 			return;
 		}
 
@@ -920,6 +1039,10 @@ public class QuestpathPlugin extends Plugin
 		// in checkQuestStartArrival never has to reclassify anything -- see
 		// questStartCandidates' own doc.
 		questStartCandidates = questStartCandidates(route, questVerdicts);
+		// Same cadence, for the same reason -- see routeQuestInProgress's
+		// own field doc and QuestStartArrivalGate's class doc for what this
+		// gates.
+		routeQuestInProgress = routeQuestInProgress(route);
 
 		announce(completions.observe(items));
 
@@ -977,6 +1100,15 @@ public class QuestpathPlugin extends Plugin
 	 */
 	private void startNextOnAutoAdvance(String finished, String next)
 	{
+		if (shopRouteBlocksQuestRouting())
+		{
+			// Same reasoning as handleQuestStartArrival's own guard -- see
+			// ShopRouteGuard's class doc.
+			chat("Quest Path: \"" + finished + "\" finished, and \"" + next
+				+ "\" is next, but a shop route sent to Shortest Path is still active -- "
+				+ "start it yourself in Quest Helper when you're done shopping.");
+			return;
+		}
 		QuestHelperBridge.Availability availability = questHelperBridge.availability(next);
 		if (availability != QuestHelperBridge.Availability.AVAILABLE)
 		{
