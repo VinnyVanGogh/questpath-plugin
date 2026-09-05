@@ -758,8 +758,40 @@ class QuestpathPanel extends PluginPanel
 	 */
 	private void fillItemResults(QuestItems items)
 	{
-		itemResults.removeAll();
-		itemResults.add(itemsBlock(items, itemSearch.getText()));
+		// Hidden across the swap, for the reason clearBodies already documents
+		// at length: removeAll() on a *showing* container pays AWT's
+		// component-mixing pass once per child instead of once for the
+		// subtree, and this rebuilds several hundred of them.
+		//
+		// Measured, not guessed. Three skips in one session each stalled the
+		// EDT for about half a second, and the watchdog's own stack named this
+		// method every time:
+		//
+		//   EDT stalled 496ms ... QuestpathPanel.fillItemResults(...:761)
+		//                         QuestpathPanel.lambda$skipRow$10(...)
+		//
+		// The same cost was fixed once for switching tabs and never applied to
+		// rebuilding the tab already on screen, which is the case a skip hits.
+		boolean wasShowing = itemResults.isShowing();
+		if (wasShowing)
+		{
+			itemResults.setVisible(false);
+		}
+		try
+		{
+			itemResults.removeAll();
+			itemResults.add(itemsBlock(items, itemSearch.getText()));
+		}
+		finally
+		{
+			// In a finally so a throw part-way through the rebuild cannot
+			// leave the Items tab permanently invisible -- a blank panel with
+			// no error is the worst way for this to fail.
+			if (wasShowing)
+			{
+				itemResults.setVisible(true);
+			}
+		}
 	}
 
 	/**
