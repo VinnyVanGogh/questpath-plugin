@@ -6,6 +6,7 @@ import java.awt.Graphics2D;
 import java.time.Instant;
 import java.util.List;
 import net.runelite.api.Client;
+import net.runelite.api.gameval.InterfaceID;
 import net.runelite.api.Perspective;
 import net.runelite.api.Point;
 import net.runelite.api.coords.LocalPoint;
@@ -81,6 +82,17 @@ class FloatingNoteOverlay extends Overlay
 	private void paint(Graphics2D g)
 	{
 		if (config == null || !config.floatingNotes() || plugin == null || client == null)
+		{
+			return;
+		}
+
+		// Nothing overhead is readable with a shop or trade interface open --
+		// it covers the scene, which is the player's own report: "you can't
+		// see the text over their head when you're trading them". The notes
+		// are not dropped, only not drawn; a short one will still be there
+		// when the window closes, and one that expired behind it was never
+		// going to be read anyway.
+		if (client.getWidget(InterfaceID.Shopmain.ITEMS) != null)
 		{
 			return;
 		}

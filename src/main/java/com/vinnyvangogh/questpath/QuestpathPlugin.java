@@ -220,6 +220,7 @@ public class QuestpathPlugin extends Plugin
 	private final ShopkeeperMemory shopkeeper = new ShopkeeperMemory();
 	private Boosts cachedShopBoosts;
 	private Map<String, WorldPoint> dropsByName;
+	private final ShopApproachWatcher shopApproach = new ShopApproachWatcher();
 
 	/**
 	 * Watches for a shop opening that sells something outstanding -- see its
@@ -227,7 +228,6 @@ public class QuestpathPlugin extends Plugin
 	 * walking-distance proximity {@link #shopLocation} now makes buildable
 	 * but that this class does not attempt.
 	 */
-	private final ShopArrivalWatcher shopArrival = new ShopArrivalWatcher();
 
 	/**
 	 * Something happened that the panel and overlays should be rebuilt for,
@@ -590,6 +590,7 @@ public class QuestpathPlugin extends Plugin
 		// waiting, already expired, for the next one to read them.
 		floatingNotes.clear();
 		shopkeeper.forget();
+		shopApproach.clear();
 		if (groundOverlay != null)
 		{
 			overlayManager.remove(groundOverlay);
@@ -629,7 +630,6 @@ public class QuestpathPlugin extends Plugin
 		panel = null;
 		haveSent = false;
 		owned.clear();
-		shopArrival.reset();
 		log.debug("questpath stopped");
 	}
 
@@ -714,28 +714,6 @@ public class QuestpathPlugin extends Plugin
 			rememberShopkeeper();
 		}
 
-		Set<Integer> shopItemIds = Collections.emptySet();
-		if (shopOpenNow)
-		{
-			Widget[] slots = itemsWidget.getDynamicChildren();
-			if (slots != null)
-			{
-				shopItemIds = new HashSet<>();
-				for (Widget slot : slots)
-				{
-					if (slot != null && slot.getItemId() > 0)
-					{
-						shopItemIds.add(slot.getItemId());
-					}
-				}
-			}
-		}
-
-		QuestItems items = overlaySnapshot == null ? null : overlaySnapshot.items();
-		java.util.List<QuestItems.Total> selling =
-			shopArrival.observe(shopOpenNow, shopItemIds, items);
-		announceShopArrival(selling);
-		floatShopOffer(selling);
 	}
 
 	/**
@@ -1004,7 +982,6 @@ public class QuestpathPlugin extends Plugin
 			// The next login may stand in front of a different shop, or none
 			// at all -- the previous account's "just opened" state must not
 			// carry over and suppress a genuine new opening.
-			shopArrival.reset();
 			// The next login may be a different account on a different
 			// route entirely; its first sighting of that route must not be
 			// read as a completion of whatever this account's route last
@@ -1104,6 +1081,7 @@ public class QuestpathPlugin extends Plugin
 		announce(justCompleted);
 		advanceShopRoute(justCompleted, items);
 		floatCompletions(justCompleted);
+		checkShopApproach(items);
 
 		if (route != null)
 		{
@@ -1256,33 +1234,6 @@ public class QuestpathPlugin extends Plugin
 		}
 	}
 
-	/**
-	 * Has the shopkeeper mention what they stock that the plan still needs.
-	 *
-	 * <p>The NPC half of the same plan the completion notes serve: "NPCs
-	 * greet people ... while you're here, you should buy this item." Said
-	 * only over the shopkeeper, never over the player -- an offer to sell you
-	 * something is the shopkeeper's line, and putting it over your own head
-	 * would be nonsense rather than merely misplaced.
-	 */
-	private void floatShopOffer(java.util.List<QuestItems.Total> matches)
-	{
-		if (matches.isEmpty() || config == null || !config.floatingNotes()
-			|| config.floatingNotePlacement() == NotePlacement.ABOVE_YOU)
-		{
-			return;
-		}
-		Instant now = Instant.now();
-		WorldPoint where = shopkeeper.location(now);
-		if (where == null)
-		{
-			return;
-		}
-		for (QuestItems.Total match : matches)
-		{
-			floatingNotes.add(FloatingNotes.offerFor(match.name(), match.outstanding()), where, now);
-		}
-	}
 
 	/**
 	 * Remembers whoever this shop belongs to, so a note can be put over them
@@ -1420,39 +1371,6 @@ public class QuestpathPlugin extends Plugin
 		}
 	}
 
-	/**
-	 * Prints one chat line, at most, the moment a shop is opened that sells
-	 * something outstanding -- see {@link ShopArrivalWatcher}'s class doc for
-	 * exactly what this does and does not detect.
-	 *
-	 * The toggle is read here rather than inside the watcher, same reason as
-	 * {@link #announce}: the watcher keeps observing every shop opening
-	 * either way, so switching the setting on mid-session announces only the
-	 * next opening, never a backlog.
-	 */
-	private void announceShopArrival(java.util.List<QuestItems.Total> matches)
-	{
-		if (matches.isEmpty() || config == null || !config.shopArrivalPrompt())
-		{
-			return;
-		}
-		java.util.List<String> names = new java.util.ArrayList<>();
-		for (QuestItems.Total total : matches)
-		{
-			names.add(total.name());
-		}
-		ChatMessageBuilder line = new ChatMessageBuilder()
-			.append(ChatColorType.NORMAL)
-			.append("Quest Path: this shop sells ")
-			.append(ChatColorType.HIGHLIGHT)
-			.append(QuestItems.phrase(names, 4))
-			.append(ChatColorType.NORMAL)
-			.append(", which your plan still needs.");
-		chatMessageManager.queue(QueuedMessage.builder()
-			.type(ChatMessageType.GAMEMESSAGE)
-			.runeLiteFormattedMessage(line.build())
-			.build());
-	}
 
 	/** Whether the bank marks and list are currently switched on. */
 	boolean bankNeedsShown()
@@ -1598,6 +1516,82 @@ public class QuestpathPlugin extends Plugin
 	 * same quiet omission this whole feature exists to stop. The region is
 	 * carried on the row for a caller that wants to say so.
 	 */
+
+	/**
+	 * Nudges the player towards a shop stocking something they still need, as
+	 * they come up on it.
+	 *
+	 * <p>Replaces announcing when the shop interface opened, which was the
+	 * wrong moment twice over -- see {@link ShopApproachWatcher}. Standing in
+	 * the shop being told the shop sells things is not a reminder, and the
+	 * widget-based trigger fired the same line five times in two minutes
+	 * while the player was fishing.
+	 *
+	 * <p>Only shops this account can actually trade at are candidates,
+	 * because {@link #shopLocation} is the one place a shop name becomes a
+	 * tile and it already filters -- so a guild nine Fishing levels away
+	 * cannot shout about its stock.
+	 */
+	private void checkShopApproach(QuestItems items)
+	{
+		if (items == null || questGraph == null)
+		{
+			return;
+		}
+		boolean wantChat = config != null && config.shopArrivalPrompt();
+		boolean wantNote = config != null && config.floatingNotes()
+			&& config.floatingNotePlacement() != NotePlacement.ABOVE_YOU;
+		if (!wantChat && !wantNote)
+		{
+			// Still not observed while both are off: the watcher's baseline
+			// would go stale and switching one on mid-session would announce
+			// every shop already in range at once.
+			shopApproach.clear();
+			return;
+		}
+
+		Map<String, WorldPoint> nearby = new HashMap<>();
+		Map<String, QuestItems.Total> wantedAt = new HashMap<>();
+		for (QuestItems.Total total : items.totals())
+		{
+			if (total.satisfied() || shopItemSkips.isSkipped(total.name()))
+			{
+				continue;
+			}
+			for (String shopName : total.shopNames())
+			{
+				WorldPoint at = shopLocation(shopName);
+				if (at != null)
+				{
+					nearby.put(shopName, at);
+					wantedAt.putIfAbsent(shopName, total);
+				}
+			}
+		}
+
+		for (String shopName : shopApproach.observe(nearby, playerLocation()))
+		{
+			QuestItems.Total total = wantedAt.get(shopName);
+			if (total == null)
+			{
+				continue;
+			}
+			String offer = FloatingNotes.offerFor(total.name(), total.outstanding());
+			if (wantChat)
+			{
+				shopTripChat("Quest Path: " + shopName + " -- " + offer);
+			}
+			if (wantNote)
+			{
+				// Over the shop, which is where the shopkeeper stands. At
+				// this distance there is no NPC to read off the player's
+				// interaction, and the tile is the honest answer rather than
+				// a guess at which of the figures ahead is the one selling.
+				floatingNotes.add(offer, nearby.get(shopName), Instant.now());
+			}
+		}
+	}
+
 	private WorldPoint dropLocation(String sourceName)
 	{
 		if (questGraph == null || sourceName == null)

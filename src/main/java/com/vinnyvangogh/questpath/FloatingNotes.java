@@ -59,6 +59,26 @@ class FloatingNotes
 		"%s sorted.",
 	};
 
+	/**
+	 * What a shopkeeper shouts as you come up the road.
+	 *
+	 * <p>Written to be a wave rather than a receipt. The first attempt said
+	 * "I sell Big fishing net -- you still need 1", which is accurate and
+	 * reads like a till printout; the point of putting words over an NPC's
+	 * head is that somebody looks up. The item name stays exact -- it is the
+	 * one part that has to survive being cute.
+	 *
+	 * <p>Chosen by the item's own name, like {@link #PRAISE}, so the same
+	 * shop greets you the same way twice.
+	 */
+	private static final String[] OFFERS = {
+		"Psst -- got your %s right here!",
+		"Oi! %s, over here!",
+		"Looking for a %s? Say no more.",
+		"%s! Fresh in! Come see!",
+		"You there -- I stock %s!",
+	};
+
 	private final Deque<Note> notes = new ArrayDeque<>();
 
 	/** One line of floating text, and where and when it belongs. */
@@ -138,7 +158,9 @@ class FloatingNotes
 		{
 			return "";
 		}
-		return "I sell " + itemName + " -- you still need " + outstanding + ".";
+		String phrasing = OFFERS[(itemName.hashCode() & 0x7fffffff) % OFFERS.length];
+		String line = String.format(phrasing, itemName);
+		return outstanding > 1 ? line + " (x" + outstanding + ")" : line;
 	}
 
 	/**
