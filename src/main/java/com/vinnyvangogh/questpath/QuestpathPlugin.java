@@ -513,7 +513,8 @@ public class QuestpathPlugin extends Plugin
 		overlays.add(new NextQuestOverlay(this, config, overlayIcons));
 		overlays.add(new PickupsOverlay(this, config, overlayIcons));
 		overlays.add(new NeededItemsOverlay(this, config, overlayIcons, client));
-		overlays.add(new ShopRouteOverlay(this, config, overlayIcons, this::shopLocation, shopItemSkips));
+		overlays.add(new ShopRouteOverlay(this, config, overlayIcons, this::shopLocation, this::playerLocation,
+			shopItemSkips));
 		overlays.add(new CombatXpOverlay(this, config, overlayIcons));
 		overlays.add(new BuildRulesOverlay(this, config, overlayIcons));
 		for (QuestpathOverlay overlay : overlays)
@@ -1075,7 +1076,9 @@ public class QuestpathPlugin extends Plugin
 		// gates.
 		routeQuestInProgress = routeQuestInProgress(route);
 
-		announce(completions.observe(items));
+		java.util.List<ItemCompletionWatcher.Completion> justCompleted = completions.observe(items);
+		announce(justCompleted);
+		advanceShopRoute(justCompleted, items);
 
 		if (route != null)
 		{
@@ -1185,6 +1188,92 @@ public class QuestpathPlugin extends Plugin
 	 * watcher keeps observing either way, so switching the setting on does not
 	 * then announce a backlog of everything collected while it was off.
 	 */
+
+	/**
+	 * Where the player is, or null before the client has anyone to ask
+	 * about. Handed to {@link ShopRouteOverlay} so it can name the nearest
+	 * of several shops selling the same item rather than whichever the
+	 * bundle happened to list first.
+	 */
+	private WorldPoint playerLocation()
+	{
+		return client.getLocalPlayer() == null ? null : client.getLocalPlayer().getWorldLocation();
+	}
+
+	/**
+	 * Moves a running shop trip on to its next stop when the current item is
+	 * finished -- see {@link ShopRouteAdvance}'s class doc for the trip that
+	 * silently stopped being a trip without this.
+	 *
+	 * <p>Gated on the same toggle as the completion chat line rather than a
+	 * toggle of its own. Both answer one question -- "tell me when an item
+	 * is done" -- and a player who has switched that off is not asking for a
+	 * route to move under them either.
+	 */
+	private void advanceShopRoute(java.util.List<ItemCompletionWatcher.Completion> completed,
+		QuestItems items)
+	{
+		if (config == null || !config.chatOnItemComplete() || items == null
+			|| shortestPathBridge == null)
+		{
+			return;
+		}
+
+		ShopRouteAdvance.Decision decision = ShopRouteAdvance.observe(shopRouteActive(), completed,
+			items.totals(), shopItemSkips, this::shopLocation, playerLocation());
+
+		if (decision.action() == ShopRouteAdvance.Action.FINISHED)
+		{
+			// Ends the trip rather than leaving a route pointing at the shop
+			// just bought from. Clearing this is also what stands
+			// ShopRouteOverlay down and brings NeededItemsOverlay back --
+			// see ShopRouteOverlay#isShowing.
+			shopRouteSentAt = null;
+			shopTripChat("Quest Path: shopping done -- nothing left on this trip.");
+			return;
+		}
+
+		if (decision.action() != ShopRouteAdvance.Action.REROUTE)
+		{
+			return;
+		}
+
+		shortestPathBridge.route(decision.destinations(), outcome ->
+		{
+			if (outcome != ShortestPathBridge.RouteOutcome.SENT)
+			{
+				// Said out loud rather than swallowed. A trip that stops
+				// advancing looks exactly like one that finished, and the
+				// player is standing in a shop either way with no way to
+				// tell the difference.
+				shopTripChat("Quest Path: could not move on to the next stop.");
+				return;
+			}
+			shopRouteSentAt = Instant.now();
+			StringBuilder line = new StringBuilder("Quest Path: next up ")
+				.append(decision.nextItem());
+			if (!decision.nextShop().isEmpty())
+			{
+				line.append(" at ").append(decision.nextShop());
+			}
+			line.append(" -- ").append(decision.remaining()).append(" stop")
+				.append(decision.remaining() == 1 ? "" : "s").append(" left.");
+			shopTripChat(line.toString());
+		});
+	}
+
+	/** One plain chat line about a shop trip. */
+	private void shopTripChat(String text)
+	{
+		chatMessageManager.queue(QueuedMessage.builder()
+			.type(ChatMessageType.GAMEMESSAGE)
+			.runeLiteFormattedMessage(new ChatMessageBuilder()
+				.append(ChatColorType.NORMAL)
+				.append(text)
+				.build())
+			.build());
+	}
+
 	private void announce(java.util.List<ItemCompletionWatcher.Completion> completed)
 	{
 		if (completed.isEmpty() || config == null || !config.chatOnItemComplete())

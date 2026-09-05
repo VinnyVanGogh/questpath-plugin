@@ -5,11 +5,13 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import net.runelite.api.coords.WorldPoint;
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -25,7 +27,9 @@ import static org.junit.Assert.assertTrue;
  */
 public class ShopRouteStopsTest
 {
-	private static final WorldPoint SOMEWHERE = new WorldPoint(3212, 3246, 0);
+	private static final WorldPoint LUMBRIDGE = new WorldPoint(3222, 3218, 0);
+	private static final WorldPoint NEARBY = new WorldPoint(3232, 3218, 0);
+	private static final WorldPoint FAR = new WorldPoint(2900, 3400, 0);
 
 	/** A shop-name lookup that can place only the names given to it. */
 	private static Function<String, WorldPoint> locates(String... names)
@@ -33,7 +37,18 @@ public class ShopRouteStopsTest
 		Map<String, WorldPoint> known = new HashMap<>();
 		for (String name : names)
 		{
-			known.put(name, SOMEWHERE);
+			known.put(name, NEARBY);
+		}
+		return known::get;
+	}
+
+	/** A lookup placing each name at the point paired with it. */
+	private static Function<String, WorldPoint> placing(Object... pairs)
+	{
+		Map<String, WorldPoint> known = new HashMap<>();
+		for (int i = 0; i < pairs.length; i += 2)
+		{
+			known.put((String) pairs[i], (WorldPoint) pairs[i + 1]);
 		}
 		return known::get;
 	}
@@ -140,7 +155,7 @@ public class ShopRouteStopsTest
 			Collections.singletonList("General store"));
 
 		assertEquals("-> General store -- for Sheep Herder",
-			ShopRouteStops.destinationLine(bucket, locates("General store")));
+			ShopRouteStops.destinationLine(bucket, locates("General store"), null));
 	}
 
 	/**
@@ -158,7 +173,59 @@ public class ShopRouteStopsTest
 			Arrays.asList("Nowhere in the bundle", "Ned's ropes"));
 
 		assertEquals("-> Ned's ropes -- for Sheep Herder",
-			ShopRouteStops.destinationLine(rope, locates("Ned's ropes")));
+			ShopRouteStops.destinationLine(rope, locates("Ned's ropes"), null));
+	}
+
+	/**
+	 * With a position to measure from, the nearest shop is named -- not
+	 * whichever the bundle listed first.
+	 *
+	 * <p>This is the bug the {@link ShopRouteStops.Destination} type exists
+	 * to close. Shortest Path is handed every shop selling the item and
+	 * walks to the closest; the overlay used to name list position one, so
+	 * the label could confidently give a shop the player was visibly not
+	 * walking towards.
+	 */
+	@Test
+	public void theNearestPlaceableShopIsTheOneNamed()
+	{
+		QuestItems.Total rope = total("Rope", 1, 0, "Sheep Herder",
+			Arrays.asList("Far shop", "Near shop"));
+		Function<String, WorldPoint> shops = placing("Far shop", FAR, "Near shop", NEARBY);
+
+		ShopRouteStops.Destination destination =
+			ShopRouteStops.destinationOf(rope, shops, LUMBRIDGE);
+
+		assertEquals("Near shop", destination.shopName());
+		assertEquals(NEARBY, destination.point());
+		assertEquals("and it says the other one was in the running", 1, destination.alternatives());
+	}
+
+	/**
+	 * When alternatives exist the label admits it, because the named shop is
+	 * a straight-line guess at a choice Shortest Path makes by real path
+	 * distance.
+	 */
+	@Test
+	public void aLabelWithAlternativesDoesNotOverclaim()
+	{
+		QuestItems.Total rope = total("Rope", 1, 0, "Sheep Herder",
+			Arrays.asList("Far shop", "Near shop"));
+		Function<String, WorldPoint> shops = placing("Far shop", FAR, "Near shop", NEARBY);
+
+		assertEquals("-> Near shop or 1 other -- for Sheep Herder",
+			ShopRouteStops.destinationLine(rope, shops, LUMBRIDGE));
+	}
+
+	/** With no position yet, the first placeable shop is named as before. */
+	@Test
+	public void withNoPositionTheFirstPlaceableShopIsNamed()
+	{
+		QuestItems.Total rope = total("Rope", 1, 0, "Sheep Herder",
+			Arrays.asList("Far shop", "Near shop"));
+		Function<String, WorldPoint> shops = placing("Far shop", FAR, "Near shop", NEARBY);
+
+		assertEquals("Far shop", ShopRouteStops.destinationOf(rope, shops, null).shopName());
 	}
 
 	/**
@@ -172,19 +239,20 @@ public class ShopRouteStopsTest
 		QuestItems.Total rope = total("Rope", 1, 0, "Sheep Herder",
 			Collections.singletonList("Nowhere in the bundle"));
 
+		assertNull(ShopRouteStops.destinationOf(rope, locates(), null));
 		assertEquals("Known shop, but no location to route to -- for Sheep Herder",
-			ShopRouteStops.destinationLine(rope, locates()));
+			ShopRouteStops.destinationLine(rope, locates(), null));
 	}
 
 	/** Nothing known to sell it is a different admission, and stays different. */
 	@Test
 	public void anItemNoShopSellsIsItsOwnAnswer()
 	{
-		QuestItems.Total feather = total("Raw chompy", 1, 0, "Recipe for Disaster",
+		QuestItems.Total chompy = total("Raw chompy", 1, 0, "Recipe for Disaster",
 			Collections.emptyList());
 
 		assertEquals("No known shop sells this yet -- for Recipe for Disaster",
-			ShopRouteStops.destinationLine(feather, locates()));
+			ShopRouteStops.destinationLine(chompy, locates(), null));
 	}
 
 	/** With no quest attributed, the line stops rather than trailing "-- for". */
@@ -196,6 +264,41 @@ public class ShopRouteStopsTest
 		bucket.add(new QuestItems.Line("Bucket", 1, 0L, false));
 
 		assertEquals("-> General store",
-			ShopRouteStops.destinationLine(bucket, locates("General store")));
+			ShopRouteStops.destinationLine(bucket, locates("General store"), null));
+	}
+
+	/**
+	 * Shortest Path is handed every placeable shop for every outstanding
+	 * item, so it can choose between them by real path distance -- not one
+	 * per item, which would throw away the choice.
+	 */
+	@Test
+	public void everyPlaceableShopIsOfferedToTheRouter()
+	{
+		List<QuestItems.Total> totals = Arrays.asList(
+			total("Rope", 1, 0, "Sheep Herder", Arrays.asList("Far shop", "Near shop")),
+			total("Bucket", 1, 0, "Sheep Herder", Collections.singletonList("Near shop")));
+		Function<String, WorldPoint> shops = placing("Far shop", FAR, "Near shop", NEARBY);
+
+		Set<WorldPoint> destinations =
+			ShopRouteStops.destinations(totals, new ShopItemSkips(), shops);
+
+		assertEquals("both tiles, and the shared one only once", 2, destinations.size());
+		assertTrue(destinations.contains(FAR));
+		assertTrue(destinations.contains(NEARBY));
+	}
+
+	/** Satisfied and skipped items send nobody anywhere. */
+	@Test
+	public void theRouterIsNotSentToItemsAlreadyHeldOrSetAside()
+	{
+		List<QuestItems.Total> totals = Arrays.asList(
+			total("Rope", 1, 1, "Sheep Herder", Collections.singletonList("Far shop")),
+			total("Bucket", 1, 0, "Sheep Herder", Collections.singletonList("Near shop")));
+		ShopItemSkips skips = new ShopItemSkips();
+		skips.skip("Bucket");
+		Function<String, WorldPoint> shops = placing("Far shop", FAR, "Near shop", NEARBY);
+
+		assertTrue(ShopRouteStops.destinations(totals, skips, shops).isEmpty());
 	}
 }

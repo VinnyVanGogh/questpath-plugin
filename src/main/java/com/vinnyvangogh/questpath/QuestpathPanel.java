@@ -1157,23 +1157,7 @@ class QuestpathPanel extends PluginPanel
 		{
 			return Collections.emptySet();
 		}
-		Set<WorldPoint> destinations = new java.util.LinkedHashSet<>();
-		for (QuestItems.Total total : items.totals())
-		{
-			if (total.satisfied() || shopItemSkips.isSkipped(total.name()))
-			{
-				continue;
-			}
-			for (String shopName : total.shopNames())
-			{
-				WorldPoint point = shopLocator.apply(shopName);
-				if (point != null)
-				{
-					destinations.add(point);
-				}
-			}
-		}
-		return destinations;
+		return ShopRouteStops.destinations(items.totals(), shopItemSkips, shopLocator);
 	}
 
 	/**

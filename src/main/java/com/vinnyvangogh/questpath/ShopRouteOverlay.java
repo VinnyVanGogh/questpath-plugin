@@ -3,6 +3,7 @@ package com.vinnyvangogh.questpath;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import net.runelite.api.coords.WorldPoint;
 
 /**
@@ -66,13 +67,16 @@ class ShopRouteOverlay extends QuestpathOverlay
 	private static final int BASE_STOPS = 3;
 
 	private final Function<String, WorldPoint> shopLocator;
+	private final Supplier<WorldPoint> playerLocation;
 	private final ShopItemSkips skips;
 
 	ShopRouteOverlay(QuestpathPlugin plugin, QuestpathConfig config, OverlayIcons icons,
-		Function<String, WorldPoint> shopLocator, ShopItemSkips skips)
+		Function<String, WorldPoint> shopLocator, Supplier<WorldPoint> playerLocation,
+		ShopItemSkips skips)
 	{
 		super(plugin, config, icons, "Shop route");
 		this.shopLocator = shopLocator;
+		this.playerLocation = playerLocation;
 		this.skips = skips;
 	}
 
@@ -188,7 +192,7 @@ class ShopRouteOverlay extends QuestpathOverlay
 			rows.add(OverlayRow.item(total.itemId(), total.name(),
 				total.outstanding() + " short", false,
 				stop.current() ? OverlayTheme.ACCENT : OverlayTheme.TEXT, OverlayTheme.WARN));
-			rows.add(OverlayRow.note(ShopRouteStops.destinationLine(total, shopLocator), OverlayTheme.MUTED));
+			rows.add(OverlayRow.note(ShopRouteStops.destinationLine(total, shopLocator, playerLocation.get()), OverlayTheme.MUTED));
 		}
 		int remaining = next.size() - shown;
 		if (remaining > 0)
