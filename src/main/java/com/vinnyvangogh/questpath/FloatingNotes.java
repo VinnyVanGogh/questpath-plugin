@@ -99,18 +99,34 @@ class FloatingNotes
 		private final WorldPoint at;
 		private final Instant shownAt;
 		private final Duration lifetime;
+		private final String accent;
 
 		Note(String text, WorldPoint at, Instant shownAt)
 		{
-			this(text, at, shownAt, LIFETIME);
+			this(text, at, shownAt, LIFETIME, "");
 		}
 
-		Note(String text, WorldPoint at, Instant shownAt, Duration lifetime)
+		Note(String text, WorldPoint at, Instant shownAt, Duration lifetime, String accent)
 		{
 			this.text = text;
 			this.at = at;
 			this.shownAt = shownAt;
 			this.lifetime = lifetime == null ? LIFETIME : lifetime;
+			this.accent = accent == null ? "" : accent;
+		}
+
+		/**
+		 * The stretch of {@link #text} worth picking out in a second colour,
+		 * or empty for a line drawn flat.
+		 *
+		 * <p>Always the item's name. A shout over a shopkeeper is read at a
+		 * glance from across a room, and the only word in it that has to
+		 * survive that glance is what they are selling -- the rest is
+		 * phrasing. One flat colour makes the phrasing as loud as the answer.
+		 */
+		String accent()
+		{
+			return accent;
 		}
 
 		/** What it says. */
@@ -193,11 +209,17 @@ class FloatingNotes
 	/** The same, for a note that should outlive the default. */
 	void add(String text, WorldPoint at, Instant now, Duration lifetime)
 	{
+		add(text, at, now, lifetime, "");
+	}
+
+	/** The same, naming the stretch of text to pick out in a second colour. */
+	void add(String text, WorldPoint at, Instant now, Duration lifetime, String accent)
+	{
 		if (text == null || text.isEmpty() || at == null || now == null)
 		{
 			return;
 		}
-		notes.addLast(new Note(text, at, now, lifetime));
+		notes.addLast(new Note(text, at, now, lifetime, accent));
 		while (notes.size() > CAP)
 		{
 			notes.removeFirst();

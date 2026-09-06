@@ -818,6 +818,10 @@ public class QuestpathPlugin extends Plugin
 			// need to be held back for it.
 			shopRouteSentAt = null;
 			rememberShopkeeper();
+			// The reminder is spent once the counter is open. Leaving it up
+			// behind the interface is a line telling you to go somewhere you
+			// are already standing.
+			floatingNotes.clear();
 		}
 
 	}
@@ -1361,11 +1365,11 @@ public class QuestpathPlugin extends Plugin
 			String praise = FloatingNotes.praiseFor(done.itemName());
 			if (placement.overShopkeeper(shopkeeperAt != null))
 			{
-				floatingNotes.add(praise, shopkeeperAt, now);
+				floatingNotes.add(praise, shopkeeperAt, now, FloatingNotes.LIFETIME, done.itemName());
 			}
 			if (placement.overPlayer(shopkeeperAt != null))
 			{
-				floatingNotes.add(praise, you, now);
+				floatingNotes.add(praise, you, now, FloatingNotes.LIFETIME, done.itemName());
 			}
 		}
 	}
@@ -1777,7 +1781,7 @@ public class QuestpathPlugin extends Plugin
 				// to change where you are walking, and four seconds is not
 				// long enough to read a name, find the NPC and decide.
 				floatingNotes.add(offer, nearby.get(shopName), Instant.now(),
-					FloatingNotes.OFFER_LIFETIME);
+					FloatingNotes.OFFER_LIFETIME, total.name());
 			}
 		}
 	}

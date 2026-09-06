@@ -111,9 +111,49 @@ class FloatingNoteOverlay extends Overlay
 			Point at = Perspective.getCanvasTextLocation(client, g, local, note.text(), height);
 			if (at != null)
 			{
-				OverlayTheme.shadowed(g, note.text(), at.getX(), at.getY(), fade(age));
+				draw(g, note, at.getX(), at.getY(), age);
 			}
 			index++;
+		}
+	}
+
+	/**
+	 * Draws one note, picking its item name out in a second colour.
+	 *
+	 * <p>Split rather than tinted whole: the name is the word that has to
+	 * survive being read from across a room, and a line in one flat colour
+	 * makes "Psst -- got your" exactly as loud as "Big fishing net". Drawn as
+	 * up to three runs, advancing by the measured width of each, because
+	 * {@link OverlayTheme#shadowed} draws one string in one colour.
+	 *
+	 * <p>A note whose accent is empty, or whose accent is not actually inside
+	 * its text, draws flat -- the search failing is not a reason to drop the
+	 * line.
+	 */
+	private static void draw(Graphics2D g, FloatingNotes.Note note, int x, int y, double age)
+	{
+		String text = note.text();
+		String accent = note.accent();
+		int at = accent.isEmpty() ? -1 : text.indexOf(accent);
+		if (at < 0)
+		{
+			OverlayTheme.shadowed(g, text, x, y, fade(age, OverlayTheme.GOOD));
+			return;
+		}
+
+		String before = text.substring(0, at);
+		String after = text.substring(at + accent.length());
+		int cursor = x;
+		if (!before.isEmpty())
+		{
+			OverlayTheme.shadowed(g, before, cursor, y, fade(age, OverlayTheme.GOOD));
+			cursor += g.getFontMetrics().stringWidth(before);
+		}
+		OverlayTheme.shadowed(g, accent, cursor, y, fade(age, OverlayTheme.ACCENT));
+		cursor += g.getFontMetrics().stringWidth(accent);
+		if (!after.isEmpty())
+		{
+			OverlayTheme.shadowed(g, after, cursor, y, fade(age, OverlayTheme.GOOD));
 		}
 	}
 
@@ -125,12 +165,11 @@ class FloatingNoteOverlay extends Overlay
 	 * outside that range is an {@code IllegalArgumentException} inside the
 	 * render loop, which is the one place this class must never throw.
 	 */
-	private static Color fade(double age)
+	private static Color fade(double age, Color base)
 	{
 		double remaining = age <= SOLID_UNTIL ? 1.0 : 1.0 - ((age - SOLID_UNTIL) / (1.0 - SOLID_UNTIL));
 		int alpha = (int) Math.round(255 * remaining);
 		alpha = Math.max(0, Math.min(255, alpha));
-		Color base = OverlayTheme.GOOD;
 		return new Color(base.getRed(), base.getGreen(), base.getBlue(), alpha);
 	}
 }

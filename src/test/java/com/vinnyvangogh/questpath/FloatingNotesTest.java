@@ -133,4 +133,59 @@ public class FloatingNotesTest
 		assertEquals("", FloatingNotes.praiseFor(""));
 		assertEquals("", FloatingNotes.praiseFor(null));
 	}
+
+	/**
+	 * A note can name the stretch of itself worth a second colour, and it is
+	 * always the item.
+	 *
+	 * <p>The overlay draws the line in up to three runs so the item's name
+	 * stands out from the phrasing around it. What this pins is the model
+	 * half: that the accent survives onto the note and is a real substring of
+	 * the text, because the drawing falls back to one flat colour the moment
+	 * it cannot find it -- which fails silently and looks exactly like the
+	 * feature not existing.
+	 */
+	@Test
+	public void aNoteCarriesTheItemNameAsItsAccent()
+	{
+		FloatingNotes notes = new FloatingNotes();
+		String offer = FloatingNotes.offerFor("Big fishing net", 1);
+		notes.add(offer, SOMEWHERE, START, FloatingNotes.OFFER_LIFETIME, "Big fishing net");
+
+		FloatingNotes.Note note = notes.live(START).get(0);
+		assertEquals("Big fishing net", note.accent());
+		assertTrue("the accent has to be findable inside the text it colours",
+			note.text().contains(note.accent()));
+	}
+
+	/** A note with no accent named draws flat, and says so rather than guessing. */
+	@Test
+	public void aNoteWithoutAnAccentIsDrawnFlat()
+	{
+		FloatingNotes notes = new FloatingNotes();
+		notes.add("Rope -- done!", SOMEWHERE, START);
+
+		assertEquals("", notes.live(START).get(0).accent());
+	}
+
+	/**
+	 * An offer outlives a completion, because they ask for different things.
+	 *
+	 * <p>A completion confirms something already done and can fade. An offer
+	 * is asking you to change where you are walking, and four seconds is not
+	 * enough to read a name, find the NPC and decide.
+	 */
+	@Test
+	public void anOfferStaysUpLongerThanAConfirmation()
+	{
+		FloatingNotes notes = new FloatingNotes();
+		notes.add("done", SOMEWHERE, START);
+		notes.add("offer", SOMEWHERE, START, FloatingNotes.OFFER_LIFETIME, "");
+
+		Instant afterTheShortOne = START.plus(FloatingNotes.LIFETIME);
+		assertEquals("the confirmation has gone and the offer has not",
+			1, notes.live(afterTheShortOne).size());
+		assertEquals("offer", notes.live(afterTheShortOne).get(0).text());
+		assertTrue(notes.live(START.plus(FloatingNotes.OFFER_LIFETIME)).isEmpty());
+	}
 }
