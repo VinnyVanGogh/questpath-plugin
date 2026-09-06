@@ -396,6 +396,11 @@ class OverlaySettingsPanel extends JPanel
 				+ " finish gathering something. Fades after a few seconds, never more than"
 				+ " three at once.",
 			config.floatingNotes(), "floatingNotes"));
+		body.add(toggle(
+			"Say when a shop nearby has what you need",
+			"As you come up on a shop stocking something your plan still needs, once, in chat"
+				+ " and over the shopkeeper -- whether or not it is the next stop on your route.",
+			config.shopNearbyPrompt(), "shopNearbyPrompt"));
 		addField(body, "Float notes",
 			combo(NotePlacement.values(), config.floatingNotePlacement(),
 				"Where a floating note appears. Above the shopkeeper reads as that NPC"

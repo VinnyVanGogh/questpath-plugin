@@ -571,6 +571,24 @@ public interface QuestpathConfig extends Config
 	}
 
 	@ConfigItem(
+		keyName = "shopNearbyPrompt",
+		name = "Say when a shop nearby has what you need",
+		description = "As you come up on a shop stocking something your plan still needs, once,"
+			+ " in chat and over the shopkeeper. This is the reminder one -- it fires whether or"
+			+ " not that item is the next stop on your route, because a shop you are walking past"
+			+ " is worth knowing about either way.",
+		section = shopSection,
+		position = 3
+	)
+	default boolean shopNearbyPrompt()
+	{
+		// Off by default like every other notification here, but this is the
+		// one asked for by name: "there should also be an option for when an
+		// item is available nearby -- that's the one I really want."
+		return false;
+	}
+
+	@ConfigItem(
 		keyName = "floatingNotePlacement",
 		name = "Float notes",
 		description = "Where a floating note appears. Above the shopkeeper reads as that NPC"

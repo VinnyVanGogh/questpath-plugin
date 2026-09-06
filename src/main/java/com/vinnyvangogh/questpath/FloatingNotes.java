@@ -34,8 +34,19 @@ import net.runelite.api.coords.WorldPoint;
  */
 class FloatingNotes
 {
-	/** How long a note stays on screen. */
+	/** How long a note stays on screen unless the caller says otherwise. */
 	static final Duration LIFETIME = Duration.ofSeconds(4);
+
+	/**
+	 * How long a shopkeeper's offer stays up.
+	 *
+	 * <p>Much longer than {@link #LIFETIME}, because the two notes ask for
+	 * different things. A completion confirms something already done and can
+	 * fade; an offer is asking you to change where you are walking, and four
+	 * seconds is not enough to read a name, find the NPC it belongs to and
+	 * decide. Ten was the number asked for.
+	 */
+	static final Duration OFFER_LIFETIME = Duration.ofSeconds(10);
 
 	/**
 	 * The most notes shown at once. Three fits above a player without
@@ -87,12 +98,19 @@ class FloatingNotes
 		private final String text;
 		private final WorldPoint at;
 		private final Instant shownAt;
+		private final Duration lifetime;
 
 		Note(String text, WorldPoint at, Instant shownAt)
+		{
+			this(text, at, shownAt, LIFETIME);
+		}
+
+		Note(String text, WorldPoint at, Instant shownAt, Duration lifetime)
 		{
 			this.text = text;
 			this.at = at;
 			this.shownAt = shownAt;
+			this.lifetime = lifetime == null ? LIFETIME : lifetime;
 		}
 
 		/** What it says. */
@@ -117,8 +135,8 @@ class FloatingNotes
 		double age(Instant now)
 		{
 			double elapsed = Duration.between(shownAt, now).toMillis();
-			double lifetime = LIFETIME.toMillis();
-			double fraction = elapsed / lifetime;
+			double span = lifetime.toMillis();
+			double fraction = elapsed / span;
 			return fraction < 0.0 ? 0.0 : Math.min(fraction, 1.0);
 		}
 	}
@@ -169,11 +187,17 @@ class FloatingNotes
 	 */
 	void add(String text, WorldPoint at, Instant now)
 	{
+		add(text, at, now, LIFETIME);
+	}
+
+	/** The same, for a note that should outlive the default. */
+	void add(String text, WorldPoint at, Instant now, Duration lifetime)
+	{
 		if (text == null || text.isEmpty() || at == null || now == null)
 		{
 			return;
 		}
-		notes.addLast(new Note(text, at, now));
+		notes.addLast(new Note(text, at, now, lifetime));
 		while (notes.size() > CAP)
 		{
 			notes.removeFirst();

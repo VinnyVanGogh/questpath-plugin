@@ -1663,8 +1663,12 @@ public class QuestpathPlugin extends Plugin
 		{
 			return;
 		}
-		boolean wantChat = config != null && config.shopArrivalPrompt();
-		boolean wantNote = config != null && config.floatingNotes()
+		// Its own toggle rather than the item-done one. They are different
+		// events -- "you finished something" against "there is one for sale
+		// right there" -- and the second is the one worth walking on.
+		boolean wantChat = config != null && config.shopNearbyPrompt();
+		boolean wantNote = config != null && config.shopNearbyPrompt()
+			&& config.floatingNotes()
 			&& config.floatingNotePlacement() != NotePlacement.ABOVE_YOU;
 		if (!wantChat && !wantNote)
 		{
@@ -1704,7 +1708,21 @@ public class QuestpathPlugin extends Plugin
 			String offer = FloatingNotes.offerFor(total.name(), total.outstanding());
 			if (wantChat)
 			{
-				shopTripChat("Quest Path: " + shopName + " -- " + offer);
+				// Highlighted rather than flat, and the shop's name is the
+				// highlighted half: the offer text says what it wants, the
+				// name says where to walk, and only one of those is worth
+				// finding again after the line has scrolled.
+				chatMessageManager.queue(QueuedMessage.builder()
+					.type(ChatMessageType.GAMEMESSAGE)
+					.runeLiteFormattedMessage(new ChatMessageBuilder()
+						.append(ChatColorType.NORMAL)
+						.append("Quest Path: ")
+						.append(ChatColorType.HIGHLIGHT)
+						.append(shopName)
+						.append(ChatColorType.NORMAL)
+						.append(" -- " + offer)
+						.build())
+					.build());
 			}
 			if (wantNote)
 			{
@@ -1712,7 +1730,12 @@ public class QuestpathPlugin extends Plugin
 				// this distance there is no NPC to read off the player's
 				// interaction, and the tile is the honest answer rather than
 				// a guess at which of the figures ahead is the one selling.
-				floatingNotes.add(offer, nearby.get(shopName), Instant.now());
+				// Held far longer than a completion note. That one confirms
+				// something already done and can fade; this one is asking you
+				// to change where you are walking, and four seconds is not
+				// long enough to read a name, find the NPC and decide.
+				floatingNotes.add(offer, nearby.get(shopName), Instant.now(),
+					FloatingNotes.OFFER_LIFETIME);
 			}
 		}
 	}

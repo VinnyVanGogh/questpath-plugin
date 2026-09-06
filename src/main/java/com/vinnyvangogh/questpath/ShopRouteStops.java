@@ -204,6 +204,46 @@ final class ShopRouteStops
 	}
 
 	/**
+	 * The same stops, with the one being walked to first.
+	 *
+	 * <p>{@link #next} keeps the shopping list's own order, which is what the
+	 * Items tab wants. A panel answering "where am I going" wants the answer
+	 * at the top, and those differ whenever the first listed item cannot be
+	 * routed to.
+	 *
+	 * <p>They differed on screen and read as a contradiction: the overlay's
+	 * top line said Barley malt -- with its own note underneath saying no
+	 * shop sells it -- while the button beside it offered to skip Bat bones,
+	 * which was the stop the route was actually walking to. Both were
+	 * correct and together they were nonsense.
+	 *
+	 * <p>Order only. Nothing is dropped, because an unroutable item is still
+	 * outstanding and still worth seeing; it just is not the answer to
+	 * "what's next".
+	 */
+	static List<Stop> nextCurrentFirst(List<QuestItems.Total> totals, ShopItemSkips skips,
+		Function<String, WorldPoint> shopLocator, Function<String, WorldPoint> dropLocator)
+	{
+		List<Stop> stops = next(totals, skips, shopLocator, dropLocator);
+		List<Stop> out = new ArrayList<>(stops.size());
+		for (Stop stop : stops)
+		{
+			if (stop.current())
+			{
+				out.add(stop);
+			}
+		}
+		for (Stop stop : stops)
+		{
+			if (!stop.current())
+			{
+				out.add(stop);
+			}
+		}
+		return out;
+	}
+
+	/**
 	 * The tiles for the current stop, and only the current stop -- what
 	 * Shortest Path is handed.
 	 *

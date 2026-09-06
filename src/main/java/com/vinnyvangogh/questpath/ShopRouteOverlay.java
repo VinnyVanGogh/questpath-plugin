@@ -164,7 +164,8 @@ class ShopRouteOverlay extends QuestpathOverlay
 			return rows;
 		}
 
-		List<ShopRouteStops.Stop> next = ShopRouteStops.next(totals, skips, shopLocator, dropLocator);
+		List<ShopRouteStops.Stop> next =
+			ShopRouteStops.nextCurrentFirst(totals, skips, shopLocator, dropLocator);
 		int skippedCount = outstanding.size() - next.size();
 
 		if (next.isEmpty())
@@ -186,11 +187,13 @@ class ShopRouteOverlay extends QuestpathOverlay
 		{
 			ShopRouteStops.Stop stop = next.get(i);
 			QuestItems.Total total = stop.total();
-			// The first stop is the one being walked to right now; named in
-			// the accent colour for the same reason NeededItemsOverlay's
+			// The list leads with the stop being walked to (see
+			// ShopRouteStops#nextCurrentFirst), and that one is named in the
+			// accent colour for the same reason NeededItemsOverlay's
 			// "already started" rows are -- on a panel where every row is
 			// otherwise the same colour, the name is the only place left to
-			// say "this one is live".
+			// say "this one is live". The rows under it are what comes
+			// after, including anything nothing can route to yet.
 			rows.add(OverlayRow.item(total.itemId(), total.name(),
 				total.outstanding() + " short", false,
 				stop.current() ? OverlayTheme.ACCENT : OverlayTheme.TEXT, OverlayTheme.WARN));
