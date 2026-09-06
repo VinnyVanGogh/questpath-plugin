@@ -772,6 +772,15 @@ public class QuestpathPlugin extends Plugin
 		// this is safe to call unconditionally, unlike AutoAdvancePlanner.
 		checkQuestStartArrival();
 
+		// And the same reasoning again, which the shop approach was written
+		// without. It lived inside refresh(), which runs only when the
+		// account's own state changed -- and walking towards a shop changes
+		// nothing about the account. So proximity was never tested while the
+		// player moved: it was tested when something else caused a refresh,
+		// which in practice meant opening the shop. The reminder to go
+		// somewhere arrived once they were already standing there.
+		checkShopApproach(overlaySnapshot == null ? null : overlaySnapshot.items());
+
 		if (!refreshPending)
 		{
 			return;
@@ -1221,7 +1230,6 @@ public class QuestpathPlugin extends Plugin
 		announce(justCompleted);
 		advanceShopRoute(justCompleted, items);
 		floatCompletions(justCompleted);
-		checkShopApproach(items);
 
 		if (route != null)
 		{
