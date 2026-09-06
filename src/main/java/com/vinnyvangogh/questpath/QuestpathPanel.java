@@ -253,6 +253,15 @@ class QuestpathPanel extends PluginPanel
 	/** Calls off a running shop trip -- see QuestpathPlugin#cancelShopRoute. */
 	private final Runnable onCancelShopRoute;
 
+	/**
+	 * Where the player is, so the trip can be ordered from there.
+	 *
+	 * A shopping route that does not know where you are standing can only
+	 * sort by something that is not distance -- which is how it ended up
+	 * alphabetical.
+	 */
+	private final java.util.function.Supplier<WorldPoint> playerLocation;
+
 	/** Resolves a monster name to a tile, for an item no shop sells. */
 	private final java.util.function.Function<String, WorldPoint> dropLocator;
 	private final java.util.function.BooleanSupplier shopRouteActive;
@@ -262,7 +271,8 @@ class QuestpathPanel extends PluginPanel
 		java.util.function.BiFunction<String, Integer, SkillPlan> planner,
 		QuestHelperBridge questHelperBridge, ShortestPathBridge shortestPathBridge,
 		java.util.function.Function<String, WorldPoint> shopLocator,
-		java.util.function.Function<String, WorldPoint> dropLocator, Runnable onShopRouteSent,
+		java.util.function.Function<String, WorldPoint> dropLocator,
+		java.util.function.Supplier<WorldPoint> playerLocation, Runnable onShopRouteSent,
 		Runnable onCancelShopRoute,
 		java.util.function.BooleanSupplier shopRouteActive, ShopItemSkips shopItemSkips)
 	{
@@ -272,6 +282,7 @@ class QuestpathPanel extends PluginPanel
 		this.shortestPathBridge = shortestPathBridge;
 		this.shopLocator = shopLocator;
 		this.dropLocator = dropLocator;
+		this.playerLocation = playerLocation;
 		this.onShopRouteSent = onShopRouteSent;
 		this.onCancelShopRoute = onCancelShopRoute;
 		this.shopRouteActive = shopRouteActive;
@@ -1094,7 +1105,8 @@ class QuestpathPanel extends PluginPanel
 		Set<WorldPoint> destinations = shopDestinations(items);
 		ShopRouteStops.Destination named = null;
 		String stopName = "nothing";
-		for (ShopRouteStops.Stop stop : ShopRouteStops.next(items.totals(), shopItemSkips, shopLocator, dropLocator))
+		for (ShopRouteStops.Stop stop : ShopRouteStops.tour(items.totals(), shopItemSkips, shopLocator,
+			dropLocator, playerLocation.get()))
 		{
 			if (stop.current())
 			{
@@ -1219,8 +1231,8 @@ class QuestpathPanel extends PluginPanel
 		// because every following item was unroutable too and the route never
 		// moved off Bones.
 		QuestItems.Total current = null;
-		for (ShopRouteStops.Stop stop
-			: ShopRouteStops.next(items.totals(), shopItemSkips, shopLocator, dropLocator))
+		for (ShopRouteStops.Stop stop : ShopRouteStops.tour(items.totals(), shopItemSkips,
+			shopLocator, dropLocator, playerLocation.get()))
 		{
 			if (stop.current())
 			{
@@ -1307,7 +1319,8 @@ class QuestpathPanel extends PluginPanel
 		{
 			return Collections.emptySet();
 		}
-		return ShopRouteStops.destinations(items.totals(), shopItemSkips, shopLocator, dropLocator);
+		return ShopRouteStops.destinations(items.totals(), shopItemSkips, shopLocator, dropLocator,
+			playerLocation.get());
 	}
 
 	/**

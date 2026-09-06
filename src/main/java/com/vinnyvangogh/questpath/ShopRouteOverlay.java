@@ -165,7 +165,7 @@ class ShopRouteOverlay extends QuestpathOverlay
 		}
 
 		List<ShopRouteStops.Stop> next =
-			ShopRouteStops.nextCurrentFirst(totals, skips, shopLocator, dropLocator);
+			ShopRouteStops.tour(totals, skips, shopLocator, dropLocator, playerLocation.get());
 		int skippedCount = outstanding.size() - next.size();
 
 		if (next.isEmpty())

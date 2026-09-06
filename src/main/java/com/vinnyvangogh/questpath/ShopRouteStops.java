@@ -204,41 +204,107 @@ final class ShopRouteStops
 	}
 
 	/**
-	 * The same stops, with the one being walked to first.
+	 * The stops in the order you would actually walk them, starting from
+	 * where you are standing.
 	 *
-	 * <p>{@link #next} keeps the shopping list's own order, which is what the
-	 * Items tab wants. A panel answering "where am I going" wants the answer
-	 * at the top, and those differ whenever the first listed item cannot be
-	 * routed to.
+	 * <p><b>This replaces alphabetical order, which is what the list had and
+	 * which is no order at all.</b> {@link QuestItems#totals} sorts by how
+	 * close each item is to being finished and falls through to the item's
+	 * name -- and until the bank has been read nothing distinguishes any of
+	 * them, so every item ties and the whole list is alphabetical. Following
+	 * it means a big fishing net in Catherby, then barley malt, then imps
+	 * somewhere for a black bead, then back to Catherby for a black candle,
+	 * then Al Kharid for black dye. The player's own words: "it wouldn't be
+	 * efficient or helpful at all."
 	 *
-	 * <p>They differed on screen and read as a contradiction: the overlay's
-	 * top line said Barley malt -- with its own note underneath saying no
-	 * shop sells it -- while the button beside it offered to skip Bat bones,
-	 * which was the stop the route was actually walking to. Both were
-	 * correct and together they were nonsense.
+	 * <p>So: nearest first, then nearest from there, and so on -- a greedy
+	 * tour from the player's own position rather than from the top of an
+	 * alphabet. Items sold at the same shop fall together for free, because
+	 * the distance between them is zero, which is what makes "get the other
+	 * three things while you are here" happen without special-casing it.
 	 *
-	 * <p>Order only. Nothing is dropped, because an unroutable item is still
-	 * outstanding and still worth seeing; it just is not the answer to
-	 * "what's next".
+	 * <p><b>Straight lines, not real paths, and that is a real limitation.</b>
+	 * Shortest Path can only be asked about the route it is currently
+	 * drawing, not about arbitrary pairs of tiles, so this cannot consult it
+	 * while ordering. Straight-line distance ignores water, walls and
+	 * teleports, so the tour is a good ordering rather than a proven optimal
+	 * one -- and it is still enormously better than sorting by first letter.
+	 * Greedy nearest-neighbour is also not the optimal tour even in straight
+	 * lines; that is the travelling salesman, and this list runs to eighty
+	 * stops.
+	 *
+	 * <p>Items nothing can route to keep their place at the end rather than
+	 * being dropped. They are still outstanding and still worth seeing; they
+	 * simply cannot be walked to, so they cannot be part of a walk.
+	 *
+	 * @param from where the player is. Null falls back to the list's own
+	 *     order, because a tour with no starting point is not a tour
 	 */
-	static List<Stop> nextCurrentFirst(List<QuestItems.Total> totals, ShopItemSkips skips,
-		Function<String, WorldPoint> shopLocator, Function<String, WorldPoint> dropLocator)
+	static List<Stop> tour(List<QuestItems.Total> totals, ShopItemSkips skips,
+		Function<String, WorldPoint> shopLocator, Function<String, WorldPoint> dropLocator,
+		WorldPoint from)
 	{
 		List<Stop> stops = next(totals, skips, shopLocator, dropLocator);
-		List<Stop> out = new ArrayList<>(stops.size());
+		if (from == null || stops.size() < 2)
+		{
+			return stops;
+		}
+
+		List<QuestItems.Total> routable = new ArrayList<>();
+		List<QuestItems.Total> unreachable = new ArrayList<>();
 		for (Stop stop : stops)
 		{
-			if (stop.current())
+			if (destinationOf(stop.total(), shopLocator, dropLocator, from) != null)
 			{
-				out.add(stop);
+				routable.add(stop.total());
+			}
+			else
+			{
+				unreachable.add(stop.total());
 			}
 		}
-		for (Stop stop : stops)
+
+		List<QuestItems.Total> ordered = new ArrayList<>(stops.size());
+		WorldPoint at = from;
+		while (!routable.isEmpty())
 		{
-			if (!stop.current())
+			int best = 0;
+			long bestDistance = Long.MAX_VALUE;
+			for (int i = 0; i < routable.size(); i++)
 			{
-				out.add(stop);
+				// Measured from where this leg starts, not from the player,
+				// which is the whole difference between a tour and a sorted
+				// list of distances.
+				Destination destination = destinationOf(routable.get(i), shopLocator, dropLocator, at);
+				if (destination == null)
+				{
+					continue;
+				}
+				long distance = squaredDistance(at, destination.point());
+				if (distance < bestDistance)
+				{
+					bestDistance = distance;
+					best = i;
+				}
 			}
+			QuestItems.Total chosen = routable.remove(best);
+			Destination leg = destinationOf(chosen, shopLocator, dropLocator, at);
+			if (leg != null)
+			{
+				at = leg.point();
+			}
+			ordered.add(chosen);
+		}
+		ordered.addAll(unreachable);
+
+		List<Stop> out = new ArrayList<>(ordered.size());
+		for (int i = 0; i < ordered.size(); i++)
+		{
+			// Index 0 is the first leg of the walk, and it is routable whenever
+			// anything is -- unreachable items were appended after everything
+			// else. With nothing routable at all the first is still named, which
+			// is next()'s own contract.
+			out.add(new Stop(ordered.get(i), i == 0));
 		}
 		return out;
 	}
@@ -273,8 +339,23 @@ final class ShopRouteStops
 	static Set<WorldPoint> destinations(List<QuestItems.Total> totals, ShopItemSkips skips,
 		Function<String, WorldPoint> shopLocator, Function<String, WorldPoint> dropLocator)
 	{
+		return destinations(totals, skips, shopLocator, dropLocator, null);
+	}
+
+	/**
+	 * The same, walked from where the player is standing.
+	 *
+	 * <p>The first leg of {@link #tour}, so the line on the ground and the
+	 * order in the panel are the same decision rather than two that happen to
+	 * agree. Without a position this is the list's own first routable stop,
+	 * which is what it always was.
+	 */
+	static Set<WorldPoint> destinations(List<QuestItems.Total> totals, ShopItemSkips skips,
+		Function<String, WorldPoint> shopLocator, Function<String, WorldPoint> dropLocator,
+		WorldPoint from)
+	{
 		Set<WorldPoint> out = new LinkedHashSet<>();
-		for (Stop stop : next(totals, skips, shopLocator, dropLocator))
+		for (Stop stop : tour(totals, skips, shopLocator, dropLocator, from))
 		{
 			if (!stop.current())
 			{
