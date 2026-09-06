@@ -161,6 +161,31 @@ class ShortestPathBridge
 	static final String PLUGIN_CLASS_NAME = "shortestpath.ShortestPathPlugin";
 
 	/**
+	 * The {@code PluginMessage} name that clears Shortest Path's route.
+	 *
+	 * <p>A separate message from {@link #MESSAGE_NAME}, and finding that out
+	 * took decompiling the installed jar, because the first attempt looked
+	 * like it worked and did the opposite.
+	 *
+	 * <p>Clearing was written as {@code MESSAGE_NAME} with an empty target
+	 * set, on the assumption that no targets means no path. It logged success
+	 * every time and the line on the ground never went away -- the player's
+	 * report was that "stop the route" made it "flick to the last one, then
+	 * back, and stay", which is exactly right. {@code onPluginMessage}'s
+	 * handling of a "path" message tests the target set with {@code
+	 * isEmpty()}, and when it is empty AND a pathfinder already exists it
+	 * calls {@code restartPathfinding} with {@code pathfinder.getTargets()}
+	 * -- the targets it already had. An empty set does not clear the route,
+	 * it re-sends the previous one.
+	 *
+	 * <p>The real clear is this message name, which the same method handles
+	 * by clearing its config override, re-caching, and calling {@code
+	 * setTarget(-1)}. Verified with {@code javap -c} against the installed
+	 * jar, the same way everything else in this class was.
+	 */
+	static final String CLEAR_MESSAGE_NAME = "clear";
+
+	/**
 	 * The {@code PluginMessage} namespace Shortest Path listens on.
 	 * {@code ShortestPathPlugin.CONFIG_GROUP} in its own source -- confirmed
 	 * byte for byte against the installed jar via {@code javap -constants};
@@ -433,8 +458,7 @@ class ShortestPathBridge
 		}
 		try
 		{
-			eventPoster.accept(new PluginMessage(CONFIG_GROUP, MESSAGE_NAME,
-				Map.of(TARGET_KEY, Set.<WorldPoint>of())));
+			eventPoster.accept(new PluginMessage(CONFIG_GROUP, CLEAR_MESSAGE_NAME, Map.of()));
 			log.info("Cleared the Shortest Path route");
 			return true;
 		}

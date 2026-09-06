@@ -12,6 +12,8 @@ import net.runelite.api.coords.WorldPoint;
 import net.runelite.client.events.PluginMessage;
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -229,5 +231,55 @@ public class ShortestPathBridgeTest
 
 		capturedTasks.get(0).run();
 		assertEquals(1, posted.size());
+	}
+
+	/**
+	 * Clearing sends Shortest Path's own "clear" message, never a "path"
+	 * message with no targets.
+	 *
+	 * <p>This is a regression test for a fix that looked like it worked and
+	 * did the opposite. Clearing was first written as a path message with an
+	 * empty target set, on the reasoning that no targets means no path. It
+	 * logged success every time and the route never went away. The player's
+	 * words: "stop the route doesn't actually stop the route; it just flicks
+	 * to the last one, then back, and stays."
+	 *
+	 * <p>Disassembling the installed jar explains it exactly.
+	 * {@code onPluginMessage}, handling a path message, tests the target set
+	 * with {@code isEmpty()} -- and when it is empty and a pathfinder already
+	 * exists, calls {@code restartPathfinding} with
+	 * {@code pathfinder.getTargets()}, the targets it already had. An empty
+	 * set does not clear the route; it re-sends the previous one.
+	 *
+	 * <p>So the two assertions matter equally. Sending the right name is the
+	 * fix; not sending an empty path message is the bug, and either alone
+	 * would let it come back.
+	 */
+	@Test
+	public void clearSendsTheClearMessageAndNeverAnEmptyPath()
+	{
+		List<Object> posted = new ArrayList<>();
+		ShortestPathBridge bridge = bridge(() -> List.of(new FakePlugin()), plugin -> true, posted::add);
+
+		assertTrue(bridge.clear());
+		assertEquals(1, posted.size());
+
+		PluginMessage message = (PluginMessage) posted.get(0);
+		assertEquals("shortestpath", message.getNamespace());
+		assertEquals("a path message with no targets re-sends the previous route instead of clearing",
+			ShortestPathBridge.CLEAR_MESSAGE_NAME, message.getName());
+		assertNotEquals("clearing must never go out as a path message",
+			ShortestPathBridge.MESSAGE_NAME, message.getName());
+	}
+
+	/** With Shortest Path unavailable there is nothing to clear and nothing is sent. */
+	@Test
+	public void clearSendsNothingWhenShortestPathIsUnavailable()
+	{
+		List<Object> posted = new ArrayList<>();
+		ShortestPathBridge bridge = bridge(List::of, plugin -> true, posted::add);
+
+		assertFalse(bridge.clear());
+		assertTrue(posted.isEmpty());
 	}
 }
