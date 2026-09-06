@@ -220,6 +220,12 @@ public class QuestpathPlugin extends Plugin
 	private final ShopkeeperMemory shopkeeper = new ShopkeeperMemory();
 	private Boosts cachedShopBoosts;
 	private Map<String, WorldPoint> dropsByName;
+	/**
+	 * Where the player was at the last client-thread read. Volatile
+	 * because the panel reads it from Swing -- see
+	 * lastKnownPlayerLocation for why it cannot just ask the client.
+	 */
+	private volatile WorldPoint lastPlayerLocation;
 	private Map<String, String> dropRegionsByName;
 	private final ShopApproachWatcher shopApproach = new ShopApproachWatcher();
 
@@ -535,7 +541,8 @@ public class QuestpathPlugin extends Plugin
 			ShortestPathBridge.clientThreadEventPoster(clientThread::invoke, eventBus::post));
 		panel = new QuestpathPanel(sprites, new OverlaySettingsPanel(config, configManager),
 			this::skillPlan, questHelperBridge, shortestPathBridge, this::shopLocation,
-			this::dropLocation, this::playerLocation, this::onShopRouteSent, this::cancelShopRoute,
+			this::dropLocation, this::lastKnownPlayerLocation, this::onShopRouteSent,
+			this::cancelShopRoute,
 			this::shopRouteActive,
 			shopItemSkips);
 		navButton = NavigationButton.builder()
@@ -832,7 +839,10 @@ public class QuestpathPlugin extends Plugin
 	 */
 	private void checkQuestStartArrival()
 	{
-		WorldPoint player = client.getLocalPlayer() == null ? null : client.getLocalPlayer().getWorldLocation();
+		// Through playerLocation() rather than the client directly, so the
+		// cached copy the panel reads is refreshed every tick -- see
+		// lastKnownPlayerLocation for why the panel cannot ask for itself.
+		WorldPoint player = playerLocation();
 
 		// Always observed, whatever the toggle says -- same discipline as
 		// autoAdvance in refresh(): the watcher has to keep tracking the
@@ -1386,7 +1396,38 @@ public class QuestpathPlugin extends Plugin
 
 	private WorldPoint playerLocation()
 	{
-		return client.getLocalPlayer() == null ? null : client.getLocalPlayer().getWorldLocation();
+		WorldPoint here = client.getLocalPlayer() == null
+			? null
+			: client.getLocalPlayer().getWorldLocation();
+		lastPlayerLocation = here;
+		return here;
+	}
+
+	/**
+	 * The last position read on the client thread, for callers that are not
+	 * on it.
+	 *
+	 * <p>{@code client.getLocalPlayer()} asserts it is on the client thread,
+	 * and that assertion is an {@link AssertionError} rather than an
+	 * exception -- so a Swing caller does not get a null or a wrong answer,
+	 * it gets an Error thrown through whatever was rendering. Handing the
+	 * panel {@code this::playerLocation} did exactly that: the shop-route
+	 * button asked where the player was while rendering on the EDT, threw,
+	 * and took the entire item list off the screen with it. Nothing was
+	 * broken about the list; it simply never finished being drawn.
+	 *
+	 * <p>This is the same hazard {@link ShortestPathBridge}'s class doc
+	 * documents from the other direction, where Shortest Path's own handler
+	 * asserts the same thing about a call coming out of a button.
+	 *
+	 * <p>A tick-old position is the right answer for what reads this. The
+	 * shop tour is deciding which of several shops across the map to walk to
+	 * first, and no ordering that direction changes because the player moved
+	 * one tile since the last tick.
+	 */
+	WorldPoint lastKnownPlayerLocation()
+	{
+		return lastPlayerLocation;
 	}
 
 	/**
