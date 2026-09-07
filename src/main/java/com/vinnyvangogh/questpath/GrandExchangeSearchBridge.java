@@ -38,9 +38,14 @@ import lombok.extern.slf4j.Slf4j;
  * event.getScriptId() == 752} exactly, then calls {@code
  * client.getVarcStrValue(359)} to read the search text back out and
  * re-highlight fuzzy matches in the results widget (packed id {@code
- * 10616884} -- confirmed to be exactly {@code
- * InterfaceID.Chatbox.GE_SEARCH_RESULTS} / the deprecated {@code
- * WidgetInfo.CHATBOX_GE_SEARCH_RESULTS}, group 162, child 52). That is the
+ * 10616884} -- which is {@code InterfaceID.Chatbox.MES_LAYER_SCROLLCONTENTS},
+ * group 162, child 52. An earlier version of this paragraph called that
+ * constant {@code InterfaceID.Chatbox.GE_SEARCH_RESULTS}, which does not
+ * exist under that name: the id was right and the name was invented. Reading
+ * the whole {@code javap -constants} listing of {@code InterfaceID.Chatbox}
+ * settled it, and the {@code MES_LAYER_} prefix is what showed that the
+ * client's own generated rows are children of the scroll area rather than of
+ * the box itself). That is the
  * reverse of what this class does, and it is strong independent
  * confirmation of both constants -- the native client only ever fires
  * script 752 after, and reads its own search box out of, varcstr 359,
@@ -60,7 +65,7 @@ import lombok.extern.slf4j.Slf4j;
  * and nothing on this project's classpath calls {@code GE_ITEM_SEARCH}
  * forward to show what the other three arguments should be. Production
  * wiring no longer guesses them: see {@link
- * GrandExchangeSuggestionRow#select}'s own doc for the fix actually
+ * GrandExchangeButton#updateSearchInterface}'s own doc for the fix actually
  * shipped, and {@code QuestpathPlugin#startUp}'s {@code geSearchBridge}
  * construction for where it replaced the broken call. This class itself did
  * not change -- the bug was entirely in the {@link #action} lambda supplied
@@ -120,7 +125,7 @@ class GrandExchangeSearchBridge
 	 * WidgetInfo.GRAND_EXCHANGE_WINDOW_CONTAINER}) and {@code
 	 * client.getWidget(InterfaceID.Chatbox.MES_LAYER) != null &&
 	 * !widget.isHidden()} (the search chatbox {@link #action} actually feeds
-	 * text into -- see {@link GrandExchangeSuggestionRow}'s class doc for how
+	 * text into -- see {@link GrandExchangeButton}'s class doc for how
 	 * that packed id was confirmed). The offer screen can be open while
 	 * showing its quantity/price step instead of the search chatbox, and
 	 * {@link #action} has nothing to act on in that state; checking only the
@@ -134,7 +139,7 @@ class GrandExchangeSearchBridge
 	 * called from inside {@link #onClientThread}'s runnable. Production
 	 * wiring sets {@code VarClientStr.INPUT_TEXT} and then replays the
 	 * search input widget's own {@code getOnKeyListener()} through {@code
-	 * client.runScript} -- see {@link GrandExchangeSuggestionRow#select}'s
+	 * client.runScript} -- see {@link GrandExchangeButton#updateSearchInterface}'s
 	 * own doc for exactly why, and for the {@code AssertionError} this used
 	 * to throw when it called {@code
 	 * client.runScript(ScriptID.GE_ITEM_SEARCH)} directly instead. Given as

@@ -33,6 +33,7 @@ import net.runelite.api.GrandExchangeOffer;
 import net.runelite.api.ItemComposition;
 import net.runelite.api.events.GameStateChanged;
 import net.runelite.api.events.GrandExchangeOfferChanged;
+import net.runelite.api.events.GrandExchangeSearched;
 import net.runelite.client.chat.ChatColorType;
 import net.runelite.client.chat.ChatMessageBuilder;
 import net.runelite.client.chat.QueuedMessage;
@@ -173,7 +174,7 @@ public class QuestpathPlugin extends Plugin
 	 * questpath's own row in the Grand Exchange's item-search chatbox -- see
 	 * that class's own doc for what it draws and where.
 	 */
-	private GrandExchangeSuggestionRow geSuggestionRow;
+	private GrandExchangeButton geButton;
 
 	/**
 	 * Which of the account's eight Grand Exchange slots hold a live buy
@@ -587,7 +588,7 @@ public class QuestpathPlugin extends Plugin
 			// showing the quantity/price screen rather than the item-search
 			// chatbox, in which case there is nothing below for the action
 			// to feed text into. Chatbox.MES_LAYER is that chatbox's own
-			// root -- see GrandExchangeSuggestionRow's class doc for how
+			// root -- see GrandExchangeButton's class doc for how
 			// that packed id was confirmed -- so both must be open for this
 			// to report AVAILABLE rather than a click that quietly does
 			// nothing. Only ever called from inside geSearchBridge's own
@@ -617,7 +618,7 @@ public class QuestpathPlugin extends Plugin
 				// class has no verified call site for them -- see
 				// GrandExchangeSearchBridge's own class doc for the
 				// AssertionError that produced, and
-				// GrandExchangeSuggestionRow's for the fix applied here:
+				// GrandExchangeButton's for the fix applied here:
 				// replay the search box's own key listener, already built
 				// with whatever arguments it actually needs, rather than
 				// guess a second time.
@@ -632,7 +633,7 @@ public class QuestpathPlugin extends Plugin
 				}
 			},
 			clientThread::invoke);
-		geSuggestionRow = new GrandExchangeSuggestionRow(client, this::nextGrandExchangeSuggestion);
+		geButton = new GrandExchangeButton(client, clientThread::invokeLater, this::grandExchangeList);
 		panel = new QuestpathPanel(sprites, new OverlaySettingsPanel(config, configManager),
 			this::skillPlan, questHelperBridge, shortestPathBridge, geSearchBridge,
 			this::grandExchangeAvailable, this::shopLocation,
@@ -813,10 +814,10 @@ public class QuestpathPlugin extends Plugin
 			bankButton.detach();
 			bankButton = null;
 		}
-		if (geSuggestionRow != null)
+		if (geButton != null)
 		{
-			geSuggestionRow.detach();
-			geSuggestionRow = null;
+			geButton.detach();
+			geButton = null;
 		}
 		if (bankTab != null)
 		{
@@ -1371,9 +1372,9 @@ public class QuestpathPlugin extends Plugin
 		// e.g. banking an item while shopping for something else. A cheap
 		// no-op the rest of the time: attach() itself returns immediately
 		// when that chatbox is not on screen.
-		if (geSuggestionRow != null)
+		if (geButton != null)
 		{
-			geSuggestionRow.attach();
+			geButton.attach();
 		}
 	}
 
@@ -1587,25 +1588,6 @@ public class QuestpathPlugin extends Plugin
 		return GrandExchangeAccounts.canUseGrandExchange(accountType);
 	}
 
-	/**
-	 * The head of the account's Grand Exchange shopping list, or null when
-	 * there is nothing to suggest -- {@link GrandExchangeSuggestionRow}'s
-	 * own supplier.
-	 *
-	 * <p>Reads {@link #overlaySnapshot}, already computed by {@link
-	 * #refresh}'s own pass, rather than calling {@link #questItems()} again:
-	 * that call reads roughly 180 quest varbits, and this is read from a
-	 * widget callback the client can fire on every keystroke in the search
-	 * box -- paying that cost there would make typing in the Grand Exchange
-	 * noticeably slower.
-	 */
-	private GrandExchangeShoppingList.Line nextGrandExchangeSuggestion()
-	{
-		// next(), not the head of the list. The head may be something one of
-		// the eight slots is already buying, and suggesting that is the bug
-		// this whole pass exists to fix -- see GrandExchangeShoppingList#next.
-		return GrandExchangeShoppingList.next(grandExchangeList());
-	}
 
 	/**
 	 * The account's whole Grand Exchange buy list, each line marked with the
@@ -2143,6 +2125,43 @@ public class QuestpathPlugin extends Plugin
 	}
 
 	/**
+	 * Answers a search questpath's own button asked for, by handing the
+	 * client the buy list's item ids instead of whatever it would have found.
+	 *
+	 * <p><b>Nothing is drawn.</b> The client renders those ids in its own
+	 * result list, with its own widgets, its own scrolling and its own
+	 * "Select &lt;item&gt;" option on every row -- which is why this is worth
+	 * far more than the hand-drawn row it replaced. See {@link
+	 * GrandExchangeButton}'s class doc for where the whole sequence was
+	 * disassembled from.
+	 *
+	 * <p><b>The sentinel check is what keeps this from hijacking a real
+	 * search.</b> Only a search whose text is exactly {@link
+	 * GrandExchangeButton#SEARCH_SENTINEL} is ours; anything the player
+	 * actually typed falls straight through. Quest Helper does the same with
+	 * its own string, so both buttons work in the same box.
+	 *
+	 * <p>Consumed even when the list comes back empty. Letting an empty buy
+	 * list fall through would search the game for the word "questpath" and
+	 * fill the panel with whatever fuzzy-matched it, which reads as a broken
+	 * feature rather than as "nothing to buy".
+	 */
+	@Subscribe
+	public void onGrandExchangeSearched(GrandExchangeSearched event)
+	{
+		if (geButton == null
+			|| !GrandExchangeButton.SEARCH_SENTINEL.equals(client.getVarcStrValue(VarClientStr.INPUT_TEXT)))
+		{
+			return;
+		}
+		event.consume();
+		short[] ids = geButton.resultIds();
+		client.setGeSearchResultIndex(0);
+		client.setGeSearchResultCount(ids.length);
+		client.setGeSearchResultIds(ids);
+	}
+
+	/**
 	 * Tracks what the account's eight Grand Exchange slots are buying, so the
 	 * shopping list can move on the moment an offer is <em>placed</em> rather
 	 * than when it is finally collected.
@@ -2182,20 +2201,19 @@ public class QuestpathPlugin extends Plugin
 		geOffers.update(event.getSlot(), offer.getState(), offer.getItemId(), name,
 			offer.getTotalQuantity(), offer.getQuantitySold());
 
-		// The row is only ever showing while the search chatbox is open, and
-		// placing an offer closes it -- but a second client window, or an
-		// offer completing while the box is up, both leave a row on screen
-		// naming something now queued. Redrawing is cheap and a stale
-		// suggestion is not.
-		if (geSuggestionRow != null)
+		// If questpath's own list is on screen right now, the item just put
+		// on offer has to leave it -- otherwise the one surface whose job is
+		// to say what to buy next goes on naming something already bought.
+		// A no-op unless that list is actually showing.
+		if (geButton != null)
 		{
-			geSuggestionRow.attach();
+			geButton.refresh();
 		}
 	}
 
 	/**
 	 * Rebuilds the bank grid once the client has finished its own build, and
-	 * redraws questpath's Grand Exchange suggestion row after a search runs.
+	 * redraws questpath's Grand Exchange button after a search runs.
 	 *
 	 * BANKMAIN_FINISHBUILDING is the only point at which the item widgets both
 	 * exist and are final; earlier and there is nothing to move, later and the
@@ -2204,21 +2222,21 @@ public class QuestpathPlugin extends Plugin
 	 * <p>GE_ITEM_SEARCH (752) is handled first and unconditionally -- it has
 	 * nothing to do with the bank, and gating it behind {@code bankTab != null}
 	 * the way the branches below are would mean questpath's own Grand
-	 * Exchange row goes stale if the bank tab feature ever failed to
+	 * Exchange button goes stale if the bank tab feature ever failed to
 	 * initialise for an unrelated reason. {@code
 	 * GrandExchangePlugin.onScriptPostFired} reacts to the same script id for
 	 * the same reason: it is what runs after the search chatbox's own
 	 * content changes, which is exactly when a row drawn inside it needs
-	 * redrawing. See {@link GrandExchangeSuggestionRow}'s class doc.
+	 * redrawing. See {@link GrandExchangeButton}'s class doc.
 	 */
 	@Subscribe
 	public void onScriptPostFired(ScriptPostFired event)
 	{
 		if (event.getScriptId() == ScriptID.GE_ITEM_SEARCH)
 		{
-			if (geSuggestionRow != null)
+			if (geButton != null)
 			{
-				geSuggestionRow.attach();
+				geButton.attach();
 			}
 			return;
 		}
@@ -2261,9 +2279,9 @@ public class QuestpathPlugin extends Plugin
 	{
 		if (event.getGroupId() == InterfaceID.CHATBOX)
 		{
-			if (geSuggestionRow != null)
+			if (geButton != null)
 			{
-				geSuggestionRow.attach();
+				geButton.attach();
 			}
 			return;
 		}
