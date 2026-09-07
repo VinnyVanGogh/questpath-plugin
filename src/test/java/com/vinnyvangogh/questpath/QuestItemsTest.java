@@ -9,6 +9,7 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -803,5 +804,126 @@ public class QuestItemsTest
 		java.util.Map<String, Long> merged = QuestItems.effectiveHeldForTest(live, true, known);
 
 		assertEquals(Long.valueOf(1L), merged.get("bucket"));
+	}
+
+	// ------------------------------------------------------------------
+	// Category requirements, over the real bundled graph. "A light source"
+	// and "Any pickaxe" are not items and never will be; the bundle now
+	// carries the set that satisfies each, and these pin what the list makes
+	// of that. See docs/prose-requirements.md in the questpath repo.
+	// ------------------------------------------------------------------
+
+	/** Levels the account into one skill, leaving everything else at 1. */
+	private static PlayerState accountWith(String skill, int level)
+	{
+		Map<String, Integer> levels = new HashMap<>();
+		levels.put(skill, level);
+		return new PlayerState(levels, new HashMap<>(), new HashSet<String>(),
+			Collections.emptyList());
+	}
+
+	/**
+	 * The list for one named quest, whatever the account can currently do.
+	 *
+	 * <p>Scoped to a plan rather than left to the doable set on purpose:
+	 * every quest that wants a pickaxe wants a Mining level too, so a
+	 * level-1 account has none of them doable and the list would be empty for
+	 * reasons that have nothing to do with what is being tested.
+	 */
+	private static QuestItems itemsFor(PlayerState account, Map<String, Long> held)
+		throws Exception
+	{
+		java.util.Set<String> plan = new HashSet<String>();
+		plan.add("the knight's sword");
+		return QuestItems.of(graph(), account, held, true,
+			Collections.<String>emptySet(), plan,
+			Collections.<String, Long>emptyMap(), Collections.<String, Long>emptyMap());
+	}
+
+	/**
+	 * The wiki's phrase never reaches the list; a real item does.
+	 *
+	 * <p>"Any pickaxe" is not something you can search the Grand Exchange
+	 * for, tick against a bank, or walk to a shop for. It used to arrive with
+	 * no id and get filed under "questpath can't look this up", for a thing
+	 * every general store sells.
+	 */
+	@Test
+	public void aCategoryRequirementBecomesARealItem() throws Exception
+	{
+		QuestItems items = itemsFor(freshAccount(), Collections.<String, Long>emptyMap());
+
+		assertNull("the wiki's phrase must not survive into the list",
+			total(items, "Any pickaxe"));
+		assertNull(total(items, "Pickaxe"));
+		// Iron, not bronze. The wiki gives both Mining 1 and Attack 1, and
+		// iron is the later row -- so at the same requirement it is the
+		// better of the two, and the tier order is the ranking.
+		assertNotNull("a level-1 account is offered the best pickaxe it can use",
+			total(items, "Iron pickaxe"));
+	}
+
+	/**
+	 * The account's levels decide which member, and the wiki's tier order is
+	 * the ranking.
+	 *
+	 * <p>41 Mining and 40 Attack is exactly the rune pickaxe's requirement,
+	 * so it is both usable and the best usable.
+	 */
+	@Test
+	public void theBestUsableMemberIsChosen() throws Exception
+	{
+		Map<String, Integer> levels = new HashMap<>();
+		levels.put("Mining", 41);
+		levels.put("Attack", 40);
+		PlayerState account = new PlayerState(levels, new HashMap<>(),
+			new HashSet<String>(), Collections.emptyList());
+
+		QuestItems items = itemsFor(account, Collections.<String, Long>emptyMap());
+
+		assertNotNull(total(items, "Rune pickaxe"));
+		assertNull("the level-1 pick is no longer the answer",
+			total(items, "Iron pickaxe"));
+	}
+
+	/**
+	 * A capped skill is respected rather than ignored.
+	 *
+	 * <p>41 Mining with Attack still at 1 cannot wield a rune pickaxe, so the
+	 * list must not name one. Under-claiming costs a cheaper pickaxe than
+	 * strictly necessary; over-claiming sends somebody to buy something they
+	 * cannot use, and that is the direction this project refuses.
+	 */
+	@Test
+	public void aCappedSkillIsNotIgnoredWhenChoosing() throws Exception
+	{
+		QuestItems items = itemsFor(accountWith("Mining", 41),
+			Collections.<String, Long>emptyMap());
+
+		assertNull(total(items, "Rune pickaxe"));
+		assertNotNull(total(items, "Iron pickaxe"));
+	}
+
+	/**
+	 * Holding any member satisfies the whole set.
+	 *
+	 * <p>This is the rule the player asked for first: check the bank before
+	 * sending anyone shopping. A pickaxe already in the bank must tick the
+	 * requirement off rather than sit beside a fresh instruction to buy one.
+	 */
+	@Test
+	public void holdingAnyMemberSatisfiesTheSet() throws Exception
+	{
+		Map<String, Long> held = new HashMap<>();
+		held.put("bronze pickaxe", 1L);
+
+		QuestItems items = itemsFor(freshAccount(), held);
+
+		// Named for what is actually in the bank, not for the best one that
+		// could be bought: a bronze pickaxe already held beats an iron one
+		// to buy, which is the player's own first rule.
+		QuestItems.Total pickaxe = total(items, "Bronze pickaxe");
+		assertNotNull(pickaxe);
+		assertTrue("a pickaxe in the bank means no pickaxe to buy", pickaxe.satisfied());
 	}
 }

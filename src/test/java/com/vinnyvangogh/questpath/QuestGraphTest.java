@@ -109,16 +109,25 @@ public class QuestGraphTest
 	 * misread.
 	 */
 	@Test
-	public void supportedVersionWasBumpedForShopReachabilityAndDropLocations()
+	public void supportedVersionWasBumpedForItemGroups()
 	{
-		// 9 adds shop reachability and monster drop locations. Both are the
+		// 9 added shop reachability and monster drop locations. Both are the
 		// same kind of hazard the comment above describes: a bundle without
 		// reachability parses every shop as open, which is precisely the
 		// wrong answer to hand a shortest-path button -- it is how the
 		// Fishing Guild Shop was offered to an account nine levels short of
-		// entering. Refusing the version is what stops that being read as
-		// "nothing stands in the way".
-		assertEquals(9, QuestGraph.SUPPORTED_VERSION);
+		// entering.
+		//
+		// 10 adds group_name and alternatives. 337 item rows carried no id at
+		// all, because the wiki states them as a category -- "A light
+		// source", "Any pickaxe" -- and a category is not a catalogue row.
+		// They travelled as unresolved, which the panel renders as "can't
+		// look up", for things a Grand Exchange plainly sells. A bundle
+		// without these fields parses such a line as one nothing is known
+		// about, when in fact questpath knows exactly which items satisfy it
+		// and which of them the account can use -- the same shape of wrong
+		// answer as an unreachable shop read as open.
+		assertEquals(10, QuestGraph.SUPPORTED_VERSION);
 	}
 
 	/**
@@ -283,7 +292,7 @@ public class QuestGraphTest
 	public void parseAcceptsAWellFormedGraph() throws java.io.IOException
 	{
 		QuestGraph graph = QuestGraph.parse(GSON, new java.io.StringReader(
-			"{\"version\":9,\"quests\":[{\"id\":1,\"slug\":\"a\",\"name\":\"A\"}]}"));
+			"{\"version\":10,\"quests\":[{\"id\":1,\"slug\":\"a\",\"name\":\"A\"}]}"));
 
 		assertEquals(1, graph.quests().size());
 	}
@@ -340,7 +349,7 @@ public class QuestGraphTest
 	{
 		try
 		{
-			QuestGraph.parse(GSON, new java.io.StringReader("{\"version\":9,\"quests\":[]}"));
+			QuestGraph.parse(GSON, new java.io.StringReader("{\"version\":10,\"quests\":[]}"));
 			org.junit.Assert.fail("expected an IOException for an empty graph");
 		}
 		catch (java.io.IOException e)

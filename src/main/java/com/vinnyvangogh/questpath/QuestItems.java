@@ -137,6 +137,7 @@ class QuestItems
 		private final List<String> sources;
 		private final List<String> shopNames;
 		private final List<String> dropSourceNames;
+		private final String groupName;
 
 		Line(String name, int itemId, int wanted, long owned, boolean optional, List<String> sources)
 		{
@@ -160,6 +161,24 @@ class QuestItems
 		Line(String name, int itemId, int wanted, long owned, boolean optional, boolean unresolved,
 			List<String> sources, List<String> shopNames, List<String> dropSourceNames)
 		{
+			this(name, itemId, wanted, owned, optional, unresolved, sources, shopNames,
+				dropSourceNames, "");
+		}
+
+		/**
+		 * The full shape plus the category this line came from, when it came
+		 * from one.
+		 *
+		 * <p>name is then the member questpath chose, not the wiki's phrase,
+		 * because a member is something the player can search for and tick
+		 * against a bank. groupName keeps the phrase so the panel can still
+		 * say what the choice was made out of.
+		 */
+		Line(String name, int itemId, int wanted, long owned, boolean optional, boolean unresolved,
+			List<String> sources, List<String> shopNames, List<String> dropSourceNames,
+			String groupName)
+		{
+			this.groupName = groupName;
 			this.name = name;
 			this.itemId = itemId;
 			this.wanted = wanted;
@@ -191,6 +210,15 @@ class QuestItems
 		 * anyway, marked, because the alternative is a list that is quietly
 		 * short while claiming to be the list.
 		 */
+		/**
+		 * The category this line came from -- "Pickaxe" -- or empty when it
+		 * named an item outright. {@link #name()} is the chosen member.
+		 */
+		String groupName()
+		{
+			return groupName == null ? "" : groupName;
+		}
+
 		boolean unresolved()
 		{
 			return unresolved;
@@ -528,16 +556,89 @@ class QuestItems
 			QuestNeeds needs = new QuestNeeds(quest.name());
 			for (QuestGraph.Item item : quest.items())
 			{
-				long owned = held.getOrDefault(item.name().toLowerCase(), 0L);
-				needs.lines.add(new Line(item.name(), item.itemId(), item.quantity(), owned,
+				// A line naming a category rather than an item -- "A light
+				// source", "Any pickaxe" -- carries the set that satisfies it
+				// instead of an id. It becomes one concrete item here, at the
+				// only point where both the account's levels and what it
+				// holds are in scope, so everything downstream (the bank
+				// tick, the shop route, the Grand Exchange search) goes on
+				// working on an ordinary item and needs to know nothing about
+				// groups.
+				//
+				// Named for the chosen member rather than the wiki's phrase
+				// on purpose: "Bronze pickaxe" is something you can search
+				// for, tick against a bank and walk to a shop for, and "Any
+				// pickaxe" is none of those. groupName keeps the wiki's own
+				// words for display.
+				String name = item.name();
+				int itemId = item.itemId();
+				String groupName = "";
+				long owned;
+				if (item.grouped())
+				{
+					groupName = item.groupName();
+					// Counted across the whole set: six of "any nails" is
+					// satisfied by three bronze and four iron, and asking
+					// only about the chosen member would send the player to
+					// buy nails they already have.
+					owned = ItemGroupChoice.heldAcross(item.alternatives(), held);
+					ItemGroupChoice.Choice choice = ItemGroupChoice.choose(
+						item.alternatives(), levelsFor(item.alternatives(), account),
+						java.util.Collections.emptySet(), held);
+					if (choice.any())
+					{
+						name = choice.best().name();
+						itemId = choice.best().itemId();
+					}
+				}
+				else
+				{
+					owned = held.getOrDefault(item.name().toLowerCase(), 0L);
+				}
+				needs.lines.add(new Line(name, itemId, item.quantity(), owned,
 					item.optional(), item.unresolved(), item.sources(), item.shopNames(),
-					item.dropSourceNames()));
+					item.dropSourceNames(), groupName));
 			}
 			out.quests.add(needs);
 		}
 
 		out.totals.addAll(totalsOf(out.quests, held, carried, placeholders));
 		out.pickups.addAll(pickupsIn(graph, upcoming, out.totals));
+		return out;
+	}
+
+	/**
+	 * The account's levels in the skills a set actually mentions.
+	 *
+	 * <p>Built per set rather than passing every skill, because only the
+	 * skills a member states can bind, and a map of twenty-four levels for a
+	 * question about Mining is noise in a stack trace.
+	 *
+	 * <p><b>Every stated requirement counts, Attack included.</b> A pickaxe's
+	 * Attack column gates wielding it and not mining with it, so an account
+	 * hard-capping Attack could in principle use a rune pickaxe from its
+	 * inventory -- but questpath does not know, per requirement, which of the
+	 * two the quest needs, and offering a rune pickaxe to an account that
+	 * cannot wield it is the direction this project refuses. Under-claiming
+	 * costs a cheaper pickaxe than necessary; over-claiming sends somebody to
+	 * buy something they cannot use. {@link ItemGroupChoice#choose} takes the
+	 * ignored-skill set precisely so a caller that does know can say so.
+	 */
+	private static java.util.Map<String, Integer> levelsFor(
+		List<QuestGraph.Alternative> alternatives, PlayerState account)
+	{
+		java.util.Map<String, Integer> out = new java.util.HashMap<>();
+		if (alternatives == null || account == null)
+		{
+			return out;
+		}
+		for (QuestGraph.Alternative alt : alternatives)
+		{
+			for (QuestGraph.Requirement req : alt.requirements())
+			{
+				out.putIfAbsent(req.skill(), account.levelIn(req.skill()));
+			}
+		}
 		return out;
 	}
 

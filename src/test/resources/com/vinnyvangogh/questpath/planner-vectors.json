@@ -55,12 +55,12 @@
       {
         "skill": "fishing",
         "level": 59,
-        "xp": 248886
+        "xp": 253046
       },
       {
         "skill": "firemaking",
-        "level": 19,
-        "xp": 4240
+        "level": 20,
+        "xp": 4480
       },
       {
         "skill": "crafting",
@@ -74,8 +74,8 @@
       },
       {
         "skill": "mining",
-        "level": 68,
-        "xp": 646007
+        "level": 69,
+        "xp": 691927
       },
       {
         "skill": "herblore",
@@ -90,12 +90,12 @@
       {
         "skill": "thieving",
         "level": 40,
-        "xp": 38545
+        "xp": 38588
       },
       {
         "skill": "slayer",
         "level": 9,
-        "xp": 1000
+        "xp": 1090
       },
       {
         "skill": "farming",

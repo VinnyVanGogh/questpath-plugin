@@ -74,7 +74,7 @@ class QuestGraph
 	 * bundle must be refused rather than read as "no quest has a start" --
 	 * that is a different, false claim from "this build does not know yet".
 	 */
-	static final int SUPPORTED_VERSION = 9;
+	static final int SUPPORTED_VERSION = 10;
 
 	@SerializedName("version")
 	private int version;
@@ -505,6 +505,50 @@ class QuestGraph
 	}
 
 
+	/**
+	 * One item that satisfies a category requirement -- one pickaxe out of
+	 * the set "any pickaxe" means.
+	 */
+	static class Alternative
+	{
+		@SerializedName("name")
+		private String name;
+
+		@SerializedName("item_id")
+		private int itemId;
+
+		@SerializedName("requirements")
+		private List<Requirement> requirements;
+
+		String name()
+		{
+			return name == null ? "" : name;
+		}
+
+		/** The game's own item id, or 0 for "draw no icon" -- see {@link Item#itemId()}. */
+		int itemId()
+		{
+			return itemId;
+		}
+
+		/**
+		 * The levels the wiki states for this member, each with its own
+		 * skill.
+		 *
+		 * <p><b>Separate, and the separation is load-bearing.</b> A pickaxe
+		 * states Mining and Attack. Mining gates using it; Attack only gates
+		 * wielding it, and a pickaxe mines perfectly well from the
+		 * inventory. An account hard-capping Attack can therefore use a rune
+		 * pickaxe it could never wield -- and that account is the entire
+		 * reason questpath exists, so the caller decides which of these bind
+		 * rather than this collapsing them into one number.
+		 */
+		List<Requirement> requirements()
+		{
+			return requirements == null ? Collections.emptyList() : requirements;
+		}
+	}
+
 	static class Item
 	{
 		@SerializedName("name")
@@ -534,6 +578,12 @@ class QuestGraph
 		@SerializedName("drop_source_names")
 		private List<String> dropSourceNames;
 
+		@SerializedName("group_name")
+		private String groupName;
+
+		@SerializedName("alternatives")
+		private List<Alternative> alternatives;
+
 		/**
 		 * The monsters that drop this, for an item no shop sells. Matched
 		 * against {@link DropLocation#sourceName()}.
@@ -541,6 +591,42 @@ class QuestGraph
 		List<String> dropSourceNames()
 		{
 			return dropSourceNames == null ? List.of() : dropSourceNames;
+		}
+
+		/**
+		 * The category this line names, when it names one rather than an item
+		 * -- "Pickaxe", "Light sources". Empty for an ordinary item.
+		 *
+		 * <p>A grouped line has no {@link #itemId()}, because there is no one
+		 * item to have: the requirement is the set in {@link
+		 * #alternatives()}. It is nonetheless <b>not</b> {@link
+		 * #unresolved()} -- questpath knows exactly what satisfies it, which
+		 * is the whole difference. Treating the two the same is how "A light
+		 * source" reached the Grand Exchange panel labelled "can't look up",
+		 * for something the Grand Exchange plainly sells.
+		 */
+		String groupName()
+		{
+			return groupName == null ? "" : groupName;
+		}
+
+		/** Whether this line names a category rather than a single item. */
+		boolean grouped()
+		{
+			return !groupName().isEmpty() && !alternatives().isEmpty();
+		}
+
+		/**
+		 * The items that satisfy this line, in the wiki's own tier order --
+		 * so the last one an account can use is the best one it can use.
+		 *
+		 * <p><b>Never re-sorted.</b> The order is the wiki's ranking, carried
+		 * through the bundle untouched; re-deriving it here would replace a
+		 * real ranking with an invented one.
+		 */
+		List<Alternative> alternatives()
+		{
+			return alternatives == null ? Collections.emptyList() : alternatives;
 		}
 
 		String name()
