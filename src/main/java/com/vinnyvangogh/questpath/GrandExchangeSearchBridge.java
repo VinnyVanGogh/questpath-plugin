@@ -150,6 +150,55 @@ class GrandExchangeSearchBridge
 	 */
 	private final Consumer<Runnable> onClientThread;
 
+	/**
+	 * An item name as it must be written into {@code
+	 * VarClientStr.INPUT_TEXT}: trimmed, and lower case.
+	 *
+	 * <p><b>The capital letter was a real bug, not a cosmetic one.</b>
+	 * Writing "Air talisman" produced a results list with red underlines
+	 * under the matched prefixes, which reads -- correctly -- as the game
+	 * saying the spelling is wrong. It was RuneLite's own bundled Grand
+	 * Exchange plugin reporting that it had fallen back to a fuzzy search,
+	 * and the reason it fell back was this method's absence.
+	 *
+	 * <p>Traced with {@code javap -c -p} against the installed {@code
+	 * client-1.12.38.jar} rather than guessed. Under the default {@code
+	 * FUZZY_FALLBACK} search mode, {@code
+	 * GrandExchangePlugin.onGrandExchangeSearched} consumes the game's own
+	 * search and runs its own filter first -- {@code
+	 * lambda$onGrandExchangeSearched$4}, which is:
+	 *
+	 * <pre>
+	 * item.isGeTradeable() &amp;&amp; item.getNote() == -1
+	 *     &amp;&amp; item.getName().toLowerCase().contains(search)
+	 * </pre>
+	 *
+	 * <p>The item's name is lower-cased. {@code search}, read straight out
+	 * of {@code client.getVarcStrValue(359)}, is not. So a capital letter in
+	 * the search text can never match, that filter returns zero results, and
+	 * the {@code if (count != 0)} guard falls through to the fuzzy scorer,
+	 * which sets {@code wasFuzzySearch = true}. {@code
+	 * onScriptPostFired(752)} then runs {@code highlightSearchMatches()},
+	 * which wraps each result's matching prefix in {@code
+	 * "<col=FUZZY_HIGHLIGHT_COLOR><u>"} -- those underlines, exactly.
+	 *
+	 * <p>A person typing into that box types lower case, which is why this
+	 * is not hit by hand. Only a plugin writing a display name straight in
+	 * hits it, and questpath's names are the wiki's: title case, always.
+	 *
+	 * <p><b>Default locale, deliberately, rather than {@code Locale.ROOT}.</b>
+	 * What this produces is compared against {@code getName().toLowerCase()}
+	 * in the code quoted above, which uses the default locale. Matching that
+	 * exactly is the whole job, and lower-casing by a different rule than
+	 * the other side would reintroduce the same class of miss on precisely
+	 * the locales -- Turkish, where {@code I} lower-cases to {@code ı} --
+	 * that {@code Locale.ROOT} is normally reached for to avoid.
+	 */
+	static String searchText(String itemName)
+	{
+		return itemName == null ? "" : itemName.trim().toLowerCase();
+	}
+
 	GrandExchangeSearchBridge(BooleanSupplier open, Consumer<String> action, Consumer<Runnable> onClientThread)
 	{
 		this.open = open;

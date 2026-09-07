@@ -312,6 +312,21 @@ class OverlaySettingsPanel extends JPanel
 			}));
 		body.add(spacer());
 		body.add(toggleGroup(
+			"Grand Exchange: queued, next, left",
+			"While the Grand Exchange is open: the one item to buy next and how many,"
+				+ " what you already have on offer and how far along it is, and what is"
+				+ " still left after that. Never shown to an ironman, who has no Grand"
+				+ " Exchange to use.",
+			config.overlayGrandExchange(), "overlayGrandExchange",
+			sub ->
+			{
+				addField(sub, "Width",
+					widthCombo(config.overlayGrandExchangeWidth(), "overlayGrandExchangeWidth"));
+				addField(sub, "Length",
+					lengthCombo(config.overlayGrandExchangeLength(), "overlayGrandExchangeLength"));
+			}));
+		body.add(spacer());
+		body.add(toggleGroup(
 			"Combat XP to next level",
 			"What each stat would cost to buy the next combat level, cheapest first.",
 			config.overlayCombatXp(), "overlayCombatXp",

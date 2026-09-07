@@ -38,18 +38,82 @@ final class GrandExchangeShoppingList
 	{
 	}
 
-	/** One line of the list: an item, and how many more to buy. */
+	/**
+	 * Whether an item can be bought at a Grand Exchange counter at all.
+	 *
+	 * <p>Three values rather than two, because "questpath does not know" is a
+	 * different answer from "no" and this project does not let those collapse
+	 * into each other.
+	 */
+	enum Availability
+	{
+		/** On the Grand Exchange. Safe to suggest. */
+		BUYABLE,
+		/**
+		 * A real item the Grand Exchange does not trade -- Karamjan rum, and
+		 * every other quest item that only exists where it is found.
+		 * Suggesting one is the failure this project rules out everywhere:
+		 * never offer an account something it cannot act on.
+		 */
+		NOT_ON_GE,
+		/**
+		 * questpath holds no item id for this row, so nothing can be asked
+		 * about it.
+		 *
+		 * <p>Not a rare edge: 275 of the 645 distinct item rows in the
+		 * shipped bundle have no id, and reading them shows why -- they are
+		 * requirements written as prose ("A light source", "A way to enter
+		 * Port Phasmatys", "A pickaxe and 35 Mining to mine coal") rather
+		 * than named items. None of those is something the Grand Exchange
+		 * could sell you under that name, so they are kept off the buy list
+		 * -- but they are kept apart from {@link #NOT_ON_GE}, because
+		 * "cannot look this up" is a statement about questpath and "this is
+		 * not traded" is a statement about the game.
+		 */
+		UNKNOWN,
+	}
+
+	/**
+	 * Answers {@link Availability} for an item -- production wiring asks
+	 * {@code ItemComposition#isGeTradeable()}, the same flag RuneLite's own
+	 * bundled Grand Exchange plugin filters its search results on.
+	 *
+	 * <p>An interface rather than a direct call so this class stays testable
+	 * without a client: the real implementation needs {@code ItemManager} and
+	 * the client thread, and neither belongs in a list-builder.
+	 */
+	interface Tradeability
+	{
+		Availability of(int itemId, String name);
+	}
+
+	/** One line of the list: an item, how many more to buy, whether it is on offer, and whether it can be bought here at all. */
 	static final class Line
 	{
 		private final String name;
 		private final int itemId;
 		private final long outstanding;
+		private final GrandExchangeOffers.Order order;
+		private final Availability availability;
 
 		Line(String name, int itemId, long outstanding)
+		{
+			this(name, itemId, outstanding, null, Availability.BUYABLE);
+		}
+
+		Line(String name, int itemId, long outstanding, GrandExchangeOffers.Order order)
+		{
+			this(name, itemId, outstanding, order, Availability.BUYABLE);
+		}
+
+		Line(String name, int itemId, long outstanding, GrandExchangeOffers.Order order,
+			Availability availability)
 		{
 			this.name = name;
 			this.itemId = itemId;
 			this.outstanding = outstanding;
+			this.order = order;
+			this.availability = availability;
 		}
 
 		String name()
@@ -68,6 +132,35 @@ final class GrandExchangeShoppingList
 		{
 			return outstanding;
 		}
+
+		/**
+		 * The live buy offer already covering this item, or null when there
+		 * is none -- see {@link GrandExchangeOffers} for what counts as live,
+		 * and why a cancelled offer stops counting immediately rather than
+		 * once its collection box is emptied.
+		 */
+		GrandExchangeOffers.Order order()
+		{
+			return order;
+		}
+
+		/** Whether one of the eight slots is already buying this. */
+		boolean queued()
+		{
+			return order != null;
+		}
+
+		/** Whether this can be bought at a Grand Exchange counter at all -- see {@link Availability}. */
+		Availability availability()
+		{
+			return availability;
+		}
+
+		/** Shorthand for the only case a buy list may suggest. */
+		boolean buyable()
+		{
+			return availability == Availability.BUYABLE;
+		}
 	}
 
 	/**
@@ -81,6 +174,53 @@ final class GrandExchangeShoppingList
 	 *     plugin already renders "nothing to show" rather than throwing.
 	 */
 	static List<Line> of(List<QuestItems.Total> totals)
+	{
+		return of(totals, null);
+	}
+
+	/**
+	 * The same list, with every item one of the eight Grand Exchange slots is
+	 * already buying marked as such.
+	 *
+	 * <p><b>Marked, not dropped.</b> A queued item is not finished with: the
+	 * offer can be cancelled, it can be sitting at three of five, and it
+	 * still has to be collected. Dropping it would make the list shorter and
+	 * the player's job harder, because the thing they most need to know at a
+	 * Grand Exchange counter is which slots they have already spent. So it
+	 * stays on the list and moves to its own section -- see {@link
+	 * GrandExchangeOverlay} for where that lands on screen.
+	 *
+	 * <p>{@link #next} is what actually skips them, and it is the only place
+	 * that does.
+	 *
+	 * @param offers the account's live buy offers, or null when nothing is
+	 *     tracking them -- which yields exactly the unmarked list {@link
+	 *     #of(List)} always returned
+	 */
+	static List<Line> of(List<QuestItems.Total> totals, GrandExchangeOffers offers)
+	{
+		return of(totals, offers, null);
+	}
+
+	/**
+	 * The same list again, with each line also told whether the Grand
+	 * Exchange trades it at all.
+	 *
+	 * <p><b>Karamjan rum is why this parameter exists.</b> The list is built
+	 * from every outstanding quest item, and plenty of those are never sold
+	 * at a Grand Exchange counter -- they are found, stolen, or handed over
+	 * during the quest itself. Offering one as the next thing to buy is the
+	 * failure this project rules out everywhere else: never suggest
+	 * something the account cannot act on. {@link #next} and {@link #left}
+	 * now skip them and {@link #unbuyable} collects them, so they are moved
+	 * rather than hidden -- the player still needs them, just not from here.
+	 *
+	 * @param tradeability how to ask, or null for "assume everything is
+	 *     buyable", which is what the two-argument form does and what every
+	 *     caller with no client to ask gets
+	 */
+	static List<Line> of(List<QuestItems.Total> totals, GrandExchangeOffers offers,
+		Tradeability tradeability)
 	{
 		if (totals == null || totals.isEmpty())
 		{
@@ -96,9 +236,100 @@ final class GrandExchangeShoppingList
 				// have -- noise, not information.
 				continue;
 			}
-			out.add(new Line(total.name(), total.itemId(), total.outstanding()));
+			GrandExchangeOffers.Order order = offers == null
+				? null
+				: offers.forItem(total.itemId(), total.name());
+			Availability availability = tradeability == null
+				? Availability.BUYABLE
+				: tradeability.of(total.itemId(), total.name());
+			out.add(new Line(total.name(), total.itemId(), total.outstanding(), order,
+				availability == null ? Availability.UNKNOWN : availability));
 		}
 		out.sort(Comparator.comparing(Line::name, String.CASE_INSENSITIVE_ORDER));
+		return out;
+	}
+
+	/**
+	 * The one item to buy right now: the first line no slot is already
+	 * buying, or null when every outstanding item is already on offer.
+	 *
+	 * <p>Null is a real answer and a good one -- "you have asked for
+	 * everything you still need" -- and it is why the caller must not fall
+	 * back to the head of the list when this returns nothing. Suggesting an
+	 * item the player has already bought is the bug this whole pass exists
+	 * to fix.
+	 */
+	static Line next(List<Line> lines)
+	{
+		List<Line> left = left(lines);
+		return left.isEmpty() ? null : left.get(0);
+	}
+
+	/** Every line already on offer, in the list's own order. */
+	static List<Line> queued(List<Line> lines)
+	{
+		if (lines == null)
+		{
+			return Collections.emptyList();
+		}
+		List<Line> out = new ArrayList<>();
+		for (Line line : lines)
+		{
+			if (line.queued())
+			{
+				out.add(line);
+			}
+		}
+		return out;
+	}
+
+	/**
+	 * Every line still to buy here, in the list's own order -- {@link #next}
+	 * included, as its head.
+	 *
+	 * <p>Not on offer, and actually sold at a Grand Exchange. A line failing
+	 * either test is on {@link #unbuyable} instead.
+	 */
+	static List<Line> left(List<Line> lines)
+	{
+		if (lines == null)
+		{
+			return Collections.emptyList();
+		}
+		List<Line> out = new ArrayList<>();
+		for (Line line : lines)
+		{
+			if (!line.queued() && line.buyable())
+			{
+				out.add(line);
+			}
+		}
+		return out;
+	}
+
+	/**
+	 * Everything outstanding that a Grand Exchange cannot supply -- see
+	 * {@link Availability} for the two ways a line lands here and why they
+	 * are not merged.
+	 *
+	 * <p>Listed rather than dropped. These are still things the account
+	 * needs; they just come from somewhere else, and a buy list that silently
+	 * shortened itself would leave the player believing the trip was over.
+	 */
+	static List<Line> unbuyable(List<Line> lines)
+	{
+		if (lines == null)
+		{
+			return Collections.emptyList();
+		}
+		List<Line> out = new ArrayList<>();
+		for (Line line : lines)
+		{
+			if (!line.queued() && !line.buyable())
+			{
+				out.add(line);
+			}
+		}
 		return out;
 	}
 }

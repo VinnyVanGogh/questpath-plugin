@@ -29,7 +29,10 @@ import net.runelite.api.Skill;
 import net.runelite.api.Actor;
 import net.runelite.api.NPC;
 import net.runelite.api.coords.WorldPoint;
+import net.runelite.api.GrandExchangeOffer;
+import net.runelite.api.ItemComposition;
 import net.runelite.api.events.GameStateChanged;
+import net.runelite.api.events.GrandExchangeOfferChanged;
 import net.runelite.client.chat.ChatColorType;
 import net.runelite.client.chat.ChatMessageBuilder;
 import net.runelite.client.chat.QueuedMessage;
@@ -171,6 +174,17 @@ public class QuestpathPlugin extends Plugin
 	 * that class's own doc for what it draws and where.
 	 */
 	private GrandExchangeSuggestionRow geSuggestionRow;
+
+	/**
+	 * Which of the account's eight Grand Exchange slots hold a live buy
+	 * offer -- what turns "already asked for" into a state the shopping list
+	 * can see, rather than one only the player is holding in their head.
+	 *
+	 * <p>Never null and never replaced: {@link #onGrandExchangeOfferChanged}
+	 * writes into it and {@link #onGameStateChanged} clears it, so nothing
+	 * has to null-check a field that is only ever empty or full.
+	 */
+	private final GrandExchangeOffers geOffers = new GrandExchangeOffers();
 
 	/**
 	 * Whether questpath's bank layout is the one on screen.
@@ -592,7 +606,13 @@ public class QuestpathPlugin extends Plugin
 			},
 			itemName ->
 			{
-				client.setVarcStrValue(VarClientStr.INPUT_TEXT, itemName);
+				// searchText, not the name as questpath holds it: the wiki's
+				// title case makes RuneLite's own case-sensitive filter miss
+				// every time and fall back to a fuzzy search, which draws the
+				// results underlined as though the spelling were wrong. See
+				// GrandExchangeSearchBridge#searchText for the disassembly.
+				client.setVarcStrValue(VarClientStr.INPUT_TEXT,
+					GrandExchangeSearchBridge.searchText(itemName));
 				// GE_ITEM_SEARCH (752) takes three int arguments and this
 				// class has no verified call site for them -- see
 				// GrandExchangeSearchBridge's own class doc for the
@@ -633,6 +653,7 @@ public class QuestpathPlugin extends Plugin
 		overlays.add(new NeededItemsOverlay(this, config, overlayIcons, client));
 		overlays.add(new ShopRouteOverlay(this, config, overlayIcons, this::shopLocation,
 			this::dropLocation, this::playerLocation, shopItemSkips));
+		overlays.add(new GrandExchangeOverlay(this, config, overlayIcons, client, this::grandExchangeList));
 		overlays.add(new CombatXpOverlay(this, config, overlayIcons));
 		overlays.add(new BuildRulesOverlay(this, config, overlayIcons));
 		for (QuestpathOverlay overlay : overlays)
@@ -1212,6 +1233,10 @@ public class QuestpathPlugin extends Plugin
 			// one. Reporting the previous account's items would be worse than
 			// reporting none.
 			owned.clear();
+			// Nor are the previous account's Grand Exchange slots this one's.
+			// The client re-fires every slot on the next login, so this only
+			// has to avoid answering with stale offers in between.
+			geOffers.clear();
 			completions.reset();
 			// The next login may stand in front of a different shop, or none
 			// at all -- the previous account's "just opened" state must not
@@ -1576,6 +1601,25 @@ public class QuestpathPlugin extends Plugin
 	 */
 	private GrandExchangeShoppingList.Line nextGrandExchangeSuggestion()
 	{
+		// next(), not the head of the list. The head may be something one of
+		// the eight slots is already buying, and suggesting that is the bug
+		// this whole pass exists to fix -- see GrandExchangeShoppingList#next.
+		return GrandExchangeShoppingList.next(grandExchangeList());
+	}
+
+	/**
+	 * The account's whole Grand Exchange buy list, each line marked with the
+	 * live offer already covering it -- {@link GrandExchangeOverlay}'s own
+	 * supplier, and the list {@link #nextGrandExchangeSuggestion} picks from.
+	 *
+	 * <p>Null, not empty, when there is nothing to answer with at all. An
+	 * empty list means "nothing left to buy", which is a real and good
+	 * answer, and the two must not render the same -- this project's
+	 * standing rule that a missing answer never gets to look like a
+	 * satisfied one.
+	 */
+	java.util.List<GrandExchangeShoppingList.Line> grandExchangeList()
+	{
 		if (!grandExchangeAvailable())
 		{
 			return null;
@@ -1585,8 +1629,47 @@ public class QuestpathPlugin extends Plugin
 		{
 			return null;
 		}
-		java.util.List<GrandExchangeShoppingList.Line> lines = GrandExchangeShoppingList.of(snapshot.items().totals());
-		return lines.isEmpty() ? null : lines.get(0);
+		return GrandExchangeShoppingList.of(snapshot.items().totals(), geOffers, this::tradeability);
+	}
+
+	/**
+	 * Whether the Grand Exchange trades an item at all, for {@link
+	 * GrandExchangeShoppingList}'s own buy list.
+	 *
+	 * <p><b>Karamjan rum is the case this is here for.</b> The shopping list
+	 * is built from every outstanding quest item, and a great many of those
+	 * are never sold at a Grand Exchange -- they are found, stolen, or
+	 * handed to you mid-quest. Offering one as the next thing to buy breaks
+	 * this project's oldest rule: never suggest something the account cannot
+	 * act on.
+	 *
+	 * <p>{@code isGeTradeable()} is the authority rather than a list of
+	 * exceptions questpath would have to maintain -- it is the same flag
+	 * RuneLite's own bundled Grand Exchange plugin filters its search
+	 * results on, so an item this reports as tradeable is exactly an item
+	 * that box can find.
+	 *
+	 * <p>Runs on the client thread only, which both callers already are:
+	 * {@link GrandExchangeOverlay} renders there, and {@link
+	 * #nextGrandExchangeSuggestion} is read from a widget callback.
+	 */
+	private GrandExchangeShoppingList.Availability tradeability(int itemId, String name)
+	{
+		if (itemId <= 0)
+		{
+			// No id to ask about. Overwhelmingly these are requirements the
+			// wiki states as prose rather than named items -- see
+			// GrandExchangeShoppingList.Availability#UNKNOWN.
+			return GrandExchangeShoppingList.Availability.UNKNOWN;
+		}
+		ItemComposition item = itemManager.getItemComposition(itemId);
+		if (item == null)
+		{
+			return GrandExchangeShoppingList.Availability.UNKNOWN;
+		}
+		return item.isGeTradeable()
+			? GrandExchangeShoppingList.Availability.BUYABLE
+			: GrandExchangeShoppingList.Availability.NOT_ON_GE;
 	}
 
 	/**
@@ -2057,6 +2140,57 @@ public class QuestpathPlugin extends Plugin
 	QuestpathConfig config()
 	{
 		return config;
+	}
+
+	/**
+	 * Tracks what the account's eight Grand Exchange slots are buying, so the
+	 * shopping list can move on the moment an offer is <em>placed</em> rather
+	 * than when it is finally collected.
+	 *
+	 * <p>Collecting is the only moment {@link QuestItems} can see anything
+	 * change, because it counts what the client says you hold and an offer
+	 * sitting in a slot is not held. Without this the list went on naming an
+	 * item that was already bought and waiting, and the player had to
+	 * remember which slots they had spent -- which is the bookkeeping the
+	 * list exists to do for them.
+	 *
+	 * <p>The client fires this for every slot at login, which is what seeds
+	 * the state; nothing has to walk the slots itself.
+	 *
+	 * <p><b>The item's name is resolved here rather than inside {@link
+	 * GrandExchangeOffers}.</b> {@code ItemManager#getItemComposition} must
+	 * run on the client thread, which this event already is, and keeping the
+	 * lookup out of that class leaves it pure state that a test can drive
+	 * without a client at all. A null composition narrows matching to the
+	 * item id rather than dropping the offer -- see {@link
+	 * GrandExchangeOffers#update}.
+	 */
+	@Subscribe
+	public void onGrandExchangeOfferChanged(GrandExchangeOfferChanged event)
+	{
+		GrandExchangeOffer offer = event.getOffer();
+		if (offer == null)
+		{
+			return;
+		}
+		String name = null;
+		if (offer.getItemId() > 0)
+		{
+			ItemComposition item = itemManager.getItemComposition(offer.getItemId());
+			name = item == null ? null : item.getName();
+		}
+		geOffers.update(event.getSlot(), offer.getState(), offer.getItemId(), name,
+			offer.getTotalQuantity(), offer.getQuantitySold());
+
+		// The row is only ever showing while the search chatbox is open, and
+		// placing an offer closes it -- but a second client window, or an
+		// offer completing while the box is up, both leave a row on screen
+		// naming something now queued. Redrawing is cheap and a stale
+		// suggestion is not.
+		if (geSuggestionRow != null)
+		{
+			geSuggestionRow.attach();
+		}
 	}
 
 	/**

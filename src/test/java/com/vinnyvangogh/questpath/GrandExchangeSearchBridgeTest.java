@@ -106,6 +106,28 @@ public class GrandExchangeSearchBridgeTest
 	}
 
 	/**
+	 * The search text goes in lower case, and that is not a style choice.
+	 *
+	 * <p>RuneLite's own bundled Grand Exchange plugin filters with {@code
+	 * item.getName().toLowerCase().contains(search)} and never lower-cases
+	 * {@code search}, which it reads straight out of varcstr 359. A capital
+	 * letter therefore matches nothing, that filter returns zero results, and
+	 * the plugin falls back to a fuzzy search -- which draws every result
+	 * with its matching prefix underlined, and reads to a player as the game
+	 * telling them they have misspelled it. questpath's names are the wiki's,
+	 * which are title case, so every search it sent hit this. See {@link
+	 * GrandExchangeSearchBridge#searchText} for the disassembly it was traced
+	 * with.
+	 */
+	@Test
+	public void searchTextIsLowerCasedSoTheNativeFilterCanMatchIt()
+	{
+		assertEquals("air talisman", GrandExchangeSearchBridge.searchText("Air talisman"));
+		assertEquals("karamjan rum", GrandExchangeSearchBridge.searchText("  Karamjan rum  "));
+		assertEquals("", GrandExchangeSearchBridge.searchText(null));
+	}
+
+	/**
 	 * Neither {@code open} nor {@code action} may run before the client
 	 * thread hand-off has actually run its task -- the same regression shape
 	 * {@link ShortestPathBridgeTest#clientThreadEventPosterNeverPostsWithoutTheHandoffRunningItsTask}

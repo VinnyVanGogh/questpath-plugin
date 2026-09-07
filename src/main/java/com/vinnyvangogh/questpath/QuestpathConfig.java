@@ -419,6 +419,57 @@ public interface QuestpathConfig extends Config
 		return PanelListLength.MATCH_SHARED;
 	}
 
+	/**
+	 * <b>On by default, unlike every other overlay here.</b> The others are
+	 * opt-in because they are on screen the whole time once ticked and only
+	 * some players want each. This one draws only while the Grand Exchange
+	 * window is actually open, and only for an account that has a Grand
+	 * Exchange at all -- so left off it is not a quiet default, it is a
+	 * feature nobody ever finds. The quantity to buy is on it and nowhere
+	 * else, which makes a hidden-by-default version actively misleading:
+	 * questpath's row in the search box fills in an item name and never a
+	 * number.
+	 */
+	@ConfigItem(
+		keyName = "overlayGrandExchange",
+		name = "Grand Exchange: queued, next, left",
+		description = "While the Grand Exchange is open: the one item to buy next and how many,"
+			+ " what you already have on offer and how far along it is, and what is still left"
+			+ " after that. Never shown to an ironman, who has no Grand Exchange to use.",
+		section = overlaySection,
+		position = 37
+	)
+	default boolean overlayGrandExchange()
+	{
+		return true;
+	}
+
+	@ConfigItem(
+		keyName = "overlayGrandExchangeWidth",
+		name = "- width",
+		description = "Width for the Grand Exchange panel alone.",
+		section = overlaySection,
+		position = 38
+	)
+	default PanelWidth overlayGrandExchangeWidth()
+	{
+		return PanelWidth.MATCH_SHARED;
+	}
+
+	@ConfigItem(
+		keyName = "overlayGrandExchangeLength",
+		name = "- length",
+		description = "How much of what is left to list under the next item. \"Next\" and"
+			+ " \"Queued\" are barely affected -- one item and eight slots are the whole"
+			+ " point of the panel, and both are small however this is set.",
+		section = overlaySection,
+		position = 39
+	)
+	default PanelListLength overlayGrandExchangeLength()
+	{
+		return PanelListLength.MATCH_SHARED;
+	}
+
 	@ConfigItem(
 		keyName = "overlayCombatXp",
 		name = "Combat XP to next level",
