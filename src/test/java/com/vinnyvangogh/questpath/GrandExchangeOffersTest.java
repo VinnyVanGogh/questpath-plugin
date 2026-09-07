@@ -55,7 +55,37 @@ public class GrandExchangeOffersTest
 		GrandExchangeOffers.Order order = offers.forItem(AIR_TALISMAN, "Air talisman");
 		assertNotNull(order);
 		assertTrue("finished buying, so this one is a click from done", order.complete());
-		assertEquals("5 of 5 -- collect", order.describe());
+		assertEquals(5, order.bought());
+	}
+
+	/**
+	 * A partly-filled offer can already cover a small need.
+	 *
+	 * <p>Partial fills reach the collection box as they arrive, so an offer
+	 * for ten covers a need for one long before it finishes. Testing {@code
+	 * complete()} instead would leave the panel telling the player to keep
+	 * waiting for something already sitting there.
+	 */
+	@Test
+	public void aPartialFillCanAlreadyCoverASmallerNeed()
+	{
+		GrandExchangeOffers offers = new GrandExchangeOffers();
+		offers.update(0, GrandExchangeOfferState.BUYING, AIR_TALISMAN, "Air talisman", 10, 3);
+
+		GrandExchangeOffers.Order order = offers.forItem(AIR_TALISMAN, "Air talisman");
+		assertFalse("the offer itself is not finished", order.complete());
+		assertTrue("but three have arrived and only one was wanted", order.covers(1));
+		assertFalse("five have not arrived", order.covers(5));
+	}
+
+	/** Nothing arrived covers nothing, however small the need. */
+	@Test
+	public void anEmptyOfferCoversNothing()
+	{
+		GrandExchangeOffers offers = new GrandExchangeOffers();
+		offers.update(0, GrandExchangeOfferState.BUYING, AIR_TALISMAN, "Air talisman", 10, 0);
+
+		assertFalse(offers.forItem(AIR_TALISMAN, "Air talisman").covers(0));
 	}
 
 	/**

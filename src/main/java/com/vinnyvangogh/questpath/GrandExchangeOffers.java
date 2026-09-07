@@ -117,10 +117,18 @@ final class GrandExchangeOffers
 			return complete;
 		}
 
-		/** "3 of 5", or "5 of 5 -- collect" once finished. */
-		String describe()
+		/**
+		 * Whether enough has arrived to satisfy a need of this size.
+		 *
+		 * <p>Partial fills reach the collection box as they arrive, so an
+		 * offer for ten can already cover a need for one long before it
+		 * finishes. Waiting for {@link #complete} to say so would leave the
+		 * panel telling the player to keep waiting for something they could
+		 * collect right now.
+		 */
+		boolean covers(long needed)
 		{
-			return bought + " of " + quantity + (complete ? " -- collect" : "");
+			return bought > 0 && bought >= needed;
 		}
 	}
 

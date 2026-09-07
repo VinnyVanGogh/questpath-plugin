@@ -183,14 +183,13 @@ class GrandExchangeOverlay extends QuestpathOverlay
 			for (int i = 0; i < shown; i++)
 			{
 				GrandExchangeShoppingList.Line line = queued.get(i);
-				GrandExchangeOffers.Order order = line.order();
-				// Green once the offer has finished buying and is only
-				// waiting to be collected, because that one is a click away
-				// from being genuinely done; muted while it is still filling,
-				// because there is nothing to do about it.
-				rows.add(OverlayRow.item(line.itemId(), line.name(), order.describe(),
+				// Green once there is enough in the collection box to cover
+				// what this item was bought for, because that one is a walk
+				// away from being genuinely done; muted while it is still
+				// filling, because there is nothing to do about it yet.
+				rows.add(OverlayRow.item(line.itemId(), line.name(), line.progress(),
 					true, OverlayTheme.TEXT,
-					order.complete() ? OverlayTheme.GOOD : OverlayTheme.MUTED));
+					line.collectable() ? OverlayTheme.GOOD : OverlayTheme.MUTED));
 			}
 			int remaining = queued.size() - shown;
 			if (remaining > 0)

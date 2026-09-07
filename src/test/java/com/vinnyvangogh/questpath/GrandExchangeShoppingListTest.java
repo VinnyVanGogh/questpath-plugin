@@ -116,7 +116,7 @@ public class GrandExchangeShoppingListTest
 
 		assertEquals(2, lines.size());
 		assertTrue(lines.get(0).queued());
-		assertEquals("2 of 5", lines.get(0).order().describe());
+		assertEquals("2 of 5", lines.get(0).progress());
 		assertFalse(lines.get(1).queued());
 	}
 
@@ -196,6 +196,72 @@ public class GrandExchangeShoppingListTest
 		assertTrue(GrandExchangeShoppingList.queued(lines).isEmpty());
 		assertEquals(2, GrandExchangeShoppingList.left(lines).size());
 		assertEquals("Air talisman", GrandExchangeShoppingList.next(lines).name());
+	}
+
+	/**
+	 * Progress counts against what the account needs, not against the size of
+	 * the offer.
+	 *
+	 * <p>The reported case exactly: one Pot of flour wanted, ten bought,
+	 * which used to read "10 of 10" -- a true sentence about the offer and a
+	 * useless one about the trip. The overshoot is shown rather than clamped,
+	 * because rounding it to "1 of 1" would hide nine items sitting in the
+	 * collection box.
+	 */
+	@Test
+	public void progressCountsAgainstTheNeedNotTheOffer()
+	{
+		List<QuestItems.Total> totals = Collections.singletonList(total("Pot of flour", 1929, 1, 0));
+
+		List<GrandExchangeShoppingList.Line> lines =
+			GrandExchangeShoppingList.of(totals, buying("Pot of flour", 1929, 10, 10));
+
+		assertEquals("10 of 1 -- collect", lines.get(0).progress());
+	}
+
+	/**
+	 * Enough having arrived is what makes a line collectable, not the offer
+	 * having finished.
+	 *
+	 * <p>Partial fills reach the collection box as they arrive, so an offer
+	 * for ten covers a need for one immediately. Waiting on the offer would
+	 * tell the player to keep waiting for something already sitting there.
+	 */
+	@Test
+	public void aPartlyFilledOfferIsCollectableOnceItCoversTheNeed()
+	{
+		List<QuestItems.Total> totals = Collections.singletonList(total("Pot of flour", 1929, 1, 0));
+
+		List<GrandExchangeShoppingList.Line> lines =
+			GrandExchangeShoppingList.of(totals, buying("Pot of flour", 1929, 10, 3));
+
+		assertTrue(lines.get(0).collectable());
+		assertEquals("3 of 1 -- collect", lines.get(0).progress());
+	}
+
+	/** Nothing arrived yet is neither collectable nor dressed up as progress. */
+	@Test
+	public void anUnfilledOfferReadsAsNothingArrivedYet()
+	{
+		List<QuestItems.Total> totals = Collections.singletonList(total("Red dye", 1763, 1, 0));
+
+		List<GrandExchangeShoppingList.Line> lines =
+			GrandExchangeShoppingList.of(totals, buying("Red dye", 1763, 1, 0));
+
+		assertFalse(lines.get(0).collectable());
+		assertEquals("0 of 1", lines.get(0).progress());
+	}
+
+	/** A line nothing is buying has no progress to report. */
+	@Test
+	public void anUnqueuedLineHasNoProgress()
+	{
+		List<QuestItems.Total> totals = Collections.singletonList(total("Rope", 954, 1, 0));
+
+		List<GrandExchangeShoppingList.Line> lines = GrandExchangeShoppingList.of(totals, null);
+
+		assertFalse(lines.get(0).collectable());
+		assertEquals("", lines.get(0).progress());
 	}
 
 	// ------------------------------------------------------------------

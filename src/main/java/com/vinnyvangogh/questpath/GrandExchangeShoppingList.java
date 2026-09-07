@@ -161,6 +161,42 @@ final class GrandExchangeShoppingList
 		{
 			return availability == Availability.BUYABLE;
 		}
+
+		/**
+		 * How far a queued item has got, counted against what the account
+		 * needs -- "1 of 1", "10 of 1", "0 of 1 -- collect".
+		 *
+		 * <p><b>The denominator is the need, not the size of the offer.</b>
+		 * It used to be the offer's own quantity, which made buying ten of
+		 * something a quest wants one of read "10 of 10" -- a true sentence
+		 * about the offer and a useless one about the trip. Only a line knows
+		 * both halves, which is why the wording lives here rather than on
+		 * {@link GrandExchangeOffers.Order}: an offer has no idea what it was
+		 * placed for.
+		 *
+		 * <p>Overshooting is shown rather than clamped. "10 of 1" is the
+		 * honest reading of ten bought against one wanted, and rounding it
+		 * down to "1 of 1" would hide nine items sitting in the collection
+		 * box.
+		 */
+		String progress()
+		{
+			if (order == null)
+			{
+				return "";
+			}
+			return order.bought() + " of " + outstanding + (collectable() ? " -- collect" : "");
+		}
+
+		/**
+		 * Whether there is something in the collection box worth walking over
+		 * for: enough has arrived to cover the need, or the offer has
+		 * finished and there is nothing more coming.
+		 */
+		boolean collectable()
+		{
+			return order != null && (order.covers(outstanding) || order.complete());
+		}
 	}
 
 	/**
