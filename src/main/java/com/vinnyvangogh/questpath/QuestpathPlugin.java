@@ -35,6 +35,7 @@ import net.runelite.client.chat.ChatMessageBuilder;
 import net.runelite.client.chat.QueuedMessage;
 import net.runelite.api.events.GameTick;
 import net.runelite.api.ScriptID;
+import net.runelite.api.VarClientStr;
 import net.runelite.api.events.MenuOptionClicked;
 import net.runelite.api.events.ScriptPostFired;
 import net.runelite.api.events.WidgetLoaded;
@@ -331,6 +332,24 @@ public class QuestpathPlugin extends Plugin
 	private ShortestPathBridge shortestPathBridge;
 
 	/**
+	 * Built once in {@link #startUp}, same shape as {@link
+	 * #shortestPathBridge}: it needs {@code client} and {@code clientThread}
+	 * wired into lambdas rather than a RuneLite instance of its own, so a
+	 * test can stand in for both without constructing a real {@code Client}.
+	 * Unlike {@link #shortestPathBridge} and {@link #questHelperBridge} it
+	 * talks to no other plugin -- see its class doc.
+	 */
+	private GrandExchangeSearchBridge geSearchBridge;
+
+	/**
+	 * The account's own RuneLite account type, refreshed every game tick --
+	 * see {@link #lastKnownPlayerLocation} for why a Swing caller cannot ask
+	 * {@code client} for this directly, the same reasoning applies here.
+	 * Null before the client has read one, e.g. at the login screen.
+	 */
+	private net.runelite.api.vars.AccountType accountType;
+
+	/**
 	 * Notices when the route's current step finishes, for {@link
 	 * QuestpathConfig#autoAdvanceQuestHelper}.
 	 *
@@ -539,8 +558,30 @@ public class QuestpathPlugin extends Plugin
 			// clientThreadEventPoster's doc for the fix and why it works
 			// from either thread.
 			ShortestPathBridge.clientThreadEventPoster(clientThread::invoke, eventBus::post));
+		geSearchBridge = new GrandExchangeSearchBridge(
+			// InterfaceID.GeOffers.UNIVERSE (30474240) is the packed id of
+			// the Grand Exchange window's own root widget -- group 465,
+			// child 0, the same id the deprecated
+			// WidgetInfo.GRAND_EXCHANGE_WINDOW_CONTAINER resolves to.
+			// Non-null (and not hidden) exactly when that window is open.
+			// Only ever called from inside geSearchBridge's own
+			// client-thread hand-off -- see GrandExchangeSearchBridge's
+			// class doc for why that matters here the same way it does for
+			// shortestPathBridge above.
+			() ->
+			{
+				Widget window = client.getWidget(InterfaceID.GeOffers.UNIVERSE);
+				return window != null && !window.isHidden();
+			},
+			itemName ->
+			{
+				client.setVarcStrValue(VarClientStr.INPUT_TEXT, itemName);
+				client.runScript(ScriptID.GE_ITEM_SEARCH);
+			},
+			clientThread::invoke);
 		panel = new QuestpathPanel(sprites, new OverlaySettingsPanel(config, configManager),
-			this::skillPlan, questHelperBridge, shortestPathBridge, this::shopLocation,
+			this::skillPlan, questHelperBridge, shortestPathBridge, geSearchBridge,
+			this::grandExchangeAvailable, this::shopLocation,
 			this::dropLocation, this::lastKnownPlayerLocation, this::onShopRouteSent,
 			this::cancelShopRoute,
 			this::shopRouteActive,
@@ -761,6 +802,11 @@ public class QuestpathPlugin extends Plugin
 	@Subscribe
 	public void onGameTick(GameTick event)
 	{
+		// Cached every tick rather than read live from grandExchangeAvailable
+		// -- see lastKnownPlayerLocation's own doc for why a Swing caller
+		// (the panel's Items tab) must never read Client state directly.
+		accountType = client.getAccountType();
+
 		// Unconditional, unlike the refresh below: this is about whether a
 		// shop interface is open right now, which has nothing to do with
 		// whether the account's own state changed this tick.
@@ -1156,6 +1202,12 @@ public class QuestpathPlugin extends Plugin
 			// nothing for another account's, and could even hide a genuine
 			// shortfall on it by coincidence of a shared item name.
 			shopItemSkips.clear();
+			// The next login may be a different account of a different type
+			// entirely -- an ironman logging out and a main logging in on
+			// the same client session must not keep seeing the previous
+			// account's Grand Exchange availability until the first tick
+			// re-reads it.
+			accountType = null;
 		}
 	}
 
@@ -1440,6 +1492,25 @@ public class QuestpathPlugin extends Plugin
 	WorldPoint lastKnownPlayerLocation()
 	{
 		return lastPlayerLocation;
+	}
+
+	/**
+	 * Whether this account has Grand Exchange access at all -- the gate
+	 * {@link QuestpathPanel} uses to decide whether its Grand Exchange list
+	 * appears, automatically and with no config item of its own: see
+	 * {@link GrandExchangeAccounts}'s own doc for why the client's own
+	 * account type is the right source, and this project's rule against
+	 * ever suggesting something an account cannot act on for why an
+	 * ironman must never see this section, toggle or not.
+	 *
+	 * <p>Reads the cached {@link #accountType} rather than the client
+	 * directly, the same reasoning {@link #lastKnownPlayerLocation} documents
+	 * at length: {@code Client#getAccountType()} is exactly the kind of call
+	 * that must not be made from the panel's own Swing thread.
+	 */
+	boolean grandExchangeAvailable()
+	{
+		return GrandExchangeAccounts.canUseGrandExchange(accountType);
 	}
 
 	/**

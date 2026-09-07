@@ -222,6 +222,23 @@ class QuestpathPanel extends PluginPanel
 	private final ShortestPathBridge shortestPathBridge;
 
 	/**
+	 * Puts a clicked item's name into the Grand Exchange's own search box.
+	 * Only ever reachable for an account {@link #geAvailable} reports true
+	 * for -- see {@link GrandExchangeAccounts}'s own doc.
+	 */
+	private final GrandExchangeSearchBridge geSearchBridge;
+
+	/**
+	 * Whether this account can use the Grand Exchange at all, cached by
+	 * {@code QuestpathPlugin} from the client's own account type -- see
+	 * {@code QuestpathPlugin#grandExchangeAvailable}'s doc for why this
+	 * panel cannot ask the client directly. The one gate the Grand Exchange
+	 * list is behind: automatic, not a config item, so an ironman never
+	 * sees it however any setting is left.
+	 */
+	private final java.util.function.BooleanSupplier geAvailable;
+
+	/**
 	 * Where to walk for a shop by name, or null when the bundled graph
 	 * carries no coordinate for it. A callback rather than a graph of its
 	 * own for the same reason {@link #planner} is one: the panel should not
@@ -270,6 +287,7 @@ class QuestpathPanel extends PluginPanel
 	QuestpathPanel(SpriteManager sprites, OverlaySettingsPanel overlaySettings,
 		java.util.function.BiFunction<String, Integer, SkillPlan> planner,
 		QuestHelperBridge questHelperBridge, ShortestPathBridge shortestPathBridge,
+		GrandExchangeSearchBridge geSearchBridge, java.util.function.BooleanSupplier geAvailable,
 		java.util.function.Function<String, WorldPoint> shopLocator,
 		java.util.function.Function<String, WorldPoint> dropLocator,
 		java.util.function.Supplier<WorldPoint> playerLocation, Runnable onShopRouteSent,
@@ -280,6 +298,8 @@ class QuestpathPanel extends PluginPanel
 		this.planner = planner;
 		this.questHelperBridge = questHelperBridge;
 		this.shortestPathBridge = shortestPathBridge;
+		this.geSearchBridge = geSearchBridge;
+		this.geAvailable = geAvailable;
 		this.shopLocator = shopLocator;
 		this.dropLocator = dropLocator;
 		this.playerLocation = playerLocation;
@@ -887,6 +907,17 @@ class QuestpathPanel extends PluginPanel
 			panel.add(Box.createVerticalStrut(12));
 		}
 
+		if (!filtering && geAvailable.getAsBoolean())
+		{
+			// Automatic, not a config item: see QuestpathPlugin
+			// #grandExchangeAvailable's doc for why the account's own type
+			// is the whole gate, and GrandExchangeAccounts for why an
+			// ironman can never reach this branch regardless of anything a
+			// player could toggle.
+			panel.add(grandExchangeBlock(items));
+			panel.add(Box.createVerticalStrut(8));
+		}
+
 		if (!filtering)
 		{
 			panel.add(shopRouteButton(items));
@@ -1038,6 +1069,102 @@ class QuestpathPanel extends PluginPanel
 	 * honest state {@link ShortestPathBridge}'s class doc describes for a
 	 * bundle version too old to carry shop data at all.
 	 */
+	/**
+	 * The flat, ordered buy list for an account with a Grand Exchange -- see
+	 * {@link GrandExchangeShoppingList}'s own class doc for why its order is
+	 * plain alphabetical rather than {@link QuestItems.Total}'s own
+	 * walking-tour order, and {@link GrandExchangeSearchBridge}'s for what a
+	 * click actually does. This block never appears for an account {@link
+	 * #geAvailable} reports false for -- see this method's own caller.
+	 */
+	private JPanel grandExchangeBlock(QuestItems items)
+	{
+		JPanel panel = column();
+
+		JLabel heading = new JLabel("GRAND EXCHANGE LIST");
+		heading.setFont(FontManager.getRunescapeSmallFont().deriveFont(Font.BOLD));
+		heading.setForeground(ColorScheme.BRAND_ORANGE);
+		panel.add(heading);
+
+		List<GrandExchangeShoppingList.Line> lines = GrandExchangeShoppingList.of(items.totals());
+		if (lines.isEmpty())
+		{
+			panel.add(muted("Nothing outstanding is buyable -- the list below covers what is left."));
+			return panel;
+		}
+
+		JLabel hint = new JLabel(wrap("Click an item to search for it at the Grand Exchange."
+			+ " Only does anything while the Grand Exchange window is open."));
+		hint.setFont(FontManager.getRunescapeSmallFont());
+		hint.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
+		panel.add(hint);
+		panel.add(Box.createVerticalStrut(4));
+
+		JPanel geGrid = grid();
+		for (GrandExchangeShoppingList.Line line : lines)
+		{
+			JLabel left = addRow(geGrid, line.name(), String.valueOf(line.outstanding()),
+				ColorScheme.LIGHT_GRAY_COLOR, null);
+			attachGrandExchangeSearch(left, line.name());
+		}
+		panel.add(geGrid);
+		return panel;
+	}
+
+	/**
+	 * Left-click a Grand Exchange list row to search for it -- see {@link
+	 * GrandExchangeSearchBridge#search} for exactly what that does and does
+	 * not confirm.
+	 *
+	 * <p>The outcome always lands somewhere, on the EDT: a click that does
+	 * nothing because the window is closed, or because the client call
+	 * itself failed, must say so rather than read as "nothing needed" -- the
+	 * rule this whole feature was built under.
+	 */
+	private void attachGrandExchangeSearch(JComponent row, String itemName)
+	{
+		row.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+		row.setToolTipText("Click to search the Grand Exchange for \"" + itemName + "\".");
+		row.addMouseListener(new java.awt.event.MouseAdapter()
+		{
+			@Override
+			public void mouseClicked(java.awt.event.MouseEvent event)
+			{
+				if (event.getButton() != java.awt.event.MouseEvent.BUTTON1)
+				{
+					return;
+				}
+				geSearchBridge.search(itemName, outcome ->
+					SwingUtilities.invokeLater(() -> reportGrandExchangeOutcome(outcome, itemName)));
+			}
+		});
+	}
+
+	/**
+	 * Turns a {@link GrandExchangeSearchBridge.Outcome} into what the player
+	 * sees. {@link GrandExchangeSearchBridge.Outcome#SENT} is not
+	 * confirmation the search box visibly updated -- see that constant's own
+	 * doc -- so the toast says "searched", the same understated verb {@link
+	 * #reportRouteOutcome} uses for {@code SENT}, never "found" or "opened".
+	 */
+	private void reportGrandExchangeOutcome(GrandExchangeSearchBridge.Outcome outcome, String itemName)
+	{
+		switch (outcome)
+		{
+			case SENT:
+				showToast("Searched the Grand Exchange for \"" + itemName + "\".");
+				return;
+			case NOT_OPEN:
+				warn("Open the Grand Exchange first -- \"" + itemName + "\" was not searched for.");
+				return;
+			case CALL_FAILED:
+				warn("Searching the Grand Exchange for \"" + itemName + "\" failed. Check the client log.");
+				return;
+			default:
+				// Exhaustive over a closed enum; nothing else to report.
+		}
+	}
+
 	/**
 	 * Stops a shop trip that is under way.
 	 *
