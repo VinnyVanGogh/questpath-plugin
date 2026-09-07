@@ -167,6 +167,12 @@ public class QuestpathPlugin extends Plugin
 	private BankTabLayout bankTab;
 
 	/**
+	 * questpath's own row in the Grand Exchange's item-search chatbox -- see
+	 * that class's own doc for what it draws and where.
+	 */
+	private GrandExchangeSuggestionRow geSuggestionRow;
+
+	/**
 	 * Whether questpath's bank layout is the one on screen.
 	 *
 	 * <p>Off by default, and that is the important half. This is a tab, not a
@@ -563,22 +569,50 @@ public class QuestpathPlugin extends Plugin
 			// the Grand Exchange window's own root widget -- group 465,
 			// child 0, the same id the deprecated
 			// WidgetInfo.GRAND_EXCHANGE_WINDOW_CONTAINER resolves to.
-			// Non-null (and not hidden) exactly when that window is open.
-			// Only ever called from inside geSearchBridge's own
+			// Not enough on its own, though: that window can be open while
+			// showing the quantity/price screen rather than the item-search
+			// chatbox, in which case there is nothing below for the action
+			// to feed text into. Chatbox.MES_LAYER is that chatbox's own
+			// root -- see GrandExchangeSuggestionRow's class doc for how
+			// that packed id was confirmed -- so both must be open for this
+			// to report AVAILABLE rather than a click that quietly does
+			// nothing. Only ever called from inside geSearchBridge's own
 			// client-thread hand-off -- see GrandExchangeSearchBridge's
 			// class doc for why that matters here the same way it does for
 			// shortestPathBridge above.
 			() ->
 			{
 				Widget window = client.getWidget(InterfaceID.GeOffers.UNIVERSE);
-				return window != null && !window.isHidden();
+				if (window == null || window.isHidden())
+				{
+					return false;
+				}
+				Widget search = client.getWidget(InterfaceID.Chatbox.MES_LAYER);
+				return search != null && !search.isHidden();
 			},
 			itemName ->
 			{
 				client.setVarcStrValue(VarClientStr.INPUT_TEXT, itemName);
-				client.runScript(ScriptID.GE_ITEM_SEARCH);
+				// GE_ITEM_SEARCH (752) takes three int arguments and this
+				// class has no verified call site for them -- see
+				// GrandExchangeSearchBridge's own class doc for the
+				// AssertionError that produced, and
+				// GrandExchangeSuggestionRow's for the fix applied here:
+				// replay the search box's own key listener, already built
+				// with whatever arguments it actually needs, rather than
+				// guess a second time.
+				Widget input = client.getWidget(InterfaceID.Chatbox.MES_TEXT2);
+				if (input != null)
+				{
+					Object[] listener = input.getOnKeyListener();
+					if (listener != null)
+					{
+						client.runScript(listener);
+					}
+				}
 			},
 			clientThread::invoke);
+		geSuggestionRow = new GrandExchangeSuggestionRow(client, this::nextGrandExchangeSuggestion);
 		panel = new QuestpathPanel(sprites, new OverlaySettingsPanel(config, configManager),
 			this::skillPlan, questHelperBridge, shortestPathBridge, geSearchBridge,
 			this::grandExchangeAvailable, this::shopLocation,
@@ -757,6 +791,11 @@ public class QuestpathPlugin extends Plugin
 		{
 			bankButton.detach();
 			bankButton = null;
+		}
+		if (geSuggestionRow != null)
+		{
+			geSuggestionRow.detach();
+			geSuggestionRow = null;
 		}
 		if (bankTab != null)
 		{
@@ -1301,6 +1340,16 @@ public class QuestpathPlugin extends Plugin
 
 		panel.update(stats, xp, syncStatus(), buildRules, unmatchedQuests,
 			questVerdicts, items, route, SyncSettings.from(config), report);
+
+		// Keeps the Grand Exchange row in step with a shopping list that
+		// changed while the search chatbox happened to already be open --
+		// e.g. banking an item while shopping for something else. A cheap
+		// no-op the rest of the time: attach() itself returns immediately
+		// when that chatbox is not on screen.
+		if (geSuggestionRow != null)
+		{
+			geSuggestionRow.attach();
+		}
 	}
 
 	/**
@@ -1511,6 +1560,33 @@ public class QuestpathPlugin extends Plugin
 	boolean grandExchangeAvailable()
 	{
 		return GrandExchangeAccounts.canUseGrandExchange(accountType);
+	}
+
+	/**
+	 * The head of the account's Grand Exchange shopping list, or null when
+	 * there is nothing to suggest -- {@link GrandExchangeSuggestionRow}'s
+	 * own supplier.
+	 *
+	 * <p>Reads {@link #overlaySnapshot}, already computed by {@link
+	 * #refresh}'s own pass, rather than calling {@link #questItems()} again:
+	 * that call reads roughly 180 quest varbits, and this is read from a
+	 * widget callback the client can fire on every keystroke in the search
+	 * box -- paying that cost there would make typing in the Grand Exchange
+	 * noticeably slower.
+	 */
+	private GrandExchangeShoppingList.Line nextGrandExchangeSuggestion()
+	{
+		if (!grandExchangeAvailable())
+		{
+			return null;
+		}
+		OverlaySnapshot snapshot = overlaySnapshot;
+		if (snapshot == null || snapshot.items() == null)
+		{
+			return null;
+		}
+		java.util.List<GrandExchangeShoppingList.Line> lines = GrandExchangeShoppingList.of(snapshot.items().totals());
+		return lines.isEmpty() ? null : lines.get(0);
 	}
 
 	/**
@@ -1984,15 +2060,34 @@ public class QuestpathPlugin extends Plugin
 	}
 
 	/**
-	 * Rebuilds the bank grid once the client has finished its own build.
+	 * Rebuilds the bank grid once the client has finished its own build, and
+	 * redraws questpath's Grand Exchange suggestion row after a search runs.
 	 *
 	 * BANKMAIN_FINISHBUILDING is the only point at which the item widgets both
 	 * exist and are final; earlier and there is nothing to move, later and the
 	 * client has already drawn a frame of its own layout.
+	 *
+	 * <p>GE_ITEM_SEARCH (752) is handled first and unconditionally -- it has
+	 * nothing to do with the bank, and gating it behind {@code bankTab != null}
+	 * the way the branches below are would mean questpath's own Grand
+	 * Exchange row goes stale if the bank tab feature ever failed to
+	 * initialise for an unrelated reason. {@code
+	 * GrandExchangePlugin.onScriptPostFired} reacts to the same script id for
+	 * the same reason: it is what runs after the search chatbox's own
+	 * content changes, which is exactly when a row drawn inside it needs
+	 * redrawing. See {@link GrandExchangeSuggestionRow}'s class doc.
 	 */
 	@Subscribe
 	public void onScriptPostFired(ScriptPostFired event)
 	{
+		if (event.getScriptId() == ScriptID.GE_ITEM_SEARCH)
+		{
+			if (geSuggestionRow != null)
+			{
+				geSuggestionRow.attach();
+			}
+			return;
+		}
 		if (bankTab == null)
 		{
 			return;
@@ -2018,15 +2113,26 @@ public class QuestpathPlugin extends Plugin
 	}
 
 	/**
-	 * Rebuilds the bank button each time the bank interface loads.
+	 * Rebuilds the bank button each time the bank interface loads, and draws
+	 * questpath's Grand Exchange suggestion row each time the item-search
+	 * chatbox loads.
 	 *
-	 * The client discards the bank's widget tree when it closes, so a widget
-	 * held from a previous open is stale rather than reusable. Attaching on
-	 * load is the only point at which a parent exists to hang it from.
+	 * The client discards each interface's widget tree when it closes, so a
+	 * widget held from a previous open is stale rather than reusable.
+	 * Attaching on load is the only point at which a parent exists to hang
+	 * one from.
 	 */
 	@Subscribe
 	public void onWidgetLoaded(WidgetLoaded event)
 	{
+		if (event.getGroupId() == InterfaceID.CHATBOX)
+		{
+			if (geSuggestionRow != null)
+			{
+				geSuggestionRow.attach();
+			}
+			return;
+		}
 		if (event.getGroupId() != InterfaceID.BANKMAIN || bankButton == null)
 		{
 			return;

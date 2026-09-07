@@ -50,6 +50,23 @@ import lombok.extern.slf4j.Slf4j;
  * built directly from the four verified members above and cross-checked
  * against that reactive half rather than a matching send call.
  *
+ * <p><b>That absence of a forward call site is exactly what made the first
+ * version of {@link #action} broken.</b> It called {@code
+ * client.runScript(ScriptID.GE_ITEM_SEARCH)} with no further arguments, and
+ * every real click threw: {@code "Script 752 was called with the incorrect
+ * number of arguments; takes 3+0,0, got 0+0+0"}. The four members above are
+ * still exactly right -- the constant, the varcstr, and both methods all
+ * exist and are public -- but a script id alone was never the whole call,
+ * and nothing on this project's classpath calls {@code GE_ITEM_SEARCH}
+ * forward to show what the other three arguments should be. Production
+ * wiring no longer guesses them: see {@link
+ * GrandExchangeSuggestionRow#select}'s own doc for the fix actually
+ * shipped, and {@code QuestpathPlugin#startUp}'s {@code geSearchBridge}
+ * construction for where it replaced the broken call. This class itself did
+ * not change -- the bug was entirely in the {@link #action} lambda supplied
+ * from outside it, not in the open-check/action/client-thread seam this
+ * class provides.
+ *
  * <p><b>Both calls must run on the client thread.</b> See {@link
  * ShortestPathBridge}'s class doc for the exact shape of the failure this
  * project has already hit twice: an assertion that the caller is on the
@@ -93,24 +110,37 @@ class GrandExchangeSearchBridge
 	}
 
 	/**
-	 * True when the Grand Exchange's own interface is on screen. Only ever
-	 * called from inside {@link #onClientThread}'s runnable -- production
-	 * wiring checks {@code client.getWidget(InterfaceID.GeOffers.UNIVERSE)
-	 * != null && !widget.isHidden()}, the same packed id (30474240; group
-	 * 465, child 0) as the deprecated {@code
-	 * WidgetInfo.GRAND_EXCHANGE_WINDOW_CONTAINER}, confirmed against {@code
-	 * runelite-api}'s own compiled constants.
+	 * True when the Grand Exchange's own interface is on screen <b>and</b>
+	 * its item-search chatbox is the thing currently showing inside it --
+	 * only ever called from inside {@link #onClientThread}'s runnable.
+	 * Production wiring checks both {@code
+	 * client.getWidget(InterfaceID.GeOffers.UNIVERSE) != null &&
+	 * !widget.isHidden()} (the offer screen itself, packed id 30474240;
+	 * group 465, child 0, the same id as the deprecated {@code
+	 * WidgetInfo.GRAND_EXCHANGE_WINDOW_CONTAINER}) and {@code
+	 * client.getWidget(InterfaceID.Chatbox.MES_LAYER) != null &&
+	 * !widget.isHidden()} (the search chatbox {@link #action} actually feeds
+	 * text into -- see {@link GrandExchangeSuggestionRow}'s class doc for how
+	 * that packed id was confirmed). The offer screen can be open while
+	 * showing its quantity/price step instead of the search chatbox, and
+	 * {@link #action} has nothing to act on in that state; checking only the
+	 * offer screen would report {@link Outcome#SENT} for a click that
+	 * changed nothing.
 	 */
 	private final BooleanSupplier open;
 
 	/**
-	 * Sets the search text and runs the native search. Only ever called
-	 * from inside {@link #onClientThread}'s runnable -- production wiring is
-	 * {@code name -> { client.setVarcStrValue(VarClientStr.INPUT_TEXT,
-	 * name); client.runScript(ScriptID.GE_ITEM_SEARCH); }}. Given as one
-	 * seam rather than two separate ones because the two calls are never
+	 * Sets the search text and asks the search box to react to it. Only ever
+	 * called from inside {@link #onClientThread}'s runnable. Production
+	 * wiring sets {@code VarClientStr.INPUT_TEXT} and then replays the
+	 * search input widget's own {@code getOnKeyListener()} through {@code
+	 * client.runScript} -- see {@link GrandExchangeSuggestionRow#select}'s
+	 * own doc for exactly why, and for the {@code AssertionError} this used
+	 * to throw when it called {@code
+	 * client.runScript(ScriptID.GE_ITEM_SEARCH)} directly instead. Given as
+	 * one seam rather than two separate ones because the two calls are never
 	 * meaningful apart -- there is no scenario where this class wants to
-	 * set the text without also running the search, or vice versa.
+	 * set the text without also asking the box to react to it, or vice versa.
 	 */
 	private final Consumer<String> action;
 
