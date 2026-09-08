@@ -318,4 +318,80 @@ public class ItemGroupChoiceTest
 			"Crystal pickaxe"), ladder.stream().map(QuestGraph.Alternative::name)
 			.collect(java.util.stream.Collectors.toList()));
 	}
+
+	/**
+	 * A tool's combat requirement is recognised as wield-only.
+	 *
+	 * <p>You do not wield a pickaxe to mine with it: one in the inventory
+	 * mines exactly as well as one in the weapon slot, so the Attack column
+	 * gates equipping and nothing else. Counting it capped an account with 41
+	 * Mining and 1 Attack at an iron pickaxe when a rune one works fine.
+	 */
+	@Test
+	public void aToolsCombatRequirementIsWieldOnly()
+	{
+		assertEquals(Set.of("Attack"), ItemGroupChoice.wieldOnlySkills(pickaxes()));
+	}
+
+	/**
+	 * A set with no combat requirement has nothing to ignore.
+	 *
+	 * <p>Firemaking genuinely gates lighting a lantern, so a light source's
+	 * requirement binds in full.
+	 */
+	@Test
+	public void aNonCombatRequirementIsNeverIgnored()
+	{
+		List<QuestGraph.Alternative> lightSources = alternatives("["
+			+ "{\"name\":\"Lit candle\",\"requirements\":"
+			+ "[{\"skill\":\"Firemaking\",\"level\":1}]},"
+			+ "{\"name\":\"Bullseye lantern\",\"requirements\":"
+			+ "[{\"skill\":\"Firemaking\",\"level\":49}]}]");
+
+		assertTrue(ItemGroupChoice.wieldOnlySkills(lightSources).isEmpty());
+
+		ItemGroupChoice.Choice choice = ItemGroupChoice.choose(lightSources,
+			Map.of("Firemaking", 1), ItemGroupChoice.wieldOnlySkills(lightSources), Map.of());
+		assertEquals("Lit candle", choice.best().name());
+	}
+
+	/**
+	 * A set that states <em>only</em> combat skills is a weapon, and a weapon
+	 * really does have to be wielded.
+	 *
+	 * <p>This is why the rule is derived from the set rather than hard-coded
+	 * to Attack: a blanket "ignore Attack" would hand somebody a rune scimitar
+	 * they cannot hold the moment a weapon becomes a group.
+	 */
+	@Test
+	public void aWeaponsCombatRequirementIsNotIgnored()
+	{
+		List<QuestGraph.Alternative> weapons = alternatives("["
+			+ "{\"name\":\"Bronze sword\",\"requirements\":"
+			+ "[{\"skill\":\"Attack\",\"level\":1}]},"
+			+ "{\"name\":\"Rune sword\",\"requirements\":"
+			+ "[{\"skill\":\"Attack\",\"level\":40}]}]");
+
+		assertTrue(ItemGroupChoice.wieldOnlySkills(weapons).isEmpty());
+
+		ItemGroupChoice.Choice choice = ItemGroupChoice.choose(weapons,
+			Map.of("Attack", 1), ItemGroupChoice.wieldOnlySkills(weapons), Map.of());
+		assertEquals("Bronze sword", choice.best().name());
+	}
+
+	/**
+	 * End to end: the capped-Attack account gets the pickaxe it can actually
+	 * use.
+	 */
+	@Test
+	public void aCappedAttackDoesNotCapAPickaxe()
+	{
+		List<QuestGraph.Alternative> set = pickaxes();
+
+		ItemGroupChoice.Choice choice = ItemGroupChoice.choose(set,
+			Map.of("Mining", 41, "Attack", 1),
+			ItemGroupChoice.wieldOnlySkills(set), Map.of());
+
+		assertEquals("Rune pickaxe", choice.best().name());
+	}
 }

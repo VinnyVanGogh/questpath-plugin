@@ -165,6 +165,61 @@ final class ItemGroupChoice
 	}
 
 	/**
+	 * The combat skills, which gate <em>equipping</em> a thing rather than
+	 * using it.
+	 */
+	private static final java.util.Set<String> EQUIP_SKILLS = java.util.Set.of(
+		"Attack", "Strength", "Defence", "Ranged", "Magic");
+
+	/**
+	 * The requirements in a set that only gate wielding, and so do not stop
+	 * the account using the item.
+	 *
+	 * <p><b>You do not wield a pickaxe to mine with it.</b> A pickaxe in the
+	 * inventory mines exactly as well as one in the weapon slot; the Attack
+	 * level gates equipping it and nothing else. So an account with 41 Mining
+	 * and Attack capped at 1 can use a rune pickaxe, and capping its
+	 * recommendation at an iron one -- which is what this did at first -- is
+	 * simply wrong. The same holds for an axe: Woodcutting gates chopping,
+	 * Attack gates wielding.
+	 *
+	 * <p><b>Derived from the set rather than hard-coded to Attack</b>, because
+	 * a blanket rule would be wrong the first time a weapon becomes a group. A
+	 * set that states a non-combat skill alongside a combat one is a tool: the
+	 * non-combat column is what gates use, and the combat column is the
+	 * equipment requirement riding along. A set that states <em>only</em>
+	 * combat skills is a weapon or a piece of armour, which genuinely has to
+	 * be worn to do anything -- so nothing is ignored there.
+	 *
+	 * <p>Checked against what the bundle actually ships: Pickaxe states Mining
+	 * and Attack, Axe states Woodcutting and Attack, Light sources states only
+	 * Firemaking, and Nails and Gloves state nothing at all.
+	 */
+	static java.util.Set<String> wieldOnlySkills(List<QuestGraph.Alternative> alternatives)
+	{
+		java.util.Set<String> combat = new java.util.HashSet<>();
+		boolean hasNonCombat = false;
+		if (alternatives != null)
+		{
+			for (QuestGraph.Alternative alt : alternatives)
+			{
+				for (QuestGraph.Requirement req : alt.requirements())
+				{
+					if (EQUIP_SKILLS.contains(req.skill()))
+					{
+						combat.add(req.skill());
+					}
+					else
+					{
+						hasNonCombat = true;
+					}
+				}
+			}
+		}
+		return hasNonCombat ? combat : java.util.Collections.emptySet();
+	}
+
+	/**
 	 * The tier ladder: the leading run of the table whose stated levels never
 	 * go backwards.
 	 *

@@ -887,20 +887,45 @@ public class QuestItemsTest
 	}
 
 	/**
-	 * A capped skill is respected rather than ignored.
+	 * A capped Attack does not cap the pickaxe, because you do not wield a
+	 * pickaxe to mine with it.
 	 *
-	 * <p>41 Mining with Attack still at 1 cannot wield a rune pickaxe, so the
-	 * list must not name one. Under-claiming costs a cheaper pickaxe than
-	 * strictly necessary; over-claiming sends somebody to buy something they
-	 * cannot use, and that is the direction this project refuses.
+	 * <p>This test asserted the opposite first, and the opposite was wrong.
+	 * The reasoning was that questpath cannot tell which of a pickaxe's two
+	 * columns a quest needs, so counting both is the safe direction -- but a
+	 * pickaxe in the inventory mines exactly as well as one in the weapon
+	 * slot, so Attack never gates using it. An account with 41 Mining and
+	 * Attack hard-capped at 1 can use a rune pickaxe, and recommending it an
+	 * iron one was simply incorrect.
+	 *
+	 * <p>That account is not a hypothetical: capping a combat skill while
+	 * training a gathering one is the exact build questpath exists to plan
+	 * for.
 	 */
 	@Test
-	public void aCappedSkillIsNotIgnoredWhenChoosing() throws Exception
+	public void aWieldOnlyRequirementDoesNotCapTheChoice() throws Exception
 	{
 		QuestItems items = itemsFor(accountWith("Mining", 41),
 			Collections.<String, Long>emptyMap());
 
-		assertNull(total(items, "Rune pickaxe"));
+		assertNotNull("41 Mining is all a rune pickaxe needs to mine with",
+			total(items, "Rune pickaxe"));
+		assertNull(total(items, "Iron pickaxe"));
+	}
+
+	/**
+	 * The skill that actually gates use still binds.
+	 *
+	 * <p>Ignoring the wield requirement must not turn into ignoring the
+	 * requirement: 1 Mining is 1 Mining, however much Attack the account has.
+	 */
+	@Test
+	public void theUseRequirementStillBinds() throws Exception
+	{
+		QuestItems items = itemsFor(accountWith("Attack", 99),
+			Collections.<String, Long>emptyMap());
+
+		assertNull("99 Attack mines nothing", total(items, "Rune pickaxe"));
 		assertNotNull(total(items, "Iron pickaxe"));
 	}
 

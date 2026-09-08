@@ -1757,6 +1757,10 @@
                 {
                   "skill": "Attack",
                   "level": 1
+                },
+                {
+                  "skill": "Woodcutting",
+                  "level": 1
                 }
               ]
             },
@@ -1767,6 +1771,10 @@
                 {
                   "skill": "Attack",
                   "level": 1
+                },
+                {
+                  "skill": "Woodcutting",
+                  "level": 1
                 }
               ]
             },
@@ -1776,6 +1784,10 @@
               "requirements": [
                 {
                   "skill": "Attack",
+                  "level": 5
+                },
+                {
+                  "skill": "Woodcutting",
                   "level": 6
                 }
               ]
@@ -1786,6 +1798,10 @@
               "requirements": [
                 {
                   "skill": "Attack",
+                  "level": 10
+                },
+                {
+                  "skill": "Woodcutting",
                   "level": 11
                 }
               ]
@@ -1796,6 +1812,10 @@
               "requirements": [
                 {
                   "skill": "Attack",
+                  "level": 20
+                },
+                {
+                  "skill": "Woodcutting",
                   "level": 21
                 }
               ]
@@ -1806,6 +1826,10 @@
               "requirements": [
                 {
                   "skill": "Attack",
+                  "level": 30
+                },
+                {
+                  "skill": "Woodcutting",
                   "level": 31
                 }
               ]
@@ -1816,6 +1840,10 @@
               "requirements": [
                 {
                   "skill": "Attack",
+                  "level": 40
+                },
+                {
+                  "skill": "Woodcutting",
                   "level": 41
                 }
               ]
@@ -1826,6 +1854,10 @@
               "requirements": [
                 {
                   "skill": "Attack",
+                  "level": 60
+                },
+                {
+                  "skill": "Woodcutting",
                   "level": 61
                 }
               ]
@@ -1836,11 +1868,11 @@
               "requirements": [
                 {
                   "skill": "Attack",
-                  "level": 71
+                  "level": 70
                 },
                 {
                   "skill": "Woodcutting",
-                  "level": 50
+                  "level": 71
                 }
               ]
             },
@@ -5990,6 +6022,10 @@
                 {
                   "skill": "Attack",
                   "level": 1
+                },
+                {
+                  "skill": "Woodcutting",
+                  "level": 1
                 }
               ]
             },
@@ -6000,6 +6036,10 @@
                 {
                   "skill": "Attack",
                   "level": 1
+                },
+                {
+                  "skill": "Woodcutting",
+                  "level": 1
                 }
               ]
             },
@@ -6009,6 +6049,10 @@
               "requirements": [
                 {
                   "skill": "Attack",
+                  "level": 5
+                },
+                {
+                  "skill": "Woodcutting",
                   "level": 6
                 }
               ]
@@ -6019,6 +6063,10 @@
               "requirements": [
                 {
                   "skill": "Attack",
+                  "level": 10
+                },
+                {
+                  "skill": "Woodcutting",
                   "level": 11
                 }
               ]
@@ -6029,6 +6077,10 @@
               "requirements": [
                 {
                   "skill": "Attack",
+                  "level": 20
+                },
+                {
+                  "skill": "Woodcutting",
                   "level": 21
                 }
               ]
@@ -6039,6 +6091,10 @@
               "requirements": [
                 {
                   "skill": "Attack",
+                  "level": 30
+                },
+                {
+                  "skill": "Woodcutting",
                   "level": 31
                 }
               ]
@@ -6049,6 +6105,10 @@
               "requirements": [
                 {
                   "skill": "Attack",
+                  "level": 40
+                },
+                {
+                  "skill": "Woodcutting",
                   "level": 41
                 }
               ]
@@ -6059,6 +6119,10 @@
               "requirements": [
                 {
                   "skill": "Attack",
+                  "level": 60
+                },
+                {
+                  "skill": "Woodcutting",
                   "level": 61
                 }
               ]
@@ -6069,11 +6133,11 @@
               "requirements": [
                 {
                   "skill": "Attack",
-                  "level": 71
+                  "level": 70
                 },
                 {
                   "skill": "Woodcutting",
-                  "level": 50
+                  "level": 71
                 }
               ]
             },
@@ -7856,6 +7920,10 @@
                 {
                   "skill": "Attack",
                   "level": 1
+                },
+                {
+                  "skill": "Woodcutting",
+                  "level": 1
                 }
               ]
             },
@@ -7866,6 +7934,10 @@
                 {
                   "skill": "Attack",
                   "level": 1
+                },
+                {
+                  "skill": "Woodcutting",
+                  "level": 1
                 }
               ]
             },
@@ -7875,6 +7947,10 @@
               "requirements": [
                 {
                   "skill": "Attack",
+                  "level": 5
+                },
+                {
+                  "skill": "Woodcutting",
                   "level": 6
                 }
               ]
@@ -7885,6 +7961,10 @@
               "requirements": [
                 {
                   "skill": "Attack",
+                  "level": 10
+                },
+                {
+                  "skill": "Woodcutting",
                   "level": 11
                 }
               ]
@@ -7895,6 +7975,10 @@
               "requirements": [
                 {
                   "skill": "Attack",
+                  "level": 20
+                },
+                {
+                  "skill": "Woodcutting",
                   "level": 21
                 }
               ]
@@ -7905,6 +7989,10 @@
               "requirements": [
                 {
                   "skill": "Attack",
+                  "level": 30
+                },
+                {
+                  "skill": "Woodcutting",
                   "level": 31
                 }
               ]
@@ -7915,6 +8003,10 @@
               "requirements": [
                 {
                   "skill": "Attack",
+                  "level": 40
+                },
+                {
+                  "skill": "Woodcutting",
                   "level": 41
                 }
               ]
@@ -7925,6 +8017,10 @@
               "requirements": [
                 {
                   "skill": "Attack",
+                  "level": 60
+                },
+                {
+                  "skill": "Woodcutting",
                   "level": 61
                 }
               ]
@@ -7935,11 +8031,11 @@
               "requirements": [
                 {
                   "skill": "Attack",
-                  "level": 71
+                  "level": 70
                 },
                 {
                   "skill": "Woodcutting",
-                  "level": 50
+                  "level": 71
                 }
               ]
             },
@@ -9952,6 +10048,10 @@
                 {
                   "skill": "Attack",
                   "level": 1
+                },
+                {
+                  "skill": "Woodcutting",
+                  "level": 1
                 }
               ]
             },
@@ -9962,6 +10062,10 @@
                 {
                   "skill": "Attack",
                   "level": 1
+                },
+                {
+                  "skill": "Woodcutting",
+                  "level": 1
                 }
               ]
             },
@@ -9971,6 +10075,10 @@
               "requirements": [
                 {
                   "skill": "Attack",
+                  "level": 5
+                },
+                {
+                  "skill": "Woodcutting",
                   "level": 6
                 }
               ]
@@ -9981,6 +10089,10 @@
               "requirements": [
                 {
                   "skill": "Attack",
+                  "level": 10
+                },
+                {
+                  "skill": "Woodcutting",
                   "level": 11
                 }
               ]
@@ -9991,6 +10103,10 @@
               "requirements": [
                 {
                   "skill": "Attack",
+                  "level": 20
+                },
+                {
+                  "skill": "Woodcutting",
                   "level": 21
                 }
               ]
@@ -10001,6 +10117,10 @@
               "requirements": [
                 {
                   "skill": "Attack",
+                  "level": 30
+                },
+                {
+                  "skill": "Woodcutting",
                   "level": 31
                 }
               ]
@@ -10011,6 +10131,10 @@
               "requirements": [
                 {
                   "skill": "Attack",
+                  "level": 40
+                },
+                {
+                  "skill": "Woodcutting",
                   "level": 41
                 }
               ]
@@ -10021,6 +10145,10 @@
               "requirements": [
                 {
                   "skill": "Attack",
+                  "level": 60
+                },
+                {
+                  "skill": "Woodcutting",
                   "level": 61
                 }
               ]
@@ -10031,11 +10159,11 @@
               "requirements": [
                 {
                   "skill": "Attack",
-                  "level": 71
+                  "level": 70
                 },
                 {
                   "skill": "Woodcutting",
-                  "level": 50
+                  "level": 71
                 }
               ]
             },
@@ -16044,6 +16172,10 @@
                 {
                   "skill": "Attack",
                   "level": 1
+                },
+                {
+                  "skill": "Woodcutting",
+                  "level": 1
                 }
               ]
             },
@@ -16054,6 +16186,10 @@
                 {
                   "skill": "Attack",
                   "level": 1
+                },
+                {
+                  "skill": "Woodcutting",
+                  "level": 1
                 }
               ]
             },
@@ -16063,6 +16199,10 @@
               "requirements": [
                 {
                   "skill": "Attack",
+                  "level": 5
+                },
+                {
+                  "skill": "Woodcutting",
                   "level": 6
                 }
               ]
@@ -16073,6 +16213,10 @@
               "requirements": [
                 {
                   "skill": "Attack",
+                  "level": 10
+                },
+                {
+                  "skill": "Woodcutting",
                   "level": 11
                 }
               ]
@@ -16083,6 +16227,10 @@
               "requirements": [
                 {
                   "skill": "Attack",
+                  "level": 20
+                },
+                {
+                  "skill": "Woodcutting",
                   "level": 21
                 }
               ]
@@ -16093,6 +16241,10 @@
               "requirements": [
                 {
                   "skill": "Attack",
+                  "level": 30
+                },
+                {
+                  "skill": "Woodcutting",
                   "level": 31
                 }
               ]
@@ -16103,6 +16255,10 @@
               "requirements": [
                 {
                   "skill": "Attack",
+                  "level": 40
+                },
+                {
+                  "skill": "Woodcutting",
                   "level": 41
                 }
               ]
@@ -16113,6 +16269,10 @@
               "requirements": [
                 {
                   "skill": "Attack",
+                  "level": 60
+                },
+                {
+                  "skill": "Woodcutting",
                   "level": 61
                 }
               ]
@@ -16123,11 +16283,11 @@
               "requirements": [
                 {
                   "skill": "Attack",
-                  "level": 71
+                  "level": 70
                 },
                 {
                   "skill": "Woodcutting",
-                  "level": 50
+                  "level": 71
                 }
               ]
             },
@@ -19285,6 +19445,10 @@
                 {
                   "skill": "Attack",
                   "level": 1
+                },
+                {
+                  "skill": "Woodcutting",
+                  "level": 1
                 }
               ]
             },
@@ -19295,6 +19459,10 @@
                 {
                   "skill": "Attack",
                   "level": 1
+                },
+                {
+                  "skill": "Woodcutting",
+                  "level": 1
                 }
               ]
             },
@@ -19304,6 +19472,10 @@
               "requirements": [
                 {
                   "skill": "Attack",
+                  "level": 5
+                },
+                {
+                  "skill": "Woodcutting",
                   "level": 6
                 }
               ]
@@ -19314,6 +19486,10 @@
               "requirements": [
                 {
                   "skill": "Attack",
+                  "level": 10
+                },
+                {
+                  "skill": "Woodcutting",
                   "level": 11
                 }
               ]
@@ -19324,6 +19500,10 @@
               "requirements": [
                 {
                   "skill": "Attack",
+                  "level": 20
+                },
+                {
+                  "skill": "Woodcutting",
                   "level": 21
                 }
               ]
@@ -19334,6 +19514,10 @@
               "requirements": [
                 {
                   "skill": "Attack",
+                  "level": 30
+                },
+                {
+                  "skill": "Woodcutting",
                   "level": 31
                 }
               ]
@@ -19344,6 +19528,10 @@
               "requirements": [
                 {
                   "skill": "Attack",
+                  "level": 40
+                },
+                {
+                  "skill": "Woodcutting",
                   "level": 41
                 }
               ]
@@ -19354,6 +19542,10 @@
               "requirements": [
                 {
                   "skill": "Attack",
+                  "level": 60
+                },
+                {
+                  "skill": "Woodcutting",
                   "level": 61
                 }
               ]
@@ -19364,11 +19556,11 @@
               "requirements": [
                 {
                   "skill": "Attack",
-                  "level": 71
+                  "level": 70
                 },
                 {
                   "skill": "Woodcutting",
-                  "level": 50
+                  "level": 71
                 }
               ]
             },
@@ -22382,6 +22574,10 @@
                 {
                   "skill": "Attack",
                   "level": 1
+                },
+                {
+                  "skill": "Woodcutting",
+                  "level": 1
                 }
               ]
             },
@@ -22392,6 +22588,10 @@
                 {
                   "skill": "Attack",
                   "level": 1
+                },
+                {
+                  "skill": "Woodcutting",
+                  "level": 1
                 }
               ]
             },
@@ -22401,6 +22601,10 @@
               "requirements": [
                 {
                   "skill": "Attack",
+                  "level": 5
+                },
+                {
+                  "skill": "Woodcutting",
                   "level": 6
                 }
               ]
@@ -22411,6 +22615,10 @@
               "requirements": [
                 {
                   "skill": "Attack",
+                  "level": 10
+                },
+                {
+                  "skill": "Woodcutting",
                   "level": 11
                 }
               ]
@@ -22421,6 +22629,10 @@
               "requirements": [
                 {
                   "skill": "Attack",
+                  "level": 20
+                },
+                {
+                  "skill": "Woodcutting",
                   "level": 21
                 }
               ]
@@ -22431,6 +22643,10 @@
               "requirements": [
                 {
                   "skill": "Attack",
+                  "level": 30
+                },
+                {
+                  "skill": "Woodcutting",
                   "level": 31
                 }
               ]
@@ -22441,6 +22657,10 @@
               "requirements": [
                 {
                   "skill": "Attack",
+                  "level": 40
+                },
+                {
+                  "skill": "Woodcutting",
                   "level": 41
                 }
               ]
@@ -22451,6 +22671,10 @@
               "requirements": [
                 {
                   "skill": "Attack",
+                  "level": 60
+                },
+                {
+                  "skill": "Woodcutting",
                   "level": 61
                 }
               ]
@@ -22461,11 +22685,11 @@
               "requirements": [
                 {
                   "skill": "Attack",
-                  "level": 71
+                  "level": 70
                 },
                 {
                   "skill": "Woodcutting",
-                  "level": 50
+                  "level": 71
                 }
               ]
             },
@@ -23196,6 +23420,10 @@
                 {
                   "skill": "Attack",
                   "level": 1
+                },
+                {
+                  "skill": "Woodcutting",
+                  "level": 1
                 }
               ]
             },
@@ -23206,6 +23434,10 @@
                 {
                   "skill": "Attack",
                   "level": 1
+                },
+                {
+                  "skill": "Woodcutting",
+                  "level": 1
                 }
               ]
             },
@@ -23215,6 +23447,10 @@
               "requirements": [
                 {
                   "skill": "Attack",
+                  "level": 5
+                },
+                {
+                  "skill": "Woodcutting",
                   "level": 6
                 }
               ]
@@ -23225,6 +23461,10 @@
               "requirements": [
                 {
                   "skill": "Attack",
+                  "level": 10
+                },
+                {
+                  "skill": "Woodcutting",
                   "level": 11
                 }
               ]
@@ -23235,6 +23475,10 @@
               "requirements": [
                 {
                   "skill": "Attack",
+                  "level": 20
+                },
+                {
+                  "skill": "Woodcutting",
                   "level": 21
                 }
               ]
@@ -23245,6 +23489,10 @@
               "requirements": [
                 {
                   "skill": "Attack",
+                  "level": 30
+                },
+                {
+                  "skill": "Woodcutting",
                   "level": 31
                 }
               ]
@@ -23255,6 +23503,10 @@
               "requirements": [
                 {
                   "skill": "Attack",
+                  "level": 40
+                },
+                {
+                  "skill": "Woodcutting",
                   "level": 41
                 }
               ]
@@ -23265,6 +23517,10 @@
               "requirements": [
                 {
                   "skill": "Attack",
+                  "level": 60
+                },
+                {
+                  "skill": "Woodcutting",
                   "level": 61
                 }
               ]
@@ -23275,11 +23531,11 @@
               "requirements": [
                 {
                   "skill": "Attack",
-                  "level": 71
+                  "level": 70
                 },
                 {
                   "skill": "Woodcutting",
-                  "level": 50
+                  "level": 71
                 }
               ]
             },
@@ -23983,6 +24239,10 @@
                 {
                   "skill": "Attack",
                   "level": 1
+                },
+                {
+                  "skill": "Woodcutting",
+                  "level": 1
                 }
               ]
             },
@@ -23993,6 +24253,10 @@
                 {
                   "skill": "Attack",
                   "level": 1
+                },
+                {
+                  "skill": "Woodcutting",
+                  "level": 1
                 }
               ]
             },
@@ -24002,6 +24266,10 @@
               "requirements": [
                 {
                   "skill": "Attack",
+                  "level": 5
+                },
+                {
+                  "skill": "Woodcutting",
                   "level": 6
                 }
               ]
@@ -24012,6 +24280,10 @@
               "requirements": [
                 {
                   "skill": "Attack",
+                  "level": 10
+                },
+                {
+                  "skill": "Woodcutting",
                   "level": 11
                 }
               ]
@@ -24022,6 +24294,10 @@
               "requirements": [
                 {
                   "skill": "Attack",
+                  "level": 20
+                },
+                {
+                  "skill": "Woodcutting",
                   "level": 21
                 }
               ]
@@ -24032,6 +24308,10 @@
               "requirements": [
                 {
                   "skill": "Attack",
+                  "level": 30
+                },
+                {
+                  "skill": "Woodcutting",
                   "level": 31
                 }
               ]
@@ -24042,6 +24322,10 @@
               "requirements": [
                 {
                   "skill": "Attack",
+                  "level": 40
+                },
+                {
+                  "skill": "Woodcutting",
                   "level": 41
                 }
               ]
@@ -24052,6 +24336,10 @@
               "requirements": [
                 {
                   "skill": "Attack",
+                  "level": 60
+                },
+                {
+                  "skill": "Woodcutting",
                   "level": 61
                 }
               ]
@@ -24062,11 +24350,11 @@
               "requirements": [
                 {
                   "skill": "Attack",
-                  "level": 71
+                  "level": 70
                 },
                 {
                   "skill": "Woodcutting",
-                  "level": 50
+                  "level": 71
                 }
               ]
             },
@@ -27102,6 +27390,10 @@
                 {
                   "skill": "Attack",
                   "level": 1
+                },
+                {
+                  "skill": "Woodcutting",
+                  "level": 1
                 }
               ]
             },
@@ -27112,6 +27404,10 @@
                 {
                   "skill": "Attack",
                   "level": 1
+                },
+                {
+                  "skill": "Woodcutting",
+                  "level": 1
                 }
               ]
             },
@@ -27121,6 +27417,10 @@
               "requirements": [
                 {
                   "skill": "Attack",
+                  "level": 5
+                },
+                {
+                  "skill": "Woodcutting",
                   "level": 6
                 }
               ]
@@ -27131,6 +27431,10 @@
               "requirements": [
                 {
                   "skill": "Attack",
+                  "level": 10
+                },
+                {
+                  "skill": "Woodcutting",
                   "level": 11
                 }
               ]
@@ -27141,6 +27445,10 @@
               "requirements": [
                 {
                   "skill": "Attack",
+                  "level": 20
+                },
+                {
+                  "skill": "Woodcutting",
                   "level": 21
                 }
               ]
@@ -27151,6 +27459,10 @@
               "requirements": [
                 {
                   "skill": "Attack",
+                  "level": 30
+                },
+                {
+                  "skill": "Woodcutting",
                   "level": 31
                 }
               ]
@@ -27161,6 +27473,10 @@
               "requirements": [
                 {
                   "skill": "Attack",
+                  "level": 40
+                },
+                {
+                  "skill": "Woodcutting",
                   "level": 41
                 }
               ]
@@ -27171,6 +27487,10 @@
               "requirements": [
                 {
                   "skill": "Attack",
+                  "level": 60
+                },
+                {
+                  "skill": "Woodcutting",
                   "level": 61
                 }
               ]
@@ -27181,11 +27501,11 @@
               "requirements": [
                 {
                   "skill": "Attack",
-                  "level": 71
+                  "level": 70
                 },
                 {
                   "skill": "Woodcutting",
-                  "level": 50
+                  "level": 71
                 }
               ]
             },
@@ -28401,6 +28721,10 @@
                 {
                   "skill": "Attack",
                   "level": 1
+                },
+                {
+                  "skill": "Woodcutting",
+                  "level": 1
                 }
               ]
             },
@@ -28411,6 +28735,10 @@
                 {
                   "skill": "Attack",
                   "level": 1
+                },
+                {
+                  "skill": "Woodcutting",
+                  "level": 1
                 }
               ]
             },
@@ -28420,6 +28748,10 @@
               "requirements": [
                 {
                   "skill": "Attack",
+                  "level": 5
+                },
+                {
+                  "skill": "Woodcutting",
                   "level": 6
                 }
               ]
@@ -28430,6 +28762,10 @@
               "requirements": [
                 {
                   "skill": "Attack",
+                  "level": 10
+                },
+                {
+                  "skill": "Woodcutting",
                   "level": 11
                 }
               ]
@@ -28440,6 +28776,10 @@
               "requirements": [
                 {
                   "skill": "Attack",
+                  "level": 20
+                },
+                {
+                  "skill": "Woodcutting",
                   "level": 21
                 }
               ]
@@ -28450,6 +28790,10 @@
               "requirements": [
                 {
                   "skill": "Attack",
+                  "level": 30
+                },
+                {
+                  "skill": "Woodcutting",
                   "level": 31
                 }
               ]
@@ -28460,6 +28804,10 @@
               "requirements": [
                 {
                   "skill": "Attack",
+                  "level": 40
+                },
+                {
+                  "skill": "Woodcutting",
                   "level": 41
                 }
               ]
@@ -28470,6 +28818,10 @@
               "requirements": [
                 {
                   "skill": "Attack",
+                  "level": 60
+                },
+                {
+                  "skill": "Woodcutting",
                   "level": 61
                 }
               ]
@@ -28480,11 +28832,11 @@
               "requirements": [
                 {
                   "skill": "Attack",
-                  "level": 71
+                  "level": 70
                 },
                 {
                   "skill": "Woodcutting",
-                  "level": 50
+                  "level": 71
                 }
               ]
             },
@@ -29024,6 +29376,10 @@
                 {
                   "skill": "Attack",
                   "level": 1
+                },
+                {
+                  "skill": "Woodcutting",
+                  "level": 1
                 }
               ]
             },
@@ -29034,6 +29390,10 @@
                 {
                   "skill": "Attack",
                   "level": 1
+                },
+                {
+                  "skill": "Woodcutting",
+                  "level": 1
                 }
               ]
             },
@@ -29043,6 +29403,10 @@
               "requirements": [
                 {
                   "skill": "Attack",
+                  "level": 5
+                },
+                {
+                  "skill": "Woodcutting",
                   "level": 6
                 }
               ]
@@ -29053,6 +29417,10 @@
               "requirements": [
                 {
                   "skill": "Attack",
+                  "level": 10
+                },
+                {
+                  "skill": "Woodcutting",
                   "level": 11
                 }
               ]
@@ -29063,6 +29431,10 @@
               "requirements": [
                 {
                   "skill": "Attack",
+                  "level": 20
+                },
+                {
+                  "skill": "Woodcutting",
                   "level": 21
                 }
               ]
@@ -29073,6 +29445,10 @@
               "requirements": [
                 {
                   "skill": "Attack",
+                  "level": 30
+                },
+                {
+                  "skill": "Woodcutting",
                   "level": 31
                 }
               ]
@@ -29083,6 +29459,10 @@
               "requirements": [
                 {
                   "skill": "Attack",
+                  "level": 40
+                },
+                {
+                  "skill": "Woodcutting",
                   "level": 41
                 }
               ]
@@ -29093,6 +29473,10 @@
               "requirements": [
                 {
                   "skill": "Attack",
+                  "level": 60
+                },
+                {
+                  "skill": "Woodcutting",
                   "level": 61
                 }
               ]
@@ -29103,11 +29487,11 @@
               "requirements": [
                 {
                   "skill": "Attack",
-                  "level": 71
+                  "level": 70
                 },
                 {
                   "skill": "Woodcutting",
-                  "level": 50
+                  "level": 71
                 }
               ]
             },
@@ -30721,6 +31105,10 @@
                 {
                   "skill": "Attack",
                   "level": 1
+                },
+                {
+                  "skill": "Woodcutting",
+                  "level": 1
                 }
               ]
             },
@@ -30731,6 +31119,10 @@
                 {
                   "skill": "Attack",
                   "level": 1
+                },
+                {
+                  "skill": "Woodcutting",
+                  "level": 1
                 }
               ]
             },
@@ -30740,6 +31132,10 @@
               "requirements": [
                 {
                   "skill": "Attack",
+                  "level": 5
+                },
+                {
+                  "skill": "Woodcutting",
                   "level": 6
                 }
               ]
@@ -30750,6 +31146,10 @@
               "requirements": [
                 {
                   "skill": "Attack",
+                  "level": 10
+                },
+                {
+                  "skill": "Woodcutting",
                   "level": 11
                 }
               ]
@@ -30760,6 +31160,10 @@
               "requirements": [
                 {
                   "skill": "Attack",
+                  "level": 20
+                },
+                {
+                  "skill": "Woodcutting",
                   "level": 21
                 }
               ]
@@ -30770,6 +31174,10 @@
               "requirements": [
                 {
                   "skill": "Attack",
+                  "level": 30
+                },
+                {
+                  "skill": "Woodcutting",
                   "level": 31
                 }
               ]
@@ -30780,6 +31188,10 @@
               "requirements": [
                 {
                   "skill": "Attack",
+                  "level": 40
+                },
+                {
+                  "skill": "Woodcutting",
                   "level": 41
                 }
               ]
@@ -30790,6 +31202,10 @@
               "requirements": [
                 {
                   "skill": "Attack",
+                  "level": 60
+                },
+                {
+                  "skill": "Woodcutting",
                   "level": 61
                 }
               ]
@@ -30800,11 +31216,11 @@
               "requirements": [
                 {
                   "skill": "Attack",
-                  "level": 71
+                  "level": 70
                 },
                 {
                   "skill": "Woodcutting",
-                  "level": 50
+                  "level": 71
                 }
               ]
             },
@@ -32398,6 +32814,10 @@
                 {
                   "skill": "Attack",
                   "level": 1
+                },
+                {
+                  "skill": "Woodcutting",
+                  "level": 1
                 }
               ]
             },
@@ -32408,6 +32828,10 @@
                 {
                   "skill": "Attack",
                   "level": 1
+                },
+                {
+                  "skill": "Woodcutting",
+                  "level": 1
                 }
               ]
             },
@@ -32417,6 +32841,10 @@
               "requirements": [
                 {
                   "skill": "Attack",
+                  "level": 5
+                },
+                {
+                  "skill": "Woodcutting",
                   "level": 6
                 }
               ]
@@ -32427,6 +32855,10 @@
               "requirements": [
                 {
                   "skill": "Attack",
+                  "level": 10
+                },
+                {
+                  "skill": "Woodcutting",
                   "level": 11
                 }
               ]
@@ -32437,6 +32869,10 @@
               "requirements": [
                 {
                   "skill": "Attack",
+                  "level": 20
+                },
+                {
+                  "skill": "Woodcutting",
                   "level": 21
                 }
               ]
@@ -32447,6 +32883,10 @@
               "requirements": [
                 {
                   "skill": "Attack",
+                  "level": 30
+                },
+                {
+                  "skill": "Woodcutting",
                   "level": 31
                 }
               ]
@@ -32457,6 +32897,10 @@
               "requirements": [
                 {
                   "skill": "Attack",
+                  "level": 40
+                },
+                {
+                  "skill": "Woodcutting",
                   "level": 41
                 }
               ]
@@ -32467,6 +32911,10 @@
               "requirements": [
                 {
                   "skill": "Attack",
+                  "level": 60
+                },
+                {
+                  "skill": "Woodcutting",
                   "level": 61
                 }
               ]
@@ -32477,11 +32925,11 @@
               "requirements": [
                 {
                   "skill": "Attack",
-                  "level": 71
+                  "level": 70
                 },
                 {
                   "skill": "Woodcutting",
-                  "level": 50
+                  "level": 71
                 }
               ]
             },
@@ -32851,6 +33299,10 @@
                 {
                   "skill": "Attack",
                   "level": 1
+                },
+                {
+                  "skill": "Woodcutting",
+                  "level": 1
                 }
               ]
             },
@@ -32861,6 +33313,10 @@
                 {
                   "skill": "Attack",
                   "level": 1
+                },
+                {
+                  "skill": "Woodcutting",
+                  "level": 1
                 }
               ]
             },
@@ -32870,6 +33326,10 @@
               "requirements": [
                 {
                   "skill": "Attack",
+                  "level": 5
+                },
+                {
+                  "skill": "Woodcutting",
                   "level": 6
                 }
               ]
@@ -32880,6 +33340,10 @@
               "requirements": [
                 {
                   "skill": "Attack",
+                  "level": 10
+                },
+                {
+                  "skill": "Woodcutting",
                   "level": 11
                 }
               ]
@@ -32890,6 +33354,10 @@
               "requirements": [
                 {
                   "skill": "Attack",
+                  "level": 20
+                },
+                {
+                  "skill": "Woodcutting",
                   "level": 21
                 }
               ]
@@ -32900,6 +33368,10 @@
               "requirements": [
                 {
                   "skill": "Attack",
+                  "level": 30
+                },
+                {
+                  "skill": "Woodcutting",
                   "level": 31
                 }
               ]
@@ -32910,6 +33382,10 @@
               "requirements": [
                 {
                   "skill": "Attack",
+                  "level": 40
+                },
+                {
+                  "skill": "Woodcutting",
                   "level": 41
                 }
               ]
@@ -32920,6 +33396,10 @@
               "requirements": [
                 {
                   "skill": "Attack",
+                  "level": 60
+                },
+                {
+                  "skill": "Woodcutting",
                   "level": 61
                 }
               ]
@@ -32930,11 +33410,11 @@
               "requirements": [
                 {
                   "skill": "Attack",
-                  "level": 71
+                  "level": 70
                 },
                 {
                   "skill": "Woodcutting",
-                  "level": 50
+                  "level": 71
                 }
               ]
             },
@@ -33744,6 +34224,10 @@
                 {
                   "skill": "Attack",
                   "level": 1
+                },
+                {
+                  "skill": "Woodcutting",
+                  "level": 1
                 }
               ]
             },
@@ -33754,6 +34238,10 @@
                 {
                   "skill": "Attack",
                   "level": 1
+                },
+                {
+                  "skill": "Woodcutting",
+                  "level": 1
                 }
               ]
             },
@@ -33763,6 +34251,10 @@
               "requirements": [
                 {
                   "skill": "Attack",
+                  "level": 5
+                },
+                {
+                  "skill": "Woodcutting",
                   "level": 6
                 }
               ]
@@ -33773,6 +34265,10 @@
               "requirements": [
                 {
                   "skill": "Attack",
+                  "level": 10
+                },
+                {
+                  "skill": "Woodcutting",
                   "level": 11
                 }
               ]
@@ -33783,6 +34279,10 @@
               "requirements": [
                 {
                   "skill": "Attack",
+                  "level": 20
+                },
+                {
+                  "skill": "Woodcutting",
                   "level": 21
                 }
               ]
@@ -33793,6 +34293,10 @@
               "requirements": [
                 {
                   "skill": "Attack",
+                  "level": 30
+                },
+                {
+                  "skill": "Woodcutting",
                   "level": 31
                 }
               ]
@@ -33803,6 +34307,10 @@
               "requirements": [
                 {
                   "skill": "Attack",
+                  "level": 40
+                },
+                {
+                  "skill": "Woodcutting",
                   "level": 41
                 }
               ]
@@ -33813,6 +34321,10 @@
               "requirements": [
                 {
                   "skill": "Attack",
+                  "level": 60
+                },
+                {
+                  "skill": "Woodcutting",
                   "level": 61
                 }
               ]
@@ -33823,11 +34335,11 @@
               "requirements": [
                 {
                   "skill": "Attack",
-                  "level": 71
+                  "level": 70
                 },
                 {
                   "skill": "Woodcutting",
-                  "level": 50
+                  "level": 71
                 }
               ]
             },
@@ -35804,6 +36316,10 @@
                 {
                   "skill": "Attack",
                   "level": 1
+                },
+                {
+                  "skill": "Woodcutting",
+                  "level": 1
                 }
               ]
             },
@@ -35814,6 +36330,10 @@
                 {
                   "skill": "Attack",
                   "level": 1
+                },
+                {
+                  "skill": "Woodcutting",
+                  "level": 1
                 }
               ]
             },
@@ -35823,6 +36343,10 @@
               "requirements": [
                 {
                   "skill": "Attack",
+                  "level": 5
+                },
+                {
+                  "skill": "Woodcutting",
                   "level": 6
                 }
               ]
@@ -35833,6 +36357,10 @@
               "requirements": [
                 {
                   "skill": "Attack",
+                  "level": 10
+                },
+                {
+                  "skill": "Woodcutting",
                   "level": 11
                 }
               ]
@@ -35843,6 +36371,10 @@
               "requirements": [
                 {
                   "skill": "Attack",
+                  "level": 20
+                },
+                {
+                  "skill": "Woodcutting",
                   "level": 21
                 }
               ]
@@ -35853,6 +36385,10 @@
               "requirements": [
                 {
                   "skill": "Attack",
+                  "level": 30
+                },
+                {
+                  "skill": "Woodcutting",
                   "level": 31
                 }
               ]
@@ -35863,6 +36399,10 @@
               "requirements": [
                 {
                   "skill": "Attack",
+                  "level": 40
+                },
+                {
+                  "skill": "Woodcutting",
                   "level": 41
                 }
               ]
@@ -35873,6 +36413,10 @@
               "requirements": [
                 {
                   "skill": "Attack",
+                  "level": 60
+                },
+                {
+                  "skill": "Woodcutting",
                   "level": 61
                 }
               ]
@@ -35883,11 +36427,11 @@
               "requirements": [
                 {
                   "skill": "Attack",
-                  "level": 71
+                  "level": 70
                 },
                 {
                   "skill": "Woodcutting",
-                  "level": 50
+                  "level": 71
                 }
               ]
             },
@@ -37392,6 +37936,10 @@
                 {
                   "skill": "Attack",
                   "level": 1
+                },
+                {
+                  "skill": "Woodcutting",
+                  "level": 1
                 }
               ]
             },
@@ -37402,6 +37950,10 @@
                 {
                   "skill": "Attack",
                   "level": 1
+                },
+                {
+                  "skill": "Woodcutting",
+                  "level": 1
                 }
               ]
             },
@@ -37411,6 +37963,10 @@
               "requirements": [
                 {
                   "skill": "Attack",
+                  "level": 5
+                },
+                {
+                  "skill": "Woodcutting",
                   "level": 6
                 }
               ]
@@ -37421,6 +37977,10 @@
               "requirements": [
                 {
                   "skill": "Attack",
+                  "level": 10
+                },
+                {
+                  "skill": "Woodcutting",
                   "level": 11
                 }
               ]
@@ -37431,6 +37991,10 @@
               "requirements": [
                 {
                   "skill": "Attack",
+                  "level": 20
+                },
+                {
+                  "skill": "Woodcutting",
                   "level": 21
                 }
               ]
@@ -37441,6 +38005,10 @@
               "requirements": [
                 {
                   "skill": "Attack",
+                  "level": 30
+                },
+                {
+                  "skill": "Woodcutting",
                   "level": 31
                 }
               ]
@@ -37451,6 +38019,10 @@
               "requirements": [
                 {
                   "skill": "Attack",
+                  "level": 40
+                },
+                {
+                  "skill": "Woodcutting",
                   "level": 41
                 }
               ]
@@ -37461,6 +38033,10 @@
               "requirements": [
                 {
                   "skill": "Attack",
+                  "level": 60
+                },
+                {
+                  "skill": "Woodcutting",
                   "level": 61
                 }
               ]
@@ -37471,11 +38047,11 @@
               "requirements": [
                 {
                   "skill": "Attack",
-                  "level": 71
+                  "level": 70
                 },
                 {
                   "skill": "Woodcutting",
-                  "level": 50
+                  "level": 71
                 }
               ]
             },

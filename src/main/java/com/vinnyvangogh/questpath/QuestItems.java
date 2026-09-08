@@ -582,9 +582,12 @@ class QuestItems
 					// only about the chosen member would send the player to
 					// buy nails they already have.
 					owned = ItemGroupChoice.heldAcross(item.alternatives(), held);
+					// Wield-only requirements are ignored: you do not wield a
+					// pickaxe to mine with it. See
+					// ItemGroupChoice#wieldOnlySkills.
 					ItemGroupChoice.Choice choice = ItemGroupChoice.choose(
 						item.alternatives(), levelsFor(item.alternatives(), account),
-						java.util.Collections.emptySet(), held);
+						ItemGroupChoice.wieldOnlySkills(item.alternatives()), held);
 					if (choice.any())
 					{
 						name = choice.best().name();
@@ -614,15 +617,18 @@ class QuestItems
 	 * skills a member states can bind, and a map of twenty-four levels for a
 	 * question about Mining is noise in a stack trace.
 	 *
-	 * <p><b>Every stated requirement counts, Attack included.</b> A pickaxe's
-	 * Attack column gates wielding it and not mining with it, so an account
-	 * hard-capping Attack could in principle use a rune pickaxe from its
-	 * inventory -- but questpath does not know, per requirement, which of the
-	 * two the quest needs, and offering a rune pickaxe to an account that
-	 * cannot wield it is the direction this project refuses. Under-claiming
-	 * costs a cheaper pickaxe than necessary; over-claiming sends somebody to
-	 * buy something they cannot use. {@link ItemGroupChoice#choose} takes the
-	 * ignored-skill set precisely so a caller that does know can say so.
+	 * <p><b>This used to argue that every stated requirement counts, Attack
+	 * included, and that was wrong.</b> The argument was that questpath cannot
+	 * tell which of a pickaxe's two columns the quest needs, so counting both
+	 * was the safe direction. It is not safe, it is just wrong: a pickaxe in
+	 * the inventory mines exactly as well as one in the weapon slot, so the
+	 * Attack column never gates using it at all. Counting it capped an account
+	 * with 41 Mining and 1 Attack at an iron pickaxe when it could perfectly
+	 * well use a rune one.
+	 *
+	 * <p>Which requirements are wield-only is now derived from the set --
+	 * see {@link ItemGroupChoice#wieldOnlySkills} -- rather than assumed
+	 * either way.
 	 */
 	private static java.util.Map<String, Integer> levelsFor(
 		List<QuestGraph.Alternative> alternatives, PlayerState account)
