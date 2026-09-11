@@ -1129,6 +1129,18 @@
           "unresolved": true
         },
         {
+          "name": "Iron bar",
+          "item_id": 2351,
+          "quantity": 2,
+          "sources": [
+            "Shop: Drogo's Mining Emporium. (28 Coins)",
+            "Drop: Iron dragon#Standard (Always)"
+          ],
+          "shop_names": [
+            "Drogo's Mining Emporium."
+          ]
+        },
+        {
           "name": "Redberry pie",
           "item_id": 2325,
           "sources": [
@@ -1139,11 +1151,6 @@
             "Pie Shop",
             "Yarnio's Baked Goods"
           ]
-        },
-        {
-          "name": "or 4 iron bars",
-          "quantity": 2,
-          "unresolved": true
         }
       ]
     },
