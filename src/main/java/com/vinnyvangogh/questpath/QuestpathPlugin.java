@@ -1174,6 +1174,15 @@ public class QuestpathPlugin extends Plugin
 			return;
 		}
 
+		// Once the bank itself has been read, it already counts everything
+		// collected into it and the tally would only double up. The bank is
+		// the authority; the tally exists solely to cover the stretch where
+		// there is no other evidence.
+		if (owned.bankSeen())
+		{
+			geOffers.forgetCollected();
+		}
+
 		// Coalesced to the next tick; see refreshPending. Banking a full
 		// inventory fires one of these per slot.
 		//
@@ -2771,9 +2780,43 @@ public class QuestpathPlugin extends Plugin
 
 		return QuestItems.of(questGraph,
 			new PlayerState(levels, experience, completed, inProgressQuestNames(), buildRules),
-			owned.heldByName(), owned.bankSeen(), pickupScope(),
+			heldIncludingCollected(), owned.bankSeen(), pickupScope(),
 			new HashSet<>(routeOrder), knownItems, owned.carriedByName(),
 			owned.bankPlaceholders());
+	}
+
+	/**
+	 * What the account holds, plus whatever has been collected out of a Grand
+	 * Exchange slot since the bank was last seen.
+	 *
+	 * <p>Reported from play: collecting a finished offer to the bank moved the
+	 * item out of "Queued" and straight back into "Left", as though it had
+	 * never been bought. It had -- the plugin just lost the evidence. While
+	 * the offer sits in a slot the purchase is visible; collect it and the
+	 * slot empties, and the items are now in a bank whose contents the plugin
+	 * only knows if the bank has been opened this session.
+	 *
+	 * <p>Merged with max rather than added, the same way {@code
+	 * QuestItems.effectiveHeld} merges the last sync's counts and for the same
+	 * reason: collecting to the <em>inventory</em> is visible, so adding would
+	 * count those items twice and drop something off the list that is still
+	 * needed. See {@link GrandExchangeOffers#collected} for where max
+	 * under-reports instead, and why that is the safer direction.
+	 */
+	private Map<String, Long> heldIncludingCollected()
+	{
+		Map<String, Long> held = owned.heldByName();
+		Map<String, Long> collected = geOffers.collected();
+		if (collected.isEmpty())
+		{
+			return held;
+		}
+		Map<String, Long> merged = new HashMap<>(held);
+		for (Map.Entry<String, Long> entry : collected.entrySet())
+		{
+			merged.merge(entry.getKey(), entry.getValue(), Math::max);
+		}
+		return merged;
 	}
 
 	@Provides

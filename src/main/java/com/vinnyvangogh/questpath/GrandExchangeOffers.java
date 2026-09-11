@@ -133,6 +133,7 @@ final class GrandExchangeOffers
 	}
 
 	private final Map<Integer, Order> bySlot = new HashMap<>();
+	private final Map<String, Long> collected = new HashMap<>();
 
 	/**
 	 * Records what a slot now holds. Safe to call for every {@code
@@ -149,6 +150,21 @@ final class GrandExchangeOffers
 		{
 			// Sold, cancelled, or emptied. See this class's doc for why each
 			// of those is a removal rather than something to remember.
+			//
+			// Whatever the slot had already bought has now left it, and where
+			// it went may be somewhere the plugin cannot see -- see
+			// collected() for the bank case this exists for. Credited before
+			// the slot is dropped, because the slot is the only record of how
+			// many there were.
+			Order leaving = bySlot.get(slot);
+			if (leaving != null && leaving.bought() > 0)
+			{
+				String key = normalise(leaving.name());
+				if (key != null)
+				{
+					collected.merge(key, (long) leaving.bought(), Long::sum);
+				}
+			}
 			bySlot.remove(slot);
 			return;
 		}
@@ -160,6 +176,51 @@ final class GrandExchangeOffers
 	void clear()
 	{
 		bySlot.clear();
+		collected.clear();
+	}
+
+	/**
+	 * What has been collected out of the slots, by lower-case item name.
+	 *
+	 * <p><b>Why this has to be remembered at all.</b> While an offer sits in a
+	 * slot, the plugin knows the items are bought because it can see the
+	 * offer. Collect them and the slot empties -- and if they went to the
+	 * bank, that is the end of the evidence, because the bank's contents are
+	 * only visible once the bank has been opened this session. So an item
+	 * moved out of "Queued" and straight back into "Left", as though it had
+	 * never been bought. Reported from play, doing exactly that.
+	 *
+	 * <p>This is the memory of it: whatever a slot had bought when it went
+	 * empty, credited to the item.
+	 *
+	 * <p><b>Merged into what the account holds with max, never by adding.</b>
+	 * Collecting to the inventory is visible to the plugin, so the same items
+	 * would be counted once by the container and once by this tally; taking
+	 * the larger of the two is right in both directions and is exactly what
+	 * QuestItems.effectiveHeld already does with the last sync's item counts,
+	 * for the same reason.
+	 *
+	 * <p><b>Where max under-reports, and why that is the right way to be
+	 * wrong.</b> If the bank was already seen this session holding eight, and
+	 * two more are collected into it without the bank being reopened, this
+	 * reports eight rather than ten. That is the behaviour as it is today --
+	 * the collected pair are invisible either way -- so nothing regresses,
+	 * and the failure is "you are told to buy something you already have"
+	 * rather than "an item you still need vanishes off the list". Only the
+	 * second one loses a quest.
+	 */
+	java.util.Map<String, Long> collected()
+	{
+		return java.util.Collections.unmodifiableMap(collected);
+	}
+
+	/**
+	 * Forgets the collected tally, for when the bank itself has been seen and
+	 * is now the authority on what the account holds.
+	 */
+	void forgetCollected()
+	{
+		collected.clear();
 	}
 
 	/** Whether any slot holds a live buy offer at all. */

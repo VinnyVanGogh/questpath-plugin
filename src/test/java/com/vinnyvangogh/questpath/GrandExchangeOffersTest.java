@@ -222,4 +222,97 @@ public class GrandExchangeOffersTest
 		assertEquals(2, all.get(1).slot());
 		assertEquals("Bucket", all.get(2).name());
 	}
+
+	/**
+	 * Collecting a finished offer is remembered, because the items may land
+	 * somewhere the plugin cannot see.
+	 *
+	 * <p>Reported from play: "Collect to Bank" moved the item out of Queued
+	 * and straight back into Left, as though it had never been bought. It had
+	 * -- while the offer sits in a slot the purchase is visible, and the
+	 * moment the slot empties the only remaining evidence is a bank the
+	 * plugin has not opened this session.
+	 */
+	@Test
+	public void collectingIsRememberedAfterTheSlotEmpties()
+	{
+		GrandExchangeOffers offers = new GrandExchangeOffers();
+		offers.update(0, GrandExchangeOfferState.BOUGHT, AIR_TALISMAN, "Air talisman", 5, 5);
+		offers.update(0, GrandExchangeOfferState.EMPTY, 0, null, 0, 0);
+
+		assertNull("the slot is genuinely empty again", offers.forItem(AIR_TALISMAN, "Air talisman"));
+		assertEquals(Long.valueOf(5L), offers.collected().get("air talisman"));
+	}
+
+	/**
+	 * A partly-filled offer that is cancelled and collected credits only what
+	 * actually arrived.
+	 *
+	 * <p>Crediting the whole offer would tell the player they hold five when
+	 * two turned up, and an item wrongly marked satisfied is the failure that
+	 * costs a quest trip.
+	 */
+	@Test
+	public void onlyWhatArrivedIsCredited()
+	{
+		GrandExchangeOffers offers = new GrandExchangeOffers();
+		offers.update(3, GrandExchangeOfferState.BUYING, AIR_TALISMAN, "Air talisman", 5, 2);
+		offers.update(3, GrandExchangeOfferState.CANCELLED_BUY, AIR_TALISMAN, "Air talisman", 5, 2);
+
+		assertEquals(Long.valueOf(2L), offers.collected().get("air talisman"));
+	}
+
+	/** An offer that bought nothing credits nothing. */
+	@Test
+	public void anEmptySlotCreditsNothing()
+	{
+		GrandExchangeOffers offers = new GrandExchangeOffers();
+		offers.update(0, GrandExchangeOfferState.BUYING, AIR_TALISMAN, "Air talisman", 5, 0);
+		offers.update(0, GrandExchangeOfferState.EMPTY, 0, null, 0, 0);
+
+		assertTrue(offers.collected().isEmpty());
+	}
+
+	/** Two collections of the same item add up. */
+	@Test
+	public void repeatedCollectionsAccumulate()
+	{
+		GrandExchangeOffers offers = new GrandExchangeOffers();
+		offers.update(0, GrandExchangeOfferState.BOUGHT, BUCKET, "Bucket", 3, 3);
+		offers.update(0, GrandExchangeOfferState.EMPTY, 0, null, 0, 0);
+		offers.update(1, GrandExchangeOfferState.BOUGHT, BUCKET, "Bucket", 4, 4);
+		offers.update(1, GrandExchangeOfferState.EMPTY, 0, null, 0, 0);
+
+		assertEquals(Long.valueOf(7L), offers.collected().get("bucket"));
+	}
+
+	/**
+	 * The bank supersedes the tally once it has actually been read.
+	 *
+	 * <p>The tally exists only to cover the stretch where there is no other
+	 * evidence. Keeping it alongside a real bank count would double up.
+	 */
+	@Test
+	public void seeingTheBankForgetsTheTally()
+	{
+		GrandExchangeOffers offers = new GrandExchangeOffers();
+		offers.update(0, GrandExchangeOfferState.BOUGHT, BUCKET, "Bucket", 3, 3);
+		offers.update(0, GrandExchangeOfferState.EMPTY, 0, null, 0, 0);
+		assertFalse(offers.collected().isEmpty());
+
+		offers.forgetCollected();
+		assertTrue(offers.collected().isEmpty());
+	}
+
+	/** Selling credits nothing -- this tally is about things acquired. */
+	@Test
+	public void sellingCreditsNothing()
+	{
+		GrandExchangeOffers offers = new GrandExchangeOffers();
+		offers.update(0, GrandExchangeOfferState.SOLD, BUCKET, "Bucket", 5, 5);
+		offers.update(0, GrandExchangeOfferState.EMPTY, 0, null, 0, 0);
+
+		assertTrue("a sell never entered a slot this tracks, so there is "
+			+ "nothing to credit when it leaves", offers.collected().isEmpty());
+	}
 }
