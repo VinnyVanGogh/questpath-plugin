@@ -516,6 +516,17 @@ public class QuestpathPlugin extends Plugin
 	private volatile List<String> routeOrder = Collections.emptyList();
 
 	/**
+	 * The build's start-only quests, as questpath last sent them.
+	 *
+	 * <p>Same lifecycle as routeOrder -- volatile, replaced wholesale,
+	 * cleared on logout and on a rejected push. A rejection means questpath
+	 * is not confirming this account, and a build's partial runs shown
+	 * against the wrong account would be advice to break a rule that account
+	 * actually holds.
+	 */
+	private volatile List<PartialRun> partialRuns = Collections.emptyList();
+
+	/**
 	 * What questpath holds for this account, by lowercased item name.
 	 *
 	 * The fallback for every item answer before the player opens a bank. Same
@@ -1250,6 +1261,7 @@ public class QuestpathPlugin extends Plugin
 			buildRules = Collections.emptyList();
 			unmatchedQuests = Collections.emptyList();
 			routeOrder = Collections.emptyList();
+			partialRuns = Collections.emptyList();
 			knownItems = Collections.emptyMap();
 			// The next login may be another account, whose bank is not this
 			// one. Reporting the previous account's items would be worse than
@@ -1386,7 +1398,7 @@ public class QuestpathPlugin extends Plugin
 		}
 
 		panel.update(stats, xp, syncStatus(), buildRules, unmatchedQuests,
-			questVerdicts, items, route, SyncSettings.from(config), report);
+			questVerdicts, items, route, routeWork(route), SyncSettings.from(config), report);
 
 		// Keeps the Grand Exchange row in step with a shopping list that
 		// changed while the search chatbox happened to already be open --
@@ -2515,6 +2527,7 @@ public class QuestpathPlugin extends Plugin
 						buildRules = Collections.emptyList();
 						unmatchedQuests = Collections.emptyList();
 						routeOrder = Collections.emptyList();
+						partialRuns = Collections.emptyList();
 						knownItems = Collections.emptyMap();
 						clientThread.invokeLater(this::refresh);
 					}
@@ -2530,6 +2543,7 @@ public class QuestpathPlugin extends Plugin
 					// plan, and this push response is the only place it is
 					// handed over.
 					routeOrder = accepted.routeOrder();
+					partialRuns = accepted.partialRuns();
 					knownItems = accepted.knownItems();
 
 					// Repaint now rather than waiting for the next game
@@ -2654,6 +2668,27 @@ public class QuestpathPlugin extends Plugin
 			inProgressQuestNames(), buildRules);
 		accountSnapshot = account;
 		return QuestVerdicts.of(questGraph, account);
+	}
+
+	/**
+	 * What the route list cannot say: the quests on the plan that still need
+	 * something, and the ones the build says never to finish.
+	 *
+	 * <p>Built from accountSnapshot rather than from the client directly, so
+	 * this pass and the Quests tab's verdicts are judging the same account.
+	 * That snapshot is written by verdicts(), which runs earlier in the same
+	 * refresh -- taking a second reading here would produce an account that
+	 * differs from the one on screen by whatever happened in between.
+	 *
+	 * <p>An empty result when the snapshot or the route is missing, which
+	 * {@link RouteWork} renders as no section rather than as "your plan is
+	 * clear". The partial runs still travel in that case: they come from the
+	 * push rather than from the client, so questpath having sent them does
+	 * not depend on the client having loaded.
+	 */
+	private RouteWork routeWork(NextQuestStatus route)
+	{
+		return RouteWork.of(questGraph, accountSnapshot, route, partialRuns);
 	}
 
 	/**

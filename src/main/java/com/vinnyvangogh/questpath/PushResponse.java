@@ -28,6 +28,9 @@ class PushResponse
 	@SerializedName("route_order")
 	private List<String> routeOrder;
 
+	@SerializedName("partial_runs")
+	private List<PartialRun> partialRuns;
+
 	@SerializedName("known_items")
 	private java.util.Map<String, Long> knownItems;
 
@@ -92,5 +95,22 @@ class PushResponse
 	List<String> routeOrder()
 	{
 		return routeOrder == null ? Collections.emptyList() : routeOrder;
+	}
+
+	/**
+	 * The quests this account's build says to start and never finish.
+	 *
+	 * <p>Absent from the response for an account that has applied no build,
+	 * and for a build with no such quests. Those are the same answer to the
+	 * plugin -- there is no section to draw -- so questpath drops the field
+	 * for both rather than distinguishing them on the wire, and both arrive
+	 * here as an empty list.
+	 *
+	 * <p>That is the opposite of {@link #routeOrder()}, where `[]` and absent
+	 * are genuinely different facts and questpath always sends the field.
+	 */
+	List<PartialRun> partialRuns()
+	{
+		return partialRuns == null ? Collections.emptyList() : partialRuns;
 	}
 }

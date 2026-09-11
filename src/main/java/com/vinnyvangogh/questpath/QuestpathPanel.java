@@ -568,10 +568,11 @@ class QuestpathPanel extends PluginPanel
 	 */
 	void update(CombatStats stats, SkillXp xp, SyncStatus sync,
 		List<BuildRule> rules, List<String> unmatchedQuests, QuestVerdicts verdicts, QuestItems items,
-		NextQuestStatus nextQuest, SyncSettings settings, AccountReport report)
+		NextQuestStatus nextQuest, RouteWork routeWork, SyncSettings settings, AccountReport report)
 	{
 		SwingUtilities.invokeLater(() ->
-			render(stats, xp, sync, rules, unmatchedQuests, verdicts, items, nextQuest, settings, report));
+			render(stats, xp, sync, rules, unmatchedQuests, verdicts, items, nextQuest, routeWork,
+				settings, report));
 	}
 
 	/**
@@ -612,13 +613,13 @@ class QuestpathPanel extends PluginPanel
 
 	private void render(CombatStats stats, SkillXp xp, SyncStatus sync,
 		List<BuildRule> rules, List<String> unmatchedQuests, QuestVerdicts verdicts, QuestItems items,
-		NextQuestStatus nextQuest, SyncSettings settings, AccountReport report)
+		NextQuestStatus nextQuest, RouteWork routeWork, SyncSettings settings, AccountReport report)
 	{
 		long startedAt = System.nanoTime();
 		try
 		{
 			renderBody(stats, xp, sync, rules, unmatchedQuests, verdicts, items, nextQuest,
-				settings, report);
+				routeWork, settings, report);
 		}
 		finally
 		{
@@ -666,7 +667,7 @@ class QuestpathPanel extends PluginPanel
 
 	private void renderBody(CombatStats stats, SkillXp xp, SyncStatus sync,
 		List<BuildRule> rules, List<String> unmatchedQuests, QuestVerdicts verdicts, QuestItems items,
-		NextQuestStatus nextQuest, SyncSettings settings, AccountReport report)
+		NextQuestStatus nextQuest, RouteWork routeWork, SyncSettings settings, AccountReport report)
 	{
 		clearBodies(PanelSections.Tab.SYNC);
 
@@ -737,9 +738,16 @@ class QuestpathPanel extends PluginPanel
 		// completed-quest read, so a quest finishing invalidates them
 		// together.
 		lastVerdicts = verdicts;
+		// routeWork rides the signature too. It is derived from the same
+		// completed-quest read as the other two, but not only from it: a
+		// levelled skill can clear an outstanding quest without any quest
+		// finishing, and the partial runs arrive on a push rather than on
+		// anything the client does. Left out, either change would sit
+		// unrendered until something else happened to invalidate the tab.
 		Object questsSignature = java.util.Arrays.asList(
 			verdicts == null ? null : verdicts.signature(),
-			nextQuest == null ? null : nextQuest.hashCode());
+			nextQuest == null ? null : nextQuest.hashCode(),
+			routeWork == null ? null : routeWorkSignature(routeWork));
 		if (!java.util.Objects.equals(questsSignature, lastVerdictSignature))
 		{
 			clearBodies(PanelSections.Tab.QUESTS);
@@ -757,6 +765,18 @@ class QuestpathPanel extends PluginPanel
 			quests.add(heading(PanelSections.NEXT_QUEST.title()));
 			quests.add(nextQuestBlock(nextQuest));
 			quests.add(Box.createVerticalStrut(14));
+			if (routeWork != null && !routeWork.outstanding().isEmpty())
+			{
+				quests.add(heading(PanelSections.ROUTE_OUTSTANDING.title()));
+				quests.add(routeOutstandingBlock(routeWork));
+				quests.add(Box.createVerticalStrut(14));
+			}
+			if (routeWork != null && !routeWork.partial().isEmpty())
+			{
+				quests.add(heading(PanelSections.ROUTE_PARTIAL.title()));
+				quests.add(routePartialBlock(routeWork));
+				quests.add(Box.createVerticalStrut(14));
+			}
 			quests.add(heading(PanelSections.QUEST_VERDICT.title()));
 			quests.add(questResults);
 			fillQuestResults(verdicts);
@@ -1644,6 +1664,168 @@ class QuestpathPanel extends PluginPanel
 	}
 
 	/**
+	 * Quests on the plan that are not startable yet, and what each is waiting
+	 * on.
+	 *
+	 * <p>The route list above already names these -- it names everything, in
+	 * plan order, which is the right shape for "what now" and says nothing
+	 * about whether the third row is something you could begin in ten seconds
+	 * or something needing 41 Cooking first. That is the reading that sends
+	 * someone walking to a quest start to find out there.
+	 *
+	 * <p>So this is the same quests, re-sorted by how close they are and
+	 * carrying their reason. Closest first: a boost away, then a level away,
+	 * then a quest away. Hovering a row gives the full chain, the same
+	 * tooltip the quest browser uses.
+	 *
+	 * <p>Deliberately not a filter on the list above. Re-ordering the plan
+	 * would be showing an order questpath did not save, and the plan's order
+	 * is a real answer that this section is not entitled to overwrite.
+	 */
+	private JPanel routeOutstandingBlock(RouteWork work)
+	{
+		JPanel panel = column();
+
+		List<RouteWork.Outstanding> outstanding = work.outstanding();
+		JLabel summary = new JLabel(wrap(outstanding.size() + " of the "
+			+ work.considered() + " unfinished on your plan "
+			+ (outstanding.size() == 1 ? "needs" : "need") + " something first."));
+		summary.setFont(FontManager.getRunescapeSmallFont());
+		summary.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
+		panel.add(summary);
+		panel.add(Box.createVerticalStrut(6));
+
+		for (RouteWork.Outstanding entry : outstanding)
+		{
+			JLabel row = row(outstandingPrefix(entry) + entry.questName());
+			row.setFont(FontManager.getRunescapeSmallFont());
+			row.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
+			// Null when there is nothing to say, so a row never trails an
+			// empty tooltip around -- see blockerTooltip.
+			row.setToolTipText(blockerTooltip(entry.questName(), entry.blockers()));
+			attachQuestHelperInteractions(row, entry.questName());
+			panel.add(row);
+		}
+
+		return panel;
+	}
+
+	/**
+	 * What kind of waiting one outstanding quest is doing, in one glyph.
+	 *
+	 * <p>ASCII only, and for the reason the route list documents at length:
+	 * FontManager's small RuneScape font is a bitmap font with holes in it,
+	 * and a missing glyph draws as a box players read as a stray letter.
+	 * Nothing here is worth a second gamble on that.
+	 */
+	private static String outstandingPrefix(RouteWork.Outstanding entry)
+	{
+		switch (entry.status())
+		{
+			case BOOSTABLE:
+				// A drink away. Nearest thing to ready there is.
+				return "+  ";
+			case SKILL_BLOCKED:
+				return "^  ";
+			case QUEST_BLOCKED:
+				return ".  ";
+			default:
+				return "?  ";
+		}
+	}
+
+	/**
+	 * The quests this build says to start and deliberately never finish.
+	 *
+	 * <p>These are not on the route and never can be: a route target is
+	 * something the plan intends to complete, and completing one of these is
+	 * exactly what breaks the build. Until this section existed the preset's
+	 * advice -- "start Dragon Slayer I for the anti-dragon shield, do not
+	 * finish it" -- lived in a string nothing rendered, while the plan it
+	 * produced quietly reported the same quest as impossible.
+	 *
+	 * <p>Each row hovers to all three sentences, because someone looking at
+	 * one is asking three questions at once: what am I getting, how far do I
+	 * play, and why can I not just finish it.
+	 */
+	private JPanel routePartialBlock(RouteWork work)
+	{
+		JPanel panel = column();
+
+		JLabel summary = new JLabel(wrap("Play these part of the way and stop."
+			+ " Finishing one breaks your build, so they are not on the plan above."));
+		summary.setFont(FontManager.getRunescapeSmallFont());
+		summary.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
+		panel.add(summary);
+		panel.add(Box.createVerticalStrut(6));
+
+		for (PartialRun run : work.partial())
+		{
+			JLabel row = row("!  " + run.name());
+			row.setFont(FontManager.getRunescapeSmallFont());
+			row.setForeground(Color.WHITE);
+			row.setToolTipText(partialTooltip(run));
+			attachQuestHelperInteractions(row, run.name());
+			panel.add(row);
+
+			// The "for" line sits on the row rather than only in the tooltip.
+			// It is the one of the three that decides whether to bother at
+			// all, and a section whose rows are bare names is a section you
+			// have to hover every line of to read.
+			JLabel forWhat = row("      " + run.forWhat());
+			forWhat.setFont(FontManager.getRunescapeSmallFont());
+			forWhat.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
+			forWhat.setToolTipText(partialTooltip(run));
+			panel.add(forWhat);
+			panel.add(Box.createVerticalStrut(4));
+		}
+
+		return panel;
+	}
+
+	/**
+	 * All three sentences of a partial run, laid out as a tooltip.
+	 *
+	 * <p>Labelled rather than run together. "For", "stop at" and "why" are
+	 * answers to different questions, and a paragraph makes the reader work
+	 * out which sentence answers which.
+	 */
+	private static String partialTooltip(PartialRun run)
+	{
+		return "<html><body style='width:230px'>"
+			+ "<b>" + escape(run.name()) + "</b>"
+			+ "<br><br>For: " + escape(run.forWhat())
+			+ "<br><br>Stop at: " + escape(run.upTo())
+			+ "<br><br>Why: " + escape(run.why())
+			+ "</body></html>";
+	}
+
+	/**
+	 * What about the route work would change what is drawn.
+	 *
+	 * <p>Not the object itself: RouteWork is rebuilt every refresh and has no
+	 * equals, so comparing instances would rebuild the Quests tab on every
+	 * pass and undo the point of the signature. This is the rendered content
+	 * -- each outstanding quest with its verdict, each partial run by slug --
+	 * so a levelled skill that clears a row invalidates the tab and a pass
+	 * that changed nothing does not.
+	 */
+	private static Object routeWorkSignature(RouteWork work)
+	{
+		List<String> parts = new ArrayList<>();
+		for (RouteWork.Outstanding entry : work.outstanding())
+		{
+			parts.add(entry.questName() + "/" + entry.status());
+		}
+		for (PartialRun run : work.partial())
+		{
+			parts.add("partial:" + run.slug());
+		}
+		parts.add("considered:" + work.considered());
+		return parts;
+	}
+
+	/**
 	 * Every quest, judged and grouped by what to do about it.
 	 *
 	 * The groups are the answer. "Do these now", "these need levels" and
@@ -2458,14 +2640,27 @@ class QuestpathPanel extends PluginPanel
 	 */
 	private static String blockerTooltip(SkillPlan.Entry entry)
 	{
-		QuestBlockers blockers = entry.blockers();
+		return blockerTooltip(entry.questName(), entry.blockers());
+	}
+
+	/**
+	 * The same tooltip for anything that knows a quest's name and what stands
+	 * in its way, whether or not it came from a skill plan.
+	 *
+	 * <p>Split out for the route's own outstanding list, which has both and
+	 * has no experience figure to carry -- passing a zero through
+	 * SkillPlan.Entry to reuse this would have put "0 xp" into the model to
+	 * satisfy a signature.
+	 */
+	private static String blockerTooltip(String questName, QuestBlockers blockers)
+	{
 		if (blockers == null || blockers.isEmpty())
 		{
 			return null;
 		}
 
 		StringBuilder text = new StringBuilder("<html><body style='width:230px'>");
-		text.append("<b>").append(escape(entry.questName())).append("</b>");
+		text.append("<b>").append(escape(questName)).append("</b>");
 
 		List<String> questsFirst = blockers.quests();
 		if (!questsFirst.isEmpty())

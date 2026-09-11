@@ -78,6 +78,18 @@ enum PanelSections
 		Status.LIVE,
 		null),
 
+	ROUTE_OUTSTANDING(
+		Tab.QUESTS,
+		"Still needs work",
+		Status.LIVE,
+		null),
+
+	ROUTE_PARTIAL(
+		Tab.QUESTS,
+		"Start, never finish",
+		Status.LIVE,
+		null),
+
 	OVERLAY_SETTINGS(
 		Tab.VIEW,
 		"Overlays",
