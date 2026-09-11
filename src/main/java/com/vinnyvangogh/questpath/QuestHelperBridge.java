@@ -146,13 +146,45 @@ class QuestHelperBridge
 	static final String QUEST_NAME_METHOD_NAME = "getName";
 
 	/**
-	 * The two quests Quest Helper runs as several separately named helpers
-	 * rather than one, mapped to the one concrete sub-helper name this class
-	 * actually asks for. See the class doc for why each choice is what it is.
+	 * questpath's quest names mapped to the helper name Quest Helper actually
+	 * registers, for every quest where the two disagree.
+	 *
+	 * <p><b>Reported from play: both Recipe for Disaster sub-quests showed
+	 * "Not supported by Quest Helper" when Quest Helper supports all ten.</b>
+	 * This map only carried the bare string "Recipe for Disaster", and
+	 * questpath names the sub-quests after the wiki's own page titles --
+	 * "Recipe for Disaster/Another Cook's Quest". Those matched nothing, so
+	 * {@code getByName} returned null and the menu reported the quest
+	 * unsupported. It was a naming mismatch presented as a capability gap,
+	 * which is the worst way to get this wrong: the player believes the other
+	 * plugin cannot do it.
+	 *
+	 * <p>The right-hand side is Quest Helper's own display name, read from
+	 * the installed jar with {@code javap -c -p} against {@code
+	 * com.questhelper.questinfo.QuestHelperQuest} rather than guessed -- the
+	 * enum constants and their strings do not follow one pattern
+	 * ({@code RECIPE_FOR_DISASTER_WARTFACE_AND_BENTNOZE} is "RFD - Wartface &
+	 * Bentnoze" and is questpath's "Freeing the Goblin generals"; {@code
+	 * MONKEY_AMBASSADOR} is "Freeing King Awowogei"; {@code FINALE} is
+	 * "Defeating the Culinaromancer"). Anything derived from questpath's own
+	 * name by string surgery would have got at least three of these wrong.
+	 *
+	 * <p>Map.ofEntries rather than Map.of: there are eleven pairs and Map.of
+	 * stops at ten.
 	 */
-	private static final Map<String, String> SPLIT_QUEST_DEFAULT_HELPER = Map.of(
-		"Shield of Arrav", "Shield of Arrav - Black Arm Gang",
-		"Recipe for Disaster", "RFD - Start");
+	private static final Map<String, String> SPLIT_QUEST_DEFAULT_HELPER = Map.ofEntries(
+		Map.entry("Shield of Arrav", "Shield of Arrav - Black Arm Gang"),
+		Map.entry("Recipe for Disaster", "RFD - Start"),
+		Map.entry("Recipe for Disaster/Another Cook's Quest", "RFD - Start"),
+		Map.entry("Recipe for Disaster/Freeing the Mountain Dwarf", "RFD - Dwarf"),
+		Map.entry("Recipe for Disaster/Freeing the Goblin generals", "RFD - Wartface & Bentnoze"),
+		Map.entry("Recipe for Disaster/Freeing Pirate Pete", "RFD - Pirate Pete"),
+		Map.entry("Recipe for Disaster/Freeing the Lumbridge Guide", "RFD - Lumbridge Guide"),
+		Map.entry("Recipe for Disaster/Freeing Evil Dave", "RFD - Evil Dave"),
+		Map.entry("Recipe for Disaster/Freeing King Awowogei", "RFD - Monkey Ambassador"),
+		Map.entry("Recipe for Disaster/Freeing Sir Amik Varze", "RFD - Sir Amik Varze"),
+		Map.entry("Recipe for Disaster/Freeing Skrach Uglogwee", "RFD - Skrach Uglogwee"),
+		Map.entry("Recipe for Disaster/Defeating the Culinaromancer", "RFD - Finale"));
 
 	/** What a right-click on a quest row can conclude about starting it in Quest Helper. */
 	enum Availability
