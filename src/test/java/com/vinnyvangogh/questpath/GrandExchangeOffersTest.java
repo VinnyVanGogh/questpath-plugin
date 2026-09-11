@@ -315,4 +315,60 @@ public class GrandExchangeOffersTest
 		assertTrue("a sell never entered a slot this tracks, so there is "
 			+ "nothing to credit when it leaves", offers.collected().isEmpty());
 	}
+
+	/**
+	 * The tally survives everything except a real bank read.
+	 *
+	 * <p>This is the defect a live trace caught and the unit tests could not.
+	 * The first version cleared the tally whenever {@code owned.bankSeen()}
+	 * was true -- which is true for the rest of the session once a bank has
+	 * been opened. Inventory and collection-box containers change constantly,
+	 * so the very next one wiped it, and collecting to bank went straight back
+	 * to un-buying the item for anyone who had opened a bank at all.
+	 *
+	 * <p>It passed its own tests because they call {@link
+	 * GrandExchangeOffers#forgetCollected} directly, which is the right
+	 * behaviour for the one event that should clear it. What no test covered
+	 * was every OTHER event leaving it alone -- the actual bug lived in the
+	 * caller's condition, not in this class.
+	 *
+	 * <p>So this asserts the property from the tally's side: nothing here
+	 * clears it except the explicit call. The caller's guard is now keyed on
+	 * the bank container's own id rather than on a session-wide flag.
+	 *
+	 * <p>Live trace, 2026-09-10: with the bank already seen, an inventory
+	 * change (container 93) and the collection box emptying (container 521)
+	 * both left {monkfish=100} intact.
+	 */
+	@Test
+	public void ordinaryTrafficNeverClearsTheTally()
+	{
+		GrandExchangeOffers offers = new GrandExchangeOffers();
+		offers.update(3, GrandExchangeOfferState.BOUGHT, BUCKET, "Monkfish", 100, 100);
+		offers.update(3, GrandExchangeOfferState.EMPTY, 0, null, 0, 0);
+		assertEquals(Long.valueOf(100L), offers.collected().get("monkfish"));
+
+		// Everything that happens between collecting and banking: other slots
+		// reporting in, a second offer being placed, an unrelated sale.
+		offers.update(0, GrandExchangeOfferState.EMPTY, 0, null, 0, 0);
+		offers.update(1, GrandExchangeOfferState.BUYING, AIR_TALISMAN, "Air talisman", 5, 0);
+		offers.update(2, GrandExchangeOfferState.SOLD, BUCKET, "Bucket", 1, 1);
+		offers.update(2, GrandExchangeOfferState.EMPTY, 0, null, 0, 0);
+
+		assertEquals("nothing but a bank read may clear this",
+			Long.valueOf(100L), offers.collected().get("monkfish"));
+	}
+
+	/** The collected tally is not a claim about what is still on offer. */
+	@Test
+	public void collectingDoesNotLeaveTheItemQueued()
+	{
+		GrandExchangeOffers offers = new GrandExchangeOffers();
+		offers.update(0, GrandExchangeOfferState.BOUGHT, BUCKET, "Bucket", 2, 2);
+		offers.update(0, GrandExchangeOfferState.EMPTY, 0, null, 0, 0);
+
+		assertNull("the slot is free again", offers.forItem(BUCKET, "Bucket"));
+		assertTrue(offers.isEmpty());
+		assertEquals(Long.valueOf(2L), offers.collected().get("bucket"));
+	}
 }

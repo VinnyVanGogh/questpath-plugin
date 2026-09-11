@@ -1174,11 +1174,23 @@ public class QuestpathPlugin extends Plugin
 			return;
 		}
 
-		// Once the bank itself has been read, it already counts everything
-		// collected into it and the tally would only double up. The bank is
-		// the authority; the tally exists solely to cover the stretch where
-		// there is no other evidence.
-		if (owned.bankSeen())
+		// Cleared only when the BANK container itself is what changed, never
+		// merely because the bank has been seen at some point.
+		//
+		// The first version tested owned.bankSeen(), which is true for the
+		// rest of the session once a bank has been opened -- so every
+		// inventory change after that wiped the tally, and inventory changes
+		// are constant. Collecting to bank would have gone back to un-buying
+		// the item for anyone who had opened a bank, which is nearly
+		// everyone. It survived its own tests because they call
+		// forgetCollected() directly, and it survived the live trace only
+		// because that run never opened a bank.
+		//
+		// Re-reading the bank is the one event that genuinely supersedes the
+		// tally: at that moment the bank's own count includes whatever was
+		// collected into it.
+		net.runelite.api.ItemContainer changed = event.getItemContainer();
+		if (changed != null && changed.getId() == net.runelite.api.gameval.InventoryID.BANK)
 		{
 			geOffers.forgetCollected();
 		}
