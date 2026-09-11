@@ -174,6 +174,16 @@ class GrandExchangeOverlay extends QuestpathOverlay
 			// player has to copy by hand into the quantity box.
 			rows.add(OverlayRow.item(next.itemId(), next.name(), "x" + next.outstanding(),
 				false, OverlayTheme.ACCENT, OverlayTheme.WARN));
+			// The wiki's own caveat, under the item it qualifies. Only on the
+			// Next row: this is the one item the player is about to type a
+			// quantity for, and a caveat that arrives after the purchase is
+			// not a caveat. "4 if you want your own blurite sword" is the line
+			// that earned this -- the count above says two, and two is right
+			// for the quest and wrong for anyone who wants the second sword.
+			for (String note : next.notes())
+			{
+				rows.add(OverlayRow.note(note, OverlayTheme.MUTED));
+			}
 		}
 
 		if (!queued.isEmpty())

@@ -95,6 +95,7 @@ final class GrandExchangeShoppingList
 		private final long outstanding;
 		private final GrandExchangeOffers.Order order;
 		private final Availability availability;
+		private final java.util.List<String> notes;
 
 		Line(String name, int itemId, long outstanding)
 		{
@@ -109,6 +110,13 @@ final class GrandExchangeShoppingList
 		Line(String name, int itemId, long outstanding, GrandExchangeOffers.Order order,
 			Availability availability)
 		{
+			this(name, itemId, outstanding, order, availability, null);
+		}
+
+		Line(String name, int itemId, long outstanding, GrandExchangeOffers.Order order,
+			Availability availability, java.util.List<String> notes)
+		{
+			this.notes = notes;
 			this.name = name;
 			this.itemId = itemId;
 			this.outstanding = outstanding;
@@ -142,6 +150,19 @@ final class GrandExchangeShoppingList
 		GrandExchangeOffers.Order order()
 		{
 			return order;
+		}
+
+		/**
+		 * The wiki's own caveats for this item, verbatim.
+		 *
+		 * <p>This is the surface they were missing from. The Knight's Sword
+		 * asks for "2 or 4 iron bars (4 if you want your own blurite sword)";
+		 * the list said two and the player, an ironman who wanted the second
+		 * sword, found out only after buying.
+		 */
+		java.util.List<String> notes()
+		{
+			return notes == null ? java.util.Collections.emptyList() : notes;
 		}
 
 		/** Whether one of the eight slots is already buying this. */
@@ -279,7 +300,7 @@ final class GrandExchangeShoppingList
 				? Availability.BUYABLE
 				: tradeability.of(total.itemId(), total.name());
 			out.add(new Line(total.name(), total.itemId(), total.outstanding(), order,
-				availability == null ? Availability.UNKNOWN : availability));
+				availability == null ? Availability.UNKNOWN : availability, total.notes()));
 		}
 		out.sort(Comparator.comparing(Line::name, String.CASE_INSENSITIVE_ORDER));
 		return out;

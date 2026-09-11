@@ -138,6 +138,7 @@ class QuestItems
 		private final List<String> shopNames;
 		private final List<String> dropSourceNames;
 		private final String groupName;
+		private final List<String> notes;
 
 		Line(String name, int itemId, int wanted, long owned, boolean optional, List<String> sources)
 		{
@@ -178,7 +179,23 @@ class QuestItems
 			List<String> sources, List<String> shopNames, List<String> dropSourceNames,
 			String groupName)
 		{
+			this(name, itemId, wanted, owned, optional, unresolved, sources, shopNames,
+				dropSourceNames, groupName, null);
+		}
+
+		/**
+		 * The full shape plus the wiki's own caveats for this line.
+		 *
+		 * <p>Carried rather than interpreted -- see QuestGraph.Item#notes for
+		 * why, and for the iron bars that went unbought because these used to
+		 * stop at the bundle boundary.
+		 */
+		Line(String name, int itemId, int wanted, long owned, boolean optional, boolean unresolved,
+			List<String> sources, List<String> shopNames, List<String> dropSourceNames,
+			String groupName, List<String> notes)
+		{
 			this.groupName = groupName;
+			this.notes = notes;
 			this.name = name;
 			this.itemId = itemId;
 			this.wanted = wanted;
@@ -210,6 +227,12 @@ class QuestItems
 		 * anyway, marked, because the alternative is a list that is quietly
 		 * short while claiming to be the list.
 		 */
+		/** The wiki's own parentheticals for this line, verbatim. */
+		List<String> notes()
+		{
+			return notes == null ? java.util.Collections.emptyList() : notes;
+		}
+
 		/**
 		 * The category this line came from -- "Pickaxe" -- or empty when it
 		 * named an item outright. {@link #name()} is the chosen member.
@@ -600,7 +623,7 @@ class QuestItems
 				}
 				needs.lines.add(new Line(name, itemId, item.quantity(), owned,
 					item.optional(), item.unresolved(), item.sources(), item.shopNames(),
-					item.dropSourceNames(), groupName));
+					item.dropSourceNames(), groupName, item.notes()));
 			}
 			out.quests.add(needs);
 		}
@@ -902,6 +925,21 @@ class QuestItems
 			this(name, itemId, owned, carried, placeholder, sources, shopNames, null);
 		}
 
+		/**
+		 * The wiki's own caveats for this item, verbatim, merged across every
+		 * quest line that asked for it.
+		 *
+		 * <p>Accumulated by {@link #add} rather than fixed at construction,
+		 * because two quests can want the same item for different reasons and
+		 * only one of them may carry the caveat that matters.
+		 */
+		List<String> notes()
+		{
+			return notes;
+		}
+
+		private final List<String> notes = new java.util.ArrayList<>();
+
 		/** The full shape, including the monsters that drop it. */
 		Total(String name, int itemId, long owned, long carried, boolean placeholder,
 			List<String> sources, List<String> shopNames, List<String> dropSourceNames)
@@ -1000,6 +1038,17 @@ class QuestItems
 			if (questName != null && !questName.isEmpty())
 			{
 				questNames.add(questName);
+			}
+			// Merged across quests, de-duplicated, order preserved. Two quests
+			// wanting the same item can carry different caveats and only one
+			// may be the one that changes what you buy -- so they accumulate
+			// rather than the first winning.
+			for (String note : line.notes())
+			{
+				if (note != null && !note.isEmpty() && !notes.contains(note))
+				{
+					notes.add(note);
+				}
 			}
 			if (line.wanted() > 0)
 			{

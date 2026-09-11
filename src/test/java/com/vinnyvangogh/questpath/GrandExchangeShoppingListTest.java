@@ -378,4 +378,45 @@ public class GrandExchangeShoppingListTest
 		assertTrue(GrandExchangeShoppingList.queued(null).isEmpty());
 		assertTrue(GrandExchangeShoppingList.left(null).isEmpty());
 	}
+
+	/**
+	 * The wiki's caveat reaches the buy list.
+	 *
+	 * <p>Reported from play. The Knight's Sword asks for "2 or 4 iron bars (4
+	 * if you want your own blurite sword)". The count resolves to two, which
+	 * is right for finishing the quest and wrong for an ironman who wants the
+	 * second sword -- and the sword is worth real money in free-to-play. The
+	 * parenthetical said exactly that and stopped at the bundle boundary, so
+	 * the player bought two and found out afterwards.
+	 *
+	 * <p>The note is carried verbatim and never parsed. Nothing here should
+	 * ever try to read "4" out of it and adjust the quantity: that would be
+	 * questpath guessing at prose, which is what the whole no-fabricated-data
+	 * rule exists to stop.
+	 */
+	@Test
+	public void aWikiCaveatReachesTheBuyList()
+	{
+		QuestItems.Total total = total("Iron bar", 2351, 2, 0);
+		total.add(new QuestItems.Line("Iron bar", 2351, 2, 0L, false, false,
+			Collections.emptyList(), null, null, "",
+			Arrays.asList("4 if you want your own blurite sword")), "The Knight's Sword");
+
+		List<GrandExchangeShoppingList.Line> lines =
+			GrandExchangeShoppingList.of(Collections.singletonList(total));
+
+		assertEquals(1, lines.size());
+		assertEquals(Arrays.asList("4 if you want your own blurite sword"),
+			lines.get(0).notes());
+	}
+
+	/** An item the wiki qualifies with nothing carries no note, and never a null. */
+	@Test
+	public void anItemWithNoCaveatCarriesNoNote()
+	{
+		List<GrandExchangeShoppingList.Line> lines = GrandExchangeShoppingList.of(
+			Collections.singletonList(total("Rope", 954, 1, 0)));
+
+		assertTrue(lines.get(0).notes().isEmpty());
+	}
 }

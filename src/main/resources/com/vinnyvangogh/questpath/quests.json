@@ -1,5 +1,5 @@
 {
-  "version": 10,
+  "version": 11,
   "quests": [
     {
       "id": 1,
@@ -45,6 +45,9 @@
           "drop_source_names": [
             "Borrokar",
             "Freidir"
+          ],
+          "notes": [
+            "if obtaining the milk during the quest"
           ]
         },
         {
@@ -76,6 +79,9 @@
             "Culinaromancer's Chest",
             "Culinaromancer's Chest",
             "Sigmund the Merchant (shop)"
+          ],
+          "notes": [
+            "can be obtained during the quest"
           ]
         },
         {
@@ -104,6 +110,9 @@
             "Sunset Coast General Store",
             "Tal Teklan General Store",
             "Logava Gricoller's Cooking Supplies"
+          ],
+          "notes": [
+            "if obtaining the flour during the quest"
           ]
         },
         {
@@ -144,6 +153,9 @@
           "sources": [
             "Drop: Cadavaberry bush (Always)",
             "Drop: Cadava bush (wild) (Always)"
+          ],
+          "notes": [
+            "obtainable during the quest"
           ]
         }
       ]
@@ -159,7 +171,10 @@
         {
           "name": "A water container, such as a bucket of water",
           "obtainable": true,
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "obtainable during the quest"
+          ]
         },
         {
           "name": "Bones",
@@ -172,6 +187,9 @@
           "drop_source_names": [
             "Undead cow",
             "Cave goblin (monster)"
+          ],
+          "notes": [
+            "can't be noted, but can be delivered in increments"
           ]
         },
         {
@@ -200,7 +218,10 @@
         {
           "name": "Black Arm Gang: 2 Phoenix crossbows",
           "obtainable": true,
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "obtained during the quest"
+          ]
         },
         {
           "name": "Phoenix Gang: 20 coins",
@@ -244,12 +265,18 @@
           ],
           "drop_source_names": [
             "Baby impling"
+          ],
+          "notes": [
+            "unnoted"
           ]
         },
         {
           "name": "Shears if obtaining wool to spin into balls of wool",
           "obtainable": true,
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "obtained during the quest"
+          ]
         }
       ]
     },
@@ -278,12 +305,18 @@
         {
           "name": "Fish food",
           "item_id": 272,
-          "obtainable": true
+          "obtainable": true,
+          "notes": [
+            "obtainable during the quest"
+          ]
         },
         {
           "name": "Poison",
           "item_id": 273,
-          "obtainable": true
+          "obtainable": true,
+          "notes": [
+            "obtainable during the quest"
+          ]
         },
         {
           "name": "Spade",
@@ -310,6 +343,9 @@
             "Cam Torum General Store",
             "Darkmeyer General Store",
             "Fortis General Store"
+          ],
+          "notes": [
+            "obtainable during the quest"
           ]
         }
       ]
@@ -357,6 +393,9 @@
           "drop_source_names": [
             "Goblin guard",
             "Borrokar"
+          ],
+          "notes": [
+            "obtainable during the quest for 2 coins"
           ]
         },
         {
@@ -387,12 +426,18 @@
           "drop_source_names": [
             "Goblin guard",
             "Baby impling"
+          ],
+          "notes": [
+            "can be bought from the general store just north of the Blue Moon Inn for 1 coin"
           ]
         },
         {
           "name": "Stake",
           "item_id": 1549,
-          "obtainable": true
+          "obtainable": true,
+          "notes": [
+            "obtained during the quest"
+          ]
         }
       ]
     },
@@ -548,6 +593,9 @@
             "The Lighthouse Store",
             "Sigmund the Merchant (shop)",
             "Bedabin Village Bartering"
+          ],
+          "notes": [
+            "obtainable during quest"
           ]
         },
         {
@@ -637,6 +685,9 @@
             "Kastori General Store",
             "Obli's General Store.",
             "Outer Fortis General Store"
+          ],
+          "notes": [
+            "can be bought during the quest from Ned for 18 coins"
           ]
         },
         {
@@ -691,6 +742,9 @@
           "drop_source_names": [
             "Flawed Golem",
             "Mind Golem"
+          ],
+          "notes": [
+            "not soft clay"
           ]
         },
         {
@@ -771,6 +825,10 @@
           ],
           "drop_source_names": [
             "Wall beast"
+          ],
+          "notes": [
+            "can be purchased in the helmet shop in Barbarian Village, spawns by the backdoor of Draynor Manor",
+            "Alternatively, a Black full helm, Black platebody and Black platelegs/black plateskirt can be used in place of the Iron chainbody and Bronze med helm"
           ]
         },
         {
@@ -800,6 +858,9 @@
           ],
           "drop_source_names": [
             "Tortoise#With riders"
+          ],
+          "notes": [
+            "can be obtained from the cabbage patch in Edgeville Monastery and South Falador Farm, as well as Lumbridge cellar. Cabbages obtained from Draynor Manor CANNOT be used"
           ]
         },
         {
@@ -818,6 +879,9 @@
           "drop_source_names": [
             "Cyclops (Catacombs of Kourend)",
             "Cyclops#Warriors' Guild Rooftop"
+          ],
+          "notes": [
+            "can be purchased at Horvik's Armour Shop in Varrock and from Wayne's Chains in Falador"
           ]
         }
       ]
@@ -895,6 +959,9 @@
           "sources": [
             "Drop: Rat#Regular (Always)",
             "Drop: Rat#Stronghold of Security (Always)"
+          ],
+          "notes": [
+            "only obtainable after starting the quest"
           ]
         }
       ]
@@ -922,6 +989,9 @@
       "items": [
         {
           "name": "Any pickaxe",
+          "notes": [
+            "one spawns in Rimmington"
+          ],
           "group_name": "Pickaxe",
           "alternatives": [
             {
@@ -1123,10 +1193,21 @@
           ]
         },
         {
-          "name": "Blurite ore - optionally an additional ore each for your own blurite sword and the Falador easy diary",
+          "name": "Blurite ore",
+          "item_id": 668,
           "quantity": 3,
           "obtainable": true,
-          "unresolved": true
+          "sources": [
+            "Drop: Blurite rocks (Always)"
+          ],
+          "drop_source_names": [
+            "Blurite rocks"
+          ],
+          "notes": [
+            "obtained during the quest",
+            "Members only",
+            "optionally an additional ore each for your own blurite sword and the Falador easy diary"
+          ]
         },
         {
           "name": "Iron bar",
@@ -1138,6 +1219,9 @@
           ],
           "shop_names": [
             "Drogo's Mining Emporium."
+          ],
+          "notes": [
+            "4 if you want your own blurite sword"
           ]
         },
         {
@@ -1150,6 +1234,9 @@
           "shop_names": [
             "Pie Shop",
             "Yarnio's Baked Goods"
+          ],
+          "notes": [
+            "not half a redberry pie"
           ]
         }
       ]
@@ -1180,6 +1267,26 @@
             "Dyes to Die For",
             "Guinevere's Dyes",
             "Lletya Seamstress"
+          ],
+          "notes": [
+            "or 2 woad leaves and 5 coins to obtain a blue dye from Aggie"
+          ]
+        },
+        {
+          "name": "Goblin mail",
+          "item_id": 288,
+          "quantity": 3,
+          "obtainable": true,
+          "sources": [
+            "Drop: Crate (Goblin Temple) (Always)",
+            "Drop: Goblin#Drop table 2 (10/128)"
+          ],
+          "drop_source_names": [
+            "Goblin (God Wars Dungeon)",
+            "Goblin guard"
+          ],
+          "notes": [
+            "obtained during the quest"
           ]
         },
         {
@@ -1187,9 +1294,22 @@
           "unresolved": true
         },
         {
-          "name": "Orange dye – created by combining red dye with yellow dye",
+          "name": "Orange dye",
+          "item_id": 1769,
           "quantity": 1,
-          "unresolved": true
+          "sources": [
+            "Shop: Dyes to Die For (6 Coins)",
+            "Shop: Guinevere's Dyes (6 Coins)"
+          ],
+          "shop_names": [
+            "Dyes to Die For",
+            "Guinevere's Dyes",
+            "Lletya Seamstress",
+            "Durrik's Goods"
+          ],
+          "notes": [
+            "created by combining red dye with yellow dye"
+          ]
         },
         {
           "name": "Red dye",
@@ -1203,6 +1323,9 @@
             "Dyes to Die For",
             "Guinevere's Dyes",
             "Lletya Seamstress"
+          ],
+          "notes": [
+            "or 3 redberries and 5 coins to obtain a red dye from Aggie"
           ]
         },
         {
@@ -1217,13 +1340,10 @@
             "Dyes to Die For",
             "Guinevere's Dyes",
             "Lletya Seamstress"
+          ],
+          "notes": [
+            "2 onions and 5 coins to obtain a yellow dye from Aggie"
           ]
-        },
-        {
-          "name": "sets of Goblin mail",
-          "quantity": 3,
-          "obtainable": true,
-          "unresolved": true
         }
       ]
     },
@@ -1251,6 +1371,9 @@
             "Prifddinas Foodstuffs",
             "Food Store",
             "Kenelme's Wares"
+          ],
+          "notes": [
+            "obtainable during the quest"
           ]
         },
         {
@@ -1264,6 +1387,10 @@
           "drop_source_names": [
             "Borrokar",
             "Freidir"
+          ],
+          "notes": [
+            "a",
+            "only 30 are needed if using the Ring of Charos"
           ]
         },
         {
@@ -1277,6 +1404,9 @@
           "shop_names": [
             "Dead Man's Chest",
             "Karamja Wines, Spirits, and Beers."
+          ],
+          "notes": [
+            "obtainable during the quest for 30 coins"
           ]
         },
         {
@@ -1304,6 +1434,9 @@
             "Cam Torum General Store",
             "Darkmeyer General Store",
             "Fortis General Store"
+          ],
+          "notes": [
+            "obtainable during the quest"
           ]
         },
         {
@@ -1318,6 +1451,9 @@
             "Floria's Fashion",
             "Shayzien Styles",
             "Thessalia's Fine Clothes."
+          ],
+          "notes": [
+            "obtainable during the quest in Port Sarim at Gerrant's Fishy Business."
           ]
         }
       ]
@@ -1353,6 +1489,9 @@
           ],
           "shop_names": [
             "Oziach (shop)"
+          ],
+          "notes": [
+            "obtainable during the quest"
           ]
         },
         {
@@ -1424,11 +1563,17 @@
             "Fremennik Fish Monger",
             "Island Fishmonger",
             "Warrens Fish Monger"
+          ],
+          "notes": [
+            "can be bought from any fishing shop"
           ]
         },
         {
           "name": "Magic/ranged weapon as well as a law and air rune or 10,000 coins",
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "to cast Telekinetic Grab if your Magic level is 33 or higher"
+          ]
         },
         {
           "name": "Member: Several other spawn locations or buy them at the sawmill",
@@ -1444,6 +1589,9 @@
           ],
           "shop_names": [
             "Razmire Builders Merchants."
+          ],
+          "notes": [
+            "only normal planks work"
           ]
         },
         {
@@ -1464,6 +1612,9 @@
             "Prifddinas' Seamstress",
             "Vermundi's Clothes Stall",
             "Durrik's Goods"
+          ],
+          "notes": [
+            "can be bought from Thessalia for 30 coins or the Al Kharid silk stall for 3 coins -- members can steal it from the Ardougne silk stall with 20 Thieving"
           ]
         },
         {
@@ -1479,11 +1630,17 @@
           ],
           "drop_source_names": [
             "Ogre Coffin"
+          ],
+          "notes": [
+            "Members can buy these from the Sawmill operator north-east of Varrock, they can also be smithed at 34 Smithing using 6 steel bars by all players"
           ]
         },
         {
           "name": "Unfired bowl",
-          "item_id": 1791
+          "item_id": 1791,
+          "notes": [
+            "can be made with soft clay on a Potter's Wheel with 8 Crafting"
+          ]
         },
         {
           "name": "Wizard's mind bomb",
@@ -1497,6 +1654,9 @@
             "Stick Your Ore Inn",
             "The Lost Pickaxe",
             "Rising Sun Inn"
+          ],
+          "notes": [
+            "can be bought in the Rising Sun Inn in Falador or The Toad and Chicken in Burthorpe"
           ]
         }
       ]
@@ -1629,6 +1789,9 @@
         },
         {
           "name": "Woodcutting axe",
+          "notes": [
+            "you will need to bank the axe before accessing Entrana - you cannot use a blessed axe"
+          ],
           "group_name": "Axe",
           "alternatives": [
             {
@@ -1993,6 +2156,9 @@
           ],
           "drop_source_names": [
             "Baby impling"
+          ],
+          "notes": [
+            "You may wish to bring several in case you mess up. One source is in Draynor Village - Aggie's house"
           ]
         },
         {
@@ -2013,6 +2179,9 @@
             "Obli's General Store.",
             "Jiminua's Jungle Store.",
             "Obli's General Store."
+          ],
+          "notes": [
+            "obtainable during the quest, may take some time"
           ]
         }
       ]
@@ -2036,6 +2205,9 @@
           "drop_source_names": [
             "Giant bat (Brine Rat Cavern)",
             "Albino bat"
+          ],
+          "notes": [
+            "obtainable during the quest"
           ]
         },
         {
@@ -2067,7 +2239,10 @@
         {
           "name": "Bucket of wax",
           "item_id": 30,
-          "obtainable": true
+          "obtainable": true,
+          "notes": [
+            "obtainable during the quest with either the Beekeeper's outfit or insect repellent; a bucket spawns near the east gate of the beehive enclosure"
+          ]
         },
         {
           "name": "Tinderbox",
@@ -2199,6 +2374,9 @@
           ],
           "drop_source_names": [
             "Cyclops#Warriors' Guild Basement"
+          ],
+          "notes": [
+            "trimmed will not work"
           ]
         },
         {
@@ -2211,6 +2389,9 @@
           "shop_names": [
             "Horvik's Armour Shop.",
             "Zenesha's Plate Mail Body Shop."
+          ],
+          "notes": [
+            "trimmed will not work"
           ]
         },
         {
@@ -2223,6 +2404,9 @@
           "shop_names": [
             "Louie's Armoured Legs Bazaar.",
             "Valaine's Shop of Champions."
+          ],
+          "notes": [
+            "plateskirt or trimmed will not work"
           ]
         },
         {
@@ -2237,6 +2421,11 @@
           "shop_names": [
             "Velrak the explorer",
             "Legends Guild Shop of Useful Items."
+          ],
+          "notes": [
+            "obtainable during the quest; if travelling to Taverley Dungeon for the lava eel, without 70 Agility",
+            "if travelling to the Lava Maze for the lava eel",
+            "if travelling to the Charred Dungeon"
           ]
         },
         {
@@ -2267,6 +2456,9 @@
           "drop_source_names": [
             "Mogre",
             "Sea Snake Hatchling"
+          ],
+          "notes": [
+            "obtainable during the quest"
           ]
         },
         {
@@ -2294,11 +2486,18 @@
             "Fremennik Fish Monger",
             "Island Fishmonger",
             "Port Roberts General Store"
+          ],
+          "notes": [
+            "obtainable during the quest"
           ]
         },
         {
           "name": "Harralander potion",
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "unf",
+            "or a harralander and a vial of water"
+          ]
         },
         {
           "name": "Ice gloves",
@@ -2309,6 +2508,10 @@
           ],
           "drop_source_names": [
             "Ice Queen"
+          ],
+          "notes": [
+            "obtainable during the quest",
+            "i"
           ]
         },
         {
@@ -2553,6 +2756,9 @@
           "shop_names": [
             "Velrak the explorer",
             "Legends Guild Shop of Useful Items."
+          ],
+          "notes": [
+            "obtainable during the quest"
           ]
         }
       ]
@@ -2589,7 +2795,11 @@
       "items": [
         {
           "name": "Any poison cure",
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "you will lose this item",
+            "Does not need to contain full doses"
+          ]
         },
         {
           "name": "Bass",
@@ -2630,8 +2840,210 @@
           ]
         },
         {
-          "name": "Pickaxe - adamant or rune highly recommended",
-          "unresolved": true
+          "name": "Pickaxe",
+          "notes": [
+            "41+ Mining",
+            "adamant or rune highly recommended"
+          ],
+          "group_name": "Pickaxe",
+          "alternatives": [
+            {
+              "name": "Bronze pickaxe",
+              "item_id": 1265,
+              "requirements": [
+                {
+                  "skill": "Attack",
+                  "level": 1
+                },
+                {
+                  "skill": "Mining",
+                  "level": 1
+                }
+              ]
+            },
+            {
+              "name": "Iron pickaxe",
+              "item_id": 1267,
+              "requirements": [
+                {
+                  "skill": "Attack",
+                  "level": 1
+                },
+                {
+                  "skill": "Mining",
+                  "level": 1
+                }
+              ]
+            },
+            {
+              "name": "Steel pickaxe",
+              "item_id": 1269,
+              "requirements": [
+                {
+                  "skill": "Attack",
+                  "level": 5
+                },
+                {
+                  "skill": "Mining",
+                  "level": 6
+                }
+              ]
+            },
+            {
+              "name": "Black pickaxe",
+              "item_id": 12297,
+              "requirements": [
+                {
+                  "skill": "Attack",
+                  "level": 10
+                },
+                {
+                  "skill": "Mining",
+                  "level": 11
+                }
+              ]
+            },
+            {
+              "name": "Mithril pickaxe",
+              "item_id": 1273,
+              "requirements": [
+                {
+                  "skill": "Attack",
+                  "level": 20
+                },
+                {
+                  "skill": "Mining",
+                  "level": 21
+                }
+              ]
+            },
+            {
+              "name": "Adamant pickaxe",
+              "item_id": 1271,
+              "requirements": [
+                {
+                  "skill": "Attack",
+                  "level": 30
+                },
+                {
+                  "skill": "Mining",
+                  "level": 31
+                }
+              ]
+            },
+            {
+              "name": "Rune pickaxe",
+              "item_id": 1275,
+              "requirements": [
+                {
+                  "skill": "Attack",
+                  "level": 40
+                },
+                {
+                  "skill": "Mining",
+                  "level": 41
+                }
+              ]
+            },
+            {
+              "name": "Dragon pickaxe",
+              "item_id": 11920,
+              "requirements": [
+                {
+                  "skill": "Attack",
+                  "level": 60
+                },
+                {
+                  "skill": "Mining",
+                  "level": 61
+                }
+              ]
+            },
+            {
+              "name": "Crystal pickaxe",
+              "item_id": 23680,
+              "requirements": [
+                {
+                  "skill": "Attack",
+                  "level": 70
+                },
+                {
+                  "skill": "Mining",
+                  "level": 71
+                }
+              ]
+            },
+            {
+              "name": "Gilded pickaxe",
+              "item_id": 23276,
+              "requirements": [
+                {
+                  "skill": "Attack",
+                  "level": 40
+                },
+                {
+                  "skill": "Mining",
+                  "level": 41
+                }
+              ]
+            },
+            {
+              "name": "3rd Age pickaxe",
+              "item_id": 20014,
+              "requirements": [
+                {
+                  "skill": "Attack",
+                  "level": 65
+                },
+                {
+                  "skill": "Mining",
+                  "level": 61
+                }
+              ]
+            },
+            {
+              "name": "Dragon pickaxe (or)",
+              "item_id": 23677,
+              "requirements": [
+                {
+                  "skill": "Attack",
+                  "level": 60
+                },
+                {
+                  "skill": "Mining",
+                  "level": 61
+                }
+              ]
+            },
+            {
+              "name": "Infernal pickaxe",
+              "item_id": 13243,
+              "requirements": [
+                {
+                  "skill": "Attack",
+                  "level": 60
+                },
+                {
+                  "skill": "Mining",
+                  "level": 61
+                }
+              ]
+            },
+            {
+              "name": "Infernal pickaxe (or)",
+              "item_id": 25063,
+              "requirements": [
+                {
+                  "skill": "Attack",
+                  "level": 60
+                },
+                {
+                  "skill": "Mining",
+                  "level": 61
+                }
+              ]
+            }
+          ]
         },
         {
           "name": "Ring mould",
@@ -2741,6 +3153,9 @@
           "drop_source_names": [
             "Borrokar",
             "Freidir"
+          ],
+          "notes": [
+            "10 if you buy a fishing rod from Jack"
           ]
         },
         {
@@ -2767,6 +3182,9 @@
             "Fremennik Fish Monger",
             "Island Fishmonger",
             "Port Roberts General Store"
+          ],
+          "notes": [
+            "oily fishing rod does not work"
           ]
         },
         {
@@ -2784,6 +3202,9 @@
             "Greengrocer of Miscellania",
             "Island Greengrocer",
             "Prifddinas Spice Stall"
+          ],
+          "notes": [
+            "obtainable during quest"
           ]
         },
         {
@@ -2792,6 +3213,9 @@
           "obtainable": true,
           "sources": [
             "Drop: Vine (McGrubor's Wood) (Always)"
+          ],
+          "notes": [
+            "obtainable during quest"
           ]
         },
         {
@@ -2919,7 +3343,10 @@
       "items": [
         {
           "name": "Any bow capable of firing ice arrows or any thrown weapon",
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "yew bow or better"
+          ]
         },
         {
           "name": "Boots of lightness",
@@ -2927,6 +3354,9 @@
           "obtainable": true,
           "sources": [
             "Shop: Lost Property shop (9800 Coins)"
+          ],
+          "notes": [
+            "can be obtained during the quest with a light source and slash weapon, such as a lit candle and knife"
           ]
         },
         {
@@ -2970,6 +3400,9 @@
             "The Lighthouse Store",
             "Sigmund the Merchant (shop)",
             "Bedabin Village Bartering"
+          ],
+          "notes": [
+            "obtainable during quest"
           ]
         },
         {
@@ -2980,6 +3413,9 @@
           ],
           "shop_names": [
             "Giants' Foundry Reward Shop"
+          ],
+          "notes": [
+            "i"
           ]
         }
       ]
@@ -3051,6 +3487,9 @@
           "drop_source_names": [
             "Brutus",
             "H.A.M. Guard"
+          ],
+          "notes": [
+            "or an axe, obtainable during the quest by killing goblins in the Tree Gnome Village maze, or retrievable from the canoe station near the north entrance to the maze, if you have one stored"
           ]
         }
       ]
@@ -3084,6 +3523,9 @@
           "drop_source_names": [
             "Borrokar",
             "Freidir"
+          ],
+          "notes": [
+            "for Khali brew"
           ]
         }
       ]
@@ -3154,6 +3596,9 @@
             "Prifddinas Foodstuffs",
             "Arnold's Eclectic Supplies.",
             "Culinaromancer's Chest"
+          ],
+          "notes": [
+            "Obtained by using a bucket on a dairy cow, one is north of Ardougne, or bought from Hudo or Heckel Funch."
           ]
         },
         {
@@ -3170,6 +3615,9 @@
             "The Lighthouse Store",
             "Sigmund the Merchant (shop)",
             "Bedabin Village Bartering"
+          ],
+          "notes": [
+            "four uses required, there is a water source and bucket spawn nearby"
           ]
         },
         {
@@ -3218,6 +3666,9 @@
           "shop_names": [
             "Grand Tree Groceries",
             "Funch's Fine Groceries"
+          ],
+          "notes": [
+            "Spawns in McGrubor's Wood, squeeze through the loose railing, use ALS, or Telekinetic Grab them. They can be bought from Heckel Funch or Hudo in the Tree Gnome Stronghold or grown with 36 Farming."
           ]
         },
         {
@@ -3248,11 +3699,17 @@
           "drop_source_names": [
             "Baby impling",
             "Ogre Coffin"
+          ],
+          "notes": [
+            "Knife spawn on the table in the house east of the altar"
           ]
         },
         {
           "name": "Picture of Elena",
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "Inside Alrena and Edmond's house"
+          ]
         },
         {
           "name": "Rope",
@@ -3278,6 +3735,9 @@
             "Kastori General Store",
             "Obli's General Store.",
             "Outer Fortis General Store"
+          ],
+          "notes": [
+            "Purchasable in the East Ardougne general store, Port Khazard general store, Ned, or a spawn in Karamja general store."
           ]
         },
         {
@@ -3290,6 +3750,9 @@
           "drop_source_names": [
             "Cave bug#Level 6",
             "Chaos druid warrior"
+          ],
+          "notes": [
+            "Spawns west of the Crafting Guild or the peninsula north-east of Hosidius. It can be grown at 61 Farming. Can also be obtained from killing Tribesmen in Karamja."
           ]
         },
         {
@@ -3316,6 +3779,9 @@
             "Cam Torum General Store",
             "Darkmeyer General Store",
             "Fortis General Store"
+          ],
+          "notes": [
+            "One spawns near Edmond."
           ]
         }
       ]
@@ -3355,6 +3821,9 @@
             "Salvager Overlook General Store",
             "Khazard General Store",
             "Rasolo the Wandering Merchant"
+          ],
+          "notes": [
+            "made by mixing flour with swamp tar then cooking the mixture on a fire; can also be bought from a Trader crewmember for 75 coins, from Rasolo for 60 coins west of the Fishing Guild, or from the Khazard General Store for 42 coins at full stock"
           ]
         }
       ]
@@ -3562,6 +4031,9 @@
           "drop_source_names": [
             "Borrokar",
             "Freidir"
+          ],
+          "notes": [
+            "not required if you never used the gate entrance"
           ]
         }
       ]
@@ -3627,6 +4099,9 @@
           "drop_source_names": [
             "Borrokar",
             "Freidir"
+          ],
+          "notes": [
+            "obtainable during quest"
           ]
         },
         {
@@ -3653,6 +4128,9 @@
             "Kastori General Store",
             "Obli's General Store.",
             "Outer Fortis General Store"
+          ],
+          "notes": [
+            "2 recommended"
           ]
         },
         {
@@ -3710,12 +4188,18 @@
           "drop_source_names": [
             "Cave goblin (monster)",
             "Wall beast"
+          ],
+          "notes": [
+            "obtainable during quest"
           ]
         },
         {
           "name": "arrows",
           "quantity": 5,
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "only non-poisoned arrows with metal arrowtips will work. Craw's bow does not work. Crossbows and bolts will not work. Broad arrows, Ogre arrows, Ice arrows, and Training Arrows will also not work."
+          ]
         }
       ]
     },
@@ -3819,11 +4303,17 @@
           ],
           "drop_source_names": [
             "Duke Sucellus"
+          ],
+          "notes": [
+            "recommended to bring at least 2 additional bars, 24-96% chance to succeed based on Smithing level"
           ]
         },
         {
           "name": "Desert shirt, robe, and boots",
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "black versions do not work"
+          ]
         },
         {
           "name": "Hammer",
@@ -3865,7 +4355,10 @@
         },
         {
           "name": "Ten feathers",
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "30-50+ recommended at lower Fletching levels"
+          ]
         }
       ]
     },
@@ -3913,6 +4406,9 @@
         {
           "name": "Any light source",
           "obtainable": true,
+          "notes": [
+            "obtainable during the quest"
+          ],
           "group_name": "Light sources",
           "alternatives": [
             {
@@ -4083,6 +4579,9 @@
           "drop_source_names": [
             "Giant bat (Brine Rat Cavern)",
             "Albino bat"
+          ],
+          "notes": [
+            "obtainable during the quest with a knife or slash weapon, grinding the bat bones before starting the quest to leave the pestle and mortar in the bank is also an option"
           ]
         },
         {
@@ -4127,6 +4626,9 @@
           "drop_source_names": [
             "Cave kraken",
             "Kraken"
+          ],
+          "notes": [
+            "obtainable during the quest"
           ]
         },
         {
@@ -4139,6 +4641,9 @@
           "drop_source_names": [
             "The Hueycoatl",
             "Cerberus"
+          ],
+          "notes": [
+            "baby dragon bones will not work"
           ]
         },
         {
@@ -4160,11 +4665,17 @@
         {
           "name": "Guam leaf and vial of water if making your own potion",
           "obtainable": true,
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "vial obtainable during the quest"
+          ]
         },
         {
           "name": "Guam potion (unf)",
-          "item_id": 91
+          "item_id": 91,
+          "notes": [
+            "unf"
+          ]
         },
         {
           "name": "Jangerberries",
@@ -4177,6 +4688,9 @@
           "drop_source_names": [
             "Borrokar",
             "Freidir"
+          ],
+          "notes": [
+            "obtainable during the quest"
           ]
         },
         {
@@ -4204,6 +4718,9 @@
             "Sunset Coast General Store",
             "Tal Teklan General Store",
             "Grud's Herblore Stall."
+          ],
+          "notes": [
+            "obtainable during the quest"
           ]
         },
         {
@@ -4434,6 +4951,9 @@
             "Kastori General Store",
             "Obli's General Store.",
             "Outer Fortis General Store"
+          ],
+          "notes": [
+            "2nd rope obtainable during the quest"
           ]
         },
         {
@@ -4511,6 +5031,9 @@
           "drop_source_names": [
             "Goblin guard",
             "Baby impling"
+          ],
+          "notes": [
+            "obtained during the quest"
           ]
         }
       ]
@@ -4609,6 +5132,9 @@
             "Sunset Coast General Store",
             "Jiminua's Jungle Store.",
             "Obli's General Store."
+          ],
+          "notes": [
+            "obtainable during the quest, but may take some time"
           ]
         },
         {
@@ -4626,6 +5152,10 @@
             "Sunlight's Sanctum",
             "The Flaming Arrow",
             "The King's Inn"
+          ],
+          "notes": [
+            "can be stolen from the Varrock tea stall",
+            "nettle"
           ]
         },
         {
@@ -4638,12 +5168,18 @@
           "shop_names": [
             "Gabooty's Tai Bwo Wannai Cooperative.",
             "Gabooty's Tai Bwo Wannai Cooperative."
+          ],
+          "notes": [
+            "small chance to acquire while panning for a quest item"
           ]
         },
         {
           "name": "Panning tray",
           "item_id": 677,
-          "obtainable": true
+          "obtainable": true,
+          "notes": [
+            "obtained during the quest"
+          ]
         },
         {
           "name": "Pestle and mortar",
@@ -4705,6 +5241,9 @@
           "sources": [
             "Drop: Crate (cleaning kit) (Always)",
             "Drop: Tools (Varrock Museum) (Always)"
+          ],
+          "notes": [
+            "obtained during the quest"
           ]
         },
         {
@@ -4717,6 +5256,9 @@
           ],
           "drop_source_names": [
             "Sacks (Digsite)"
+          ],
+          "notes": [
+            "obtained during the quest"
           ]
         },
         {
@@ -4756,6 +5298,9 @@
           "sources": [
             "Drop: Crate (cleaning kit) (Always)",
             "Drop: Tools (Varrock Museum) (Always)"
+          ],
+          "notes": [
+            "obtained during the quest"
           ]
         },
         {
@@ -4837,7 +5382,10 @@
         {
           "name": "Doogle leaves",
           "item_id": 1573,
-          "obtainable": true
+          "obtainable": true,
+          "notes": [
+            "obtainable during the quest"
+          ]
         },
         {
           "name": "Raw sardine",
@@ -4864,6 +5412,9 @@
           ],
           "drop_source_names": [
             "Mogre"
+          ],
+          "notes": [
+            "can be bought from Gerrant's Fishy Business."
           ]
         }
       ]
@@ -4938,7 +5489,10 @@
         {
           "name": "Ardrigal",
           "item_id": 1528,
-          "obtainable": true
+          "obtainable": true,
+          "notes": [
+            "obtainable during the quest"
+          ]
         },
         {
           "name": "Charcoal",
@@ -4957,6 +5511,9 @@
             "Sunset Coast General Store",
             "Jiminua's Jungle Store.",
             "Obli's General Store."
+          ],
+          "notes": [
+            "2-3 in case it breaks -- obtainable during the quest if travelling via Shilo Village"
           ]
         },
         {
@@ -5053,6 +5610,9 @@
           "drop_source_names": [
             "Skeleton thug",
             "Skeleton brute"
+          ],
+          "notes": [
+            "6 in case you fail or want more gold bowls"
           ]
         },
         {
@@ -5132,6 +5692,10 @@
           ],
           "shop_names": [
             "Martin Thwait's Lost and Found."
+          ],
+          "notes": [
+            "2 in case you fail",
+            "Strange old lockpick does not work"
           ]
         },
         {
@@ -5149,6 +5713,9 @@
             "Jiminua's Jungle Store.",
             "Obli's General Store.",
             "Rasolo the Wandering Merchant"
+          ],
+          "notes": [
+            "obtainable during the quest"
           ]
         },
         {
@@ -5212,6 +5779,9 @@
             "Jiminua's Jungle Store.",
             "Obli's General Store.",
             "Rasolo the Wandering Merchant"
+          ],
+          "notes": [
+            "4-5 in case one is torn -- obtainable during the quest if travelling via Shilo Village or from the spawn on Radimus's desk"
           ]
         },
         {
@@ -5506,7 +6076,10 @@
         {
           "name": "Snake weed",
           "item_id": 1526,
-          "obtainable": true
+          "obtainable": true,
+          "notes": [
+            "obtainable during the quest"
+          ]
         },
         {
           "name": "Soul rune",
@@ -5528,7 +6101,10 @@
         },
         {
           "name": "Unpowered orb and runes to cast any Charge Orb once",
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "requires the standard spellbook equipped - note that at Magic level 56 you can only cast the Charge Water Orb spell - two casts are needed if taking the \"long path\" during the second fight with the demon"
+          ]
         },
         {
           "name": "Vial of water",
@@ -5584,6 +6160,9 @@
           "drop_source_names": [
             "Borrokar",
             "Freidir"
+          ],
+          "notes": [
+            "for blackjack street urchin, optional"
           ]
         },
         {
@@ -5596,6 +6175,11 @@
           ],
           "drop_source_names": [
             "Alpaca"
+          ],
+          "notes": [
+            "to unlock Menaphite clothing",
+            "to unlock the Desert outfit",
+            "not balls of wool"
           ]
         }
       ]
@@ -5621,6 +6205,9 @@
           "drop_source_names": [
             "Chest (Dorgesh-Kaan Average)#Oldak's chests",
             "Abyssal leech"
+          ],
+          "notes": [
+            "is given for free at the start of the quest"
           ]
         }
       ]
@@ -5648,6 +6235,9 @@
           ],
           "shop_names": [
             "Rising Sun Inn"
+          ],
+          "notes": [
+            "can be found on the bar at the pub in Burthorpe"
           ]
         },
         {
@@ -5688,6 +6278,9 @@
           "drop_source_names": [
             "Borrokar",
             "Freidir"
+          ],
+          "notes": [
+            "bring 1000 for the gambling dice with Harold part"
           ]
         },
         {
@@ -5743,6 +6336,9 @@
           "shop_names": [
             "Justine's stuff for the Last Shopper Standing",
             "Tenzing"
+          ],
+          "notes": [
+            "or 12 coins to buy from Tenzing"
           ]
         },
         {
@@ -5756,6 +6352,9 @@
           ],
           "shop_names": [
             "Agelus' Farm Shop"
+          ],
+          "notes": [
+            "obtainable during the quest, just south of Tegid in Taverley, or North of East Ardougne after visiting the zoo"
           ]
         },
         {
@@ -5769,6 +6368,9 @@
           "drop_source_names": [
             "Brutus",
             "H.A.M. Guard"
+          ],
+          "notes": [
+            "2 logs and a tinderbox are recommended"
           ]
         },
         {
@@ -5799,13 +6401,19 @@
         },
         {
           "name": "Pineapple chunks",
-          "item_id": 2116
+          "item_id": 2116,
+          "notes": [
+            "pineapples are sold by Heckel Funch at the Tree Gnome Stronghold bar or any Charter Ship, use a knife to dice the pineapple into chunks"
+          ]
         },
         {
           "name": "Ranarr potion (unf)",
           "item_id": 99,
           "sources": [
             "Drop: Chewed bones (8/128)"
+          ],
+          "notes": [
+            "unf"
           ]
         },
         {
@@ -5827,6 +6435,9 @@
           "drop_source_names": [
             "H.A.M. Guard",
             "Guard (H.A.M. Storerooms)"
+          ],
+          "notes": [
+            "there are chickens on the way at Tenzing the Sherpa's house, or between East Ardougne and Witchaven. Undead chickens do not work."
           ]
         },
         {
@@ -5850,6 +6461,9 @@
             "The Pandemonium (pub)",
             "The Rolling Tide",
             "The Windbreaker"
+          ],
+          "notes": [
+            "sold by Heckel Funch at the Tree Gnome Stronghold bar for 5 coins"
           ]
         }
       ]
@@ -5894,6 +6508,9 @@
       "items": [
         {
           "name": "Any axe that you can use",
+          "notes": [
+            "Blessed axe does not work"
+          ],
           "group_name": "Axe",
           "alternatives": [
             {
@@ -6252,6 +6869,9 @@
           ],
           "drop_source_names": [
             "Tortoise#With riders"
+          ],
+          "notes": [
+            "obtainable during the quest, Draynor cabbage will not work"
           ]
         },
         {
@@ -6281,12 +6901,18 @@
           ],
           "drop_source_names": [
             "Baby impling"
+          ],
+          "notes": [
+            "or 10 to buy a knife and chisel from Bugs"
           ]
         },
         {
           "name": "Doogle leaves",
           "item_id": 1573,
-          "obtainable": true
+          "obtainable": true,
+          "notes": [
+            "obtainable during the quest"
+          ]
         },
         {
           "name": "Equa leaves",
@@ -6299,6 +6925,9 @@
           "shop_names": [
             "Funch's Fine Groceries",
             "Grand Tree Groceries"
+          ],
+          "notes": [
+            "obtainable during the quest"
           ]
         },
         {
@@ -6327,6 +6956,9 @@
           "drop_source_names": [
             "H.A.M. Guard",
             "Guard (H.A.M. Storerooms)"
+          ],
+          "notes": [
+            "100 to be safe; coloured feathers from Hunter work"
           ]
         },
         {
@@ -6357,6 +6989,9 @@
           "drop_source_names": [
             "Baby impling",
             "Ogre Coffin"
+          ],
+          "notes": [
+            "or 10 to buy a knife and chisel from Bugs"
           ]
         },
         {
@@ -6381,6 +7016,9 @@
             "Richard's Farming shop.",
             "Sarah's Farming shop.",
             "Vanessa's Farming shop."
+          ],
+          "notes": [
+            "obtainable during the quest"
           ]
         },
         {
@@ -6408,6 +7046,9 @@
             "Agelus' Farm Shop",
             "Alice's Farming shop.",
             "Richard's Farming shop."
+          ],
+          "notes": [
+            "obtainable during the quest"
           ]
         },
         {
@@ -6435,6 +7076,9 @@
             "Richard's Farming shop.",
             "Sarah's Farming shop.",
             "Vanessa's Farming shop."
+          ],
+          "notes": [
+            "obtainable during the quest"
           ]
         },
         {
@@ -6445,6 +7089,9 @@
           "sources": [
             "Drop: Wolf (Always)",
             "Drop: Witch's experiment (Nightmare Zone) (Always)"
+          ],
+          "notes": [
+            "obtainable during the quest from level 65 wolves or from level 14 wolves in the Stronghold of Security"
           ]
         }
       ]
@@ -6509,6 +7156,9 @@
           "drop_source_names": [
             "Frost Nagua",
             "Amoxliatl#Post-quest"
+          ],
+          "notes": [
+            "4 more for each additional bar you would like to produce"
           ]
         },
         {
@@ -6570,6 +7220,10 @@
           "drop_source_names": [
             "Baby impling",
             "Ogre Coffin"
+          ],
+          "notes": [
+            "obtainable during the quest",
+            "e.g. dagger or scimitar"
           ]
         },
         {
@@ -6579,6 +7233,9 @@
           "sources": [
             "Drop: Crate (Elemental Workshop I, leather) (Always)",
             "Drop: Lost wooden crate (1/8)"
+          ],
+          "notes": [
+            "obtainable during the quest"
           ]
         },
         {
@@ -6610,6 +7267,9 @@
           "drop_source_names": [
             "Baby impling",
             "H.A.M. Guard"
+          ],
+          "notes": [
+            "obtainable during the quest, Costume needle does not work"
           ]
         },
         {
@@ -6939,6 +7599,9 @@
           "drop_source_names": [
             "Borrokar",
             "Freidir"
+          ],
+          "notes": [
+            "obtainable during the quest from Varrock general store for 2 coins"
           ]
         },
         {
@@ -6955,6 +7618,10 @@
           "drop_source_names": [
             "Flawed Golem",
             "Mind Golem"
+          ],
+          "notes": [
+            "can be mined by talking to Aubury in Varrock, after completing Rune Mysteries. All 50 essence do not have to be of the same type",
+            "does not needed to be handed in all at once; multiple trips can be made."
           ]
         }
       ]
@@ -6989,12 +7656,18 @@
       "items": [
         {
           "name": "Bow and some arrows",
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "or lit fire arrows if you already have some."
+          ]
         },
         {
           "name": "Cooked rabbit",
           "item_id": 3228,
-          "obtainable": true
+          "obtainable": true,
+          "notes": [
+            "obtainable during quest"
+          ]
         },
         {
           "name": "Gloves, the list on Quicklime shows all gloves that work",
@@ -7009,6 +7682,10 @@
           ],
           "shop_names": [
             "Razmire Builders Merchants."
+          ],
+          "notes": [
+            "or a pickaxe and 10+ Mining",
+            "Note that limestone bricks will not work"
           ]
         },
         {
@@ -7062,6 +7739,9 @@
             "Sunset Coast General Store",
             "Tal Teklan General Store",
             "Logava Gricoller's Cooking Supplies"
+          ],
+          "notes": [
+            "obtainable during quest"
           ]
         },
         {
@@ -7089,6 +7769,9 @@
             "Kastori General Store",
             "Obli's General Store.",
             "Outer Fortis General Store"
+          ],
+          "notes": [
+            "3 in case you fail"
           ]
         },
         {
@@ -7119,7 +7802,10 @@
         },
         {
           "name": "Strip of cloth",
-          "item_id": 3224
+          "item_id": 3224,
+          "notes": [
+            "made on a loom with 4 balls of wool; not a bolt of cloth - you can use the loom at the Iorwerth Camp or at the Falador farm"
+          ]
         },
         {
           "name": "Tinderbox",
@@ -7154,7 +7840,10 @@
         {
           "name": "coal in the bank",
           "quantity": 5,
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "although at least 25 is recommended; you may bring the coal noted to save you a bank trip"
+          ]
         }
       ]
     },
@@ -7205,7 +7894,11 @@
       "items": [
         {
           "name": "Agility potion",
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "4",
+            "must be 4 doses"
+          ]
         },
         {
           "name": "Iron spear, Steel spear, Mithril spear, Adamant spear, Rune spear or Dragon spear which will be consumed during the quest",
@@ -7217,6 +7910,9 @@
           "obtainable": true,
           "sources": [
             "Drop: Jogre (Always)"
+          ],
+          "notes": [
+            "obtainable during the quest"
           ]
         },
         {
@@ -7230,6 +7926,9 @@
           "shop_names": [
             "Dead Man's Chest",
             "Karamja Wines, Spirits, and Beers."
+          ],
+          "notes": [
+            "if obtaining the rum before starting, add the sliced banana or the rum will disappear when you leave the island"
           ]
         },
         {
@@ -7292,11 +7991,17 @@
             "Sunset Coast General Store",
             "Tal Teklan General Store",
             "Grud's Herblore Stall."
+          ],
+          "notes": [
+            "obtainable during the quest for 6 gp"
           ]
         },
         {
           "name": "Ranged equipment, Magic equipment, or a halberd to kill a monkey for a monkey corpse",
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "adjacent melee does 0 damage to monkeys"
+          ]
         },
         {
           "name": "Seaweed",
@@ -7313,12 +8018,18 @@
           "drop_source_names": [
             "Lobstrosity",
             "Giant lobster"
+          ],
+          "notes": [
+            "obtainable during the quest"
           ]
         },
         {
           "name": "Sliced banana",
           "item_id": 3162,
-          "obtainable": true
+          "obtainable": true,
+          "notes": [
+            "obtainable during the quest"
+          ]
         },
         {
           "name": "Small fishing net",
@@ -7374,6 +8085,9 @@
           "drop_source_names": [
             "Cave goblin (monster)",
             "Wall beast"
+          ],
+          "notes": [
+            "If you wish to avoid running back to the range in Brimhaven"
           ]
         }
       ]
@@ -7472,6 +8186,9 @@
           "drop_source_names": [
             "Borrokar",
             "Freidir"
+          ],
+          "notes": [
+            "bring plenty of money just in case"
           ]
         },
         {
@@ -7521,7 +8238,11 @@
           "name": "Tarromin potion OR 2 vials of water and 2 tarromins",
           "quantity": 2,
           "obtainable": true,
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "unf",
+            "both obtainable during the quest"
+          ]
         },
         {
           "name": "Tinderbox",
@@ -7555,7 +8276,10 @@
         },
         {
           "name": "Using a Flamtaer hammer is highly recommended in case the minigame is unpopulated, as a regular hammer is insufficient to build the temple alone. An additional 13,000 coins allows you to buy a Flamtaer hammer from Razmire",
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "or 5,289 on the Grand Exchange"
+          ]
         }
       ]
     },
@@ -7618,6 +8342,9 @@
           ],
           "shop_names": [
             "Rellekka Longhall Bar"
+          ],
+          "notes": [
+            "obtainable during quest"
           ]
         },
         {
@@ -7648,6 +8375,9 @@
           ],
           "drop_source_names": [
             "Tortoise#With riders"
+          ],
+          "notes": [
+            "obtainable during quest"
           ]
         },
         {
@@ -7666,7 +8396,10 @@
         {
           "name": "Fletching, 40 Woodcutting, and 40 Crafting",
           "quantity": 25,
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "all boostable"
+          ]
         },
         {
           "name": "Knife",
@@ -7720,6 +8453,9 @@
             "Richard's Farming shop.",
             "Sarah's Farming shop.",
             "Vanessa's Farming shop."
+          ],
+          "notes": [
+            "obtainable during quest"
           ]
         },
         {
@@ -7747,6 +8483,9 @@
             "Agelus' Farm Shop",
             "Alice's Farming shop.",
             "Richard's Farming shop."
+          ],
+          "notes": [
+            "obtainable during quest"
           ]
         },
         {
@@ -8184,11 +8923,17 @@
         },
         {
           "name": "Any arrow",
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "except ogre arrows and training arrows"
+          ]
         },
         {
-          "name": "At least one combat style to defeat the Dagannoth Mother - she cycles every 18 seconds between only being vulnerable to one of six different types of attack",
-          "unresolved": true
+          "name": "At least one combat style to defeat the Dagannoth Mother",
+          "unresolved": true,
+          "notes": [
+            "she cycles every 18 seconds between only being vulnerable to one of six different types of attack"
+          ]
         },
         {
           "name": "Earth rune",
@@ -8282,7 +9027,10 @@
         },
         {
           "name": "Highly recommended to bring means to deal damage with all of the elemental Magic types",
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "air, water, earth, and fire spells"
+          ]
         },
         {
           "name": "Molten glass",
@@ -8306,6 +9054,9 @@
           ],
           "shop_names": [
             "Razmire Builders Merchants."
+          ],
+          "notes": [
+            "can be obtained from Barbarian Outpost"
           ]
         },
         {
@@ -8336,7 +9087,10 @@
         },
         {
           "name": "Sword",
-          "item_id": 33757
+          "item_id": 33757,
+          "notes": [
+            "except rusty sword and prop sword"
+          ]
         },
         {
           "name": "Tinderbox",
@@ -8400,7 +9154,10 @@
         },
         {
           "name": "You may also bring means to deal Ranged and Melee damage",
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "she has high resistance to melee"
+          ]
         }
       ]
     },
@@ -8426,11 +9183,18 @@
         },
         {
           "name": "An axe and 45 Woodcutting to cut maple trees",
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "slower, but more AFK than buying flowers manually, since one click yields multiple logs and therefore multiple instances of favour"
+          ]
         },
         {
           "name": "Any common, non-silver ring that you're willing to lose",
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "such as a gold ring",
+            "not onyx/dragonstone/explorer/beacon/'perfect' ring/nature/pineapple/Charos/fremennik/ancient"
+          ]
         },
         {
           "name": "At least one of the following to gain favour during the quest",
@@ -8486,12 +9250,18 @@
           "drop_source_names": [
             "Brutus",
             "H.A.M. Guard"
+          ],
+          "notes": [
+            "obtainable during the quest if you bring an axe"
           ]
         },
         {
           "name": "to buy flowers from Flower Girl",
           "quantity": 1875,
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "fastest method, but click intensive"
+          ]
         }
       ]
     },
@@ -8545,6 +9315,9 @@
             "Prifddinas Foodstuffs",
             "Food Store",
             "Kenelme's Wares"
+          ],
+          "notes": [
+            "obtainable during quest"
           ]
         },
         {
@@ -8573,6 +9346,9 @@
           "obtainable": true,
           "sources": [
             "Drop: Monkey (monster) (Always)"
+          ],
+          "notes": [
+            "obtainable during quest"
           ]
         }
       ]
@@ -8629,6 +9405,9 @@
           ],
           "drop_source_names": [
             "Baby impling"
+          ],
+          "notes": [
+            "obtainable during the quest"
           ]
         }
       ]
@@ -8663,7 +9442,10 @@
       "items": [
         {
           "name": "Bucket of wax",
-          "item_id": 30
+          "item_id": 30,
+          "notes": [
+            "use insect repellent on a beehive followed by a bucket"
+          ]
         },
         {
           "name": "Cake tin",
@@ -8701,6 +9483,9 @@
           "shop_names": [
             "Justine's stuff for the Last Shopper Standing",
             "Tenzing"
+          ],
+          "notes": [
+            "not needed if using Trollheim Teleport"
           ]
         },
         {
@@ -8753,7 +9538,10 @@
         },
         {
           "name": "Wax",
-          "item_id": 4085
+          "item_id": 4085,
+          "notes": [
+            "can be made ahead of time"
+          ]
         },
         {
           "name": "Yew logs",
@@ -8811,11 +9599,17 @@
       "items": [
         {
           "name": "A Druid pouch containing at least 5 charges",
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "3 charges must be added per fill"
+          ]
         },
         {
           "name": "A Silver sickle to collect these items for the charges if not buying from the Grand Exchange",
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "b"
+          ]
         },
         {
           "name": "Coins",
@@ -8828,6 +9622,9 @@
           "drop_source_names": [
             "Borrokar",
             "Freidir"
+          ],
+          "notes": [
+            "a"
           ]
         },
         {
@@ -9024,7 +9821,10 @@
         {
           "name": "Bronze wire",
           "item_id": 1794,
-          "quantity": 3
+          "quantity": 3,
+          "notes": [
+            "unnoted"
+          ]
         },
         {
           "name": "Coins",
@@ -9037,6 +9837,9 @@
           "drop_source_names": [
             "Borrokar",
             "Freidir"
+          ],
+          "notes": [
+            "requires 33 Magic"
           ]
         },
         {
@@ -9071,6 +9874,9 @@
           "drop_source_names": [
             "Baby impling",
             "H.A.M. Guard"
+          ],
+          "notes": [
+            "costume needle does not work"
           ]
         },
         {
@@ -9178,12 +9984,18 @@
         {
           "name": "Glarial's pebble",
           "item_id": 294,
-          "obtainable": true
+          "obtainable": true,
+          "notes": [
+            "obtainable during the quest"
+          ]
         },
         {
           "name": "Key",
           "item_id": 275,
-          "obtainable": true
+          "obtainable": true,
+          "notes": [
+            "obtainable during the quest"
+          ]
         },
         {
           "name": "Rope",
@@ -9285,6 +10097,9 @@
             "Pollnivneach general store.",
             "Bandit Bargains",
             "Bedabin Village Bartering"
+          ],
+          "notes": [
+            "empty bowl can be purchased during quest -- the gold bowl won't work"
           ]
         },
         {
@@ -9319,17 +10134,27 @@
         },
         {
           "name": "Costume needle",
-          "item_id": 29920
+          "item_id": 29920,
+          "notes": [
+            "can be purchased from the Canifis general store"
+          ]
         },
         {
           "name": "Ecto-token",
           "item_id": 4278,
-          "quantity": 31
+          "quantity": 31,
+          "notes": [
+            "a",
+            "16 with Ring of Charos"
+          ]
         },
         {
           "name": "Ecto-tokens using charter ships",
           "quantity": 25,
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "10 with ring"
+          ]
         },
         {
           "name": "Ghostspeak amulet",
@@ -9337,6 +10162,9 @@
         },
         {
           "name": "Gloves",
+          "notes": [
+            "must be closed fingered - Slayer gloves, Ranger gloves, Infinity gloves, Moonclan gloves, Granite gloves, Lunar gloves and Beekeeper's gloves won't work"
+          ],
           "group_name": "Gloves",
           "alternatives": [
             {
@@ -9545,6 +10373,9 @@
           "drop_source_names": [
             "Baby impling",
             "Ogre Coffin"
+          ],
+          "notes": [
+            "can be purchased from the Canifis general store"
           ]
         },
         {
@@ -9553,6 +10384,9 @@
           "obtainable": true,
           "sources": [
             "Drop: Nettles (scenery) (Always)"
+          ],
+          "notes": [
+            "obtainable during the quest"
           ]
         },
         {
@@ -9577,7 +10411,10 @@
         },
         {
           "name": "One extra bucket of slime for colouring the bed sheet",
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "can be purchased from a Charter ship crewmember at the port"
+          ]
         },
         {
           "name": "Silk",
@@ -9628,12 +10465,18 @@
         {
           "name": "bone, 1 pot, and 1 bucket for every 5 ecto-tokens required",
           "quantity": 1,
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "see Pre-quest for more info"
+          ]
         },
         {
           "name": "colours of dye",
           "quantity": 3,
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "The dye colours you will need are random. If you want to save a trip, have 3 red, 3 blue, and 3 yellow dyes. That way, you can mix whatever colours you end up needing."
+          ]
         }
       ]
     },
@@ -9692,7 +10535,10 @@
         {
           "name": "Cup of hot water",
           "item_id": 4460,
-          "obtainable": true
+          "obtainable": true,
+          "notes": [
+            "obtainable during the quest"
+          ]
         },
         {
           "name": "Guam leaf",
@@ -9732,6 +10578,9 @@
           "drop_source_names": [
             "Goblin guard",
             "Baby impling"
+          ],
+          "notes": [
+            "obtainable during the quest"
           ]
         },
         {
@@ -9793,7 +10642,10 @@
           "name": "Pigeon cage",
           "item_id": 424,
           "quantity": 5,
-          "obtainable": true
+          "obtainable": true,
+          "notes": [
+            "obtainable during the quest"
+          ]
         },
         {
           "name": "Pot",
@@ -9820,6 +10672,9 @@
             "Sunset Coast General Store",
             "Tal Teklan General Store",
             "Logava Gricoller's Cooking Supplies"
+          ],
+          "notes": [
+            "obtainable during the quest"
           ]
         },
         {
@@ -9858,6 +10713,9 @@
           "drop_source_names": [
             "Baby impling",
             "Duke Sucellus"
+          ],
+          "notes": [
+            "cannot be crushed, so you may choose to bring a chisel instead to cut the uncut sapphires given during the quest"
           ]
         },
         {
@@ -9871,6 +10729,9 @@
           "drop_source_names": [
             "Frost Nagua",
             "Baby impling"
+          ],
+          "notes": [
+            "obtained during the quest"
           ]
         },
         {
@@ -9889,7 +10750,10 @@
         {
           "name": "Two of each of the following cut gems, or a chisel to cut the uncut gems received during the quest",
           "obtainable": true,
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "high chance to crush them, up to 2 replacements available for 500 coins each during the quest"
+          ]
         }
       ]
     },
@@ -10248,6 +11112,9 @@
         },
         {
           "name": "Gloves",
+          "notes": [
+            "excluding: Slayer, Ranger, Moonclan, Lunar, vambraces, mystic and random event apparel"
+          ],
           "group_name": "Gloves",
           "alternatives": [
             {
@@ -10680,6 +11547,9 @@
             "Filamina's Wares",
             "Sebamo's Sublime Staffs",
             "Zaff's Superior Staffs!"
+          ],
+          "notes": [
+            "obtainable during the quest, Dramen Staff does not work, but elemental staves and Lunar staff do work"
           ]
         }
       ]
@@ -10938,6 +11808,9 @@
           ],
           "shop_names": [
             "Multicannon parts for sale"
+          ],
+          "notes": [
+            "can be bought for 5 coins during the quest"
           ]
         },
         {
@@ -10951,6 +11824,9 @@
           "drop_source_names": [
             "Borrokar",
             "Freidir"
+          ],
+          "notes": [
+            "for cart and ferry"
           ]
         },
         {
@@ -10968,6 +11844,9 @@
           "drop_source_names": [
             "Skeleton thug",
             "Skeleton brute"
+          ],
+          "notes": [
+            "You will need an extra bar and telegrab if you want to keep a golden cannonball for after the quest"
           ]
         },
         {
@@ -11052,6 +11931,9 @@
           "drop_source_names": [
             "Goblin guard",
             "Borrokar"
+          ],
+          "notes": [
+            "obtainable during the quest, bought from Ali the Barman for 2 coins each"
           ]
         },
         {
@@ -11083,6 +11965,10 @@
           "drop_source_names": [
             "Borrokar",
             "Freidir"
+          ],
+          "notes": [
+            "obtainable during the quest, spawns at the location it is needed – bring three extra buckets, four total, if you plan on doing My Arm's Big Adventure as three Ugthanki dung are needed for that quest",
+            "1/25 chance for each player"
           ]
         },
         {
@@ -11108,10 +11994,16 @@
           "shop_names": [
             "Ali's Discount Wares.",
             "Pollnivneach general store."
+          ],
+          "notes": [
+            "can be bought from Ali Morrisane"
           ]
         },
         {
           "name": "Gloves",
+          "notes": [
+            "see this page for gloves that do work; Barrows gloves, ice gloves, vambraces, and Slayer gloves do not work!"
+          ],
           "group_name": "Gloves",
           "alternatives": [
             {
@@ -11306,12 +12198,18 @@
           "shop_names": [
             "Ali's Discount Wares.",
             "Pollnivneach general store."
+          ],
+          "notes": [
+            "can be bought from Ali Morrisane"
           ]
         },
         {
           "name": "Snake basket",
           "item_id": 4606,
-          "obtainable": true
+          "obtainable": true,
+          "notes": [
+            "obtainable during quest by putting a coin in the snake charmer's money pot, whether or not you have one in your bank"
+          ]
         },
         {
           "name": "Snake charm",
@@ -11319,6 +12217,9 @@
           "obtainable": true,
           "sources": [
             "Drop: Wingstone (23/512)"
+          ],
+          "notes": [
+            "obtainable during the quest by putting a coin in the snake charmer's money pot, if you do not already have one in your bank"
           ]
         }
       ]
@@ -11355,7 +12256,10 @@
       "items": [
         {
           "name": "Means to enter the desert",
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "such as the Shantay pass, Teleport tablets or scrolls, Fairy rings or the Pharaoh's sceptre"
+          ]
         },
         {
           "name": "Papyrus",
@@ -11375,6 +12279,9 @@
             "Jiminua's Jungle Store.",
             "Obli's General Store.",
             "Rasolo the Wandering Merchant"
+          ],
+          "notes": [
+            "can be bought from Ali Morrisane for 10gp"
           ]
         },
         {
@@ -11405,7 +12312,10 @@
         },
         {
           "name": "Phoenix feather",
-          "item_id": 4621
+          "item_id": 4621,
+          "notes": [
+            "can be obtained north-west of the ruins"
+          ]
         },
         {
           "name": "Soft clay",
@@ -11418,6 +12328,9 @@
           "drop_source_names": [
             "Frost Nagua",
             "Baby impling"
+          ],
+          "notes": [
+            "or a bracelet of clay and a pickaxe to mine north-west of the ruins"
           ]
         },
         {
@@ -11495,7 +12408,11 @@
       "items": [
         {
           "name": "A sweet",
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "part cakes are accepted",
+            "cake, chocolate cake , chocolate bar, cooking apple, or pineapple pizza"
+          ]
         },
         {
           "name": "Ashes",
@@ -11540,6 +12457,9 @@
           "drop_source_names": [
             "Undead cow",
             "Cave goblin (monster)"
+          ],
+          "notes": [
+            "can be noted to prevent accidental burial"
           ]
         },
         {
@@ -11571,6 +12491,9 @@
           "shop_names": [
             "Justine's stuff for the Last Shopper Standing",
             "Tenzing"
+          ],
+          "notes": [
+            "if Eadgar's Ruse isn't completed and/or you lack 61 Magic for the Trollheim Teleport"
           ]
         },
         {
@@ -11588,7 +12511,10 @@
         },
         {
           "name": "Garlic powder",
-          "item_id": 4668
+          "item_id": 4668,
+          "notes": [
+            "made by grinding garlic in a pestle and mortar"
+          ]
         },
         {
           "name": "Gas mask",
@@ -11625,6 +12551,9 @@
           "drop_source_names": [
             "Skeletal Wyvern",
             "Thermonuclear smoke devil"
+          ],
+          "notes": [
+            "can be noted"
           ]
         },
         {
@@ -11638,6 +12567,9 @@
           "drop_source_names": [
             "Phantom Muspah",
             "Thermonuclear smoke devil"
+          ],
+          "notes": [
+            "can be noted"
           ]
         },
         {
@@ -11682,12 +12614,18 @@
           "drop_source_names": [
             "Gourmet impling",
             "Baby impling"
+          ],
+          "notes": [
+            "gnome spice and Evil Dave's spices will not work"
           ]
         },
         {
           "name": "Spiked boots",
           "item_id": 3107,
-          "obtainable": true
+          "obtainable": true,
+          "notes": [
+            "obtainable during the quest by bringing Dunstan climbing boots and an iron bar; do so before attempting to obtain the ice diamond"
+          ]
         },
         {
           "name": "Steel bar",
@@ -11700,6 +12638,9 @@
           "drop_source_names": [
             "Skeleton thug",
             "Skeleton brute"
+          ],
+          "notes": [
+            "can be noted"
           ]
         },
         {
@@ -11764,6 +12705,9 @@
           "item_id": 4161,
           "sources": [
             "Shop: Slayer Equipment (shop) (10 Coins)"
+          ],
+          "notes": [
+            "can be bought from any Slayer Master, other players, or the Grand Exchange"
           ]
         },
         {
@@ -11774,20 +12718,32 @@
           ],
           "shop_names": [
             "The Spice Is Right."
+          ],
+          "notes": [
+            "use a knife on an evergreen tree or a regular tree with the description \"a commonly found tree\" with a bucket in your inventory"
           ]
         },
         {
           "name": "Full waterskin to give away",
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "can be bought for 30 coins at Shantay pass"
+          ]
         },
         {
           "name": "Linen",
           "item_id": 4684,
-          "obtainable": true
+          "obtainable": true,
+          "notes": [
+            "Can be bought on The Grand Exchange or bought from Raetul in Sophanem for 30 coins during the quest"
+          ]
         },
         {
           "name": "Means to enter the desert",
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "Such as the Shantay pass, Teleport tablets or scrolls, Fairy rings or the Pharaoh's sceptre"
+          ]
         },
         {
           "name": "Regular or overgrown cat, hellcat, or kitten. No food is required as the kitten can stay in your inventory for the most part, or automatically go in/out of your inventory",
@@ -11873,6 +12829,10 @@
           ],
           "shop_names": [
             "Miltog's Lamps"
+          ],
+          "notes": [
+            "unf",
+            "filled with lamp oil at the chemist in Rimmington or the lamp still in Dorgesh-Kaan"
           ]
         },
         {
@@ -12139,6 +13099,9 @@
             "Kastori General Store",
             "Obli's General Store.",
             "Outer Fortis General Store"
+          ],
+          "notes": [
+            "if you have not yet entered the Lumbridge Swamp Caves"
           ]
         },
         {
@@ -12210,6 +13173,9 @@
       "items": [
         {
           "name": "Light source",
+          "notes": [
+            "Note: Candles, torches, and oil lamps can cause swamp gas explosions if going off-route, and need a tinderbox to stay lit"
+          ],
           "group_name": "Light sources",
           "alternatives": [
             {
@@ -12654,6 +13620,9 @@
           "drop_source_names": [
             "Frost Nagua",
             "Amoxliatl#Post-quest"
+          ],
+          "notes": [
+            "obtainable during the quest with 30 Mining"
           ]
         },
         {
@@ -12690,11 +13659,17 @@
           "drop_source_names": [
             "Brutus",
             "H.A.M. Guard"
+          ],
+          "notes": [
+            "most logs will work, however, arctic pine, redwood \u0026 coloured logs do not work"
           ]
         },
         {
           "name": "Means to cast Telekinetic Grab",
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "air and law rune"
+          ]
         },
         {
           "name": "Redberry pie",
@@ -12741,7 +13716,10 @@
         {
           "name": "Various ores and bars",
           "obtainable": true,
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "mostly obtainable during the quest, see below"
+          ]
         },
         {
           "name": "cut sapphires",
@@ -12830,6 +13808,9 @@
             "Pellem's Fur Store",
             "Prifddinas' Seamstress",
             "Baraek"
+          ],
+          "notes": [
+            "obtainable during the quest near Jorral's Outpost"
           ]
         },
         {
@@ -12846,12 +13827,18 @@
             "The Lighthouse Store",
             "Sigmund the Merchant (shop)",
             "Bedabin Village Bartering"
+          ],
+          "notes": [
+            "can be bought from the general store in Lletya during the quest, and used on the well"
           ]
         },
         {
           "name": "Each of these dyes: red, yellow, green, and blue",
           "obtainable": true,
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "can be bought during the quest for 6 coins each at the Lletya Seamstress"
+          ]
         },
         {
           "name": "Feather",
@@ -12907,6 +13894,9 @@
           "obtainable": true,
           "sources": [
             "Drop: Unlocked Ogre chest (Always)"
+          ],
+          "notes": [
+            "obtainable during the quest"
           ]
         },
         {
@@ -12919,6 +13909,9 @@
           ],
           "drop_source_names": [
             "Rotten Apple Pile"
+          ],
+          "notes": [
+            "must be the rotten apple on the ground north of the Mourner Headquarters in West Ardougne, obtainable during the quest"
           ]
         },
         {
@@ -12999,7 +13992,10 @@
       "items": [
         {
           "name": "A random item from the list below",
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "see list for details"
+          ]
         },
         {
           "name": "Ale yeast",
@@ -13014,12 +14010,19 @@
             "Blandebir",
             "Lucrezia",
             "Vasile"
+          ],
+          "notes": [
+            "obtainable during the quest",
+            "or a Pot + 25 coins"
           ]
         },
         {
           "name": "Barley malt",
           "item_id": 6008,
-          "quantity": 2
+          "quantity": 2,
+          "notes": [
+            "no range in Keldagrim, plain barley has to be cooked elsewhere"
+          ]
         },
         {
           "name": "Beer",
@@ -13051,6 +14054,9 @@
           "drop_source_names": [
             "Goblin guard",
             "Borrokar"
+          ],
+          "notes": [
+            "purchasable during quest for 1-2 coins each"
           ]
         },
         {
@@ -13063,6 +14069,9 @@
           ],
           "shop_names": [
             "The Deeper Lode"
+          ],
+          "notes": [
+            "obtainable during the quest"
           ]
         },
         {
@@ -13108,6 +14117,9 @@
             "Ali the Kebab seller",
             "Deepfin Inn",
             "The Deeper Lode"
+          ],
+          "notes": [
+            "purchasable during quest for 1 coin"
           ]
         },
         {
@@ -13135,6 +14147,9 @@
             "Argo",
             "Aub",
             "Ayesha"
+          ],
+          "notes": [
+            "obtainable during the quest"
           ]
         },
         {
@@ -13161,6 +14176,9 @@
             "Argo",
             "Aub",
             "Ayesha"
+          ],
+          "notes": [
+            "no Tool leprechaun in Keldagrim"
           ]
         }
       ]
@@ -13212,6 +14230,9 @@
           "drop_source_names": [
             "Tortoise#With riders",
             "H.A.M. Guard"
+          ],
+          "notes": [
+            "6 recommended to plant in both allotments to increase chance of survival"
           ]
         },
         {
@@ -13303,6 +14324,9 @@
           ],
           "drop_source_names": [
             "Tortoise#With riders"
+          ],
+          "notes": [
+            "2 recommended in case of failure"
           ]
         },
         {
@@ -13321,6 +14345,9 @@
           "drop_source_names": [
             "H.A.M. Guard",
             "Tortoise#With riders"
+          ],
+          "notes": [
+            "6 recommended to plant in both allotments to increase chance of survival"
           ]
         },
         {
@@ -13428,6 +14455,9 @@
             "Kastori Farming Supplies",
             "Vannah's Farming Stall",
             "Leprechaun Larry's Farming Supplies."
+          ],
+          "notes": [
+            "magic secateurs work"
           ]
         },
         {
@@ -13454,6 +14484,9 @@
             "Argo",
             "Aub",
             "Ayesha"
+          ],
+          "notes": [
+            "or partial completion of the Farming portion of the Barbarian Training miniquest"
           ]
         },
         {
@@ -13511,7 +14544,10 @@
         {
           "name": "ultracompost/supercompost/compost",
           "quantity": 2,
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "note: Bottomless compost bucket will not work for these two required composts. The quality of these 2 composts do not matter."
+          ]
         }
       ]
     },
@@ -13541,11 +14577,17 @@
             "Prifddinas Foodstuffs",
             "Arnold's Eclectic Supplies.",
             "Culinaromancer's Chest"
+          ],
+          "notes": [
+            "or one use of the bottomless milk bucket"
           ]
         },
         {
           "name": "Cat or kitten",
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "hellcats work. Be sure to bring fish for your kitten if you're using one."
+          ]
         },
         {
           "name": "Catspeak amulet",
@@ -13561,6 +14603,9 @@
           "drop_source_names": [
             "Gourmet impling",
             "Lava dragon"
+          ],
+          "notes": [
+            "made with cake and chocolate bar or chocolate dust with 50"
           ]
         },
         {
@@ -13605,6 +14650,10 @@
           "shop_names": [
             "Raetul and Co's Cloth Store.",
             "Bandit Bargains"
+          ],
+          "notes": [
+            "obtainable during quest",
+            "the desert outfit does not work"
           ]
         },
         {
@@ -13620,6 +14669,10 @@
             "Bandit Bargains",
             "Ali's Discount Wares.",
             "Pollnivneach general store."
+          ],
+          "notes": [
+            "obtainable during quest",
+            "the desert outfit does not work"
           ]
         },
         {
@@ -13632,6 +14685,9 @@
           "drop_source_names": [
             "Brutus",
             "H.A.M. Guard"
+          ],
+          "notes": [
+            "other common types of logs such as willow, maple etc. will work too"
           ]
         },
         {
@@ -13702,6 +14758,9 @@
             "Argo",
             "Aub",
             "Ayesha"
+          ],
+          "notes": [
+            "or partial completion of the Farming portion of Barbarian Training"
           ]
         },
         {
@@ -13817,6 +14876,9 @@
           "item_id": 4155,
           "sources": [
             "Shop: Slayer Equipment (shop) (1 Coins)"
+          ],
+          "notes": [
+            "bought from a Slayer Master"
           ]
         },
         {
@@ -13842,6 +14904,9 @@
         },
         {
           "name": "Light source",
+          "notes": [
+            "Note: Candles, torches and oil lamps can cause swamp gas explosions if going off-route, and need a tinderbox to stay lit"
+          ],
           "group_name": "Light sources",
           "alternatives": [
             {
@@ -14029,6 +15094,9 @@
           "drop_source_names": [
             "Abyssal leech",
             "Abyssal guardian"
+          ],
+          "notes": [
+            "you'll get them back"
           ]
         },
         {
@@ -14085,6 +15153,9 @@
           ],
           "drop_source_names": [
             "Baby impling"
+          ],
+          "notes": [
+            "one can be found in the house south of the Mourner HQ"
           ]
         },
         {
@@ -14200,6 +15271,9 @@
           "drop_source_names": [
             "Borrokar",
             "Freidir"
+          ],
+          "notes": [
+            "obtainable during the quest"
           ]
         },
         {
@@ -14227,6 +15301,9 @@
             "Argo",
             "Aub",
             "Ayesha"
+          ],
+          "notes": [
+            "obtainable during the quest"
           ]
         },
         {
@@ -14254,6 +15331,9 @@
             "Argo",
             "Aub",
             "Ayesha"
+          ],
+          "notes": [
+            "obtainable during the quest"
           ]
         },
         {
@@ -14284,15 +15364,24 @@
       "items": [
         {
           "name": "Any black outfit",
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "minimum of 3 pieces, see below for the allowed gear — the dyed Silverlight does not count as a piece of black clothing"
+          ]
         },
         {
           "name": "Black dye",
-          "item_id": 4622
+          "item_id": 4622,
+          "notes": [
+            "from grinding a black mushroom using a pestle and mortar alongside a vial"
+          ]
         },
         {
           "name": "Means to enter the desert",
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "such as the Shantay pass, Desert amulet 2, Teleport tablets or scrolls, Fairy rings or the Pharaoh's sceptre"
+          ]
         },
         {
           "name": "Note: You can make a black desert robe and shirt during the quest if you brought a desert robe and shirt",
@@ -14318,12 +15407,18 @@
         },
         {
           "name": "Silverlight",
-          "item_id": 2402
+          "item_id": 2402,
+          "notes": [
+            "obtainable at start of quest"
+          ]
         },
         {
           "name": "Strange implement",
           "item_id": 4619,
-          "obtainable": true
+          "obtainable": true,
+          "notes": [
+            "obtainable during quest"
+          ]
         }
       ]
     },
@@ -14402,7 +15497,10 @@
         {
           "name": "bone, 1 pot and 1 bucket to earn 5 ecto-tokens or",
           "quantity": 1,
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "you still only need two"
+          ]
         },
         {
           "name": "ecto-token or",
@@ -14412,7 +15510,11 @@
         {
           "name": "gold for a Charter ship to Port Phasmatys",
           "quantity": 5200,
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "a",
+            "cheaper depending upon where you travel from and if you use Ring of Charos"
+          ]
         }
       ]
     },
@@ -14435,7 +15537,10 @@
       "items": [
         {
           "name": "Any type of cat or hellcat",
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "for most of the quest, a cat with a high successful rat catch rate is recommended, and overgrown cats cannot be used there -- during the Hooknosed Jack part of the quest, any cat with strong combat stats is recommended"
+          ]
         },
         {
           "name": "Bucket of milk",
@@ -14481,15 +15586,24 @@
           ],
           "drop_source_names": [
             "Baby impling"
+          ],
+          "notes": [
+            "or 4 Poisoned cheese"
           ]
         },
         {
           "name": "Cleaned kwuarm",
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "grimy will not work; Zahur in Nardah cleans grimy herbs for 200 coins"
+          ]
         },
         {
           "name": "Cleaned marrentill",
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "grimy will not work"
+          ]
         },
         {
           "name": "Coins",
@@ -14502,6 +15616,10 @@
           "drop_source_names": [
             "Borrokar",
             "Freidir"
+          ],
+          "notes": [
+            "a",
+            "or 51 coins with a Ring of Charos"
           ]
         },
         {
@@ -14510,7 +15628,10 @@
         },
         {
           "name": "Pot of weeds",
-          "item_id": 6771
+          "item_id": 6771,
+          "notes": [
+            "use an empty pot with weeds"
+          ]
         },
         {
           "name": "Red spiders' eggs",
@@ -14529,6 +15650,9 @@
           "obtainable": true,
           "sources": [
             "Drop: Wingstone (23/512)"
+          ],
+          "notes": [
+            "obtained from The Feud or during the quest"
           ]
         },
         {
@@ -14627,6 +15751,9 @@
         {
           "name": "Any pickaxe that you have the Mining level to use",
           "obtainable": true,
+          "notes": [
+            "a bronze pickaxe can be obtained during the quest"
+          ],
           "group_name": "Pickaxe",
           "alternatives": [
             {
@@ -14859,6 +15986,9 @@
           "drop_source_names": [
             "Baby impling",
             "Ogre Coffin"
+          ],
+          "notes": [
+            "or fletching knife"
           ]
         },
         {
@@ -15050,6 +16180,9 @@
           "drop_source_names": [
             "Baby impling",
             "H.A.M. Guard"
+          ],
+          "notes": [
+            "Note: a costume needle will not work"
           ]
         },
         {
@@ -15080,7 +16213,10 @@
         },
         {
           "name": "Runes for Telekinetic Grab",
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "One law and one air rune"
+          ]
         },
         {
           "name": "Slash weapon",
@@ -15089,7 +16225,10 @@
         {
           "name": "Some form of Ranged or Magic attack method",
           "obtainable": true,
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "a shortbow and bronze arrows can be obtained during the quest"
+          ]
         },
         {
           "name": "Stab weapon",
@@ -15264,6 +16403,9 @@
           "drop_source_names": [
             "Goblin guard",
             "Borrokar"
+          ],
+          "notes": [
+            "obtainable during the quest"
           ]
         },
         {
@@ -15277,6 +16419,9 @@
           "shop_names": [
             "Durrik's Goods",
             "Dom Onion's Reward Shop"
+          ],
+          "notes": [
+            "obtainable during quest if you bring a bucket"
           ]
         },
         {
@@ -15321,6 +16466,9 @@
           "drop_source_names": [
             "Cave goblin (monster)",
             "Tortoise#With riders"
+          ],
+          "notes": [
+            "can be bought from Betty for 20 gp"
           ]
         },
         {
@@ -15352,6 +16500,9 @@
             "Cobado's Groceries",
             "Food Store",
             "Kenelme's Wares"
+          ],
+          "notes": [
+            "purchasable during the quest from the Food Store in Port Sarim"
           ]
         },
         {
@@ -15435,6 +16586,9 @@
           ],
           "drop_source_names": [
             "Cave bug#Level 6"
+          ],
+          "notes": [
+            "a black candle will not work"
           ]
         },
         {
@@ -15491,6 +16645,9 @@
           "drop_source_names": [
             "Frost Nagua",
             "Amoxliatl#Post-quest"
+          ],
+          "notes": [
+            "obtainable during quest with level 30 Mining[boostable] from the quarry"
           ]
         },
         {
@@ -15530,10 +16687,16 @@
         },
         {
           "name": "One of the following: bread, any kind of pie, cake or chocolate cake, any kind of pizza, or a baked potato with topping",
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "partial pies, cakes and pizzas do not work, and neither will burnt versions"
+          ]
         },
         {
           "name": "Pickaxe",
+          "notes": [
+            "unless you already have the required items"
+          ],
           "group_name": "Pickaxe",
           "alternatives": [
             {
@@ -15736,7 +16899,10 @@
         },
         {
           "name": "Runes to cast Crumble Undead",
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "multiple casts recommended in case of splashing"
+          ]
         },
         {
           "name": "Runes to cast Fire Bolt, Fire Blast or Fire Wave",
@@ -15757,6 +16923,9 @@
           "drop_source_names": [
             "Frost Nagua",
             "Baby impling"
+          ],
+          "notes": [
+            "obtainable during quest if you bring a pickaxe and bucket, vial or jug of water"
           ]
         },
         {
@@ -15792,7 +16961,10 @@
         {
           "name": "Two 5 kg pieces of granite",
           "obtainable": true,
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "obtainable during quest with level 45 Mining [boostable]"
+          ]
         },
         {
           "name": "Willow logs",
@@ -15806,7 +16978,10 @@
           "name": "kg of sandstone",
           "quantity": 52,
           "obtainable": true,
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "obtainable during quest with level 35 Mining [boostable]"
+          ]
         }
       ]
     },
@@ -15891,7 +17066,10 @@
         {
           "name": "Draynor skull",
           "item_id": 7408,
-          "obtainable": true
+          "obtainable": true,
+          "notes": [
+            "obtainable during quest"
+          ]
         },
         {
           "name": "Ghostspeak amulet",
@@ -15916,6 +17094,9 @@
             "Kastori Farming Supplies",
             "Vannah's Farming Stall",
             "Leprechaun Larry's Farming Supplies."
+          ],
+          "notes": [
+            "obtainable in Sarah's Farming shop north-west of the quest start for 5 coins"
           ]
         },
         {
@@ -15943,6 +17124,9 @@
             "Cam Torum General Store",
             "Darkmeyer General Store",
             "Fortis General Store"
+          ],
+          "notes": [
+            "obtainable multiple times during quest"
           ]
         }
       ]
@@ -16372,7 +17556,10 @@
         },
         {
           "name": "Any cat except an overgrown cat",
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "you'll be chasing rats, so a wily cat is recommended"
+          ]
         },
         {
           "name": "Any pickaxe",
@@ -16586,6 +17773,9 @@
           ],
           "shop_names": [
             "Rising Sun Inn"
+          ],
+          "notes": [
+            "6 recommended"
           ]
         },
         {
@@ -16638,6 +17828,9 @@
             "Prifddinas Foodstuffs",
             "Food Store",
             "Kenelme's Wares"
+          ],
+          "notes": [
+            "obtainable during the quest"
           ]
         },
         {
@@ -16651,6 +17844,9 @@
             "Pollnivneach general store.",
             "Bandit Bargains",
             "Bedabin Village Bartering"
+          ],
+          "notes": [
+            "an empty bowl can be bought from the Culinaromancer's Chest"
           ]
         },
         {
@@ -16701,6 +17897,9 @@
             "Prifddinas Foodstuffs",
             "Arnold's Eclectic Supplies.",
             "Culinaromancer's Chest"
+          ],
+          "notes": [
+            "can be bought from the Culinaromancer's Chest"
           ]
         },
         {
@@ -16716,6 +17915,9 @@
             "The Lighthouse Store",
             "Sigmund the Merchant (shop)",
             "Bedabin Village Bartering"
+          ],
+          "notes": [
+            "an empty bucket can be bought from the Culinaromancer's Chest"
           ]
         },
         {
@@ -16742,6 +17944,9 @@
             "Falador General Store",
             "Fossil Island General Store",
             "Jennifer's General Supplies"
+          ],
+          "notes": [
+            "can be bought from the Culinaromancer's Chest"
           ]
         },
         {
@@ -16773,6 +17978,9 @@
           "drop_source_names": [
             "Borrokar",
             "Freidir"
+          ],
+          "notes": [
+            "or 120 if you have the activated Ring of Charos"
           ]
         },
         {
@@ -16791,6 +17999,9 @@
             "Culinaromancer's Chest",
             "Culinaromancer's Chest",
             "Sigmund the Merchant (shop)"
+          ],
+          "notes": [
+            "can be bought from the Culinaromancer's Chest"
           ]
         },
         {
@@ -16869,6 +18080,9 @@
         },
         {
           "name": "Gloves",
+          "notes": [
+            "ice gloves are preferred"
+          ],
           "group_name": "Gloves",
           "alternatives": [
             {
@@ -17052,7 +18266,10 @@
         {
           "name": "Gorilla, ninja and zombie greegree",
           "obtainable": true,
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "or 3000 coins and combat equipment if making the greegrees during the quest"
+          ]
         },
         {
           "name": "Greenman's ale",
@@ -17143,6 +18360,9 @@
           ],
           "shop_names": [
             "Solihib's Food Stall"
+          ],
+          "notes": [
+            "or 3 coins"
           ]
         },
         {
@@ -17181,11 +18401,17 @@
           "obtainable": true,
           "sources": [
             "Drop: Unlocked Ogre chest (Always)"
+          ],
+          "notes": [
+            "obtainable during the quest"
           ]
         },
         {
           "name": "Ogre bow and several ogre arrows",
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "10 is enough"
+          ]
         },
         {
           "name": "Orange",
@@ -17245,7 +18471,10 @@
         },
         {
           "name": "Pot of cornflour",
-          "item_id": 7468
+          "item_id": 7468,
+          "notes": [
+            "or raw sweetcorn and an empty pot"
+          ]
         },
         {
           "name": "Pot of cream",
@@ -17258,6 +18487,9 @@
             "Culinaromancer's Chest",
             "Funch's Fine Groceries",
             "Grand Tree Groceries"
+          ],
+          "notes": [
+            "can be bought from the Culinaromancer's Chest"
           ]
         },
         {
@@ -17280,6 +18512,9 @@
             "Razmire General Store.",
             "Culinaromancer's Chest",
             "Khazard General Store"
+          ],
+          "notes": [
+            "can be bought from the Culinaromancer's Chest"
           ]
         },
         {
@@ -17311,6 +18546,9 @@
           ],
           "shop_names": [
             "~ Uglug's stuffsies ~"
+          ],
+          "notes": [
+            "several recommended in case of burning"
           ]
         },
         {
@@ -17376,10 +18614,6 @@
           ]
         },
         {
-          "name": "Several bowls of stew",
-          "unresolved": true
-        },
-        {
           "name": "Spice",
           "item_id": 2007,
           "sources": [
@@ -17398,6 +18632,38 @@
           "drop_source_names": [
             "Gourmet impling",
             "Baby impling"
+          ],
+          "notes": [
+            "can be bought from the Culinaromancer's Chest"
+          ]
+        },
+        {
+          "name": "Stew",
+          "item_id": 2003,
+          "sources": [
+            "Shop: Prifddinas Foodstuffs (20 Coins)",
+            "Shop: Harpoon Joe's House of 'Rum'. (20 Coins)"
+          ],
+          "shop_names": [
+            "Prifddinas Foodstuffs",
+            "Harpoon Joe's House of 'Rum'.",
+            "The Cloak and Stagger",
+            "The Other Inn.",
+            "Atlazora's Rest",
+            "Auburn Pub",
+            "Barmaid",
+            "Deepfin Inn",
+            "Forester's Arms",
+            "Hefin Inn",
+            "Nemus Retreat (pub)",
+            "Ratpit bar (Keldagrim)",
+            "Ratpit bar (Port Sarim)",
+            "Ratpit bar (Varrock)",
+            "Stick Your Ore Inn",
+            "Sunlight's Sanctum"
+          ],
+          "notes": [
+            "9 at most"
           ]
         },
         {
@@ -17689,7 +18955,10 @@
         },
         {
           "name": "Blessed axe",
-          "item_id": 10491
+          "item_id": 10491,
+          "notes": [
+            "obtained during Animal Magnetism"
+          ]
         },
         {
           "name": "Bronze axe",
@@ -17751,6 +19020,9 @@
           "drop_source_names": [
             "Borrokar",
             "Freidir"
+          ],
+          "notes": [
+            "5 is highly recommended to save time"
           ]
         },
         {
@@ -17804,7 +19076,11 @@
         },
         {
           "name": "Emberlight",
-          "item_id": 29589
+          "item_id": 29589,
+          "notes": [
+            "obtained during Demon Slayer",
+            "obtained during Shadow of the Storm"
+          ]
         },
         {
           "name": "Hammer",
@@ -17834,6 +19110,9 @@
           "drop_source_names": [
             "Goblin guard",
             "Baby impling"
+          ],
+          "notes": [
+            "Imcando hammer works."
           ]
         },
         {
@@ -17858,6 +19137,9 @@
           ],
           "shop_names": [
             "Razmire Builders Merchants."
+          ],
+          "notes": [
+            "Only regular planks will work."
           ]
         },
         {
@@ -17883,6 +19165,9 @@
             "Fremennik Fish Monger",
             "Island Fishmonger",
             "Warrens Fish Monger"
+          ],
+          "notes": [
+            "randomly chosen, but you can manipulate the choice"
           ]
         },
         {
@@ -18170,6 +19455,9 @@
           "name": "nails",
           "quantity": 44,
           "obtainable": true,
+          "notes": [
+            "42 are obtainable during the quest"
+          ],
           "group_name": "Nails",
           "alternatives": [
             {
@@ -18214,7 +19502,10 @@
         {
           "name": "stew , salmon, snails, or slimy eels",
           "quantity": 15,
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "highest healing"
+          ]
         }
       ]
     },
@@ -18297,6 +19588,9 @@
           "drop_source_names": [
             "Borrokar",
             "Freidir"
+          ],
+          "notes": [
+            "bring 68 coins if walking to and from Karamja for boat fare"
           ]
         },
         {
@@ -18359,7 +19653,10 @@
         {
           "name": "logs of any type",
           "quantity": 8,
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "or an axe to obtain them"
+          ]
         }
       ]
     },
@@ -18422,8 +19719,11 @@
       ],
       "items": [
         {
-          "name": "An airtight pot – created by using a pot lid on a pot",
-          "unresolved": true
+          "name": "Airtight pot",
+          "item_id": 4436,
+          "notes": [
+            "created by using a pot lid on a pot"
+          ]
         },
         {
           "name": "Blood rune",
@@ -18458,6 +19758,9 @@
           "drop_source_names": [
             "Undead cow",
             "Cave goblin (monster)"
+          ],
+          "notes": [
+            "obtainable during the quest"
           ]
         },
         {
@@ -18474,6 +19777,9 @@
             "Fancy Clothes Store",
             "Shayzien Styles",
             "Thessalia's Fine Clothes."
+          ],
+          "notes": [
+            "obtained during the quest"
           ]
         },
         {
@@ -18505,6 +19811,9 @@
           "drop_source_names": [
             "Goblin guard",
             "Baby impling"
+          ],
+          "notes": [
+            "obtainable during the quest"
           ]
         },
         {
@@ -18556,11 +19865,17 @@
             "Fremennik Fish Monger",
             "Island Fishmonger",
             "Warrens Fish Monger"
+          ],
+          "notes": [
+            "obtained during the quest"
           ]
         },
         {
           "name": "Soft clay if making your own pot lid during the quest , or a pickaxe to obtain the clay during the quest",
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "2 if also making the pot"
+          ]
         },
         {
           "name": "Tinderbox",
@@ -18591,17 +19906,26 @@
           "drop_source_names": [
             "Cave goblin (monster)",
             "Wall beast"
+          ],
+          "notes": [
+            "obtainable during the quest"
           ]
         },
         {
           "name": "a pickaxe if mining your own iron during quest",
           "obtainable": true,
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "obtainable during the quest"
+          ]
         },
         {
           "name": "an axe if chopping your own logs during quest",
           "obtainable": true,
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "obtainable during quest"
+          ]
         },
         {
           "name": "iron bars, or",
@@ -18682,6 +20006,9 @@
           "drop_source_names": [
             "Frost Nagua",
             "Amoxliatl#Post-quest"
+          ],
+          "notes": [
+            "obtainable during the quest with a pickaxe, which will also be obtainable"
           ]
         },
         {
@@ -18695,6 +20022,9 @@
           ],
           "shop_names": [
             "Razmire Builders Merchants."
+          ],
+          "notes": [
+            "obtainable during the quest"
           ]
         },
         {
@@ -18723,6 +20053,9 @@
             "Kastori General Store",
             "Obli's General Store.",
             "Outer Fortis General Store"
+          ],
+          "notes": [
+            "obtainable during the quest"
           ]
         }
       ]
@@ -18762,6 +20095,9 @@
       "items": [
         {
           "name": "Any light source",
+          "notes": [
+            "lanterns are recommended - open light sources such as a candle can cause gas explosions and require a tinderbox"
+          ],
           "group_name": "Light sources",
           "alternatives": [
             {
@@ -18924,6 +20260,9 @@
         {
           "name": "Pickaxe",
           "optional": true,
+          "notes": [
+            "if not using a games necklace to teleport to Tears of Guthix - only usable after you have completed the Tears of Guthix quest"
+          ],
           "group_name": "Pickaxe",
           "alternatives": [
             {
@@ -19128,7 +20467,11 @@
           "name": "full sets of H.A.M. robes",
           "quantity": 2,
           "obtainable": true,
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "all 7 pieces",
+            "chance to receive robes is significantly higher during the quest"
+          ]
         }
       ]
     },
@@ -19183,7 +20526,10 @@
         {
           "name": "Nuff's certificate",
           "item_id": 9025,
-          "obtainable": true
+          "obtainable": true,
+          "notes": [
+            "obtained during quest"
+          ]
         },
         {
           "name": "Pestle and mortar",
@@ -19299,24 +20645,41 @@
       "items": [
         {
           "name": "A few coins",
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "1,000 is enough"
+          ]
         },
         {
           "name": "A finished bullseye lantern",
           "obtainable": true,
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "unf",
+            "empty",
+            "NOT NOR . If you cannot obtain one, bring Swamp tar to a lamp oil still instead. Swamp tar can be obtained during the quest."
+          ]
         },
         {
           "name": "A needle and 2 spools of thread",
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "a costume needle will also work"
+          ]
         },
         {
           "name": "All elemental talismans or their respective tiaras , or access to the Abyss or the Guardians of the Rift minigame",
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "Air, Water, Earth, and Fire, or an Elemental talisman"
+          ]
         },
         {
           "name": "Any axe",
           "obtainable": true,
+          "notes": [
+            "bronze axe obtainable during quest"
+          ],
           "group_name": "Axe",
           "alternatives": [
             {
@@ -19860,6 +21223,9 @@
           "sources": [
             "Drop: Sorceress's Garden/Winter (16/54)",
             "Drop: Sorceress's Garden/Spring (16/75)"
+          ],
+          "notes": [
+            "common drop from a Suqah during the quest"
           ]
         },
         {
@@ -19890,6 +21256,9 @@
           "drop_source_names": [
             "Goblin guard",
             "Baby impling"
+          ],
+          "notes": [
+            "or an Imcando hammer"
           ]
         },
         {
@@ -19899,6 +21268,9 @@
           "sources": [
             "Drop: Sorceress's Garden/Winter (14/54)",
             "Drop: Sorceress's Garden/Spring (14/75)"
+          ],
+          "notes": [
+            "common drop from a Suqah during the quest"
           ]
         },
         {
@@ -20033,6 +21405,10 @@
           ],
           "shop_names": [
             "The Spice Is Right."
+          ],
+          "notes": [
+            "evergreen shaped trees",
+            "If you do not have one, you can use a knife on any tree that looks pointy with a bucket in your inventory"
           ]
         },
         {
@@ -20251,12 +21627,18 @@
           "drop_source_names": [
             "Baby impling",
             "Ogre Coffin"
+          ],
+          "notes": [
+            "obtainable during the quest"
           ]
         },
         {
           "name": "Means to cast Telekinetic Grab",
           "obtainable": true,
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "air and law rune; both obtainable during the quest"
+          ]
         },
         {
           "name": "Plank",
@@ -20394,7 +21776,10 @@
         },
         {
           "name": "Commorb",
-          "item_id": 6635
+          "item_id": 6635,
+          "notes": [
+            "can get another by speaking to Sir Tiffy"
+          ]
         },
         {
           "name": "Dead sea slug",
@@ -20405,6 +21790,9 @@
           ],
           "drop_source_names": [
             "Giant lobster"
+          ],
+          "notes": [
+            "obtainable during the quest"
           ]
         },
         {
@@ -20456,6 +21844,9 @@
             "Salvager Overlook General Store",
             "Khazard General Store",
             "Rasolo the Wandering Merchant"
+          ],
+          "notes": [
+            "not consumed"
           ]
         },
         {
@@ -20470,7 +21861,10 @@
         {
           "name": "rune/pure essence",
           "quantity": 5,
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "bring 15–20 in case they shatter; succeeding with 5 is very unlikely"
+          ]
         }
       ]
     },
@@ -20532,6 +21926,9 @@
           "drop_source_names": [
             "Frost Nagua",
             "Amoxliatl#Post-quest"
+          ],
+          "notes": [
+            "12 if you wish to smith the mind shield"
           ]
         },
         {
@@ -20544,6 +21941,10 @@
           ],
           "drop_source_names": [
             "Earth elemental#Ore"
+          ],
+          "notes": [
+            "obtainable during quest",
+            "3 if you wish to smith the mind shield"
           ]
         },
         {
@@ -20580,6 +21981,9 @@
           "name": "Pickaxe",
           "optional": true,
           "obtainable": true,
+          "notes": [
+            "if obtaining elemental ore during quest"
+          ],
           "group_name": "Pickaxe",
           "alternatives": [
             {
@@ -20849,6 +22253,9 @@
           "drop_source_names": [
             "Borrokar",
             "Freidir"
+          ],
+          "notes": [
+            "can be obtained during the quest, south of the cooking pot on Death Plateau"
           ]
         },
         {
@@ -20861,6 +22268,9 @@
           "shop_names": [
             "Justine's stuff for the Last Shopper Standing",
             "Tenzing"
+          ],
+          "notes": [
+            "can be bought from Tenzing for 12 coins"
           ]
         },
         {
@@ -20887,6 +22297,9 @@
             "Aub",
             "Ayesha",
             "Bolongo"
+          ],
+          "notes": [
+            "disease can be avoided with an additional supercompost but the plant can get diseased during a cutscene right after planting so plant cure is still recommended"
           ]
         },
         {
@@ -20913,6 +22326,9 @@
             "Argo",
             "Aub",
             "Ayesha"
+          ],
+          "notes": [
+            "To give to My Arm temporarily; he will return it near the end of the quest"
           ]
         },
         {
@@ -20923,6 +22339,10 @@
           ],
           "shop_names": [
             "Ali the Kebab seller"
+          ],
+          "notes": [
+            "obtainable in Pollnivneach",
+            "from Enakhra's Lament quest"
           ]
         },
         {
@@ -20949,6 +22369,9 @@
             "Argo",
             "Aub",
             "Ayesha"
+          ],
+          "notes": [
+            "To give to My Arm temporarily; he will return it near the end of the quest. This is still needed even if Barbarian Training is completed"
           ]
         },
         {
@@ -21001,12 +22424,18 @@
             "Cam Torum General Store",
             "Darkmeyer General Store",
             "Fortis General Store"
+          ],
+          "notes": [
+            "To give to My Arm temporarily; he will return it near the end of the quest"
           ]
         },
         {
           "name": "Supercompost Note: Bottomless compost bucket will not work, even one that is containing supercompost",
           "quantity": 7,
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "must be supercompost; one extra can be used instead of plant cure, making 8 total"
+          ]
         },
         {
           "name": "additional buckets",
@@ -21060,7 +22489,12 @@
       "items": [
         {
           "name": "A full sack of potatoes",
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "10",
+            "item is called Potatoes",
+            "there are potatoes growing in Entrana in the house east of Auguste, bring another empty sack if picking here"
+          ]
         },
         {
           "name": "Ball of wool",
@@ -21090,7 +22524,10 @@
           "name": "Black candle",
           "item_id": 38,
           "quantity": 1,
-          "obtainable": true
+          "obtainable": true,
+          "notes": [
+            "can be obtained during quest by stealing candles in Entrana church"
+          ]
         },
         {
           "name": "Bowl",
@@ -21117,6 +22554,33 @@
             "Outer Fortis General Store",
             "Tal Teklan General Store",
             "Darkmeyer General Store"
+          ],
+          "notes": [
+            "obtainable during quest"
+          ]
+        },
+        {
+          "name": "Empty sack",
+          "item_id": 5418,
+          "quantity": 8,
+          "sources": [
+            "Shop: Alice's Farming shop. (1 Coins)",
+            "Shop: Branwen's Farming Shop (1 Coins)"
+          ],
+          "shop_names": [
+            "Alice's Farming shop.",
+            "Branwen's Farming Shop",
+            "Richard's Farming shop.",
+            "Sarah's Farming shop.",
+            "Vanessa's Farming shop.",
+            "Allanna's Farming Shop",
+            "Vannah's Farming Stall",
+            "Agelus' Farm Shop",
+            "Elder Reggle's Farming Shop",
+            "Kastori Farming Supplies"
+          ],
+          "notes": [
+            "bring 9 sacks if planning to fill one with potatoes on Entrana"
           ]
         },
         {
@@ -21182,6 +22646,10 @@
             "Argo",
             "Aub",
             "Ayesha"
+          ],
+          "notes": [
+            "only if planting the tree",
+            "can also be exchanged from a Tool Leprechaun if placed there before"
           ]
         },
         {
@@ -21217,6 +22685,10 @@
             "Kastori Farming Supplies",
             "Vannah's Farming Stall",
             "Leprechaun Larry's Farming Supplies."
+          ],
+          "notes": [
+            "only if planting the tree",
+            "can also be exchanged from a Tool Leprechaun if placed there before"
           ]
         },
         {
@@ -21265,11 +22737,18 @@
             "Cam Torum General Store",
             "Darkmeyer General Store",
             "Fortis General Store"
+          ],
+          "notes": [
+            "only if planting the tree",
+            "can also be exchanged from a Tool Leprechaun if placed there before"
           ]
         },
         {
           "name": "TRIP 2",
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "building the third balloon"
+          ]
         },
         {
           "name": "Tinderbox",
@@ -21307,6 +22786,9 @@
           "quantity": 12,
           "sources": [
             "Drop: Willow tree (Farming) (Always)"
+          ],
+          "notes": [
+            "buy from the Grand Exchange, or plant a willow sapling and wait 4 hours."
           ]
         },
         {
@@ -21321,11 +22803,6 @@
             "Guinevere's Dyes",
             "Lletya Seamstress"
           ]
-        },
-        {
-          "name": "empty sacks – bring 9 sacks if planning to fill one with potatoes on Entrana",
-          "quantity": 8,
-          "unresolved": true
         }
       ]
     },
@@ -21441,11 +22918,17 @@
         {
           "name": "Ecto-token",
           "item_id": 4278,
-          "quantity": 20
+          "quantity": 20,
+          "notes": [
+            "or 4 bones, 4 buckets, and 4 pots to gain the tokens"
+          ]
         },
         {
           "name": "Ghostspeak amulet",
-          "item_id": 552
+          "item_id": 552,
+          "notes": [
+            "Morytania legs will not work"
+          ]
         },
         {
           "name": "Hammer",
@@ -21511,6 +22994,9 @@
           "shop_names": [
             "Lunami's Axe Shop",
             "Perry's Chop-chop Shop"
+          ],
+          "notes": [
+            "required to obtain the blessed axe; no other type of axe will do"
           ]
         },
         {
@@ -21544,6 +23030,10 @@
       "items": [
         {
           "name": "A light source",
+          "notes": [
+            "Kandarin headgear, Firemaking cape, Abyssal lantern, or a bruma torch are strongly recommended as they can't be extinguished by traps in the dungeon",
+            "If you don't have one, the Sophanem guard under the temple of the lesser deities will sell you an unlit torch for 200 coins"
+          ],
           "group_name": "Light sources",
           "alternatives": [
             {
@@ -21731,6 +23221,10 @@
           "drop_source_names": [
             "Cave goblin (monster)",
             "Wall beast"
+          ],
+          "notes": [
+            "unless you have a non extinguishable light source such as Kandarin headgear, Firemaking cape, Abyssal lantern, or a bruma torch",
+            "If you don't have one, the Sophanem guard will sell you one for 50 coins"
           ]
         }
       ]
@@ -21790,7 +23284,10 @@
         {
           "name": "Cowbells",
           "item_id": 10593,
-          "obtainable": true
+          "obtainable": true,
+          "notes": [
+            "obtainable only during quest"
+          ]
         },
         {
           "name": "Feather",
@@ -21819,6 +23316,9 @@
           "drop_source_names": [
             "H.A.M. Guard",
             "Guard (H.A.M. Storerooms)"
+          ],
+          "notes": [
+            "only regular chicken feathers work"
           ]
         },
         {
@@ -21913,6 +23413,9 @@
             "Fremennik Fish Monger",
             "Island Fishmonger",
             "Warrens Fish Monger"
+          ],
+          "notes": [
+            "a"
           ]
         },
         {
@@ -22032,11 +23535,17 @@
           "drop_source_names": [
             "Borrokar",
             "Freidir"
+          ],
+          "notes": [
+            "optional"
           ]
         },
         {
           "name": "Either 8 tin ores, 7 pieces of coal, or 6 mithril ores . Note: The ores can be noted",
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "depends on your Mining level; level 1 will require tin ore, 2-54 will require coal, and 55-99 require mithril ore"
+          ]
         },
         {
           "name": "If the Neitiznot shield is already purchased, only 8 ropes are required",
@@ -22074,7 +23583,10 @@
         },
         {
           "name": "Neitiznot shield",
-          "item_id": 10826
+          "item_id": 10826,
+          "notes": [
+            "or 56 Woodcutting, a hammer and a bronze nail"
+          ]
         },
         {
           "name": "Raw tuna",
@@ -22104,6 +23616,9 @@
           ],
           "drop_source_names": [
             "Mogre"
+          ],
+          "notes": [
+            "obtainable during quest, with 35 fishing or bought from the shop"
           ]
         },
         {
@@ -22132,22 +23647,34 @@
             "Kastori General Store",
             "Obli's General Store.",
             "Outer Fortis General Store"
+          ],
+          "notes": [
+            "obtainable during quest with 30 Crafting"
           ]
         },
         {
           "name": "Silly jester costume",
           "obtainable": true,
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "obtained during quest"
+          ]
         },
         {
           "name": "Split log",
           "item_id": 10812,
           "quantity": 8,
-          "obtainable": true
+          "obtainable": true,
+          "notes": [
+            "obtainable during the quest with 56 Woodcutting and an axe"
+          ]
         },
         {
           "name": "Yak-hide armour top and legs",
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "or 46 Crafting, a needle and two thread, or a costume needle"
+          ]
         }
       ]
     },
@@ -22194,7 +23721,10 @@
       "items": [
         {
           "name": "A fishbowl helmet and a diving apparatus",
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "reobtainable from Murphy in Port Khazard if you've lost them"
+          ]
         },
         {
           "name": "Grey wolf fur",
@@ -22214,6 +23744,10 @@
             "Fancy Clothes Store",
             "Pellem's Fur Store",
             "Prifddinas' Seamstress"
+          ],
+          "notes": [
+            "if making your own wooden cats",
+            "wolf fur can be obtained during quest by killing Canifis townsfolk. Baraek sells them for 20 gold each. Furs from Hunter monsters will not work"
           ]
         },
         {
@@ -22244,6 +23778,9 @@
           "drop_source_names": [
             "Goblin guard",
             "Baby impling"
+          ],
+          "notes": [
+            "Note: Imcando hammer does not work"
           ]
         },
         {
@@ -22260,7 +23797,10 @@
         },
         {
           "name": "Medallion of the Deep",
-          "item_id": 32386
+          "item_id": 32386,
+          "notes": [
+            "counts as both helmet and apparatus"
+          ]
         },
         {
           "name": "Plank",
@@ -22273,6 +23813,9 @@
           ],
           "shop_names": [
             "Razmire Builders Merchants."
+          ],
+          "notes": [
+            "if making your own wooden cats"
           ]
         },
         {
@@ -22285,6 +23828,9 @@
           ],
           "shop_names": [
             "Razmire Builders Merchants."
+          ],
+          "notes": [
+            "18 if making the wooden cats instead of buying them from the Grand Exchange"
           ]
         },
         {
@@ -22294,11 +23840,25 @@
           "obtainable": true,
           "sources": [
             "Drop: Dr Fenkenstrain (Always)"
+          ],
+          "notes": [
+            "if lost, can be re-obtained during quest by pickpocketing Fenkenstrain"
+          ]
+        },
+        {
+          "name": "Wooden cat",
+          "item_id": 10891,
+          "quantity": 10,
+          "notes": [
+            "partial completion of The Great Brain Robbery is required to make these yourself, however they are tradeable and available at the Grand Exchange"
           ]
         },
         {
           "name": "nails",
           "quantity": 100,
+          "notes": [
+            "38 are needed, but some—especially bronze or iron—may bend"
+          ],
           "group_name": "Nails",
           "alternatives": [
             {
@@ -22339,12 +23899,10 @@
           "name": "oak planks, a hammer, and a saw",
           "quantity": 4,
           "optional": true,
-          "unresolved": true
-        },
-        {
-          "name": "wooden cats – partial completion of The Great Brain Robbery is required to make these yourself, however they are tradeable and available at the Grand Exchange",
-          "quantity": 10,
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "if you are building your own crafting table and do not already have one; build in the Clockmaking space of the Workshop"
+          ]
         }
       ]
     },
@@ -22377,7 +23935,10 @@
       "items": [
         {
           "name": "Access to the Chaos Altar",
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "Chaos talisman or tiara, Catalytic talisman or tiara, or travelling through the Abyss or Temple of the Eye"
+          ]
         },
         {
           "name": "Chaos rune",
@@ -22798,6 +24359,9 @@
             "Kastori General Store",
             "Obli's General Store.",
             "Outer Fortis General Store"
+          ],
+          "notes": [
+            "obtainable during the quest"
           ]
         },
         {
@@ -22859,7 +24423,10 @@
         {
           "name": "free inventory slots",
           "quantity": 4,
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "10 if not bringing your own ropes"
+          ]
         }
       ]
     },
@@ -23059,7 +24626,10 @@
         },
         {
           "name": "Magic or Ranged gear for enemy fight",
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "cannot use Melee on them"
+          ]
         },
         {
           "name": "Specimen brush",
@@ -23068,6 +24638,9 @@
           "sources": [
             "Drop: Crate (cleaning kit) (Always)",
             "Drop: Tools (Varrock Museum) (Always)"
+          ],
+          "notes": [
+            "obtained during the quest"
           ]
         },
         {
@@ -23077,6 +24650,9 @@
           "sources": [
             "Drop: Crate (cleaning kit) (Always)",
             "Drop: Tools (Varrock Museum) (Always)"
+          ],
+          "notes": [
+            "obtained during the quest"
           ]
         }
       ]
@@ -23105,7 +24681,10 @@
       "items": [
         {
           "name": "A good weapon , good armour, good food such as sharks, and super potion sets",
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "trident of the seas recommended because they have no magic defence"
+          ]
         },
         {
           "name": "Astral rune",
@@ -23222,7 +24801,10 @@
         {
           "name": "different kinds of food: 6 of 1 type and 7 of 2 others for a total of 20 pieces",
           "quantity": 3,
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "Sacks of cabbages, potatoes, and onions can be used as they each contain 10 piece of their respective food and only require a total of 3 inventory slots. Fruit baskets also work."
+          ]
         }
       ]
     },
@@ -23292,6 +24874,9 @@
       "items": [
         {
           "name": "Any axe",
+          "notes": [
+            "a felling axe does work"
+          ],
           "group_name": "Axe",
           "alternatives": [
             {
@@ -23620,7 +25205,10 @@
         },
         {
           "name": "Good armour and a weapon",
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "Ranged or Magic equipment recommended if you have low melee levels"
+          ]
         },
         {
           "name": "High healing food",
@@ -23644,6 +25232,9 @@
             "Obli's General Store.",
             "Jiminua's Jungle Store.",
             "Obli's General Store."
+          ],
+          "notes": [
+            "obtainable during quest, optional if willing to take 17 damage"
           ]
         },
         {
@@ -23670,12 +25261,19 @@
             "Argo",
             "Aub",
             "Ayesha"
+          ],
+          "notes": [
+            "leprechaun is nearby",
+            "Not needed if the Farming portion of the Barbarian Training miniquest is completed"
           ]
         },
         {
           "name": "Tarromin potion OR 2 vials of water and 2 tarromins",
           "quantity": 2,
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "unf"
+          ]
         },
         {
           "name": "Watering can",
@@ -23701,6 +25299,9 @@
             "Argo",
             "Aub",
             "Ayesha"
+          ],
+          "notes": [
+            "can also be stored with the leprechaun"
           ]
         }
       ]
@@ -23742,7 +25343,11 @@
         {
           "name": "Animate rock scroll",
           "item_id": 4428,
-          "obtainable": true
+          "obtainable": true,
+          "notes": [
+            "obtainable during the quest",
+            "Note: if you have it in your bank, either destroy it or take it with you. You won't be able to receive another from Wizard Cromperty otherwise"
+          ]
         },
         {
           "name": "Bronze med helm",
@@ -23759,15 +25364,25 @@
           ],
           "drop_source_names": [
             "Wall beast"
+          ],
+          "notes": [
+            "can be purchased from Peksa's Helmet Shop in the Barbarian Village, or picked up inside Draynor Manor near the exit"
           ]
         },
         {
           "name": "Full black armour —Note: Elite and trimmed versions of black armour will work. versions will not work",
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "black full helm, platebody, and platelegs/plateskirt",
+            "h"
+          ]
         },
         {
           "name": "Granite",
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "any size"
+          ]
         },
         {
           "name": "Iron chainbody",
@@ -23785,12 +25400,19 @@
           "drop_source_names": [
             "Cyclops (Catacombs of Kourend)",
             "Cyclops#Warriors' Guild Rooftop"
+          ],
+          "notes": [
+            "Both the iron chainbody and the bronze med helm can be bought upstairs in the Warrior Guild Armoury. If you can't access the Warriors' Guild you can get an Iron Chainbody from Wayne's Chains in Southern Falador, Horvik's Armour Shop in central Varrock, or the Grand Exchange"
           ]
         },
         {
           "name": "Telekinetic Grab runes",
           "obtainable": true,
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "1 air rune and 1 law rune",
+            "obtainable during the quest"
+          ]
         }
       ]
     },
@@ -23825,7 +25447,11 @@
       "items": [
         {
           "name": "A lit torch , Candle lantern, candle or black candle - the light source will be consumed. Bullseye lantern and firemaking cape do not work",
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "bruma works",
+            "an unlit torch and tinderbox can be purchased at the store north of Tai Bwo Wannai for a total of 7 coins"
+          ]
         },
         {
           "name": "Bones",
@@ -23839,11 +25465,17 @@
           "drop_source_names": [
             "Undead cow",
             "Cave goblin (monster)"
+          ],
+          "notes": [
+            "obtainable during the quest"
           ]
         },
         {
           "name": "Bronze bar and hammer to create one",
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "both can be purchased at the store north of Tai Bwo Wannai for a total of 13 coins, there is an anvil nearby"
+          ]
         },
         {
           "name": "Bronze wire",
@@ -23876,6 +25508,9 @@
           ],
           "drop_source_names": [
             "Baby impling"
+          ],
+          "notes": [
+            "can be purchased at the store north of Tai Bwo Wannai for 1 coins"
           ]
         },
         {
@@ -23902,6 +25537,9 @@
             "Kastori General Store",
             "Obli's General Store.",
             "Outer Fortis General Store"
+          ],
+          "notes": [
+            "can be purchased at the store north of Tai Bwo Wannai for 27 coins"
           ]
         },
         {
@@ -23928,6 +25566,9 @@
             "Cam Torum General Store",
             "Darkmeyer General Store",
             "Fortis General Store"
+          ],
+          "notes": [
+            "can be purchased at the store north of Tai Bwo Wannai for 4 coins"
           ]
         }
       ]
@@ -23959,12 +25600,18 @@
           "drop_source_names": [
             "Mourner#Level 11",
             "Mourner#Level 108"
+          ],
+          "notes": [
+            "can be obtained for free from the cupboard in Edmond and Alrena's house in East Ardougne"
           ]
         },
         {
           "name": "Priest gown top and bottom",
           "obtainable": true,
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "can be obtained for free during the quest"
+          ]
         }
       ]
     },
@@ -24041,11 +25688,17 @@
           "drop_source_names": [
             "Borrokar",
             "Freidir"
+          ],
+          "notes": [
+            "70 coins if using boat to Karamja"
           ]
         },
         {
           "name": "Ghostspeak amulet",
-          "item_id": 552
+          "item_id": 552,
+          "notes": [
+            "Morytania legs will not work"
+          ]
         },
         {
           "name": "Ring of visibility",
@@ -24107,10 +25760,16 @@
       "items": [
         {
           "name": "A normal attack potion",
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "2 doses"
+          ]
         },
         {
           "name": "An axe",
+          "notes": [
+            "part 2"
+          ],
           "group_name": "Axe",
           "alternatives": [
             {
@@ -24439,11 +26098,17 @@
         },
         {
           "name": "An axe or 200 coins",
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "part 2, to clear a required patch if it is occupied"
+          ]
         },
         {
           "name": "Any sapling and a free Farming patch for it",
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "part 2"
+          ]
         },
         {
           "name": "Caviar",
@@ -24553,18 +26218,32 @@
           ],
           "drop_source_names": [
             "Brutus"
+          ],
+          "notes": [
+            "can get some oak logs north of Otto's house, down a hill",
+            "part 1"
           ]
         },
         {
           "name": "Roe",
-          "item_id": 11324
+          "item_id": 11324,
+          "notes": [
+            "can be obtained during Barbarian Fishing"
+          ]
         },
         {
-          "name": "Seeds"
+          "name": "Seeds",
+          "notes": [
+            "such as allotment and herb seeds",
+            "part 1"
+          ]
         },
         {
           "name": "Signed oak bow",
-          "item_id": 4236
+          "item_id": 4236,
+          "notes": [
+            "part 1"
+          ]
         },
         {
           "name": "Spade",
@@ -24590,6 +26269,9 @@
             "Cam Torum General Store",
             "Darkmeyer General Store",
             "Fortis General Store"
+          ],
+          "notes": [
+            "part 2"
           ]
         },
         {
@@ -24620,6 +26302,9 @@
           "drop_source_names": [
             "Cave goblin (monster)",
             "Wall beast"
+          ],
+          "notes": [
+            "part 2"
           ]
         },
         {
@@ -24731,7 +26416,10 @@
         {
           "name": "Gloves to pick the nettles",
           "obtainable": true,
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "leather gloves are obtainable during the quest"
+          ]
         },
         {
           "name": "Knife",
@@ -24776,6 +26464,9 @@
           "item_id": 4241,
           "sources": [
             "Drop: Nettles (scenery) (Always)"
+          ],
+          "notes": [
+            "more than one with low Cooking level, as it can fail due to over boiling"
           ]
         },
         {
@@ -24820,7 +26511,10 @@
       "items": [
         {
           "name": "Ghostspeak amulet",
-          "item_id": 552
+          "item_id": 552,
+          "notes": [
+            "Morytania legs 2 or higher may be used instead, except when otherwise noted"
+          ]
         },
         {
           "name": "Ring of visibility",
@@ -24894,6 +26588,9 @@
           "drop_source_names": [
             "Goblin guard",
             "Borrokar"
+          ],
+          "notes": [
+            "must be a regular beer - other beers do not work."
           ]
         },
         {
@@ -24924,6 +26621,9 @@
           "drop_source_names": [
             "Goblin guard",
             "Baby impling"
+          ],
+          "notes": [
+            "or Imcando hammer"
           ]
         },
         {
@@ -24935,6 +26635,9 @@
           ],
           "shop_names": [
             "Construction supplies"
+          ],
+          "notes": [
+            "or crystal saw"
           ]
         }
       ]
@@ -24971,7 +26674,10 @@
       "items": [
         {
           "name": "Combat gear to kill zogres",
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "an ogre composite bow with brutal arrows or runes for Crumble Undead casts is advised"
+          ]
         },
         {
           "name": "Dusty key",
@@ -24984,6 +26690,9 @@
           "shop_names": [
             "Velrak the explorer",
             "Legends Guild Shop of Useful Items."
+          ],
+          "notes": [
+            "if under 70 Agility"
           ]
         },
         {
@@ -25006,6 +26715,9 @@
           ],
           "shop_names": [
             "Wine Shop."
+          ],
+          "notes": [
+            "bought from Fortunato for 27 coins"
           ]
         },
         {
@@ -25170,10 +26882,29 @@
           ]
         },
         {
+          "name": "Logs",
+          "item_id": 1511,
+          "quantity": 27,
+          "sources": [
+            "Drop: Dead tree (2021 Christmas event) (Always)",
+            "Drop: Jungle tree (Always)"
+          ],
+          "drop_source_names": [
+            "Brutus",
+            "H.A.M. Guard"
+          ],
+          "notes": [
+            "any logs - normal logs can be obtained on the path just below the Odd Old Man's hut if you bring an axe"
+          ]
+        },
+        {
           "name": "Mirror shield",
           "item_id": 4156,
           "sources": [
             "Shop: Slayer Equipment (shop) (5000 Coins)"
+          ],
+          "notes": [
+            "unless using a workaround - see guide for how to get around using this"
           ]
         },
         {
@@ -25258,11 +26989,6 @@
             "Cave goblin (monster)",
             "Wall beast"
           ]
-        },
-        {
-          "name": "sets of logs",
-          "quantity": 27,
-          "unresolved": true
         }
       ]
     },
@@ -25482,7 +27208,10 @@
         {
           "name": "Black dye",
           "item_id": 4622,
-          "obtainable": true
+          "obtainable": true,
+          "notes": [
+            "black mushroom obtainable during quest"
+          ]
         },
         {
           "name": "Blue dye",
@@ -25534,6 +27263,9 @@
             "Fremennik Fish Monger",
             "Island Fishmonger",
             "Port Roberts General Store"
+          ],
+          "notes": [
+            "oily fishing rod will not work"
           ]
         },
         {
@@ -25547,6 +27279,9 @@
           "drop_source_names": [
             "Goblin (God Wars Dungeon)",
             "Goblin guard"
+          ],
+          "notes": [
+            "obtainable during quest"
           ]
         },
         {
@@ -25589,7 +27324,10 @@
         },
         {
           "name": "Toadflax potion (unf)",
-          "item_id": 3002
+          "item_id": 3002,
+          "notes": [
+            "unf"
+          ]
         },
         {
           "name": "Yellow dye",
@@ -25794,6 +27532,9 @@
           ],
           "shop_names": [
             "Betty"
+          ],
+          "notes": [
+            "or 20 coins"
           ]
         },
         {
@@ -25805,19 +27546,31 @@
           "item_id": 4202,
           "sources": [
             "Drop: Dr Fenkenstrain (Always)"
+          ],
+          "notes": [
+            "a"
           ]
         },
         {
           "name": "Runes for any charge orb spell",
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "30 runes of a chosen element and 3 cosmic runes"
+          ]
         },
         {
           "name": "Runes for the following spells: multiple casts of all four elemental spells, Snare/Entangle, Weaken/Enfeeble, Telekinetic Grab, and Low/High Level Alchemy",
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "Air, Water, Earth, Fire, Body/Soul, Nature, Law, and the highest of Mind/Chaos/Death/Blood/Wrath that you can use to cast all four elemental spells"
+          ]
         },
         {
           "name": "Runes to cast the Astral Contact spell four times",
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "8 air runes, 4 astral rune, 4 cosmic rune"
+          ]
         },
         {
           "name": "Sapphire lantern",
@@ -25848,6 +27601,9 @@
             "Argo",
             "Aub",
             "Ayesha"
+          ],
+          "notes": [
+            "only if Barbarian Farming Training has not been completed"
           ]
         },
         {
@@ -25877,7 +27633,10 @@
         {
           "name": "log of any type except redwood (you can obtain one using a bronze axe next to the Hunting Expert, but you must not already have an axe in your inventory",
           "quantity": 1,
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "a Zombie axe counts, even though it can not be used to cut down trees"
+          ]
         }
       ]
     },
@@ -25960,6 +27719,9 @@
           "drop_source_names": [
             "Baby impling",
             "Ogre Coffin"
+          ],
+          "notes": [
+            "obtainable during quest"
           ]
         },
         {
@@ -26003,6 +27765,9 @@
           "drop_source_names": [
             "Borrokar",
             "Freidir"
+          ],
+          "notes": [
+            "optional"
           ]
         }
       ]
@@ -26244,6 +28009,9 @@
         {
           "name": "A pickaxe",
           "optional": true,
+          "notes": [
+            "if you choose the tanking route"
+          ],
           "group_name": "Pickaxe",
           "alternatives": [
             {
@@ -26446,7 +28214,10 @@
         },
         {
           "name": "A slash weapon",
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "to slash webs if you choose the tanking route - Wilderness sword of any tier recommended for this due to 100% web slash ability"
+          ]
         },
         {
           "name": "Chisel",
@@ -26476,6 +28247,9 @@
           ],
           "drop_source_names": [
             "Baby impling"
+          ],
+          "notes": [
+            "obtainable during the quest"
           ]
         },
         {
@@ -26523,6 +28297,9 @@
           "drop_source_names": [
             "Goblin guard",
             "Baby impling"
+          ],
+          "notes": [
+            "obtainable during the quest"
           ]
         },
         {
@@ -26563,11 +28340,17 @@
           ],
           "shop_names": [
             "Tutab's Magical Market"
+          ],
+          "notes": [
+            "obtainable during the quest"
           ]
         },
         {
           "name": "Ninja monkey greegree",
-          "item_id": 4024
+          "item_id": 4024,
+          "notes": [
+            "small or medium"
+          ]
         },
         {
           "name": "Pestle and mortar",
@@ -26662,7 +28445,10 @@
       "items": [
         {
           "name": "Enchanted key",
-          "item_id": 6754
+          "item_id": 6754,
+          "notes": [
+            "remove from your steel key ring if you previously put it there"
+          ]
         },
         {
           "name": "Spade",
@@ -26712,7 +28498,10 @@
         },
         {
           "name": "Something to cut webs",
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "knife, slash weapon, or any Wilderness sword"
+          ]
         }
       ]
     },
@@ -26785,6 +28574,9 @@
           "drop_source_names": [
             "Borrokar",
             "Freidir"
+          ],
+          "notes": [
+            "obtainable during quest"
           ]
         },
         {
@@ -26816,6 +28608,9 @@
           "drop_source_names": [
             "Baby impling",
             "Ogre Coffin"
+          ],
+          "notes": [
+            "obtainable during quest"
           ]
         },
         {
@@ -26847,6 +28642,9 @@
           "drop_source_names": [
             "Cave goblin (monster)",
             "Wall beast"
+          ],
+          "notes": [
+            "obtainable during quest"
           ]
         }
       ]
@@ -26888,6 +28686,9 @@
           "drop_source_names": [
             "H.A.M. Guard",
             "Guard (H.A.M. Storerooms)"
+          ],
+          "notes": [
+            "a stripy or coloured feather can also be used, but a magic gold feather cannot"
           ]
         }
       ]
@@ -26940,6 +28741,9 @@
             "Ratpit bar (Varrock)",
             "Stick Your Ore Inn",
             "Sunlight's Sanctum"
+          ],
+          "notes": [
+            "Cooking ingredients can be obtained during quest for 6 coins. Requires 25 Cooking"
           ]
         }
       ]
@@ -26957,7 +28761,10 @@
       "items": [
         {
           "name": "Marrentill potion (unf)",
-          "item_id": 93
+          "item_id": 93,
+          "notes": [
+            "unf"
+          ]
         },
         {
           "name": "Vodka",
@@ -27612,7 +29419,10 @@
         },
         {
           "name": "Ghostspeak amulet",
-          "item_id": 552
+          "item_id": 552,
+          "notes": [
+            "Morytania Legs 2+ work"
+          ]
         },
         {
           "name": "Glassblowing pipe",
@@ -27750,7 +29560,10 @@
         },
         {
           "name": "Seal of passage",
-          "item_id": 9083
+          "item_id": 9083,
+          "notes": [
+            "or elite Fremennik Diary completion"
+          ]
         },
         {
           "name": "Spade",
@@ -27828,7 +29641,10 @@
         {
           "name": "nails of any kind",
           "quantity": 12,
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "Note: Bringing more is recommended; nails may bend!"
+          ]
         }
       ]
     },
@@ -28026,6 +29842,9 @@
             "Sunset Coast General Store",
             "Jiminua's Jungle Store.",
             "Obli's General Store."
+          ],
+          "notes": [
+            "buy in Shilo Village, Jiminua's Jungle Store, or Gunslik's Assorted Items"
           ]
         },
         {
@@ -28072,6 +29891,9 @@
             "Dyes to Die For",
             "Guinevere's Dyes",
             "Lletya Seamstress"
+          ],
+          "notes": [
+            "purple dye spawns directly east of the spirit tree at the Khazard Battlefield, south of the Ardougne Castle"
           ]
         },
         {
@@ -28093,6 +29915,9 @@
           "drop_source_names": [
             "Gourmet impling",
             "Baby impling"
+          ],
+          "notes": [
+            "can be bought or stolen from the Ardougne market, bought from the Culinaromancer's Chest or bought in the Tree Gnome Stronghold"
           ]
         },
         {
@@ -28132,6 +29957,9 @@
           ],
           "shop_names": [
             "Rising Sun Inn"
+          ],
+          "notes": [
+            "can be bought during the quest at the Rising Sun Inn in Falador"
           ]
         },
         {
@@ -28145,6 +29973,9 @@
             "Pollnivneach general store.",
             "Bandit Bargains",
             "Bedabin Village Bartering"
+          ],
+          "notes": [
+            "a bowl and sink can be found in the kitchen of Lumbridge Castle"
           ]
         },
         {
@@ -28166,6 +29997,9 @@
             "Prifddinas Foodstuffs",
             "Arnold's Eclectic Supplies.",
             "Culinaromancer's Chest"
+          ],
+          "notes": [
+            "can be bought from the Culinaromancer's Chest"
           ]
         },
         {
@@ -28179,6 +30013,10 @@
           "drop_source_names": [
             "Borrokar",
             "Freidir"
+          ],
+          "notes": [
+            "a",
+            "300 + 1 coin per ale, 100 instead of 300 if you choose to bring a Ring of Charos , 150 instead of 300 if you choose to bring a chocolate bar"
           ]
         },
         {
@@ -28192,11 +30030,17 @@
             "Culinaromancer's Chest",
             "Culinaromancer's Chest",
             "Sigmund the Merchant (shop)"
+          ],
+          "notes": [
+            "can be bought from the Culinaromancer's chest"
           ]
         },
         {
           "name": "Gloves, If not using gloves make sure to bring Telekinetic Grab spell runes",
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "Ice gloves are the best, but other gloves will work fine too"
+          ]
         },
         {
           "name": "Pot of flour",
@@ -28217,6 +30061,9 @@
             "Razmire General Store.",
             "Culinaromancer's Chest",
             "Khazard General Store"
+          ],
+          "notes": [
+            "can be bought from the Culinaromancer's chest"
           ]
         },
         {
@@ -28246,11 +30093,39 @@
       "items": [
         {
           "name": "Any cat except an overgrown cat",
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "note that each cat has a different effective rat catch rate -- kittens or lazy cats are not recommended"
+          ]
         },
         {
-          "name": "Several bowls of stew",
-          "unresolved": true
+          "name": "Stew",
+          "item_id": 2003,
+          "sources": [
+            "Shop: Prifddinas Foodstuffs (20 Coins)",
+            "Shop: Harpoon Joe's House of 'Rum'. (20 Coins)"
+          ],
+          "shop_names": [
+            "Prifddinas Foodstuffs",
+            "Harpoon Joe's House of 'Rum'.",
+            "The Cloak and Stagger",
+            "The Other Inn.",
+            "Atlazora's Rest",
+            "Auburn Pub",
+            "Barmaid",
+            "Deepfin Inn",
+            "Forester's Arms",
+            "Hefin Inn",
+            "Nemus Retreat (pub)",
+            "Ratpit bar (Keldagrim)",
+            "Ratpit bar (Port Sarim)",
+            "Ratpit bar (Varrock)",
+            "Stick Your Ore Inn",
+            "Sunlight's Sanctum"
+          ],
+          "notes": [
+            "9 at most"
+          ]
         }
       ]
     },
@@ -28314,6 +30189,9 @@
             "Lletya Food Store",
             "Obli's General Store.",
             "Quartermaster's Stores"
+          ],
+          "notes": [
+            "at least 3 recommended"
           ]
         },
         {
@@ -28329,6 +30207,9 @@
           ],
           "drop_source_names": [
             "Mogre"
+          ],
+          "notes": [
+            "empty"
           ]
         },
         {
@@ -28389,6 +30270,9 @@
           "drop_source_names": [
             "Baby impling",
             "H.A.M. Guard"
+          ],
+          "notes": [
+            "Costume needle does not work"
           ]
         },
         {
@@ -28440,6 +30324,9 @@
             "Fremennik Fish Monger",
             "Island Fishmonger",
             "Warrens Fish Monger"
+          ],
+          "notes": [
+            "It's highly recommended to get at least 3 of all the ingredients, as the Fishcake can burn"
           ]
         }
       ]
@@ -28538,7 +30425,11 @@
         },
         {
           "name": "Necklace of passage or access to fairy rings and a Lunar/Dramen staff",
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "DIS",
+            "for quick transportation to Wizards' Tower"
+          ]
         },
         {
           "name": "Pot of flour",
@@ -28593,6 +30484,9 @@
       "items": [
         {
           "name": "Any axe",
+          "notes": [
+            "the Blessed axe will not work!"
+          ],
           "group_name": "Axe",
           "alternatives": [
             {
@@ -28934,6 +30828,9 @@
             "Prifddinas Foodstuffs",
             "Arnold's Eclectic Supplies.",
             "Culinaromancer's Chest"
+          ],
+          "notes": [
+            "can be bought from the Culinaromancer's Chest"
           ]
         },
         {
@@ -28946,7 +30843,10 @@
         },
         {
           "name": "Ice gloves (only required if wanting to take no damage from the flambé. Anti-dragon shield will mitigate most of the damage",
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "\u003c10"
+          ]
         },
         {
           "name": "Machete",
@@ -28962,6 +30862,9 @@
             "Jiminua's Jungle Store.",
             "Obli's General Store.",
             "Rasolo the Wandering Merchant"
+          ],
+          "notes": [
+            "as well as Radimus notes if you haven't completed Legends' Quest"
           ]
         },
         {
@@ -29005,6 +30908,9 @@
             "Culinaromancer's Chest",
             "Funch's Fine Groceries",
             "Grand Tree Groceries"
+          ],
+          "notes": [
+            "can be bought from the Culinaromancer's Chest"
           ]
         },
         {
@@ -29043,6 +30949,9 @@
             "Richard's Farming shop.",
             "Sarah's Farming shop.",
             "Vanessa's Farming shop."
+          ],
+          "notes": [
+            "Can be picked from the sweetcorn fields south of Civitas illa Fortis in Varlamore without 20 Farming [boostable]"
           ]
         }
       ]
@@ -29095,15 +31004,24 @@
             "Prifddinas Foodstuffs",
             "Food Store",
             "Kenelme's Wares"
+          ],
+          "notes": [
+            "can be obtained during the quest"
           ]
         },
         {
           "name": "Gorilla, Ninja monkey and Zombie monkey greegree",
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "or 3,000 coins to purchase three monkey talismans"
+          ]
         },
         {
           "name": "Karamjan monkey greegree",
-          "item_id": 4031
+          "item_id": 4031,
+          "notes": [
+            "unless you already have another greegree"
+          ]
         },
         {
           "name": "Knife",
@@ -29148,6 +31066,9 @@
           ],
           "shop_names": [
             "Solihib's Food Stall"
+          ],
+          "notes": [
+            "or 3 coins to buy some during the quest"
           ]
         },
         {
@@ -29248,6 +31169,9 @@
       "items": [
         {
           "name": "Axe",
+          "notes": [
+            "a blessed axe will not work"
+          ],
           "group_name": "Axe",
           "alternatives": [
             {
@@ -29599,7 +31523,10 @@
         },
         {
           "name": "Iron spit",
-          "item_id": 7225
+          "item_id": 7225,
+          "notes": [
+            "made on an anvil with an iron bar"
+          ]
         },
         {
           "name": "Logs",
@@ -29612,11 +31539,17 @@
           "drop_source_names": [
             "Brutus",
             "H.A.M. Guard"
+          ],
+          "notes": [
+            "obtainable during the quest"
           ]
         },
         {
           "name": "Ogre arrows Chisel, knife, wolf bones, and feathers if you are making your own ogre arrows",
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "Brutal arrows also work if using a comp ogre bow"
+          ]
         },
         {
           "name": "Ogre bellows",
@@ -29624,12 +31557,18 @@
           "obtainable": true,
           "sources": [
             "Drop: Unlocked Ogre chest (Always)"
+          ],
+          "notes": [
+            "obtainable during the quest"
           ]
         },
         {
           "name": "Ogre bow",
           "item_id": 2883,
-          "obtainable": true
+          "obtainable": true,
+          "notes": [
+            "can be purchased from Rantz during the quest for at most 600 coins"
+          ]
         },
         {
           "name": "Pickaxe",
@@ -29842,6 +31781,9 @@
           ],
           "shop_names": [
             "~ Uglug's stuffsies ~"
+          ],
+          "notes": [
+            "bring several if you have a low cooking level"
           ]
         },
         {
@@ -29899,11 +31841,17 @@
         },
         {
           "name": "Item to cut webs",
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "knife, slash weapon or any Wilderness sword"
+          ]
         },
         {
           "name": "Runes to cast god spells",
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "air, fire, and blood"
+          ]
         }
       ]
     },
@@ -29940,6 +31888,9 @@
             "Cam Torum General Store",
             "Darkmeyer General Store",
             "Fortis General Store"
+          ],
+          "notes": [
+            "obtainable during quest"
           ]
         },
         {
@@ -29971,6 +31922,9 @@
           "drop_source_names": [
             "Cave goblin (monster)",
             "Wall beast"
+          ],
+          "notes": [
+            "obtainable during quest"
           ]
         }
       ]
@@ -30052,6 +32006,9 @@
           "drop_source_names": [
             "Borrokar",
             "Freidir"
+          ],
+          "notes": [
+            "More if taking Andras' boat from the Ectofuntus, 10,000 each trip"
           ]
         },
         {
@@ -30133,12 +32090,18 @@
             "Sunset Coast General Store",
             "Tal Teklan General Store",
             "Grud's Herblore Stall."
+          ],
+          "notes": [
+            "obtainable during the quest"
           ]
         },
         {
           "name": "Rod of Ivandis",
           "obtainable": true,
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "obtainable during the quest"
+          ]
         },
         {
           "name": "Vial of water",
@@ -30169,6 +32132,9 @@
           "drop_source_names": [
             "Borrokar",
             "Freidir"
+          ],
+          "notes": [
+            "obtained during the quest"
           ]
         },
         {
@@ -30205,7 +32171,10 @@
       "items": [
         {
           "name": "A melee weapon of any kind",
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "pickaxe will work"
+          ]
         },
         {
           "name": "A pickaxe",
@@ -30523,6 +32492,9 @@
             "The Lighthouse Store",
             "Sigmund the Merchant (shop)",
             "Bedabin Village Bartering"
+          ],
+          "notes": [
+            "obtainable during quest"
           ]
         },
         {
@@ -30544,11 +32516,17 @@
           "shop_names": [
             "Justine's stuff for the Last Shopper Standing",
             "Tenzing"
+          ],
+          "notes": [
+            "if not using Trollheim teleports"
           ]
         },
         {
           "name": "Combat equipment",
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "preferably Melee or Ranged"
+          ]
         },
         {
           "name": "Hammer",
@@ -30579,6 +32557,9 @@
           "drop_source_names": [
             "Goblin guard",
             "Baby impling"
+          ],
+          "notes": [
+            "obtainable during quest"
           ]
         },
         {
@@ -30593,6 +32574,9 @@
         {
           "name": "Pickaxe",
           "obtainable": true,
+          "notes": [
+            "obtainable during quest"
+          ],
           "group_name": "Pickaxe",
           "alternatives": [
             {
@@ -30818,6 +32802,9 @@
             "Kastori General Store",
             "Obli's General Store.",
             "Outer Fortis General Store"
+          ],
+          "notes": [
+            "obtainable during quest"
           ]
         },
         {
@@ -30965,6 +32952,9 @@
           ],
           "drop_source_names": [
             "Duke Sucellus"
+          ],
+          "notes": [
+            "consumed during the quest"
           ]
         },
         {
@@ -31343,6 +33333,9 @@
           ],
           "drop_source_names": [
             "Tortoise#With riders"
+          ],
+          "notes": [
+            "obtainable during the quest"
           ]
         },
         {
@@ -31393,7 +33386,10 @@
         },
         {
           "name": "Mourner gear including gas mask",
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "plague jacket and trousers do not work"
+          ]
         },
         {
           "name": "Nature rune",
@@ -31743,6 +33739,9 @@
             "Argo",
             "Aub",
             "Ayesha"
+          ],
+          "notes": [
+            "or partial completion of the Farming portion of the Barbarian Training miniquest"
           ]
         },
         {
@@ -31911,6 +33910,9 @@
           "drop_source_names": [
             "Chaos Fanatic",
             "Cerberus"
+          ],
+          "notes": [
+            "4"
           ]
         }
       ]
@@ -31992,6 +33994,9 @@
           "drop_source_names": [
             "Cave goblin (monster)",
             "Wall beast"
+          ],
+          "notes": [
+            "obtainable during quest"
           ]
         }
       ]
@@ -32088,6 +34093,9 @@
           "drop_source_names": [
             "Dagannoth Rex",
             "Borrokar"
+          ],
+          "notes": [
+            "this is not the tradeable Neitiznot shield"
           ]
         },
         {
@@ -32142,6 +34150,9 @@
           ],
           "drop_source_names": [
             "Ice Queen"
+          ],
+          "notes": [
+            "i"
           ]
         },
         {
@@ -32156,6 +34167,9 @@
           "shop_names": [
             "Rellekka Longhall Bar",
             "Rasolo the Wandering Merchant"
+          ],
+          "notes": [
+            "cannot be obtained in Rellekka during quest, buy from Thora the Barkeep before starting the quest"
           ]
         },
         {
@@ -32194,15 +34208,24 @@
         {
           "name": "Seal of passage",
           "item_id": 9083,
-          "optional": true
+          "optional": true,
+          "notes": [
+            "if the elite Fremennik diaries aren't completed"
+          ]
         },
         {
           "name": "a pickaxe to obtain 3 ores to turn into Lunar bars",
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "requires 60 Mining [boostable]"
+          ]
         },
         {
           "name": "get it from Bardur AFTER being exiled, for either 150,000 or for free using a Ring of Charos",
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "a"
+          ]
         }
       ]
     },
@@ -32238,6 +34261,9 @@
             "Cam Torum General Store",
             "Darkmeyer General Store",
             "Fortis General Store"
+          ],
+          "notes": [
+            "the Eastfloor spade does not work"
           ]
         }
       ]
@@ -32510,6 +34536,9 @@
             "Lowe's Archery Emporium",
             "Lletya Archery Shop",
             "Armoury"
+          ],
+          "notes": [
+            "except the love crossbow"
           ]
         },
         {
@@ -32542,6 +34571,9 @@
           "drop_source_names": [
             "Skeleton thug",
             "Skeleton brute"
+          ],
+          "notes": [
+            "Hallowed grapple will not work"
           ]
         },
         {
@@ -32615,6 +34647,9 @@
           ],
           "drop_source_names": [
             "Chaos Golem"
+          ],
+          "notes": [
+            "obtainable during the quest"
           ]
         }
       ]
@@ -32638,7 +34673,10 @@
         {
           "name": "pieces of food",
           "quantity": 5,
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "must be meat, fish or vegetables"
+          ]
         }
       ]
     },
@@ -33083,6 +35121,9 @@
           "drop_source_names": [
             "Baby impling",
             "Ogre Coffin"
+          ],
+          "notes": [
+            "can be obtained during quest"
           ]
         },
         {
@@ -33111,12 +35152,19 @@
         },
         {
           "name": "Runes for Lvl-3 Enchant or an enchant ruby or topaz tablet",
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "1 cosmic rune, 5 fire runes"
+          ]
         },
         {
           "name": "Vyrewatch outfit or 1,950 coins to purchase it from Trader Sven's Black-market Goods",
           "obtainable": true,
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "top, legs, and shoes",
+            "can be obtained during quest"
+          ]
         }
       ]
     },
@@ -33167,7 +35215,10 @@
       "items": [
         {
           "name": "A defence potion",
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "3 or 4 doses"
+          ]
         },
         {
           "name": "Any axe",
@@ -33499,7 +35550,10 @@
         },
         {
           "name": "Dark essence block",
-          "item_id": 13446
+          "item_id": 13446,
+          "notes": [
+            "the latter is found at the mine"
+          ]
         },
         {
           "name": "Molten glass",
@@ -33515,7 +35569,10 @@
         },
         {
           "name": "Normal spellbook, and runes to cast a fire spell",
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "fire bolt or better"
+          ]
         },
         {
           "name": "Volcanic sulphur",
@@ -33557,6 +35614,9 @@
           ],
           "shop_names": [
             "Construction supplies"
+          ],
+          "notes": [
+            "can be bought from the Sawmill for 650 coins per bolt"
           ]
         },
         {
@@ -33588,6 +35648,9 @@
           "drop_source_names": [
             "Goblin guard",
             "Baby impling"
+          ],
+          "notes": [
+            "Obtainable during the quest from Yarlo"
           ]
         },
         {
@@ -33600,6 +35663,9 @@
           ],
           "shop_names": [
             "Razmire Builders Merchants."
+          ],
+          "notes": [
+            "oak/teak/mahogany will not work"
           ]
         },
         {
@@ -33612,12 +35678,18 @@
           ],
           "shop_names": [
             "Construction supplies"
+          ],
+          "notes": [
+            "Obtainable during the quest"
           ]
         },
         {
           "name": "nails of any type, e.g. steel nails",
           "quantity": 16,
           "obtainable": true,
+          "notes": [
+            "more are recommended as nails bend when building furniture. 100 is recommended at 1 Construction, obtainable from the Sawmill during the quest"
+          ],
           "group_name": "Nails",
           "alternatives": [
             {
@@ -33699,6 +35771,10 @@
           "drop_source_names": [
             "Baby impling",
             "Ogre Coffin"
+          ],
+          "notes": [
+            "except abyssal whip, abyssal tentacle, noxious halberd, or dragon claws",
+            "obtainable during the quest"
           ]
         },
         {
@@ -33772,6 +35848,9 @@
             "Darkmeyer Seamstress",
             "Pellem's Fur Store",
             "Prifddinas' Seamstress"
+          ],
+          "notes": [
+            "a Grizzly bear and bear cub spawn west of the farm and two black bears spawn east of the farm"
           ]
         },
         {
@@ -33806,6 +35885,9 @@
           "drop_source_names": [
             "Goblin guard",
             "Baby impling"
+          ],
+          "notes": [
+            "obtainable near the cattle gate"
           ]
         },
         {
@@ -33836,6 +35918,9 @@
           "drop_source_names": [
             "Baby impling",
             "Ogre Coffin"
+          ],
+          "notes": [
+            "obtainable on the kitchen table in the house"
           ]
         },
         {
@@ -33866,6 +35951,9 @@
           "drop_source_names": [
             "Baby impling",
             "H.A.M. Guard"
+          ],
+          "notes": [
+            "obtainable upstairs in the house"
           ]
         },
         {
@@ -33878,6 +35966,9 @@
           ],
           "shop_names": [
             "Razmire Builders Merchants."
+          ],
+          "notes": [
+            "obtainable near the cave entrance"
           ]
         },
         {
@@ -33899,6 +35990,9 @@
             "Razmire General Store.",
             "Culinaromancer's Chest",
             "Khazard General Store"
+          ],
+          "notes": [
+            "obtainable upstairs in the house"
           ]
         },
         {
@@ -33912,6 +36006,9 @@
             "Dyes to Die For",
             "Guinevere's Dyes",
             "Lletya Seamstress"
+          ],
+          "notes": [
+            "obtainable from the shelves in the house"
           ]
         },
         {
@@ -33923,6 +36020,9 @@
           ],
           "shop_names": [
             "Construction supplies"
+          ],
+          "notes": [
+            "obtainable in the shed north of the house"
           ]
         },
         {
@@ -33943,12 +36043,18 @@
         },
         {
           "name": "Thread unless you're using the Costume needle",
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "obtainable upstairs in the house"
+          ]
         },
         {
           "name": "nails of any kind",
           "quantity": 6,
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "iron nails can be found in the workbench north of the house, and more than 6 is recommended in case you bend a few"
+          ]
         }
       ]
     },
@@ -33989,6 +36095,9 @@
           "drop_source_names": [
             "Goblin guard",
             "Borrokar"
+          ],
+          "notes": [
+            "obtainable during the quest"
           ]
         },
         {
@@ -34035,6 +36144,9 @@
             "Sigmund the Merchant (shop)",
             "Jiminua's Jungle Store.",
             "Obli's General Store."
+          ],
+          "notes": [
+            "obtainable during the quest"
           ]
         },
         {
@@ -34424,7 +36536,10 @@
         },
         {
           "name": "Ghostspeak amulet",
-          "item_id": 552
+          "item_id": 552,
+          "notes": [
+            "Morytania legs 2 or better also work"
+          ]
         },
         {
           "name": "Ivandis flail",
@@ -34448,6 +36563,9 @@
           ],
           "shop_names": [
             "Construction supplies"
+          ],
+          "notes": [
+            "crystal saw also works"
           ]
         }
       ]
@@ -34486,7 +36604,10 @@
         {
           "name": "Any cooked or raw meat",
           "obtainable": true,
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "fish, raw bird meat, raw yak meat, raw pyre fox, raw chompy, and raw t-bone steak will NOT work; purchasable from shop during quest"
+          ]
         },
         {
           "name": "Coal",
@@ -34550,6 +36671,9 @@
             "Cam Torum General Store",
             "Darkmeyer General Store",
             "Fortis General Store"
+          ],
+          "notes": [
+            "obtainable during quest"
           ]
         },
         {
@@ -34581,6 +36705,9 @@
           "drop_source_names": [
             "Cave goblin (monster)",
             "Wall beast"
+          ],
+          "notes": [
+            "obtainable during quest"
           ]
         }
       ]
@@ -34722,6 +36849,9 @@
           ],
           "shop_names": [
             "Oneiromancer"
+          ],
+          "notes": [
+            "unless the Lumbridge \u0026 Draynor Diary has been fully completed"
           ]
         },
         {
@@ -34802,11 +36932,17 @@
           ],
           "drop_source_names": [
             "Baby impling"
+          ],
+          "notes": [
+            "obtainable during quest"
           ]
         },
         {
           "name": "Pickaxe",
           "obtainable": true,
+          "notes": [
+            "obtainable during quest"
+          ],
           "group_name": "Pickaxe",
           "alternatives": [
             {
@@ -35097,7 +37233,11 @@
         {
           "name": "Tree Gnome Village Dungeon key",
           "obtainable": true,
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "unless Roving Elves has been started",
+            "obtainable during the quest"
+          ]
         }
       ]
     },
@@ -35136,6 +37276,9 @@
             "The Lighthouse Store",
             "Sigmund the Merchant (shop)",
             "Bedabin Village Bartering"
+          ],
+          "notes": [
+            "Obtainable during quest"
           ]
         },
         {
@@ -35195,6 +37338,9 @@
           "drop_source_names": [
             "Goblin guard",
             "Baby impling"
+          ],
+          "notes": [
+            "Other types of hammers will not work"
           ]
         },
         {
@@ -35219,6 +37365,9 @@
           ],
           "drop_source_names": [
             "Alpaca"
+          ],
+          "notes": [
+            "ball of wool will not work"
           ]
         },
         {
@@ -35313,6 +37462,10 @@
             "Kastori Farming Supplies",
             "Vannah's Farming Stall",
             "Leprechaun Larry's Farming Supplies."
+          ],
+          "notes": [
+            "obtainable during quest",
+            "magic secateurs also work"
           ]
         }
       ]
@@ -35540,11 +37693,17 @@
             "Sunset Coast General Store",
             "Tal Teklan General Store",
             "Grud's Herblore Stall."
+          ],
+          "notes": [
+            "obtainable during the quest"
           ]
         },
         {
           "name": "Pickaxe",
           "obtainable": true,
+          "notes": [
+            "obtainable during the quest"
+          ],
           "group_name": "Pickaxe",
           "alternatives": [
             {
@@ -35807,6 +37966,9 @@
           "drop_source_names": [
             "Cave goblin (monster)",
             "Wall beast"
+          ],
+          "notes": [
+            "obtainable during the quest"
           ]
         },
         {
@@ -35906,6 +38068,9 @@
           ],
           "shop_names": [
             "Martin Thwait's Lost and Found."
+          ],
+          "notes": [
+            "Strange Old Lockpick does NOT work"
           ]
         },
         {
@@ -35937,6 +38102,9 @@
           "drop_source_names": [
             "Cave goblin (monster)",
             "Wall beast"
+          ],
+          "notes": [
+            "obtainable during the quest"
           ]
         }
       ]
@@ -36069,6 +38237,9 @@
             "Fremennik Fish Monger",
             "Island Fishmonger",
             "Warrens Fish Monger"
+          ],
+          "notes": [
+            "obtainable during quest"
           ]
         },
         {
@@ -36104,6 +38275,9 @@
           "drop_source_names": [
             "Baby impling",
             "Ogre Coffin"
+          ],
+          "notes": [
+            "obtainable during quest"
           ]
         },
         {
@@ -36131,6 +38305,9 @@
             "Sunset Coast General Store",
             "Tal Teklan General Store",
             "Grud's Herblore Stall."
+          ],
+          "notes": [
+            "obtainable during quest"
           ]
         },
         {
@@ -36158,6 +38335,9 @@
             "Kastori General Store",
             "Obli's General Store.",
             "Outer Fortis General Store"
+          ],
+          "notes": [
+            "obtainable during quest"
           ]
         }
       ]
@@ -36188,6 +38368,9 @@
         {
           "name": "Any axe",
           "obtainable": true,
+          "notes": [
+            "a bronze axe is obtainable during the quest"
+          ],
           "group_name": "Axe",
           "alternatives": [
             {
@@ -36535,7 +38718,10 @@
       "items": [
         {
           "name": "Items for two different combat classes or a poisoned weapon",
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "be warned that the poison method is much slower"
+          ]
         }
       ]
     },
@@ -36593,6 +38779,9 @@
             "Imia's Supplies",
             "Fortis General Store",
             "Outer Fortis General Store"
+          ],
+          "notes": [
+            "can be bought from Imia's Supplies nearby"
           ]
         },
         {
@@ -36624,6 +38813,9 @@
           "drop_source_names": [
             "Goblin guard",
             "Baby impling"
+          ],
+          "notes": [
+            "obtainable during quest"
           ]
         },
         {
@@ -36633,6 +38825,9 @@
           "obtainable": true,
           "sources": [
             "Drop: Embertailed jerboa (Always)"
+          ],
+          "notes": [
+            "obtainable during quest"
           ]
         },
         {
@@ -36663,6 +38858,9 @@
           "drop_source_names": [
             "Baby impling",
             "H.A.M. Guard"
+          ],
+          "notes": [
+            "one needle spawns in Pellem's Fur Store nearby"
           ]
         }
       ]
@@ -36730,6 +38928,9 @@
         {
           "name": "Pickaxe",
           "obtainable": true,
+          "notes": [
+            "obtainable during quest"
+          ],
           "group_name": "Pickaxe",
           "alternatives": [
             {
@@ -37086,6 +39287,9 @@
           "sources": [
             "Drop: Blisterwood tree (Always)",
             "Drop: Crate (Blisterwood logs) (Always)"
+          ],
+          "notes": [
+            "obtainable during quest"
           ]
         },
         {
@@ -37116,6 +39320,9 @@
           ],
           "drop_source_names": [
             "Baby impling"
+          ],
+          "notes": [
+            "obtainable during quest"
           ]
         },
         {
@@ -37147,6 +39354,9 @@
           "drop_source_names": [
             "Goblin guard",
             "Baby impling"
+          ],
+          "notes": [
+            "obtainable during quest"
           ]
         },
         {
@@ -37178,6 +39388,9 @@
           "drop_source_names": [
             "Baby impling",
             "Ogre Coffin"
+          ],
+          "notes": [
+            "obtainable during quest"
           ]
         },
         {
@@ -37187,6 +39400,9 @@
         {
           "name": "Pickaxe",
           "obtainable": true,
+          "notes": [
+            "a bronze pickaxe is obtainable during quest from Ivan Strom"
+          ],
           "group_name": "Pickaxe",
           "alternatives": [
             {
@@ -37416,12 +39632,18 @@
           "drop_source_names": [
             "Cave goblin (monster)",
             "Wall beast"
+          ],
+          "notes": [
+            "obtainable during quest"
           ]
         },
         {
           "name": "Vyre noble clothing",
           "obtainable": true,
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "obtainable for free during quest from the chest in the Myreque Hideout under Old Man Ral's house"
+          ]
         }
       ]
     },
@@ -37466,10 +39688,6 @@
       ],
       "items": [
         {
-          "name": "Any kind of bones or raw meat/cooked meat",
-          "unresolved": true
-        },
-        {
           "name": "Beer",
           "item_id": 1917,
           "obtainable": true,
@@ -37498,6 +39716,24 @@
           "drop_source_names": [
             "Goblin guard",
             "Borrokar"
+          ],
+          "notes": [
+            "obtainable during the quest"
+          ]
+        },
+        {
+          "name": "Bones",
+          "item_id": 526,
+          "sources": [
+            "Drop: Chicken (Always)",
+            "Drop: Crimson swift (Always)"
+          ],
+          "drop_source_names": [
+            "Undead cow",
+            "Cave goblin (monster)"
+          ],
+          "notes": [
+            "except sun-kissed bones"
           ]
         },
         {
@@ -37533,6 +39769,9 @@
           "drop_source_names": [
             "Baby impling",
             "Ogre Coffin"
+          ],
+          "notes": [
+            "obtainable during the quest"
           ]
         }
       ]
@@ -37584,6 +39823,9 @@
           "drop_source_names": [
             "Goblin guard",
             "Baby impling"
+          ],
+          "notes": [
+            "obtainable during the quest"
           ]
         },
         {
@@ -37596,6 +39838,9 @@
           ],
           "shop_names": [
             "Construction supplies"
+          ],
+          "notes": [
+            "obtainable during the quest"
           ]
         }
       ]
@@ -37665,6 +39910,9 @@
           "drop_source_names": [
             "Goblin guard",
             "Baby impling"
+          ],
+          "notes": [
+            "obtainable during quest"
           ]
         },
         {
@@ -37741,6 +39989,9 @@
             "Sunset Coast General Store",
             "Jiminua's Jungle Store.",
             "Obli's General Store."
+          ],
+          "notes": [
+            "obtainable during quest"
           ]
         },
         {
@@ -37808,6 +40059,9 @@
         {
           "name": "Any axe",
           "obtainable": true,
+          "notes": [
+            "a bronze axe can be found during the quest, but bringing a better one is recommended for cutting 10 logs"
+          ],
           "group_name": "Axe",
           "alternatives": [
             {
@@ -38163,6 +40417,9 @@
           "drop_source_names": [
             "Goblin guard",
             "Baby impling"
+          ],
+          "notes": [
+            "obtainable during the quest"
           ]
         },
         {
@@ -38175,6 +40432,9 @@
           ],
           "shop_names": [
             "Construction supplies"
+          ],
+          "notes": [
+            "obtainable during the quest"
           ]
         }
       ]
@@ -38296,6 +40556,10 @@
             "Fremennik Fish Monger",
             "Island Fishmonger",
             "Port Roberts General Store"
+          ],
+          "notes": [
+            "obtainable during quest",
+            "Oily fishing rod, Pearl fishing rod, or Barbarian rod also works"
           ]
         },
         {
@@ -38327,6 +40591,9 @@
           "drop_source_names": [
             "Goblin guard",
             "Baby impling"
+          ],
+          "notes": [
+            "obtainable during quest"
           ]
         },
         {
@@ -38337,6 +40604,9 @@
           "sources": [
             "Drop: Maple tree (Always)",
             "Drop: Maple tree (Farming) (Always)"
+          ],
+          "notes": [
+            "obtainable during quest"
           ]
         },
         {
@@ -38408,6 +40678,9 @@
             "Pollnivneach general store.",
             "Bandit Bargains",
             "Bedabin Village Bartering"
+          ],
+          "notes": [
+            "two spawn in town, fountain next to bank"
           ]
         },
         {
@@ -38438,6 +40711,9 @@
           "drop_source_names": [
             "Goblin guard",
             "Baby impling"
+          ],
+          "notes": [
+            "spawn in furnace house"
           ]
         },
         {
@@ -38450,6 +40726,9 @@
           ],
           "shop_names": [
             "Razmire Builders Merchants."
+          ],
+          "notes": [
+            "south of the town near the water"
           ]
         },
         {
@@ -38461,11 +40740,17 @@
           ],
           "shop_names": [
             "Construction supplies"
+          ],
+          "notes": [
+            "spawn in range shop"
           ]
         },
         {
           "name": "nails",
           "quantity": 6,
+          "notes": [
+            "more recommended as they can bend, 20 nails may be found on the workbench"
+          ],
           "group_name": "Nails",
           "alternatives": [
             {
@@ -38524,7 +40809,10 @@
         {
           "name": "Four fletched items of the same type of wood as the logs, such as unstrung longbows or shields",
           "obtainable": true,
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "obtainable during the quest"
+          ]
         },
         {
           "name": "Knife",
@@ -38555,6 +40843,9 @@
           "drop_source_names": [
             "Baby impling",
             "Ogre Coffin"
+          ],
+          "notes": [
+            "obtainable during the quest"
           ]
         },
         {
@@ -38567,6 +40858,9 @@
           ],
           "drop_source_names": [
             "Brutus"
+          ],
+          "notes": [
+            "obtainable during the quest with an axe"
           ]
         }
       ]
@@ -38592,6 +40886,9 @@
           "drop_source_names": [
             "Brutus",
             "H.A.M. Guard"
+          ],
+          "notes": [
+            "obtainable during quest"
           ]
         },
         {
@@ -38623,6 +40920,9 @@
           "drop_source_names": [
             "Cave goblin (monster)",
             "Wall beast"
+          ],
+          "notes": [
+            "obtainable during quest"
           ]
         }
       ]
@@ -38746,6 +41046,9 @@
         {
           "name": "A pickaxe",
           "obtainable": true,
+          "notes": [
+            "obtainable during the quest"
+          ],
           "group_name": "Pickaxe",
           "alternatives": [
             {
@@ -38948,7 +41251,11 @@
         },
         {
           "name": "A raft or skiff",
-          "unresolved": true
+          "unresolved": true,
+          "notes": [
+            "a sloop does NOT work",
+            "You MUST use your own boat - you will not be able to disembark in Wyrmscraig Cavern unless you are the only player on the boat"
+          ]
         },
         {
           "name": "Chisel",
@@ -38978,6 +41285,9 @@
           ],
           "drop_source_names": [
             "Baby impling"
+          ],
+          "notes": [
+            "obtainable during the quest"
           ]
         },
         {

@@ -109,7 +109,7 @@ public class QuestGraphTest
 	 * misread.
 	 */
 	@Test
-	public void supportedVersionWasBumpedForItemGroups()
+	public void supportedVersionWasBumpedForItemNotes()
 	{
 		// 9 added shop reachability and monster drop locations. Both are the
 		// same kind of hazard the comment above describes: a bundle without
@@ -127,7 +127,15 @@ public class QuestGraphTest
 		// about, when in fact questpath knows exactly which items satisfy it
 		// and which of them the account can use -- the same shape of wrong
 		// answer as an unreachable shop read as open.
-		assertEquals(10, QuestGraph.SUPPORTED_VERSION);
+		// 11 adds Item.notes. Nearly half the wiki's requirement lines carry a
+		// parenthetical and the bundle dropped all of them, so a caveat that
+		// changes what the player buys reached them as nothing at all. The
+		// case that surfaced it: The Knight's Sword asks for "2 or 4 iron bars
+		// (4 if you want your own blurite sword)", the bundle said two, and an
+		// ironman who wanted the second sword bought two. Read as absent, this
+		// field says "this item has no caveats" -- a confident claim rather
+		// than a gap, which is the test for whether a bump is needed.
+		assertEquals(11, QuestGraph.SUPPORTED_VERSION);
 	}
 
 	/**
@@ -292,7 +300,7 @@ public class QuestGraphTest
 	public void parseAcceptsAWellFormedGraph() throws java.io.IOException
 	{
 		QuestGraph graph = QuestGraph.parse(GSON, new java.io.StringReader(
-			"{\"version\":10,\"quests\":[{\"id\":1,\"slug\":\"a\",\"name\":\"A\"}]}"));
+			"{\"version\":11,\"quests\":[{\"id\":1,\"slug\":\"a\",\"name\":\"A\"}]}"));
 
 		assertEquals(1, graph.quests().size());
 	}
@@ -349,7 +357,7 @@ public class QuestGraphTest
 	{
 		try
 		{
-			QuestGraph.parse(GSON, new java.io.StringReader("{\"version\":10,\"quests\":[]}"));
+			QuestGraph.parse(GSON, new java.io.StringReader("{\"version\":11,\"quests\":[]}"));
 			org.junit.Assert.fail("expected an IOException for an empty graph");
 		}
 		catch (java.io.IOException e)
@@ -371,5 +379,38 @@ public class QuestGraphTest
 		{
 			assertTrue(e.getMessage().contains("did not parse"));
 		}
+	}
+
+	/**
+	 * A note travels verbatim and is not parsed into anything.
+	 *
+	 * <p>These carry the wiki's own words -- "4 if you want your own blurite
+	 * sword" -- and the moment something tries to read a number out of one,
+	 * this project is back to guessing at prose. The flags that ARE modelled
+	 * (optional, obtainable) are separate and stay separate.
+	 */
+	@Test
+	public void itemNotesArriveVerbatim()
+	{
+		QuestGraph graph = GSON.fromJson("{\"version\":11,\"quests\":[{\"id\":1,"
+			+ "\"slug\":\"a\",\"name\":\"A\",\"items\":[{\"name\":\"Iron bar\","
+			+ "\"item_id\":2351,\"quantity\":2,"
+			+ "\"notes\":[\"4 if you want your own blurite sword\"]}]}]}",
+			QuestGraph.class);
+
+		QuestGraph.Item item = graph.quests().get(0).items().get(0);
+		assertEquals(List.of("4 if you want your own blurite sword"), item.notes());
+		assertEquals(2, item.quantity());
+	}
+
+	/** An item with no parenthetical has no notes, and that is not a null. */
+	@Test
+	public void anItemWithoutNotesYieldsAnEmptyList()
+	{
+		QuestGraph graph = GSON.fromJson("{\"version\":11,\"quests\":[{\"id\":1,"
+			+ "\"slug\":\"a\",\"name\":\"A\",\"items\":[{\"name\":\"Rope\"}]}]}",
+			QuestGraph.class);
+
+		assertTrue(graph.quests().get(0).items().get(0).notes().isEmpty());
 	}
 }

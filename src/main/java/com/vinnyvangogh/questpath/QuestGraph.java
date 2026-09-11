@@ -74,7 +74,7 @@ class QuestGraph
 	 * bundle must be refused rather than read as "no quest has a start" --
 	 * that is a different, false claim from "this build does not know yet".
 	 */
-	static final int SUPPORTED_VERSION = 10;
+	static final int SUPPORTED_VERSION = 11;
 
 	@SerializedName("version")
 	private int version;
@@ -578,6 +578,9 @@ class QuestGraph
 		@SerializedName("drop_source_names")
 		private List<String> dropSourceNames;
 
+		@SerializedName("notes")
+		private List<String> notes;
+
 		@SerializedName("group_name")
 		private String groupName;
 
@@ -591,6 +594,29 @@ class QuestGraph
 		List<String> dropSourceNames()
 		{
 			return dropSourceNames == null ? List.of() : dropSourceNames;
+		}
+
+		/**
+		 * The wiki's own parentheticals for this line, verbatim and in order
+		 * -- "4 if you want your own blurite sword", "can't be noted, but can
+		 * be delivered in increments", "unnoted".
+		 *
+		 * <p>Nearly half the wiki's requirement lines carry one and the bundle
+		 * used to drop every one of them. Reported from play: The Knight's
+		 * Sword asks for "2 or 4 iron bars (4 if you want your own blurite
+		 * sword)", questpath resolved it to two and said nothing about the
+		 * four, and an ironman who wanted the second sword -- genuinely worth
+		 * having in free-to-play -- bought two.
+		 *
+		 * <p><b>Show these verbatim and never parse them.</b> They say things
+		 * no schema models, which is exactly why they are text. The two
+		 * conditions that ARE modelled, {@link #optional()} and {@link
+		 * #obtainable()}, are flags because they earned it; everything else
+		 * stays prose and the player decides what it means.
+		 */
+		List<String> notes()
+		{
+			return notes == null ? Collections.emptyList() : notes;
 		}
 
 		/**
