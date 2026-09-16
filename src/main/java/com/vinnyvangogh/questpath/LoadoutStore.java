@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
 import javax.inject.Inject;
+import javax.inject.Singleton;
 import net.runelite.client.config.ConfigManager;
 
 /**
@@ -46,11 +47,36 @@ import net.runelite.client.config.ConfigManager;
  * ProfileManager, SessionManager)}, and no other constructor) and so cannot
  * be constructed, subclassed, or otherwise faked in a JUnit test without
  * Mockito, which this project does not depend on. This class is therefore
- * kept a thin, deliberately under-tested adapter -- {@code LoadoutStoreTest}
- * only exercises the parts of it that do not require a real {@code
- * ConfigManager} -- and {@link LoadoutCodec} carries the logic {@code
- * LoadoutCodecTest} exercises directly.
+ * kept a thin adapter with no {@code LoadoutStoreTest} of its own, and {@link
+ * LoadoutCodec} carries the logic {@code LoadoutCodecTest} exercises
+ * directly.
+ *
+ * <p><b>Thread safety.</b> Every public method is {@code synchronized} on
+ * {@code this}, and this class is {@link Singleton @Singleton}-scoped, so
+ * Guice hands out exactly one instance -- meaning the lock genuinely
+ * serialises every caller in the plugin, not just callers that happen to
+ * share one injection site. This was made an actual guarantee rather than a
+ * documented assumption because the real answer was not available to
+ * verify: the panel UI that will call {@link #save}, {@link #delete} and
+ * {@link #rename} from button clicks is another task's work, not yet
+ * written, so nothing here could honestly promise "the panel only ever
+ * calls this from the Swing EDT" -- and even a single-threaded caller is not
+ * automatically enough, because {@link #save}, {@link #delete} and {@link
+ * #rename} are each a non-atomic read-modify-write of the same {@link
+ * #LOADOUTS_KEY} value (read the current JSON, compute the edit, write it
+ * back), and {@code ConfigManager.getRSProfileConfiguration}/{@code
+ * setRSProfileConfiguration} are plain, unsynchronized methods (confirmed
+ * with {@code javap -v}: neither carries {@code ACC_SYNCHRONIZED}), so
+ * nothing below this class would have caught two overlapping writers on its
+ * own. Two callers racing a mutating method now simply queue on the same
+ * monitor: the second's read of {@link #LOADOUTS_KEY} happens only after the
+ * first's write has completed, so the result is last-write-wins in the order
+ * the two calls actually arrived, with neither write silently lost to a
+ * torn read -- not "no synchronization was needed", which would have been a
+ * guarantee about future caller behaviour this class has no way to enforce
+ * or verify.
  */
+@Singleton
 public final class LoadoutStore
 {
 	/** The single config key every loadout is stored under, as a JSON array. */
@@ -167,7 +193,7 @@ public final class LoadoutStore
 	 * Every saved loadout, sorted by name -- see {@link Result} for why this
 	 * cannot simply be a {@code List}.
 	 */
-	public Result all()
+	public synchronized Result all()
 	{
 		if (configManager.getRSProfileKey() == null)
 		{
@@ -185,7 +211,7 @@ public final class LoadoutStore
 	}
 
 	/** The loadout named {@code name}, or empty when none matches. */
-	public Optional<Loadout> byName(String name)
+	public synchronized Optional<Loadout> byName(String name)
 	{
 		List<Loadout> loadouts = requireOk(all());
 		String trimmed = name == null ? "" : name.trim();
@@ -193,7 +219,7 @@ public final class LoadoutStore
 	}
 
 	/** Saves {@code loadout}, replacing any existing loadout of the same name. */
-	public void save(Loadout loadout)
+	public synchronized void save(Loadout loadout)
 	{
 		requireLoggedIn();
 		String current = configManager.getRSProfileConfiguration(QuestpathConfig.GROUP, LOADOUTS_KEY);
@@ -202,7 +228,7 @@ public final class LoadoutStore
 	}
 
 	/** Deletes the loadout named {@code name}, if one exists. A missing name is not an error. */
-	public void delete(String name)
+	public synchronized void delete(String name)
 	{
 		requireLoggedIn();
 		String current = configManager.getRSProfileConfiguration(QuestpathConfig.GROUP, LOADOUTS_KEY);
@@ -217,7 +243,7 @@ public final class LoadoutStore
 	 *     existing loadout, {@code to} is null or blank after trimming, or
 	 *     {@code to} already names a different loadout
 	 */
-	public void rename(String from, String to)
+	public synchronized void rename(String from, String to)
 	{
 		requireLoggedIn();
 		String current = configManager.getRSProfileConfiguration(QuestpathConfig.GROUP, LOADOUTS_KEY);

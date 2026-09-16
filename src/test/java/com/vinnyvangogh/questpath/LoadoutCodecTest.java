@@ -118,12 +118,43 @@ public class LoadoutCodecTest
 		assertEquals(1, LoadoutCodec.decode(GSON, updated).size());
 	}
 
+	/**
+	 * Every stored {@link Loadout#name()} is already trimmed (enforced by its
+	 * constructor), so a caller passing a padded name -- e.g. straight out of
+	 * a text field -- must still match the entry it plainly refers to.
+	 */
+	@Test
+	public void deletingWithAPaddedNameStillMatches()
+	{
+		String current = LoadoutCodec.encode(GSON,
+			java.util.Arrays.asList(loadout("PK setup"), loadout("Bank setup")));
+
+		String updated = LoadoutCodec.withDeleted(GSON, current, "  PK setup  ");
+
+		List<Loadout> decoded = LoadoutCodec.decode(GSON, updated);
+		assertEquals(1, decoded.size());
+		assertEquals("Bank setup", decoded.get(0).name());
+	}
+
 	@Test
 	public void renameChangesTheName()
 	{
 		String current = LoadoutCodec.encode(GSON, Collections.singletonList(loadout("PK setup")));
 
 		String updated = LoadoutCodec.withRenamed(GSON, current, "PK setup", "Wilderness setup");
+
+		List<Loadout> decoded = LoadoutCodec.decode(GSON, updated);
+		assertEquals(1, decoded.size());
+		assertEquals("Wilderness setup", decoded.get(0).name());
+	}
+
+	/** Same reasoning as {@link #deletingWithAPaddedNameStillMatches}, for {@code from}. */
+	@Test
+	public void renamingFromAPaddedNameStillMatches()
+	{
+		String current = LoadoutCodec.encode(GSON, Collections.singletonList(loadout("PK setup")));
+
+		String updated = LoadoutCodec.withRenamed(GSON, current, "  PK setup  ", "Wilderness setup");
 
 		List<Loadout> decoded = LoadoutCodec.decode(GSON, updated);
 		assertEquals(1, decoded.size());

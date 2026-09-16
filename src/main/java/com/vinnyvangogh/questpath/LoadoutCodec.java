@@ -163,18 +163,28 @@ final class LoadoutCodec
 	 * The current list with the loadout named {@code name} removed, if one
 	 * existed. Deleting a name that does not exist is not an error.
 	 *
+	 * <p>{@code name} is trimmed before matching, the same as every stored
+	 * {@link Loadout#name()} is trimmed at construction -- a caller passing a
+	 * padded name (e.g. from a text field) must still match the entry it
+	 * plainly refers to.
+	 *
 	 * @throws CorruptLoadoutsException per {@link #withSaved}
 	 */
 	static String withDeleted(Gson gson, String currentJson, String name)
 	{
 		List<Loadout> loadouts = new ArrayList<>(decode(gson, currentJson));
-		loadouts.removeIf(existing -> existing.name().equals(name));
+		String trimmedName = name == null ? "" : name.trim();
+		loadouts.removeIf(existing -> existing.name().equals(trimmedName));
 		return encode(gson, loadouts);
 	}
 
 	/**
 	 * The current list with the loadout named {@code from} renamed to
 	 * {@code to}.
+	 *
+	 * <p>Both {@code from} and {@code to} are trimmed before matching or
+	 * storing, the same as every stored {@link Loadout#name()} is trimmed at
+	 * construction -- see {@link #withDeleted}'s javadoc for why.
 	 *
 	 * @throws CorruptLoadoutsException per {@link #withSaved}
 	 * @throws IllegalArgumentException when {@code from} does not name an
@@ -185,17 +195,18 @@ final class LoadoutCodec
 	static String withRenamed(Gson gson, String currentJson, String from, String to)
 	{
 		List<Loadout> loadouts = new ArrayList<>(decode(gson, currentJson));
+		String trimmedFrom = from == null ? "" : from.trim();
 		String trimmedTo = to == null ? null : to.trim();
 		if (trimmedTo == null || trimmedTo.isEmpty())
 		{
 			throw new IllegalArgumentException("new name must not be blank");
 		}
-		int index = indexOfName(loadouts, from);
+		int index = indexOfName(loadouts, trimmedFrom);
 		if (index < 0)
 		{
-			throw new IllegalArgumentException("no loadout named \"" + from + "\"");
+			throw new IllegalArgumentException("no loadout named \"" + trimmedFrom + "\"");
 		}
-		if (!trimmedTo.equals(from) && indexOfName(loadouts, trimmedTo) >= 0)
+		if (!trimmedTo.equals(trimmedFrom) && indexOfName(loadouts, trimmedTo) >= 0)
 		{
 			throw new IllegalArgumentException("a loadout named \"" + trimmedTo + "\" already exists");
 		}
