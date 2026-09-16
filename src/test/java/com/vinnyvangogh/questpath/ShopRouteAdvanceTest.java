@@ -9,6 +9,7 @@ import java.util.function.Function;
 import net.runelite.api.coords.WorldPoint;
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -51,7 +52,17 @@ public class ShopRouteAdvanceTest
 		List<ItemCompletionWatcher.Completion> completions, List<QuestItems.Total> totals)
 	{
 		return ShopRouteAdvance.observe(routeActive, completions, totals, new ShopItemSkips(),
-			placing("Near shop"), LUMBRIDGE);
+			placing("Near shop"), placing("Near monster"), LUMBRIDGE);
+	}
+
+	/** A total whose only source is something you have to kill for it. */
+	private static QuestItems.Total dropOnly(String name, int wanted, long owned, String monster)
+	{
+		QuestItems.Total total = new QuestItems.Total(name, 0, owned, 0L, false,
+			Collections.emptyList(), Collections.emptyList(),
+			Collections.singletonList(monster));
+		total.add(new QuestItems.Line(name, wanted, owned, false), "Sheep Herder");
+		return total;
 	}
 
 	/** No trip running means nothing to advance, whatever just finished. */
@@ -159,5 +170,98 @@ public class ShopRouteAdvanceTest
 		assertEquals("Near shop", decision.nextShop());
 		assertEquals("the unbuyable one is still counted as outstanding",
 			2, decision.remaining());
+	}
+
+	/**
+	 * A stop you have to kill something for keeps the trip going.
+	 *
+	 * <p><b>The report this closes.</b> "The shop route overlay only stays up
+	 * for one item, and then from there it's not showing anymore." Every
+	 * ShopRouteStops call in here resolved stops with shops only, while
+	 * ShopRouteOverlay had always drawn its list with a drop locator too. So
+	 * the panel could say "Toad crunchies -> Tortoise" and this could not see
+	 * that stop at all: destinations came back empty, FINISHED was reported,
+	 * the trip was cleared and the overlay stood down -- one item in, over a
+	 * list that still had items on it, announcing "shopping done" while
+	 * doing it.
+	 */
+	@Test
+	public void aMonsterStopIsSomewhereToGo()
+	{
+		List<QuestItems.Total> totals = Collections.singletonList(
+			dropOnly("Toad crunchies", 1, 0, "Near monster"));
+
+		ShopRouteAdvance.Decision decision = observe(true, completed(), totals);
+
+		assertEquals("a drop source is a stop, not the end of the trip",
+			ShopRouteAdvance.Action.REROUTE, decision.action());
+		assertEquals("Toad crunchies", decision.nextItem());
+		assertEquals(1, decision.remaining());
+		assertFalse("and it has somewhere to send you", decision.destinations().isEmpty());
+	}
+
+	/**
+	 * A shop stop and a monster stop on the same trip both count, and the
+	 * trip is not over until neither is left.
+	 */
+	@Test
+	public void shopsAndMonstersShareOneTrip()
+	{
+		List<QuestItems.Total> totals = List.of(
+			total("Bucket", 1, 0, Collections.singletonList("Near shop")),
+			dropOnly("Toad crunchies", 1, 0, "Near monster"));
+
+		ShopRouteAdvance.Decision decision = observe(true, completed(), totals);
+
+		assertEquals(ShopRouteAdvance.Action.REROUTE, decision.action());
+		assertEquals("both stops are still outstanding", 2, decision.remaining());
+	}
+
+	/**
+	 * The trip really is over when the only thing left is a monster nobody
+	 * can place.
+	 *
+	 * <p>The guard against over-correcting: a drop source with no tile is
+	 * still nowhere to walk to, and re-sending an empty destination set would
+	 * clear the player's path and leave them standing there. FINISHED is the
+	 * honest answer, and it is the same one an unplaceable shop already got.
+	 */
+	@Test
+	public void anUnplaceableMonsterStillEndsTheTrip()
+	{
+		List<QuestItems.Total> totals = Collections.singletonList(
+			dropOnly("Toad crunchies", 1, 0, "Somewhere nobody has a tile for"));
+
+		assertEquals(ShopRouteAdvance.Action.FINISHED,
+			observe(true, completed(), totals).action());
+	}
+
+	/**
+	 * The monster stop can be the one you are sent to, and is the one named.
+	 *
+	 * <p>Separate from {@link #aMonsterStopIsSomewhereToGo} because a
+	 * different line does this work. {@code ShopRouteStops#next} picks the
+	 * current stop as "the first one that can actually be walked to", and a
+	 * shop-only locator can never walk to a monster -- so with the drop stop
+	 * listed first, a drop-blind call silently steps over it and announces
+	 * the shop behind it instead. The trip keeps running either way, which is
+	 * why the other tests do not catch it; what changes is that chat says
+	 * "next up Bucket" while the line on the ground goes to the tortoises.
+	 *
+	 * <p>Verified by mutation: reverting the {@code next(...)} call to its
+	 * shop-only overload fails this test and nothing else in the class.
+	 */
+	@Test
+	public void theMonsterStopIsTheOneAnnouncedWhenItIsTheOneRoutedTo()
+	{
+		List<QuestItems.Total> totals = List.of(
+			dropOnly("Toad crunchies", 1, 0, "Near monster"),
+			total("Bucket", 1, 0, Collections.singletonList("Near shop")));
+
+		ShopRouteAdvance.Decision decision = observe(true, completed(), totals);
+
+		assertEquals(ShopRouteAdvance.Action.REROUTE, decision.action());
+		assertEquals("the first stop that can be walked to is the monster",
+			"Toad crunchies", decision.nextItem());
 	}
 }

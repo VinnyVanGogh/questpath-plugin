@@ -445,6 +445,30 @@ public class QuestpathPlugin extends Plugin
 	private Instant shopRouteSentAt;
 
 	/**
+	 * Whether a shop trip is still underway, as opposed to whether a route
+	 * was sent recently.
+	 *
+	 * <p>These were one field and one clock, on the reasoning that "still
+	 * walking a shop trip" is exactly the state that should hold an unrelated
+	 * quest-start prompt back and exactly the state {@link ShopRouteOverlay}
+	 * exists to describe. Play disagreed. {@link ShopRouteGuard#ACTIVE_WINDOW}
+	 * is five minutes, which is a sane ceiling on "is this player still
+	 * walking to a shop" and no ceiling at all on a trip whose current stop is
+	 * a monster -- the drop that ends that leg arrives when it arrives, and a
+	 * 10/128 roll off a level-92 tortoise is not a five-minute errand. The
+	 * overlay stood down mid-trip, and because {@code ShopRouteAdvance} was
+	 * gated on the same expired clock, nothing could bring it back.
+	 *
+	 * <p>So the timer stays where it was justified -- suppressing automatic
+	 * Quest Helper starts, where expiring is the safe direction because the
+	 * cost of being wrong is one prompt held back too long. This one has no
+	 * timer: a trip ends when it ends. Cancelled, finished, arrived at a shop
+	 * stop, or logged out; nothing else, and never merely because time passed
+	 * while the player was doing the thing the trip told them to do.
+	 */
+	private boolean shopTripActive;
+
+	/**
 	 * Items skipped on the current shop trip -- see {@link ShopItemSkips}'s
 	 * class doc. Handed to both {@link QuestpathPanel} (the skip button and
 	 * its undo list) and {@link ShopRouteOverlay} (which stops must not be
@@ -944,6 +968,17 @@ public class QuestpathPlugin extends Plugin
 			// route they sent, so automatic Quest Helper starts no longer
 			// need to be held back for it.
 			shopRouteSentAt = null;
+			// The trip itself is a narrower question, and "any shop at all"
+			// is the wrong test for it. A stop that is a monster is not
+			// reached by opening a shop counter, so a player who stops at a
+			// general store on the way to the tortoises has not finished
+			// anything -- ending the trip there would stand the overlay down
+			// mid-grind, which is the reported bug wearing a second hat.
+			// Ended only when the stop actually being walked to is a shop.
+			if (currentStopIsAShop())
+			{
+				shopTripActive = false;
+			}
 			rememberShopkeeper();
 			// The reminder is spent once the counter is open. Leaving it up
 			// behind the interface is a line telling you to go somewhere you
@@ -1051,6 +1086,38 @@ public class QuestpathPlugin extends Plugin
 	}
 
 	/**
+	 * Whether the stop currently being walked to is somewhere to buy from
+	 * rather than somewhere to kill something.
+	 *
+	 * <p>Answered from the same {@link ShopRouteStops#tour} the overlay draws
+	 * and {@link ShopRouteAdvance} now routes by, so all three agree about
+	 * which stop is live. True when there is no trip to speak of, because the
+	 * caller's question is "may I end the trip here" and there is nothing to
+	 * protect: an unknown stop must not keep a trip alive forever.
+	 */
+	private boolean currentStopIsAShop()
+	{
+		OverlaySnapshot snapshot = overlaySnapshot;
+		QuestItems items = snapshot == null ? null : snapshot.items();
+		if (items == null)
+		{
+			return true;
+		}
+		for (ShopRouteStops.Stop stop : ShopRouteStops.tour(items.totals(), shopItemSkips,
+			this::shopLocation, this::dropLocation, playerLocation()))
+		{
+			if (!stop.current())
+			{
+				continue;
+			}
+			ShopRouteStops.Destination destination = ShopRouteStops.destinationOf(
+				stop.total(), this::shopLocation, this::dropLocation, playerLocation());
+			return destination == null || !destination.monster();
+		}
+		return true;
+	}
+
+	/**
 	 * Records that the shop-route button just sent a route -- see {@link
 	 * ShopRouteGuard}'s class doc for why this plugin tracks that at all.
 	 * Handed to the panel as {@code this::onShopRouteSent}; called only for
@@ -1060,6 +1127,7 @@ public class QuestpathPlugin extends Plugin
 	private void onShopRouteSent()
 	{
 		shopRouteSentAt = Instant.now();
+		shopTripActive = true;
 	}
 
 	/**
@@ -1078,6 +1146,7 @@ public class QuestpathPlugin extends Plugin
 			shortestPathBridge.clear();
 		}
 		shopRouteSentAt = null;
+		shopTripActive = false;
 	}
 
 	/**
@@ -1103,7 +1172,18 @@ public class QuestpathPlugin extends Plugin
 	 */
 	boolean shopRouteActive()
 	{
-		return shopRouteBlocksQuestRouting();
+		return shopTripActive();
+	}
+
+	/**
+	 * Whether a shop trip is underway at all -- see {@link #shopTripActive}'s
+	 * own doc for why this is not the same question as {@link
+	 * #shopRouteBlocksQuestRouting}, and why answering both with one clock
+	 * ended trips in the middle.
+	 */
+	boolean shopTripActive()
+	{
+		return shopTripActive;
 	}
 
 	/**
@@ -1295,6 +1375,7 @@ public class QuestpathPlugin extends Plugin
 			// through no trip of its own -- a route sent for this account
 			// must not hold back that account's first genuine arrival.
 			shopRouteSentAt = null;
+			shopTripActive = false;
 			// The next login's shopping list has nothing to do with this
 			// account's -- a skip chosen against one account's items means
 			// nothing for another account's, and could even hide a genuine
@@ -1706,8 +1787,8 @@ public class QuestpathPlugin extends Plugin
 			return;
 		}
 
-		ShopRouteAdvance.Decision decision = ShopRouteAdvance.observe(shopRouteActive(), completed,
-			items.totals(), shopItemSkips, this::shopLocation, playerLocation());
+		ShopRouteAdvance.Decision decision = ShopRouteAdvance.observe(shopTripActive(), completed,
+			items.totals(), shopItemSkips, this::shopLocation, this::dropLocation, playerLocation());
 
 		if (decision.action() == ShopRouteAdvance.Action.FINISHED)
 		{
@@ -1716,6 +1797,7 @@ public class QuestpathPlugin extends Plugin
 			// ShopRouteOverlay down and brings NeededItemsOverlay back --
 			// see ShopRouteOverlay#isShowing.
 			shopRouteSentAt = null;
+			shopTripActive = false;
 			shopTripChat("Quest Path: shopping done -- nothing left on this trip.");
 			return;
 		}
@@ -1737,6 +1819,7 @@ public class QuestpathPlugin extends Plugin
 				return;
 			}
 			shopRouteSentAt = Instant.now();
+			shopTripActive = true;
 			StringBuilder line = new StringBuilder("Quest Path: next up ")
 				.append(decision.nextItem());
 			if (!decision.nextShop().isEmpty())

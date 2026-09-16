@@ -124,26 +124,41 @@ final class ShopRouteAdvance
 	 * @param totals the current shopping list
 	 * @param skips items the player has set aside for this trip
 	 * @param shopLocator resolves a shop name to a tile
+	 * @param dropLocator resolves a monster name to a tile, for an item no
+	 *     shop sells. <b>This was missing, and its absence was a bug rather
+	 *     than a gap.</b> {@link ShopRouteOverlay} has always drawn its stop
+	 *     list with a drop locator, so the panel could name "Toad crunchies
+	 *     -> Tortoise" while every call in here resolved that same stop to
+	 *     nowhere. With the remaining stops all drops, {@code destinations}
+	 *     came back empty, this reported {@link Action#FINISHED}, and the
+	 *     trip ended one item in -- announcing "shopping done" over a list
+	 *     that still had items on it. Passing {@code name -> null} here is
+	 *     therefore not a valid way to call this; it reinstates the bug
 	 * @param from where the player is, for choosing between shops selling
 	 *     the same item; null before the client has a position
 	 */
 	static Decision observe(boolean routeActive,
 		List<ItemCompletionWatcher.Completion> completed,
 		List<QuestItems.Total> totals, ShopItemSkips skips,
-		Function<String, WorldPoint> shopLocator, WorldPoint from)
+		Function<String, WorldPoint> shopLocator, Function<String, WorldPoint> dropLocator,
+		WorldPoint from)
 	{
 		if (!routeActive || completed == null || completed.isEmpty() || totals == null)
 		{
 			return Decision.nothing();
 		}
 
-		List<ShopRouteStops.Stop> stops = ShopRouteStops.next(totals, skips, shopLocator);
+		List<ShopRouteStops.Stop> stops = ShopRouteStops.next(totals, skips, shopLocator, dropLocator);
 		if (stops.isEmpty())
 		{
 			return new Decision(Action.FINISHED, Set.of(), "", "", 0);
 		}
 
-		Set<WorldPoint> destinations = ShopRouteStops.destinations(totals, skips, shopLocator);
+		// The same call ShopRouteOverlay's own stop list makes, position
+		// included, so the panel and the line on the ground are one decision
+		// rather than two that have to be kept in step.
+		Set<WorldPoint> destinations =
+			ShopRouteStops.destinations(totals, skips, shopLocator, dropLocator, from);
 		if (destinations.isEmpty())
 		{
 			// Stops remain, but none of them is anywhere this plugin can
@@ -168,7 +183,7 @@ final class ShopRouteAdvance
 			}
 		}
 		ShopRouteStops.Destination destination =
-			ShopRouteStops.destinationOf(nextTotal, shopLocator, from);
+			ShopRouteStops.destinationOf(nextTotal, shopLocator, dropLocator, from);
 		return new Decision(Action.REROUTE, destinations, nextTotal.name(),
 			destination == null ? "" : destination.shopName(), stops.size());
 	}
