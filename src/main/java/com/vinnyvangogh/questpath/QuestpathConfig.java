@@ -555,6 +555,20 @@ public interface QuestpathConfig extends Config
 		return BuildRuleSections.BOTH;
 	}
 
+	@ConfigItem(
+		keyName = "buildRulesShowAll",
+		name = "Show all rules",
+		description = "The Combat tab's own Build rules list, not the in-game overlay above:"
+			+ " off shows only the rules that would end the build (NO_XP, HARD_CAP), which is"
+			+ " what most people are checking for. On also lists goals and soft caps.",
+		section = overlaySection,
+		position = 54
+	)
+	default boolean buildRulesShowAll()
+	{
+		return false;
+	}
+
 	// ------------------------------------------------------------------
 	// Shops.
 	//

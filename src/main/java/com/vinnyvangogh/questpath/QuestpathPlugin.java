@@ -669,7 +669,8 @@ public class QuestpathPlugin extends Plugin
 			},
 			clientThread::invoke);
 		geButton = new GrandExchangeButton(client, clientThread::invokeLater, this::grandExchangeList);
-		panel = new QuestpathPanel(sprites, new OverlaySettingsPanel(config, configManager),
+		panel = new QuestpathPanel(sprites, config, configManager,
+			new OverlaySettingsPanel(config, configManager),
 			this::skillPlan, questHelperBridge, shortestPathBridge, geSearchBridge,
 			this::grandExchangeAvailable, this::shopLocation,
 			this::dropLocation, this::lastKnownPlayerLocation, this::onShopRouteSent,

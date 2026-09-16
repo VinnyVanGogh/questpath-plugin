@@ -55,8 +55,15 @@ public class OverlaySettingsPanelConfigParityTest
 	 * {@code syncSection} method's own doc. {@code syncEnabled} itself is
 	 * NOT in this list: it is a plain on/off switch, exactly the shape every
 	 * other toggle in that panel already is, so it gets one too.
+	 *
+	 * <p>{@code buildRulesShowAll} is exempt for a different reason: its
+	 * control does not belong on the Settings tab at all. It lives inline in
+	 * the Combat tab's own Build rules section, next to the rules it
+	 * filters, the same way the quest search box and status filter live next
+	 * to the quest list rather than on a settings screen. See {@code
+	 * QuestpathPanel}'s build-rules-block rendering.
 	 */
-	private static final Set<String> EXEMPT_KEYS = Set.of("serverUrl", "pairingToken");
+	private static final Set<String> EXEMPT_KEYS = Set.of("serverUrl", "pairingToken", "buildRulesShowAll");
 
 	private static final Path PANEL_SOURCE =
 		Path.of("src/main/java/com/vinnyvangogh/questpath/OverlaySettingsPanel.java");

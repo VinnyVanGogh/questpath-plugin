@@ -26,6 +26,7 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
@@ -46,6 +47,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import net.runelite.api.Skill;
 import net.runelite.api.coords.WorldPoint;
+import net.runelite.client.config.ConfigManager;
 import net.runelite.client.game.SpriteManager;
 import net.runelite.client.ui.ColorScheme;
 import net.runelite.client.ui.FontManager;
@@ -137,7 +139,16 @@ class QuestpathPanel extends PluginPanel
 	private Integer lastItemsSignature;
 
 	/**
-	 * What the Combat and Build tabs last rendered.
+	 * What the Combat tab last rendered -- including its Build rules section,
+	 * since Task 4a folded Tab.BUILD into Tab.COMBAT.
+	 *
+	 * One signature now drives one clear/rebuild for the whole tab: {@code
+	 * stats}, {@code xp.signature()}, {@code rules}, AND the "show all
+	 * rules" toggle. The toggle has to be part of it -- it can change what
+	 * the same rules render as with no new stat or rule ever arriving, and
+	 * the two signatures this replaced could not have caught that between
+	 * them: the old combat gate had no rules to watch and the old build gate
+	 * had no toggle to watch, and one tab cannot go half-stale.
 	 *
 	 * They were torn down and rebuilt on every refresh while Quests and Items
 	 * were signature-guarded, which is about seventy components thrown away
@@ -146,7 +157,15 @@ class QuestpathPanel extends PluginPanel
 	 * ago", so it has to be rebuilt to stay true.
 	 */
 	private Object lastCombatSignature;
-	private Object lastBuildSignature;
+
+	/**
+	 * The last combat inputs the tab actually rendered, cached so the "show
+	 * all rules" toggle can rebuild the tab immediately from what is already
+	 * known, rather than waiting for the next stat or rule push to arrive.
+	 */
+	private CombatStats lastStats;
+	private SkillXp lastXp;
+	private List<BuildRule> lastRules;
 
 	/**
 	 * The quest search box, and the last verdicts it filters.
@@ -174,6 +193,17 @@ class QuestpathPanel extends PluginPanel
 
 	/** The overlay settings tab's contents, built once and kept. */
 	private final OverlaySettingsPanel overlaySettings;
+
+	/**
+	 * Read for {@code buildRulesShowAll} and written by its checkbox in the
+	 * Build rules section -- see {@link #buildRulesToggle()}. Everything
+	 * else this panel shows is pushed in through {@link #update}; this is
+	 * the one setting the panel itself both reads and writes, the same
+	 * ConfigManager path {@link OverlaySettingsPanel} uses for its own
+	 * controls.
+	 */
+	private final QuestpathConfig config;
+	private final ConfigManager configManager;
 
 	/**
 	 * The skill planner's controls and its results, kept apart.
@@ -290,7 +320,8 @@ class QuestpathPanel extends PluginPanel
 	private final java.util.function.BooleanSupplier shopRouteActive;
 	private final ShopItemSkips shopItemSkips;
 
-	QuestpathPanel(SpriteManager sprites, OverlaySettingsPanel overlaySettings,
+	QuestpathPanel(SpriteManager sprites, QuestpathConfig config, ConfigManager configManager,
+		OverlaySettingsPanel overlaySettings,
 		java.util.function.BiFunction<String, Integer, SkillPlan> planner,
 		QuestHelperBridge questHelperBridge, ShortestPathBridge shortestPathBridge,
 		GrandExchangeSearchBridge geSearchBridge, java.util.function.BooleanSupplier geAvailable,
@@ -302,6 +333,8 @@ class QuestpathPanel extends PluginPanel
 		ShopItemSkips shopItemSkips)
 	{
 		this.onSyncNow = onSyncNow;
+		this.config = config;
+		this.configManager = configManager;
 		this.overlaySettings = overlaySettings;
 		this.planner = planner;
 		this.questHelperBridge = questHelperBridge;
@@ -679,69 +712,32 @@ class QuestpathPanel extends PluginPanel
 	{
 		clearBodies(PanelSections.Tab.SYNC);
 
-		int ceiling = CombatMath.freeRangedCeiling(stats.get(Skill.ATTACK), stats.get(Skill.STRENGTH));
+		lastStats = stats;
+		lastXp = xp;
+		lastRules = rules;
 
-		Object combatSignature = java.util.Arrays.asList(stats, xp.signature());
+		Object combatSignature =
+			java.util.Arrays.asList(stats, xp.signature(), rules, config.buildRulesShowAll());
 		if (!java.util.Objects.equals(combatSignature, lastCombatSignature))
 		{
-			clearBodies(PanelSections.Tab.COMBAT);
-			JPanel combat = tabBodies.get(PanelSections.Tab.COMBAT);
-			// The panel opens on this tab, so the button people reach for
-			// most lives here as well as on Sync. Two call sites, one
-			// behaviour -- see syncNowButton.
-			combat.add(syncNowButton());
-			combat.add(Box.createVerticalStrut(10));
-			combat.add(heading(PanelSections.COMBAT.title()));
-			combat.add(combatBlock(stats));
-			combat.add(Box.createVerticalStrut(14));
-			combat.add(heading(PanelSections.CEILING.title()));
-			combat.add(ceilingBlock(stats, xp, ceiling));
-			combat.add(Box.createVerticalStrut(14));
-			combat.add(heading(PanelSections.COST.title()));
-			combat.add(costBlock(stats, xp));
-			renderPlannedSectionsFor(PanelSections.Tab.COMBAT);
+			rebuildCombatTab();
 			lastCombatSignature = combatSignature;
-			showBodies(PanelSections.Tab.COMBAT);
 		}
 
 		JPanel syncBody = tabBodies.get(PanelSections.Tab.SYNC);
 		syncBody.add(heading(PanelSections.SYNC.title()));
 		syncBody.add(syncBlock(sync, unmatchedQuests, settings, report));
 
-		Object buildSignature = java.util.Arrays.asList(stats, rules);
-		if (java.util.Objects.equals(buildSignature, lastBuildSignature))
+		// Independent of the combat signature above: the skill plan does not
+		// care about xp.signature() (it prices levels, not current xp) or
+		// about the "show all rules" toggle (that only changes what is
+		// already-known rules render as, not the rules themselves), so
+		// coupling it to the combat signature would rebuild it on changes it
+		// has no reason to care about.
+		Object skillSignature = java.util.Arrays.asList(stats, rules);
+		if (!java.util.Objects.equals(skillSignature, lastSkillSignature))
 		{
-			// Unchanged, so the tab keeps what it has.
-		}
-		else
-		{
-		lastBuildSignature = buildSignature;
-		clearBodies(PanelSections.Tab.BUILD);
-		JPanel build = tabBodies.get(PanelSections.Tab.BUILD);
-		build.add(heading(PanelSections.BUILD_RULES.title()));
-		if (rules.isEmpty())
-		{
-			// Not "you have no rules". The plugin has no way to learn them
-			// except from a push, so an empty list here means it has not been
-			// told -- and telling someone their build is unconstrained when
-			// nobody has asked would be the worst thing this tab could say.
-			build.add(muted("Not received yet. questpath sends these when a"
-				+ " push is accepted, so turn on sync and log in."));
-		}
-		else
-		{
-			build.add(buildRulesBlock(stats, rules));
-		}
-		renderPlannedSectionsFor(PanelSections.Tab.BUILD);
-		showBodies(PanelSections.Tab.BUILD);
-		}
-
-		// Shares the Build tab's gate: both are driven by levels and rules,
-		// and both go stale for the same reasons -- an experience drop, or a
-		// quest finishing and freeing the next one up.
-		if (!java.util.Objects.equals(buildSignature, lastSkillSignature))
-		{
-			lastSkillSignature = buildSignature;
+			lastSkillSignature = skillSignature;
 			renderSkillPlan();
 		}
 
@@ -820,6 +816,166 @@ class QuestpathPanel extends PluginPanel
 		renderPlannedSectionsFor(PanelSections.Tab.SYNC);
 		showBodies(PanelSections.Tab.SYNC);
 		repaintAll();
+	}
+
+	/**
+	 * Tears down and rebuilds the whole Combat tab -- the combat level, the
+	 * free Ranged/Magic ceiling, the cost of the next combat level, and the
+	 * Build rules section underneath them -- from whatever {@link #lastStats},
+	 * {@link #lastXp} and {@link #lastRules} currently hold.
+	 *
+	 * Called from {@link #renderBody} when the combined signature says
+	 * something changed, and also directly from the "show all rules"
+	 * checkbox's listener, which needs the tab to redraw immediately rather
+	 * than waiting for the next stat or rule push -- see requirement 4 in the
+	 * Task 4a brief. Both callers keep {@code lastCombatSignature} in sync
+	 * themselves afterwards; this method only rebuilds the Swing tree.
+	 */
+	private void rebuildCombatTab()
+	{
+		CombatStats stats = lastStats;
+		SkillXp xp = lastXp;
+		List<BuildRule> rules = lastRules;
+		int ceiling = CombatMath.freeRangedCeiling(stats.get(Skill.ATTACK), stats.get(Skill.STRENGTH));
+
+		clearBodies(PanelSections.Tab.COMBAT);
+		JPanel combat = tabBodies.get(PanelSections.Tab.COMBAT);
+		// The panel opens on this tab, so the button people reach for
+		// most lives here as well as on Sync. Two call sites, one
+		// behaviour -- see syncNowButton.
+		combat.add(syncNowButton());
+		combat.add(Box.createVerticalStrut(10));
+		combat.add(heading(PanelSections.COMBAT.title()));
+		combat.add(combatBlock(stats));
+		combat.add(Box.createVerticalStrut(14));
+		combat.add(heading(PanelSections.CEILING.title()));
+		combat.add(ceilingBlock(stats, xp, ceiling));
+		combat.add(Box.createVerticalStrut(14));
+		combat.add(heading(PanelSections.COST.title()));
+		combat.add(costBlock(stats, xp));
+		combat.add(Box.createVerticalStrut(14));
+		combat.add(buildRulesSection(stats, rules));
+		renderPlannedSectionsFor(PanelSections.Tab.COMBAT);
+		showBodies(PanelSections.Tab.COMBAT);
+	}
+
+	/**
+	 * The Build rules section, now rendered inside the Combat tab rather than
+	 * a tab of its own -- see PanelSections.BUILD_RULES's tab.
+	 *
+	 * "Not received yet" versus "no blocking rules" is the same
+	 * not-told-versus-nothing-to-tell distinction the rest of this panel
+	 * keeps: an empty {@code rules} list means questpath has never pushed
+	 * any, so the section says it has not been told. A non-empty list with
+	 * the "blocking only" filter hiding every row is a different claim
+	 * entirely -- questpath answered, and nothing in the answer blocks --
+	 * and rendering that as an empty section would read as the first claim
+	 * when it is actually the second.
+	 */
+	private JPanel buildRulesSection(CombatStats stats, List<BuildRule> rules)
+	{
+		JPanel panel = column();
+		panel.add(heading(PanelSections.BUILD_RULES.title()));
+
+		if (rules.isEmpty())
+		{
+			// Not "you have no rules". The plugin has no way to learn them
+			// except from a push, so an empty list here means it has not been
+			// told -- and telling someone their build is unconstrained when
+			// nobody has asked would be the worst thing this tab could say.
+			panel.add(muted("Not received yet. questpath sends these when a"
+				+ " push is accepted, so turn on sync and log in."));
+			return panel;
+		}
+
+		panel.add(Box.createVerticalStrut(4));
+		panel.add(buildRulesToggle());
+		panel.add(Box.createVerticalStrut(4));
+
+		boolean showAll = config.buildRulesShowAll();
+		List<BuildRule> shown = showAll ? rules : blockingRulesOf(rules);
+
+		if (shown.isEmpty())
+		{
+			// The filter is on and nothing in the account's rules blocks --
+			// good news, not missing data, so it gets its own muted line
+			// rather than an empty section that would read like the "not
+			// received yet" case above.
+			panel.add(muted("No blocking rules"));
+		}
+		else
+		{
+			panel.add(buildRulesBlock(stats, shown));
+		}
+
+		int hidden = rules.size() - shown.size();
+		if (hidden > 0)
+		{
+			panel.add(Box.createVerticalStrut(4));
+			panel.add(muted(hidden + (hidden == 1
+				? " non-blocking rule hidden"
+				: " non-blocking rules hidden")));
+		}
+
+		return panel;
+	}
+
+	/** The rules {@link BuildRule#blocking()} reports true for, in the order given. */
+	private static List<BuildRule> blockingRulesOf(List<BuildRule> rules)
+	{
+		List<BuildRule> blocking = new ArrayList<>();
+		for (BuildRule rule : rules)
+		{
+			if (rule.blocking())
+			{
+				blocking.add(rule);
+			}
+		}
+		return blocking;
+	}
+
+	/**
+	 * The "Show all rules" checkbox, unchecked by default: blocking-only is
+	 * the question most people open this section to answer. Rebuilt with the
+	 * rest of the Build rules section on every redraw, so it always reflects
+	 * {@code config.buildRulesShowAll()} without needing the populating-flag
+	 * dance {@link OverlaySettingsPanel} uses for its own, once-built
+	 * controls -- {@link JCheckBox#setSelected} does not fire an
+	 * {@code ActionListener} on its own.
+	 */
+	private JCheckBox buildRulesToggle()
+	{
+		JCheckBox box = new JCheckBox("Show all rules");
+		box.setToolTipText("Off shows only rules that would end the build."
+			+ " On also lists goals and soft caps, which only inform.");
+		box.setSelected(config.buildRulesShowAll());
+		box.setForeground(Color.WHITE);
+		box.setFont(FontManager.getRunescapeSmallFont());
+		box.setFocusPainted(false);
+		box.setOpaque(false);
+		box.setAlignmentX(Component.LEFT_ALIGNMENT);
+		box.addActionListener(e -> onBuildRulesShowAllToggled(box.isSelected()));
+		return box;
+	}
+
+	/**
+	 * Writes the toggle through {@link ConfigManager}, exactly like every
+	 * control in {@link OverlaySettingsPanel}, then rebuilds the Combat tab
+	 * immediately from {@link #lastStats}/{@link #lastXp}/{@link #lastRules}
+	 * rather than waiting for the next stat or rule push -- see requirement 4
+	 * in the Task 4a brief.
+	 */
+	private void onBuildRulesShowAllToggled(boolean showAll)
+	{
+		configManager.setConfiguration(QuestpathConfig.GROUP, "buildRulesShowAll", showAll);
+		if (lastStats == null)
+		{
+			// Nothing has rendered yet -- the first real render will already
+			// read the new value off config, so there is nothing to redraw.
+			return;
+		}
+		rebuildCombatTab();
+		lastCombatSignature = java.util.Arrays.asList(lastStats, lastXp.signature(), lastRules, showAll);
 	}
 
 	/**

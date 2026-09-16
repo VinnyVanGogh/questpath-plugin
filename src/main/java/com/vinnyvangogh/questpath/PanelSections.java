@@ -43,7 +43,7 @@ enum PanelSections
 		null),
 
 	BUILD_RULES(
-		Tab.BUILD,
+		Tab.COMBAT,
 		"Build rules",
 		Status.LIVE,
 		null),
@@ -115,8 +115,19 @@ enum PanelSections
 		// metaphors that had to be learned -- a slayer helm for quests, a
 		// needle for items, a rune for sync -- which is the one thing an icon
 		// must not be. Where the game has the actual icon for a concept, that
-		// is the icon: two crossed swords for combat, the three bars for
-		// stats, the quest diary, the inventory, the options wrench.
+		// is the icon: the quest diary, the inventory, the options wrench.
+		//
+		// COMBAT carries the three bars (RS2_TAB_STATS, sprite 775) rather
+		// than the crossed swords (TAB_COMBAT, sprite 168), because Tab.BUILD
+		// merged into it. "What is my build" and "what can I hit" turned out
+		// to be one question, not two, once the build rules sit in the same
+		// tab as the combat math -- the three bars read as both at once,
+		// where crossed swords would have read as combat alone with the
+		// build rules stranded underneath a picture that never mentions
+		// them. Sprite 168 is deliberately unused as a result: left named
+		// here, rather than reassigned to something else, so the choice
+		// reads as intentional and nobody goes looking for where "combat"
+		// went.
 		//
 		// Sync is the only one with no interface equivalent, because pushing
 		// your account somewhere is not a thing the game does. Wind surge is
@@ -134,8 +145,7 @@ enum PanelSections
 		// class. These six ids are stable game data, they are named right
 		// here, and PanelSectionsTest pins that each is real and distinct --
 		// which is more than the constant was buying.
-		COMBAT("Combat", 168),          // TAB_COMBAT, the crossed swords
-		BUILD("Build", 775),            // RS2_TAB_STATS, the three bars
+		COMBAT("Combat", 775),          // RS2_TAB_STATS, the three bars -- combat and build are one question
 		SKILLS("Skills", 1197),         // OrbXp.ACTIVATED, the experience orb
 		QUESTS("Quests", 776),          // TAB_QUESTS, the quest diary
 		ITEMS("Items", 777),            // RS2_TAB_INVENTORY, the backpack

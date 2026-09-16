@@ -1,10 +1,12 @@
 package com.vinnyvangogh.questpath;
 
 import org.junit.Test;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * The rule the sidebar's unbuilt sections exist to keep: "questpath cannot
@@ -118,7 +120,7 @@ public class PanelSectionsTest
 
 	/**
 	 * Tabs show icons, so the label is normally the tooltip — but it is also
-	 * the fallback when an icon cannot be produced, and five text tabs share a
+	 * the fallback when an icon cannot be produced, and six text tabs share a
 	 * 225px sidebar. A long one does not wrap, it truncates, and a truncated
 	 * tab is a tab nobody can read.
 	 */
@@ -129,8 +131,30 @@ public class PanelSectionsTest
 		{
 			assertNotNull(tab.label());
 			assertFalse(tab.label().trim().isEmpty());
-			assertTrue(tab + " label is too long for a five-tab strip: " + tab.label(),
+			assertTrue(tab + " label is too long for a six-tab strip: " + tab.label(),
 				tab.label().length() <= 8);
+		}
+	}
+
+	/**
+	 * Tab.BUILD merged into Tab.COMBAT deliberately: "what is my build" and
+	 * "what can I hit" are one question, not two, once the build rules sit in
+	 * the same tab as the combat math. Pinned here by name, with the sprite
+	 * that came along with the merge, so nobody re-splits the two apart
+	 * thinking the single COMBAT tab was an oversight.
+	 */
+	@Test
+	public void buildTabIsGoneAndCombatCarriesTheStatsSprite()
+	{
+		assertEquals(775, PanelSections.Tab.COMBAT.sprite());
+		try
+		{
+			PanelSections.Tab.valueOf("BUILD");
+			fail("Tab.BUILD should no longer exist -- it merged into Tab.COMBAT");
+		}
+		catch (IllegalArgumentException expected)
+		{
+			// Expected: BUILD is gone, deliberately.
 		}
 	}
 
