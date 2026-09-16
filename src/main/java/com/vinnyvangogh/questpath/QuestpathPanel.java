@@ -271,6 +271,12 @@ class QuestpathPanel extends PluginPanel
 	private final Runnable onCancelShopRoute;
 
 	/**
+	 * Pushes to questpath right now. See QuestpathPlugin#syncNow for why the
+	 * automatic gate is the wrong thing to hang a button on.
+	 */
+	private final Runnable onSyncNow;
+
+	/**
 	 * Where the player is, so the trip can be ordered from there.
 	 *
 	 * A shopping route that does not know where you are standing can only
@@ -292,8 +298,10 @@ class QuestpathPanel extends PluginPanel
 		java.util.function.Function<String, WorldPoint> dropLocator,
 		java.util.function.Supplier<WorldPoint> playerLocation, Runnable onShopRouteSent,
 		Runnable onCancelShopRoute,
-		java.util.function.BooleanSupplier shopRouteActive, ShopItemSkips shopItemSkips)
+		java.util.function.BooleanSupplier shopRouteActive, Runnable onSyncNow,
+		ShopItemSkips shopItemSkips)
 	{
+		this.onSyncNow = onSyncNow;
 		this.overlaySettings = overlaySettings;
 		this.planner = planner;
 		this.questHelperBridge = questHelperBridge;
@@ -678,6 +686,11 @@ class QuestpathPanel extends PluginPanel
 		{
 			clearBodies(PanelSections.Tab.COMBAT);
 			JPanel combat = tabBodies.get(PanelSections.Tab.COMBAT);
+			// The panel opens on this tab, so the button people reach for
+			// most lives here as well as on Sync. Two call sites, one
+			// behaviour -- see syncNowButton.
+			combat.add(syncNowButton());
+			combat.add(Box.createVerticalStrut(10));
 			combat.add(heading(PanelSections.COMBAT.title()));
 			combat.add(combatBlock(stats));
 			combat.add(Box.createVerticalStrut(14));
@@ -1193,6 +1206,30 @@ class QuestpathPanel extends PluginPanel
 	 * interface opening, and neither of those is the player changing their
 	 * mind about the whole errand.
 	 */
+	/**
+	 * "Sync with questpath" -- one press, both directions.
+	 *
+	 * <p>Both directions is the part worth saying on the button, because the
+	 * reason to press it is almost always the second one: a push is answered
+	 * with this account's build rules, its plan and what questpath holds for
+	 * it, so pressing this is how a plan you just changed on the website
+	 * reaches the client. Calling it "send" would describe half of what it
+	 * does and the less useful half.
+	 */
+	private JButton syncNowButton()
+	{
+		JButton button = new JButton("Sync with questpath");
+		button.setFont(FontManager.getRunescapeSmallFont());
+		button.setAlignmentX(Component.LEFT_ALIGNMENT);
+		button.setToolTipText("<html><body style='width:220px'>Pushes this account to questpath"
+			+ " and applies whatever comes back -- build rules, your saved plan, and the items"
+			+ " questpath holds for you.<br><br>Automatic sync only fires when something changes"
+			+ " in-game, so this is how a plan you edited on the website arrives without waiting"
+			+ " for your next level-up.</body></html>");
+		button.addActionListener(event -> onSyncNow.run());
+		return button;
+	}
+
 	private JButton cancelShopRouteButton()
 	{
 		JButton button = new JButton("Stop the shop route");
@@ -2919,10 +2956,18 @@ class QuestpathPanel extends PluginPanel
 	 * three are things only the player can fix, and neither is discoverable
 	 * without being told.
 	 */
-	private static JPanel syncBlock(SyncStatus sync, List<String> unmatchedQuests,
+	/**
+	 * Non-static so it can carry the sync button, which needs the plugin's own
+	 * callback. Everything else in here is still a pure function of its
+	 * arguments.
+	 */
+	private JPanel syncBlock(SyncStatus sync, List<String> unmatchedQuests,
 		SyncSettings settings, AccountReport report)
 	{
 		JPanel panel = column();
+
+		panel.add(syncNowButton());
+		panel.add(Box.createVerticalStrut(6));
 
 		JLabel line = new JLabel(wrap(sync.describe(Instant.now())));
 		line.setForeground(sync.needsAttention()

@@ -674,7 +674,7 @@ public class QuestpathPlugin extends Plugin
 			this::grandExchangeAvailable, this::shopLocation,
 			this::dropLocation, this::lastKnownPlayerLocation, this::onShopRouteSent,
 			this::cancelShopRoute,
-			this::shopRouteActive,
+			this::shopRouteActive, this::syncNow,
 			shopItemSkips);
 		navButton = NavigationButton.builder()
 			.tooltip("Quest Path")
@@ -2564,6 +2564,29 @@ public class QuestpathPlugin extends Plugin
 	 */
 	private void maybeSync()
 	{
+		maybeSync(false);
+	}
+
+	/**
+	 * Pushes now, whatever the change gate thinks.
+	 *
+	 * <p>The automatic path only sends when the payload actually moved, which
+	 * is right for a background sync and useless as a button: the whole reason
+	 * to press one is that you changed something on the questpath side -- a
+	 * build rule, the plan itself -- which changes nothing about the payload
+	 * this end and so is invisible to that gate. Waiting for the next level-up
+	 * to find out whether your new plan arrived is not an answer.
+	 *
+	 * <p>Still refuses when sync is off or nobody is logged in. Those are not
+	 * gates to override, they are the absence of anything to send.
+	 */
+	void syncNow()
+	{
+		maybeSync(true);
+	}
+
+	private void maybeSync(boolean force)
+	{
 		if (!config.syncEnabled() || client.getGameState() != GameState.LOGGED_IN)
 		{
 			return;
@@ -2586,7 +2609,7 @@ public class QuestpathPlugin extends Plugin
 			int structural = AccountState.fingerprint(payload);
 			int experience = AccountState.experienceFingerprint(payload);
 
-			if (!shouldSend(structural, experience))
+			if (!force && !shouldSend(structural, experience))
 			{
 				return;
 			}
