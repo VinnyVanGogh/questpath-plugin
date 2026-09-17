@@ -61,16 +61,45 @@ public final class MaxHit
 		GearEffect.TOME_OF_EARTH, GearEffect.MARK_OF_DARKNESS_DEMONBANE, GearEffect.AHRIMS_DAMNED);
 
 	// Powered staff item ids RESEARCH.md §20.4 gives a usable formula for,
-	// and whose gameval ItemID constant was verified (either in
-	// runelite-api.md item 13 or by a direct javap -constants check against
-	// runelite-api-1.12.37.jar in the course of building this class).
-	// Accursed sceptre, Thammaron's sceptre, and Bone staff have formulas in
-	// §20.4 too, but no id for any of the three was found either way, so
-	// they are not resolvable here — see MaxHitTest / task-2-report.md.
+	// and whose gameval ItemID constant was verified by a direct
+	// `javap -constants -p net.runelite.api.gameval.ItemID` check against
+	// runelite-api-1.12.37.jar (re-run in fix round 1 — see task-2-report.md
+	// for the full transcript). Trident of the Seas/Swamp, Sanguinesti
+	// staff, and Tumeken's shadow were already verified in the initial
+	// pass. Accursed sceptre, Thammaron's sceptre, and Bone staff were
+	// missed in that pass — none of gameval's cache-derived names are
+	// guessable from the wiki's item names — but a fix-round review found
+	// them by cross-referencing the deprecated net.runelite.api.ItemID
+	// class's human-readable names (ACCURSED_SCEPTRE = 27665,
+	// THAMMARONS_SCEPTRE = 22555, BONE_STAFF = 28796) against gameval by
+	// numeric id, the same technique already used above for Void's
+	// trouver-locked variants. Re-verified independently here, not taken on
+	// the reviewer's word:
+	//
+	//   javap -constants -p net/runelite/api/gameval/ItemID.class | grep -n "= 27665;\|= 22555;\|= 28796;"
+	//     public static final int WILD_CAVE_ACCURSED_CHARGED = 27665;
+	//     public static final int WILD_CAVE_SCEPTRE_CHARGED = 22555;
+	//     public static final int RAT_BONE_STAFF = 28796;
+	//
+	// Each charged/uncharged pair (Accursed and Thammaron's only — Bone
+	// staff has no uncharged variant in gameval) was checked too, so the
+	// uncharged item id is deliberately never wired in below and falls
+	// through to notModelled: an uncharged staff cannot cast at all, so it
+	// must never produce a max hit.
+	//
+	//   javap -constants -p net/runelite/api/gameval/ItemID.class | grep -n "ACCURSED\|WILD_CAVE_SCEPTRE\|BONE_STAFF"
+	//     public static final int WILD_CAVE_SCEPTRE_UNCHARGED = 22552;
+	//     public static final int WILD_CAVE_SCEPTRE_CHARGED = 22555;
+	//     public static final int WILD_CAVE_ACCURSED_UNCHARGED = 27662;
+	//     public static final int WILD_CAVE_ACCURSED_CHARGED = 27665;
+	//     public static final int RAT_BONE_STAFF = 28796;
 	private static final int TRIDENT_OF_THE_SEAS = ItemID.TOTS_CHARGED;
 	private static final int TRIDENT_OF_THE_SWAMP = ItemID.TOXIC_TOTS_CHARGED;
 	private static final int SANGUINESTI_STAFF = ItemID.SANGUINESTI_STAFF;
 	private static final int TUMEKENS_SHADOW = ItemID.TUMEKENS_SHADOW;
+	private static final int ACCURSED_SCEPTRE = ItemID.WILD_CAVE_ACCURSED_CHARGED;
+	private static final int THAMMARONS_SCEPTRE = ItemID.WILD_CAVE_SCEPTRE_CHARGED;
+	private static final int BONE_STAFF = ItemID.RAT_BONE_STAFF;
 
 	private MaxHit()
 	{
@@ -227,7 +256,11 @@ public final class MaxHit
 	 * {@code floor(0/3) − 5 = −5} at Magic 0, but the page states the real
 	 * minimum is 1) &mdash; {@code Math.max} enforces that floor. Tumeken's
 	 * shadow needs no such clamp: {@code floor(Magic/3 + 1)} already gives
-	 * 1 at Magic 0, matching the page's own worked example.
+	 * 1 at Magic 0, matching the page's own worked example. Accursed
+	 * sceptre carries a stated minimum too (0 at Magic 0); Thammaron's
+	 * sceptre and Bone staff state no minimum at all in §20.4, so neither
+	 * is clamped &mdash; inventing a floor for either would be exactly the
+	 * kind of guessed constant this project does not allow.
 	 */
 	private static Integer poweredStaffBase(int itemId, int magicLevel)
 	{
@@ -246,6 +279,31 @@ public final class MaxHit
 		if (itemId == TUMEKENS_SHADOW)
 		{
 			return magicLevel / 3 + 1;
+		}
+		if (itemId == ACCURSED_SCEPTRE)
+		{
+			// §20.4: "Magic/3 − 6". The page's own <math> block does not
+			// render an explicit floor() around this expression — only the
+			// surrounding prose ("increasing by one at 72 and every three
+			// Magic levels thereafter") establishes that it behaves as a
+			// floor. This is an inferred-from-prose reading of an ambiguous
+			// math block, not a directly quoted floor; integer division
+			// reproduces that inferred floor exactly for non-negative
+			// inputs. The page's stated minimum (0 at Magic 0) is enforced
+			// with Math.max, same as the other three clamped staves above.
+			return Math.max(0, magicLevel / 3 - 6);
+		}
+		if (itemId == THAMMARONS_SCEPTRE)
+		{
+			// §20.4: "floor(Magic/3) − 8". No minimum is stated on the page
+			// for this weapon, so none is invented here.
+			return magicLevel / 3 - 8;
+		}
+		if (itemId == BONE_STAFF)
+		{
+			// §20.4: "floor(Magic/3) + 5". No minimum is stated on the page
+			// for this weapon, so none is invented here.
+			return magicLevel / 3 + 5;
 		}
 		return null;
 	}

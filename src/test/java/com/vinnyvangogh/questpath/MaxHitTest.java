@@ -15,15 +15,20 @@ import static org.junit.Assert.assertTrue;
  * MaxHitResult}.
  *
  * The 18 rows in {@link #meleeVectors()}, {@link #rangedVectors()}, and
- * {@link #magicVectors()} are every worked vector from RESEARCH.md
- * &sect;20.5, verbatim (M1-M6, R1-R6, Mg1-Mg6). Mg6 is the one exception:
- * &sect;20.5 states its full in-game answer as 35 (base 30 &times; Augury
- * 1.04 &times; on-task Slayer helm(i) 1.15), but the Slayer bonus is a
- * &sect;20.3.1 Pre-Hit-Roll term v1 does not model (&sect;20.6). This suite
- * asserts the value v1 can actually compute &mdash; 31, base &times; Augury
- * only &mdash; with the Slayer helm surfaced via {@link
- * MaxHitResult#notApplied()} instead. That also makes Mg6 double as the
- * "unmodelled effect does not change value()" proof for magic.
+ * {@link #magicVectors()} cover every worked vector from RESEARCH.md
+ * &sect;20.5 (M1-M6, R1-R6, Mg1-Mg6). <b>17 of the 18 are verbatim; one
+ * &mdash; Mg6 &mdash; is deliberately scoped down and is NOT the &sect;20.5
+ * value.</b> &sect;20.5 states Mg6's full in-game answer as 35 (base 30
+ * &times; Augury 1.04 &times; on-task Slayer helm(i) 1.15), but the Slayer
+ * bonus is a &sect;20.3.1 Pre-Hit-Roll term v1 does not model (&sect;20.6).
+ * The row below asserts the value v1 can actually compute from that same
+ * input &mdash; 31, base &times; Augury only, i.e. &sect;20.5's own numbers
+ * minus the unmodelled Slayer helm term &mdash; with the Slayer helm
+ * surfaced via {@link MaxHitResult#notApplied()} instead of silently
+ * applied or silently dropped. Its row name and assertion messages say so
+ * explicitly rather than presenting 31 as if it were &sect;20.5's own
+ * figure. That also makes Mg6 double as the "unmodelled effect does not
+ * change value()" proof for magic.
  */
 public class MaxHitTest
 {
@@ -93,7 +98,7 @@ public class MaxHitTest
 	}
 
 	// ------------------------------------------------------------------
-	// §20.5.3 Magic (6 vectors, verbatim except Mg6 — see class javadoc)
+	// §20.5.3 Magic (5 verbatim vectors + 1 scoped-down row — see class javadoc)
 	// ------------------------------------------------------------------
 
 	@Test
@@ -114,16 +119,85 @@ public class MaxHitTest
 		assertEquals("Mg5: Tumeken's shadow, Magic 85, no damage bonus",
 			29, MaxHit.magic(85, Spell.POWERED_STAFF, MagicPrayer.NONE, poweredStaffGear(ItemID.TUMEKENS_SHADOW)).value());
 
-		// Mg6: full in-game answer per §20.5 is 35 (PreHitRoll, after the
-		// on-task Slayer helm(i) +15%). v1 only computes PrimaryMagicDamage
-		// (base × Augury), which is 31 — see class javadoc. The Slayer helm
-		// must be surfaced as not-applied rather than silently dropped.
+		// Mg6 (§20.5 minus Slayer helm, not modelled in v1; full answer 35):
+		// this is NOT §20.5's own Mg6 value. §20.5's Mg6 is Ice Barrage
+		// (base 30) × Augury (1.04) × on-task Slayer helm(i) (1.15) = 35,
+		// but the Slayer helm's Pre-Hit-Roll bonus is unmodelled in v1
+		// (§20.6). This row uses the same inputs and asserts only what v1
+		// actually computes — base × Augury, 31 — with the Slayer helm
+		// required to appear in notApplied() rather than silently applied
+		// or silently dropped.
 		MaxHitResult mg6 = MaxHit.magic(99, Spell.ICE_BARRAGE, MagicPrayer.AUGURY,
 			gear(0, 0, 0, GearEffect.SLAYER_HELMET_IMBUED));
-		assertEquals("Mg6: Ice Barrage, Augury, Slayer helm(i) on task — v1 computes PrimaryMagicDamage only (31), not the full 35",
+		assertEquals("Mg6 (§20.5 minus Slayer helm, not modelled in v1; full §20.5 answer is 35): v1 computes base × Augury only",
 			31, mg6.value());
-		assertEquals("Mg6: the Slayer helm bonus must be surfaced, not silently applied or dropped",
+		assertEquals("Mg6 (§20.5 minus Slayer helm, not modelled in v1; full §20.5 answer is 35): SLAYER_HELMET_IMBUED must appear in notApplied()",
 			Collections.singletonList(GearEffect.SLAYER_HELMET_IMBUED), mg6.notApplied());
+	}
+
+	// ------------------------------------------------------------------
+	// Powered staves added in fix round 1: Accursed sceptre, Thammaron's
+	// sceptre, Bone staff. §20.5 has no worked vector for any of these
+	// three (they were not resolvable to an item id in the initial pass),
+	// so each expected value here is derived directly from §20.4's formula
+	// rather than cited to §20.5.
+	// ------------------------------------------------------------------
+
+	@Test
+	public void accursedSceptreVector()
+	{
+		// §20.4: Magic/3 − 6, clamped to a stated minimum of 0. At Magic 99:
+		// floor(99/3) − 6 = 33 − 6 = 27.
+		assertEquals("Accursed sceptre, Magic 99 (§20.4: Magic/3 − 6)",
+			27, MaxHit.magic(99, Spell.POWERED_STAFF, MagicPrayer.NONE,
+				poweredStaffGear(ItemID.WILD_CAVE_ACCURSED_CHARGED)).value());
+	}
+
+	@Test
+	public void accursedSceptreClampsToItsStatedMinimumAtLowMagic()
+	{
+		// §20.4 states the real minimum is 0 at Magic 0 ("quoted"); the raw
+		// formula alone would give floor(10/3) − 6 = 3 − 6 = −3.
+		assertEquals("Accursed sceptre, Magic 10, clamped to the stated minimum of 0",
+			0, MaxHit.magic(10, Spell.POWERED_STAFF, MagicPrayer.NONE,
+				poweredStaffGear(ItemID.WILD_CAVE_ACCURSED_CHARGED)).value());
+	}
+
+	@Test
+	public void thammaronsSceptreVector()
+	{
+		// §20.4: floor(Magic/3) − 8. At Magic 99: floor(99/3) − 8 = 33 − 8 = 25.
+		assertEquals("Thammaron's sceptre, Magic 99 (§20.4: floor(Magic/3) − 8)",
+			25, MaxHit.magic(99, Spell.POWERED_STAFF, MagicPrayer.NONE,
+				poweredStaffGear(ItemID.WILD_CAVE_SCEPTRE_CHARGED)).value());
+	}
+
+	@Test
+	public void boneStaffVector()
+	{
+		// §20.4: floor(Magic/3) + 5. At Magic 99: floor(99/3) + 5 = 33 + 5 = 38.
+		assertEquals("Bone staff, Magic 99 (§20.4: floor(Magic/3) + 5)",
+			38, MaxHit.magic(99, Spell.POWERED_STAFF, MagicPrayer.NONE,
+				poweredStaffGear(ItemID.RAT_BONE_STAFF)).value());
+	}
+
+	@Test
+	public void unchargedAccursedSceptreIsNotModelled()
+	{
+		// An uncharged staff cannot cast at all, so it must never produce a
+		// max hit — the uncharged item id is deliberately not wired into
+		// poweredStaffBase().
+		MaxHitResult result = MaxHit.magic(99, Spell.POWERED_STAFF, MagicPrayer.NONE,
+			poweredStaffGear(ItemID.WILD_CAVE_ACCURSED_UNCHARGED));
+		assertTrue("uncharged Accursed sceptre must not resolve to a value", !result.isKnown());
+	}
+
+	@Test
+	public void unchargedThammaronsSceptreIsNotModelled()
+	{
+		MaxHitResult result = MaxHit.magic(99, Spell.POWERED_STAFF, MagicPrayer.NONE,
+			poweredStaffGear(ItemID.WILD_CAVE_SCEPTRE_UNCHARGED));
+		assertTrue("uncharged Thammaron's sceptre must not resolve to a value", !result.isKnown());
 	}
 
 	// ------------------------------------------------------------------
@@ -276,10 +350,10 @@ public class MaxHitTest
 	public void unresolvedPoweredStaffIsNotModelled()
 	{
 		// No formula/id in this build resolves an arbitrary, unrecognized
-		// item id — e.g. Accursed sceptre, Thammaron's sceptre, and Bone
-		// staff all have a §20.4 formula but no verified gameval item id;
-		// see task-2-report.md. -1 stands in for "some weapon this class
-		// does not recognize" without asserting a specific real item's id.
+		// item id. -1 stands in for "some weapon this class does not
+		// recognize" without asserting a specific real item's id — every
+		// staff §20.4 gives a formula for now has a wired-in id (see
+		// task-2-report.md, fix round 1).
 		MaxHitResult result = MaxHit.magic(99, Spell.POWERED_STAFF, MagicPrayer.NONE, poweredStaffGear(-1));
 		assertTrue(!result.isKnown());
 	}
