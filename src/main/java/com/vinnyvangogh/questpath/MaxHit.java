@@ -233,6 +233,19 @@ public final class MaxHit
 	 * ...) are a real, always-active contributor with or without the
 	 * shadow. This method now reads it.
 	 *
+	 * <p>Fix 2 (final-fix-rereview.md): the fix above initially subtracted
+	 * Elite Void's +5% from {@link GearBonuses#magicDamagePercent()} before
+	 * scaling by Shadow Bonus, misreading &sect;20.3.1's quoted
+	 * "(VisibleBonuses &minus; Void)" as applying to any item-stat sum.
+	 * {@code magicDamagePercent} is summed purely from each worn item's own
+	 * displayed magic damage stat and never included Void's 5% (a set
+	 * effect, not an item stat) to begin with, so that subtraction removed
+	 * Void's contribution a second time whenever real item magic damage was
+	 * also present &mdash; verified wrong by direct execution: Elite void
+	 * mage + 10 item mdmg, Fire Surge, no prayer produced 26, not the
+	 * correct 27. See the inline comment inside this method for the fixed
+	 * arithmetic and the reasoning.
+	 *
 	 * @param magicLevel the caller's live Magic level.
 	 * @param spell the spell being cast, or {@link Spell#POWERED_STAFF} to
 	 * use the wielded weapon's own level-based formula.
@@ -300,29 +313,40 @@ public final class MaxHit
 		// §20.3.1 Visible Bonuses row: "sum of displayed magic damage
 		// bonuses, excluding Elite Void's 5%". GearBonuses#magicDamagePercent()
 		// is summed directly from each worn item's own
-		// ItemEquipmentStats#getMdmg() (see LockedGear#resolve) — Elite
-		// void's 5% is a set effect, not any single item's own displayed
-		// stat, so it was never included in that sum. Using the raw value
-		// here does not subtract it a second time.
+		// ItemEquipmentStats#getMdmg() (see LockedGear#resolve) — a pure
+		// item-stat sum, not a read of the in-game equipment screen. The
+		// row's "excluding Elite Void's 5%" wording describes the SCREEN's
+		// displayed number (which does show Void's 5% when it is worn) —
+		// this project's item-stat sum never included Void's 5% to begin
+		// with, since Void's bonus is a set effect, not any single item's
+		// own mdmg stat. So this value already is what the quoted formula's
+		// "(VisibleBonuses − Void)" is trying to isolate from the screen's
+		// number; it needs no further adjustment here.
 		int visibleBonusesPercent = gear.magicDamagePercent();
 
-		// §20.3.1, quoted verbatim: "min(1, (VisibleBonuses − Void) ×
-		// ShadowBonus)". RESEARCH.md's own gloss on this term ("capped ...
-		// at +100%") frames it as a percentage bonus, and the pinned §20.5
-		// Mg3 vector (Elite void mage, mdmg 0, no Tumeken's: floor(24 ×
-		// 1.05) = 25) only holds if this term floors at 0 rather than going
-		// negative — with VisibleBonuses=0%, Void=5%, ShadowBonus=1, the
-		// literal (0 − 5) × 1 = −5 would otherwise cancel Void's own +5%
-		// term outright, which is not how Elite void mage's bonus behaves
-		// in game. So this clamps to [0, 100], not just capped above at 100
-		// as the quoted text alone states.
-		int shadowTermPercent = Math.min(100, Math.max(0, (visibleBonusesPercent - voidPercent) * shadowMultiplier));
+		// §20.3.1's quoted term is "min(1, (VisibleBonuses − Void) ×
+		// ShadowBonus)". Fix 2 (final-fix-rereview.md): the "− Void"
+		// subtraction is deliberately NOT applied here, even though the
+		// quoted text includes it. That subtraction exists in the wiki's
+		// own formula to strip Void's 5% back OUT of the equipment
+		// screen's displayed bonus (which includes it) before Shadow Bonus
+		// scales the rest — it is not a generic instruction to subtract
+		// Void from any number shaped like Visible Bonuses. Since
+		// visibleBonusesPercent above is a pure item-stat sum that never
+		// contained Void's 5% in the first place, subtracting Void again
+		// here would remove its contribution a second time, in the wrong
+		// direction — which is exactly the bug this fix corrects. Verified
+		// by direct execution (final-fix-rereview.md): Elite void mage +
+		// 10 item mdmg, Fire Surge, no prayer must give floor(24 × (1 +
+		// 0.10 + 0.05)) = 27, not 26.
+		int shadowTermPercent = Math.min(100, visibleBonusesPercent * shadowMultiplier);
 
 		// §20.3.1: PrimaryMagicDamage = floor(BaseDamageModifier × (1 +
 		// min(1, (VisibleBonuses − Void) × ShadowBonus) + Void + Prayer)),
 		// with every other additive term in v1's scope forced to zero per
 		// §20.6 (Salve, Avarice, Smoke battlestaff, Virtus, and the whole
-		// Pre/Post-Hit-Roll tail).
+		// Pre/Post-Hit-Roll tail). Void is still added here, once, as its
+		// own separate term — unaffected by fix 2 above.
 		int maxHit = (base * (100 + shadowTermPercent + voidPercent + prayer.percentBonus())) / 100;
 
 		return MaxHitResult.known(maxHit, magicNotApplied(effects, tumekensShadowWorn));

@@ -223,6 +223,53 @@ public class MaxHitTest
 	}
 
 	// ------------------------------------------------------------------
+	// Fix 2 (final-fix-rereview.md): the first pass of the I-2 fix
+	// subtracted Void's 5% from gear.magicDamagePercent() before scaling by
+	// ShadowBonus, on the theory that RESEARCH.md §20.3.1's "(VisibleBonuses
+	// − Void)" required it. That subtraction was wrong: magicDamagePercent
+	// is a pure item-stat sum (LockedGear#resolve sums each item's own
+	// ItemEquipmentStats#getMdmg()) that never included Void's 5% in the
+	// first place — Void is a set effect, not any single item's own
+	// displayed stat — so subtracting it again silently discarded Void's
+	// contribution whenever real item mdmg was also present. A standalone
+	// driver against the compiled class demonstrated this directly: Elite
+	// void mage + 10 item mdmg, Fire Surge, no prayer produced 26 instead
+	// of the correct 27. These two tests are that exact case, plus its
+	// mdmg-0 counterpart re-derived by hand rather than assumed from the
+	// pre-existing Mg3 vector.
+	// ------------------------------------------------------------------
+
+	@Test
+	public void eliteVoidMageWithGearMagicDamageBonus()
+	{
+		// The exact case final-fix-rereview.md verified by direct
+		// execution. Elite void mage, no Tumeken's (ShadowBonus ×1), mdmg
+		// 10, Fire Surge (base 24), no prayer:
+		//   shadowTerm = min(100, 10 × 1) = 10        (no Void subtraction — fix 2)
+		//   PrimaryMagicDamage = floor(24 × (1 + 0.10 + 0.05 + 0)) = floor(24 × 1.15) = floor(27.6) = 27
+		assertEquals("Elite void mage + mdmg 10, Fire Surge, no prayer (§20.3.1: floor(24 × 1.15), NOT 26)",
+			27, MaxHit.magic(99, Spell.FIRE_SURGE, MagicPrayer.NONE,
+				gear(0, 0, 10, GearEffect.ELITE_VOID_MAGE)).value());
+	}
+
+	@Test
+	public void eliteVoidMageWithNoGearMagicDamageBonus()
+	{
+		// Same setup with mdmg 0, re-derived independently of the
+		// pre-existing Mg3 §20.5 vector (which happens to share this exact
+		// input/output, since Mg3 also uses mdmg 0): with no item mdmg
+		// there is nothing for ShadowBonus to scale, so removing the Void
+		// subtraction changes nothing at this data point specifically —
+		// this is the case the original bug's own Math.max(0, ...) patch
+		// could pass without actually being correct.
+		//   shadowTerm = min(100, 0 × 1) = 0
+		//   PrimaryMagicDamage = floor(24 × (1 + 0 + 0.05 + 0)) = floor(24 × 1.05) = floor(25.2) = 25
+		assertEquals("Elite void mage + mdmg 0, Fire Surge, no prayer (§20.3.1: floor(24 × 1.05))",
+			25, MaxHit.magic(99, Spell.FIRE_SURGE, MagicPrayer.NONE,
+				gear(0, 0, 0, GearEffect.ELITE_VOID_MAGE)).value());
+	}
+
+	// ------------------------------------------------------------------
 	// Final whole-branch review fix (I-1): Toxic blowpipe. Ranged max hit
 	// must be entirely notModelled -- GearBonuses#rangedStrength()'s
 	// summed-stat approach cannot capture the loaded dart's real ranged
