@@ -312,6 +312,18 @@ class OverlaySettingsPanel extends JPanel
 			}));
 		body.add(spacer());
 		body.add(toggleGroup(
+			"Diary route: nearest task",
+			"The nearest outstanding achievement diary task this account can currently act"
+				+ " on: its text, where it sends you, any warnings, and how fresh questpath's"
+				+ " read on that tier's progress is.",
+			config.overlayDiaryRoute(), "overlayDiaryRoute",
+			sub ->
+			{
+				addField(sub, "Width", widthCombo(config.overlayDiaryRouteWidth(), "overlayDiaryRouteWidth"));
+				addField(sub, "Length", lengthCombo(config.overlayDiaryRouteLength(), "overlayDiaryRouteLength"));
+			}));
+		body.add(spacer());
+		body.add(toggleGroup(
 			"Grand Exchange: queued, next, left",
 			"While the Grand Exchange is open: the one item to buy next and how many,"
 				+ " what you already have on offer and how far along it is, and what is"

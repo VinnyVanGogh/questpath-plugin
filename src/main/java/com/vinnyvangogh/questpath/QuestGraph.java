@@ -73,8 +73,22 @@ class QuestGraph
 	 * start field to fall back to at all, which is exactly why an older
 	 * bundle must be refused rather than read as "no quest has a start" --
 	 * that is a different, false claim from "this build does not know yet".
+	 *
+	 * <p>12 added {@code diary_tasks}: every achievement diary task, its
+	 * (tier_id, ordinal) identity -- never a row id, because the ingest
+	 * deletes and reinserts every tier's tasks on each re-ingest and a row id
+	 * would not survive that -- and every world location questpath could
+	 * place for it. A bundle missing this field would parse every diary task
+	 * as nonexistent rather than as "this build predates diary routing",
+	 * which is exactly the confident-wrong-answer shape every earlier bump
+	 * exists to refuse: the diary route would silently have nothing to route
+	 * to, rather than the plugin refusing the whole graph outright. Tasks
+	 * with no known location are still included, with an empty {@code
+	 * locations} list -- that is a real, checked fact ("questpath does not
+	 * know where this is"), not an absent field, and {@link
+	 * DiaryTask#locations()} stays empty for it rather than null either way.
 	 */
-	static final int SUPPORTED_VERSION = 11;
+	static final int SUPPORTED_VERSION = 12;
 
 	@SerializedName("version")
 	private int version;
@@ -90,6 +104,18 @@ class QuestGraph
 
 	@SerializedName("shops")
 	private List<Shop> shops;
+
+	/**
+	 * Every achievement diary task in the game, account-agnostic -- see
+	 * {@link #SUPPORTED_VERSION}'s own doc for why a v12 graph missing this
+	 * key entirely is refused rather than read as "no diary tasks exist".
+	 * Left {@code null} when the key is absent so {@link
+	 * #parse(Gson, Reader)} can tell that apart from a present, empty array;
+	 * {@link #diaryTasks()} is the null-safe accessor every other caller
+	 * should use.
+	 */
+	@SerializedName("diary_tasks")
+	private List<DiaryTask> diaryTasks;
 
 	/**
 	 * One place to buy something, as the verdict engine's caller needs it: a
@@ -154,6 +180,127 @@ class QuestGraph
 		String town()
 		{
 			return town == null ? "" : town;
+		}
+	}
+
+	/**
+	 * One achievement diary task, account-agnostic: what it says and where it
+	 * can be done. Never carries completion -- that is per-account, and rides
+	 * the push response instead, in {@link PushResponse.Diary}.
+	 *
+	 * <p><b>Identified by {@link #tierId()} and {@link #ordinal()} together,
+	 * never by a row id of its own -- this class has none.</b> The Go
+	 * ingest deletes and reinserts every tier's tasks on each re-ingest, so a
+	 * row id would change under a task that never moved, silently
+	 * disconnecting any per-account state keyed by it. {@code tierId} is
+	 * stable (the ingest upserts tiers by diary and tier name) and {@code
+	 * ordinal} is the task's fixed position within its tier, so the pair
+	 * survives a re-ingest even though no single field does.
+	 */
+	static class DiaryTask
+	{
+		@SerializedName("tier_id")
+		private long tierId;
+
+		@SerializedName("ordinal")
+		private int ordinal;
+
+		@SerializedName("diary")
+		private String diary;
+
+		@SerializedName("tier")
+		private String tier;
+
+		@SerializedName("text")
+		private String text;
+
+		@SerializedName("locations")
+		private List<Location> locations;
+
+		/** The tier this task belongs to, stable across a re-ingest -- see the class doc. */
+		long tierId()
+		{
+			return tierId;
+		}
+
+		/** This task's fixed position within its tier -- see the class doc. */
+		int ordinal()
+		{
+			return ordinal;
+		}
+
+		/** The diary's own name, e.g. "Ardougne". */
+		String diary()
+		{
+			return diary == null ? "" : diary;
+		}
+
+		/** The tier's own name, e.g. "Easy". */
+		String tier()
+		{
+			return tier == null ? "" : tier;
+		}
+
+		/** The task's own text, verbatim from the wiki. */
+		String text()
+		{
+			return text == null ? "" : text;
+		}
+
+		/**
+		 * Every world location this task could be done at, best first as the
+		 * wiki gave them. Empty -- never null -- when questpath knows of
+		 * none for this task; that is a real, checked fact ("location
+		 * unknown"), not a gap to guess at, and callers must render it as
+		 * such rather than route to nothing.
+		 */
+		List<Location> locations()
+		{
+			return locations == null ? Collections.emptyList() : locations;
+		}
+	}
+
+	/**
+	 * One place a {@link DiaryTask} can be done, as a raw tile: the caller
+	 * builds a {@code WorldPoint} from {@link #x()}, {@link #y()} and {@link
+	 * #plane()} itself, the same convention {@link Shop} and {@link
+	 * DropLocation} already use, so this model class carries no dependency on
+	 * {@code net.runelite.api}.
+	 */
+	static class Location
+	{
+		@SerializedName("page_name")
+		private String pageName;
+
+		@SerializedName("x")
+		private int x;
+
+		@SerializedName("y")
+		private int y;
+
+		@SerializedName("plane")
+		private int plane;
+
+		/** The wiki page this location came from. */
+		String pageName()
+		{
+			return pageName == null ? "" : pageName;
+		}
+
+		int x()
+		{
+			return x;
+		}
+
+		int y()
+		{
+			return y;
+		}
+
+		/** The height level. 0 for ground floor. */
+		int plane()
+		{
+			return plane;
 		}
 	}
 
@@ -823,6 +970,19 @@ class QuestGraph
 		return shops == null ? Collections.emptyList() : shops;
 	}
 
+	/**
+	 * Every achievement diary task in the game, account-agnostic -- see
+	 * {@link #SUPPORTED_VERSION}'s own doc. Null-safe: {@link
+	 * #parse(Gson, Reader)} is what refuses a v12 document missing the key
+	 * entirely, so by the time a caller reaches this accessor the only
+	 * remaining case for {@code null} is a test fixture built by hand, and
+	 * even then this returns an empty list rather than throwing.
+	 */
+	List<DiaryTask> diaryTasks()
+	{
+		return diaryTasks == null ? Collections.emptyList() : diaryTasks;
+	}
+
 	/** One shop by its exact name, or null when the graph does not carry it. */
 	Shop shop(String name)
 	{
@@ -955,6 +1115,20 @@ class QuestGraph
 			// An empty graph makes every quest unknown, which renders as
 			// "not found" rather than as "the graph is broken".
 			throw new IOException("carries no quests");
+		}
+		if (graph.diaryTasks == null)
+		{
+			// The raw field, not diaryTasks() -- that accessor already turns
+			// null into an empty list, which is exactly the confident-wrong
+			// reading this check exists to refuse. A present, empty array
+			// (every task genuinely has no location, or the export ran with
+			// none staged) is a real answer and parses through; only the key
+			// being absent entirely means this document predates diary
+			// routing and must be refused the same way a missing shops table
+			// or a missing boost table already is -- see
+			// SUPPORTED_VERSION's own doc for the "diary route would
+			// silently have nothing to route to" hazard this closes.
+			throw new IOException("carries no diary_tasks field -- a v12 graph must include it, even empty");
 		}
 		return graph;
 	}

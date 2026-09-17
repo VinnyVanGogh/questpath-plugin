@@ -320,6 +320,21 @@ class QuestpathPanel extends PluginPanel
 	private final java.util.function.BooleanSupplier shopRouteActive;
 	private final ShopItemSkips shopItemSkips;
 
+	/**
+	 * Every achievement diary task the current graph carries, account-agnostic
+	 * -- see {@code QuestpathPlugin#diaryGraphTasks}. A callback rather than a
+	 * graph of its own, the same reasoning {@link #shopLocator} follows: the
+	 * panel should not learn to hold the bundle.
+	 */
+	private final java.util.function.Supplier<List<QuestGraph.DiaryTask>> diaryGraphTasks;
+
+	/**
+	 * The account's per-account diary routing data, as questpath last
+	 * reported it, or null when there is none -- see {@code
+	 * QuestpathPlugin#diaryPush}'s own doc for what "none" covers.
+	 */
+	private final java.util.function.Supplier<PushResponse.Diary> diaryPush;
+
 	QuestpathPanel(SpriteManager sprites, QuestpathConfig config, ConfigManager configManager,
 		OverlaySettingsPanel overlaySettings,
 		java.util.function.BiFunction<String, Integer, SkillPlan> planner,
@@ -330,7 +345,9 @@ class QuestpathPanel extends PluginPanel
 		java.util.function.Supplier<WorldPoint> playerLocation, Runnable onShopRouteSent,
 		Runnable onCancelShopRoute,
 		java.util.function.BooleanSupplier shopRouteActive, Runnable onSyncNow,
-		ShopItemSkips shopItemSkips)
+		ShopItemSkips shopItemSkips,
+		java.util.function.Supplier<List<QuestGraph.DiaryTask>> diaryGraphTasks,
+		java.util.function.Supplier<PushResponse.Diary> diaryPush)
 	{
 		this.onSyncNow = onSyncNow;
 		this.config = config;
@@ -348,6 +365,8 @@ class QuestpathPanel extends PluginPanel
 		this.onCancelShopRoute = onCancelShopRoute;
 		this.shopRouteActive = shopRouteActive;
 		this.shopItemSkips = shopItemSkips;
+		this.diaryGraphTasks = diaryGraphTasks;
+		this.diaryPush = diaryPush;
 		setLayout(new BorderLayout());
 		setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
 
@@ -753,10 +772,18 @@ class QuestpathPanel extends PluginPanel
 		// finishing, and the partial runs arrive on a push rather than on
 		// anything the client does. Left out, either change would sit
 		// unrendered until something else happened to invalidate the tab.
+		// diaryPush.get() rides this signature too, by reference: a rejected
+		// or fresh push always replaces QuestpathPlugin#diaryPush wholesale
+		// (see that field's own doc), never mutates it in place, so a new
+		// object identity here reliably means "there is something new to
+		// show" -- the same reasoning routeWork's own inclusion already
+		// relies on for a push-delivered value with no cheaper signature to
+		// compare.
 		Object questsSignature = java.util.Arrays.asList(
 			verdicts == null ? null : verdicts.signature(),
 			nextQuest == null ? null : nextQuest.hashCode(),
-			routeWork == null ? null : routeWorkSignature(routeWork));
+			routeWork == null ? null : routeWorkSignature(routeWork),
+			diaryPush.get());
 		if (!java.util.Objects.equals(questsSignature, lastVerdictSignature))
 		{
 			clearBodies(PanelSections.Tab.QUESTS);
@@ -786,6 +813,9 @@ class QuestpathPanel extends PluginPanel
 				quests.add(routePartialBlock(routeWork));
 				quests.add(Box.createVerticalStrut(14));
 			}
+			quests.add(heading(PanelSections.DIARY_ROUTE.title()));
+			quests.add(diaryRouteBlock());
+			quests.add(Box.createVerticalStrut(14));
 			quests.add(heading(PanelSections.QUEST_VERDICT.title()));
 			quests.add(questResults);
 			fillQuestResults(verdicts);
@@ -1974,6 +2004,127 @@ class QuestpathPanel extends PluginPanel
 		}
 
 		return panel;
+	}
+
+	/**
+	 * How many actionable stops to list before summarising the rest -- the
+	 * same "roughly a handful, not the whole list" judgment {@link
+	 * ShopRouteOverlay#BASE_STOPS} makes for the overlay's own next-stops
+	 * list, applied here to the sidebar instead.
+	 */
+	private static final int DIARY_ROUTE_ROWS = 5;
+
+	/**
+	 * The next few actionable diary tasks worth walking to, the ones this
+	 * plugin's own graph has no location for, and any actionable task
+	 * questpath reported that this graph does not recognise at all -- see
+	 * {@link DiaryRouteStops}'s own class doc for why those are three
+	 * separate lists rather than one that silently drops the last two kinds.
+	 *
+	 * <p>"Diary route needs a questpath sync" -- not an empty list -- is what
+	 * this shows when {@link #diaryPush} has never delivered anything, per
+	 * {@code PushResponse#hasDiary()}'s own doc: a questpath old enough to
+	 * predate diary routing and an account with genuinely nothing targeted
+	 * are different facts, and only the second is honestly "nothing to
+	 * show."
+	 */
+	private JPanel diaryRouteBlock()
+	{
+		JPanel panel = column();
+
+		PushResponse.Diary diary = diaryPush.get();
+		if (diary == null)
+		{
+			panel.add(muted("Diary route needs a questpath sync."));
+			return panel;
+		}
+
+		List<QuestGraph.DiaryTask> graphTasks = diaryGraphTasks.get();
+		List<DiaryRouteStops.Stop> stops = DiaryRouteStops.stops(graphTasks, diary, playerLocation.get());
+		List<QuestGraph.DiaryTask> locationUnknown = DiaryRouteStops.locationUnknown(graphTasks, diary);
+		List<DiaryRouteStops.Unmatched> unmatched = DiaryRouteStops.unmatched(graphTasks, diary);
+
+		if (stops.isEmpty() && locationUnknown.isEmpty() && unmatched.isEmpty())
+		{
+			panel.add(muted("No outstanding diary tasks this account can currently act on."));
+			return panel;
+		}
+
+		int shown = Math.min(stops.size(), DIARY_ROUTE_ROWS);
+		for (int i = 0; i < shown; i++)
+		{
+			DiaryRouteStops.Stop stop = stops.get(i);
+			QuestGraph.DiaryTask task = stop.task();
+			String distance = stop.distanceTiles() == Integer.MAX_VALUE
+				? ""
+				: "  (" + stop.distanceTiles() + " tiles)";
+			JLabel label = row(task.diary() + " " + task.tier() + ": " + task.text() + distance);
+			label.setFont(FontManager.getRunescapeSmallFont());
+			label.setForeground(i == 0 ? Color.WHITE : ColorScheme.LIGHT_GRAY_COLOR);
+			if (!stop.warnings().isEmpty())
+			{
+				label.setToolTipText(String.join("; ", stop.warnings()));
+			}
+			panel.add(label);
+		}
+		if (stops.size() > shown)
+		{
+			panel.add(muted("...and " + (stops.size() - shown) + " more."));
+		}
+		if (!stops.isEmpty())
+		{
+			panel.add(Box.createVerticalStrut(6));
+			panel.add(diaryRouteButton(stops.get(0)));
+		}
+
+		for (QuestGraph.DiaryTask task : locationUnknown)
+		{
+			JLabel label = row(task.diary() + " " + task.tier() + ": " + task.text() + "  -- location unknown");
+			label.setFont(FontManager.getRunescapeSmallFont());
+			label.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
+			panel.add(label);
+		}
+
+		for (DiaryRouteStops.Unmatched entry : unmatched)
+		{
+			// A graph/server mismatch, not a location gap -- see
+			// DiaryRouteStops.Unmatched's own class doc.
+			JLabel label = row("Tier " + entry.tierId() + " task #" + entry.ordinal()
+				+ "  -- not in this plugin's quest graph (server/graph mismatch)");
+			label.setFont(FontManager.getRunescapeSmallFont());
+			label.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
+			panel.add(label);
+		}
+
+		return panel;
+	}
+
+	/**
+	 * Hands the single nearest actionable diary task's destination -- exactly
+	 * the point {@link DiaryRouteStops#destinationOf} chose, the same one
+	 * named beside it above -- to Shortest Path. One place decides that
+	 * point: see {@link DiaryRouteStops}'s class doc for why this button
+	 * must never compute its own.
+	 */
+	private JButton diaryRouteButton(DiaryRouteStops.Stop stop)
+	{
+		JButton button = new JButton();
+		button.setFont(FontManager.getRunescapeSmallFont());
+		button.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+		ShortestPathBridge.Availability availability = shortestPathBridge.availability();
+		button.setText(availability == ShortestPathBridge.Availability.AVAILABLE
+			? "Send diary route to Shortest Path"
+			: availability.menuLabel());
+		button.setEnabled(availability == ShortestPathBridge.Availability.AVAILABLE);
+
+		QuestGraph.Location destination = stop.destination();
+		button.addActionListener(event ->
+		{
+			WorldPoint point = new WorldPoint(destination.x(), destination.y(), destination.plane());
+			shortestPathBridge.route(Set.of(point), outcome -> repaintAll());
+		});
+		return button;
 	}
 
 	/**

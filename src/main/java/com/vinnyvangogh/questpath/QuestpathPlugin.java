@@ -561,6 +561,30 @@ public class QuestpathPlugin extends Plugin
 	private volatile Map<String, Long> knownItems = Collections.emptyMap();
 
 	/**
+	 * Per-account diary routing data, as questpath last reported it -- null
+	 * both before the first accepted push and for a server old enough to
+	 * predate the field; see {@link PushResponse#hasDiary()}'s own doc for
+	 * why those two are the same case here rather than distinct ones. Same
+	 * lifecycle as {@link #buildRules} -- volatile, replaced wholesale,
+	 * cleared on logout and on a rejected push, because a stale verdict from
+	 * another account is worse than none.
+	 */
+	private volatile PushResponse.Diary diaryPush;
+
+	/**
+	 * When each diary task ({@code (tier_id, ordinal)}) was last nudged
+	 * about, for {@link DiaryRouteGuard#shouldNudge}'s cooldown parameter.
+	 * Session state, not cleared on a rejected push -- a cooldown is about
+	 * not repeating a chat line too often, not about which account is
+	 * confirmed, so a push rejection has no bearing on it. Cleared on logout
+	 * in {@link #onGameStateChanged} for the same reason {@link
+	 * #questStartCandidates} is: the next login may be a different account
+	 * standing anywhere at all, and its first nearby task must not be read
+	 * as "already nudged."
+	 */
+	private final Map<DiaryRouteStops.TaskKey, Instant> diaryNudgedAt = new HashMap<>();
+
+	/**
 	 * How often a push may be sent for experience alone, with no quest or
 	 * level change behind it.
 	 *
@@ -676,7 +700,7 @@ public class QuestpathPlugin extends Plugin
 			this::dropLocation, this::lastKnownPlayerLocation, this::onShopRouteSent,
 			this::cancelShopRoute,
 			this::shopRouteActive, this::syncNow,
-			shopItemSkips);
+			shopItemSkips, this::diaryGraphTasks, this::diaryPush);
 		navButton = NavigationButton.builder()
 			.tooltip("Quest Path")
 			.icon(icon())
@@ -690,6 +714,8 @@ public class QuestpathPlugin extends Plugin
 		overlays.add(new NeededItemsOverlay(this, config, overlayIcons, client));
 		overlays.add(new ShopRouteOverlay(this, config, overlayIcons, this::shopLocation,
 			this::dropLocation, this::playerLocation, shopItemSkips));
+		overlays.add(new DiaryRouteOverlay(this, config, overlayIcons, this::diaryGraphTasks,
+			this::diaryPush, this::playerLocation));
 		overlays.add(new GrandExchangeOverlay(this, config, overlayIcons, client, this::grandExchangeList));
 		overlays.add(new CombatXpOverlay(this, config, overlayIcons));
 		overlays.add(new BuildRulesOverlay(this, config, overlayIcons));
@@ -923,6 +949,12 @@ public class QuestpathPlugin extends Plugin
 		// which in practice meant opening the shop. The reminder to go
 		// somewhere arrived once they were already standing there.
 		checkShopApproach(overlaySnapshot == null ? null : overlaySnapshot.items());
+
+		// Same reasoning as checkShopApproach: proximity to a diary task
+		// changes every tick as the player walks, whether or not the
+		// account's own state changed this tick, so this cannot live inside
+		// the refreshPending-gated block below.
+		checkDiaryApproach();
 
 		if (!refreshPending)
 		{
@@ -1344,6 +1376,12 @@ public class QuestpathPlugin extends Plugin
 			routeOrder = Collections.emptyList();
 			partialRuns = Collections.emptyList();
 			knownItems = Collections.emptyMap();
+			// The next login may be a different account, with a different
+			// diary verdict entirely -- see diaryPush's own doc.
+			diaryPush = null;
+			// Same reasoning: a cooldown recorded against this account's
+			// nearby tasks has nothing to say about the next one's.
+			diaryNudgedAt.clear();
 			// The next login may be another account, whose bank is not this
 			// one. Reporting the previous account's items would be worse than
 			// reporting none.
@@ -2125,6 +2163,53 @@ public class QuestpathPlugin extends Plugin
 
 
 	/**
+	 * Notices when the nearest actionable diary task is close enough, and
+	 * this is not too soon after the last time this exact task was
+	 * mentioned, to say so in chat -- {@link DiaryRouteGuard#shouldNudge}'s
+	 * own doc has the four conditions in full.
+	 *
+	 * <p>Checked every tick, unconditionally, the same reasoning {@link
+	 * #checkShopApproach} documents at length: proximity to a diary task
+	 * changes as the player walks regardless of whether the account's own
+	 * state changed, so this cannot wait for {@link #refreshPending}.
+	 *
+	 * <p>Shares {@link QuestpathConfig#overlayDiaryRoute()} with {@link
+	 * DiaryRouteOverlay} rather than carrying a second toggle of its own --
+	 * see that config item's own doc for why one switch governs both the
+	 * always-on display and this occasional chat line.
+	 */
+	private void checkDiaryApproach()
+	{
+		if (config == null || !config.overlayDiaryRoute() || diaryPush == null || questGraph == null)
+		{
+			return;
+		}
+
+		List<DiaryRouteStops.Stop> stops =
+			DiaryRouteStops.stops(questGraph.diaryTasks(), diaryPush, playerLocation());
+		if (stops.isEmpty())
+		{
+			return;
+		}
+
+		DiaryRouteStops.Stop nearest = stops.get(0);
+		DiaryRouteStops.TaskKey key =
+			new DiaryRouteStops.TaskKey(nearest.task().tierId(), nearest.task().ordinal());
+		Instant now = Instant.now();
+
+		boolean nudge = DiaryRouteGuard.shouldNudge(config.overlayDiaryRoute(), nearest.distanceTiles(),
+			shopRouteBlocksQuestRouting(), routeQuestInProgress, diaryNudgedAt.get(key), now);
+		if (!nudge)
+		{
+			return;
+		}
+
+		diaryNudgedAt.put(key, now);
+		chat("Quest Path: " + nearest.task().diary() + " " + nearest.task().tier()
+			+ " nearby -- " + nearest.task().text());
+	}
+
+	/**
 	 * The region a dropper lives in -- "general", "wilderness" -- or empty
 	 * when the bundle carries none for it.
 	 *
@@ -2185,6 +2270,28 @@ public class QuestpathPlugin extends Plugin
 			dropsByName = index;
 		}
 		return dropsByName.get(sourceName.toLowerCase());
+	}
+
+	/**
+	 * Every achievement diary task the current graph carries, account-agnostic
+	 * -- handed to {@link DiaryRouteStops} and {@link DiaryRouteOverlay} as a
+	 * supplier so both always read whichever graph ({@link #questGraph}) is
+	 * live at the moment they are called, bundled or freshly fetched, rather
+	 * than a copy taken once at construction time.
+	 */
+	List<QuestGraph.DiaryTask> diaryGraphTasks()
+	{
+		return questGraph == null ? Collections.emptyList() : questGraph.diaryTasks();
+	}
+
+	/**
+	 * The account's per-account diary routing data, as questpath last
+	 * reported it, or null when there is none -- see {@link #diaryPush}'s own
+	 * doc.
+	 */
+	PushResponse.Diary diaryPush()
+	{
+		return diaryPush;
 	}
 
 	private WorldPoint shopLocation(String shopName)
@@ -2636,6 +2743,12 @@ public class QuestpathPlugin extends Plugin
 						routeOrder = Collections.emptyList();
 						partialRuns = Collections.emptyList();
 						knownItems = Collections.emptyMap();
+						// A rejection means questpath is not confirming this
+						// account's state, and a stale diary verdict shown
+						// against the wrong account is exactly the kind of
+						// confident-wrong answer this project refuses
+						// elsewhere -- see buildRules' own doc just above.
+						diaryPush = null;
 						clientThread.invokeLater(this::refresh);
 					}
 				},
@@ -2652,6 +2765,15 @@ public class QuestpathPlugin extends Plugin
 					routeOrder = accepted.routeOrder();
 					partialRuns = accepted.partialRuns();
 					knownItems = accepted.knownItems();
+					// hasDiary() false (an older questpath) must leave this
+					// null, never overwrite a genuine earlier value with a
+					// misleading "no data" from a field that was never
+					// there to begin with -- but a rejection already clears
+					// it above, and a fresh accepted push from the same,
+					// newer questpath is exactly when a real change should
+					// land, so this reads accepted.diary() unconditionally
+					// once hasDiary() is confirmed.
+					diaryPush = accepted.hasDiary() ? accepted.diary() : diaryPush;
 
 					// Repaint now rather than waiting for the next game
 					// event. An earlier version left it to the next

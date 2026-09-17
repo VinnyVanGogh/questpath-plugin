@@ -507,6 +507,49 @@ public interface QuestpathConfig extends Config
 	}
 
 	@ConfigItem(
+		keyName = "overlayDiaryRoute",
+		name = "Diary route: nearest task",
+		description = "The nearest outstanding achievement diary task this account can currently"
+			+ " act on: its text, where it sends you, any warnings, and how fresh questpath's"
+			+ " read on that tier's progress is. Off by default, like every other in-game route"
+			+ " overlay here -- see overlayShopRoute.",
+		section = overlaySection,
+		position = 43
+	)
+	default boolean overlayDiaryRoute()
+	{
+		// Off by default, the same reasoning as overlayShopRoute: this is a
+		// feature only some accounts want on screen at all, and it also
+		// doubles as DiaryRouteGuard's own feature toggle -- see that
+		// class's shouldNudge doc.
+		return false;
+	}
+
+	@ConfigItem(
+		keyName = "overlayDiaryRouteWidth",
+		name = "- width",
+		description = "Width for the diary route panel alone.",
+		section = overlaySection,
+		position = 44
+	)
+	default PanelWidth overlayDiaryRouteWidth()
+	{
+		return PanelWidth.MATCH_SHARED;
+	}
+
+	@ConfigItem(
+		keyName = "overlayDiaryRouteLength",
+		name = "- length",
+		description = "How much of the current task's detail to show.",
+		section = overlaySection,
+		position = 45
+	)
+	default PanelListLength overlayDiaryRouteLength()
+	{
+		return PanelListLength.MATCH_SHARED;
+	}
+
+	@ConfigItem(
 		keyName = "overlayBuildRules",
 		name = "Build rules",
 		description = "Your declared caps and no-xp skills, and how much headroom is left in each.",

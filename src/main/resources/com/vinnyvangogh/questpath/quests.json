@@ -1,5 +1,5 @@
 {
-  "version": 11,
+  "version": 12,
   "quests": [
     {
       "id": 1,
@@ -46569,6 +46569,7386 @@
       "x": 2418,
       "y": 4373,
       "region": "general"
+    }
+  ],
+  "diary_tasks": [
+    {
+      "tier_id": 1,
+      "ordinal": 1,
+      "diary": "Ardougne Diary",
+      "tier": "Easy",
+      "text": "Have Wizard Cromperty teleport you to the Rune Essence mine. Note: You can right-click him to teleport.",
+      "locations": [
+        {
+          "page_name": "Wizard Cromperty",
+          "x": 2684,
+          "y": 3325,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 1,
+      "ordinal": 2,
+      "diary": "Ardougne Diary",
+      "tier": "Easy",
+      "text": "Steal a cake from the Ardougne market stalls.",
+      "locations": [
+        {
+          "page_name": "Ardougne Baker's Stall.",
+          "x": 2656,
+          "y": 3310,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 1,
+      "ordinal": 3,
+      "diary": "Ardougne Diary",
+      "tier": "Easy",
+      "text": "Sell Silk to Silk trader in Ardougne for 60 coins each. Note: You must first offer to sell your silk for 120 coins, then counter his bid with 60 coins. He'll refuse to speak to you if you've just stolen from his silk stall, and his behaviour only resets after you've spent at least ten consecutive minutes outside of Ardougne without logging off.",
+      "locations": [
+        {
+          "page_name": "Silk merchant",
+          "x": 2657,
+          "y": 3302,
+          "plane": 0
+        },
+        {
+          "page_name": "Ardougne",
+          "x": 2570,
+          "y": 3300,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 1,
+      "ordinal": 4,
+      "diary": "Ardougne Diary",
+      "tier": "Easy",
+      "text": "Use the altar in East Ardougne's church. Note: Requires you to have less than full Prayer points.",
+      "locations": [
+        {
+          "page_name": "East Ardougne",
+          "x": 2624,
+          "y": 3300,
+          "plane": 0
+        },
+        {
+          "page_name": "Ardougne church",
+          "x": 2615,
+          "y": 3307,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 1,
+      "ordinal": 5,
+      "diary": "Ardougne Diary",
+      "tier": "Easy",
+      "text": "Go out fishing on the Fishing Trawler Note: You only have to start this minigame, completing it is optional.",
+      "locations": [
+        {
+          "page_name": "Fishing Trawler",
+          "x": 2669,
+          "y": 3161,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 1,
+      "ordinal": 6,
+      "diary": "Ardougne Diary",
+      "tier": "Easy",
+      "text": "Enter the Combat Training Camp north of W. Ardougne.",
+      "locations": [
+        {
+          "page_name": "Combat Training Camp",
+          "x": 2515,
+          "y": 3370,
+          "plane": 0
+        },
+        {
+          "page_name": "West Ardougne",
+          "x": 2500,
+          "y": 3305,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 1,
+      "ordinal": 7,
+      "diary": "Ardougne Diary",
+      "tier": "Easy",
+      "text": "Have Tindel Marchant identify a Rusted Sword for you. Note: There is a 1/100 chance the sword turns out to be nothing, in which case you'll have to bring a new one.",
+      "locations": [
+        {
+          "page_name": "Tindel Marchant",
+          "x": 2673,
+          "y": 3150,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 1,
+      "ordinal": 8,
+      "diary": "Ardougne Diary",
+      "tier": "Easy",
+      "text": "Use the Ardougne Lever to teleport to the Wilderness. Note: You can pull the lever there to return.",
+      "locations": [
+        {
+          "page_name": "Ardougne teleport lever",
+          "x": 2562,
+          "y": 3310,
+          "plane": 0
+        },
+        {
+          "page_name": "Lever (Deserted Keep)",
+          "x": 3153,
+          "y": 3923,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 1,
+      "ordinal": 9,
+      "diary": "Ardougne Diary",
+      "tier": "Easy",
+      "text": "View Aleck's Hunter Emporium in Yanille.",
+      "locations": [
+        {
+          "page_name": "Aleck's Hunter Emporium.",
+          "x": 2567,
+          "y": 3082,
+          "plane": 0
+        },
+        {
+          "page_name": "Yanille",
+          "x": 2577,
+          "y": 3090,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 1,
+      "ordinal": 10,
+      "diary": "Ardougne Diary",
+      "tier": "Easy",
+      "text": "Check what pets you have Insured with Probita in Ardougne. Note: You can right-click her to check.",
+      "locations": [
+        {
+          "page_name": "Probita",
+          "x": 2622,
+          "y": 3293,
+          "plane": 0
+        },
+        {
+          "page_name": "Ardougne",
+          "x": 2570,
+          "y": 3300,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 2,
+      "ordinal": 1,
+      "diary": "Ardougne Diary",
+      "tier": "Medium",
+      "text": "Enter the Unicorn pen in Ardougne zoo using Fairy rings.",
+      "locations": [
+        {
+          "page_name": "Ardougne zoo",
+          "x": 2615,
+          "y": 3272,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 2,
+      "ordinal": 2,
+      "diary": "Ardougne Diary",
+      "tier": "Medium",
+      "text": "Grapple over Yanille's south wall.",
+      "locations": [
+        {
+          "page_name": "Yanille",
+          "x": 2577,
+          "y": 3090,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 2,
+      "ordinal": 3,
+      "diary": "Ardougne Diary",
+      "tier": "Medium",
+      "text": "Harvest some strawberries from the Ardougne farming patch.",
+      "locations": [
+        {
+          "page_name": "Ardougne farm",
+          "x": 2650,
+          "y": 3366,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 2,
+      "ordinal": 4,
+      "diary": "Ardougne Diary",
+      "tier": "Medium",
+      "text": "Cast the Ardougne Teleport spell.",
+      "locations": [
+        {
+          "page_name": "Ardougne Teleport",
+          "x": 2662,
+          "y": 3305,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 2,
+      "ordinal": 5,
+      "diary": "Ardougne Diary",
+      "tier": "Medium",
+      "text": "Travel to Castlewars by Hot Air Balloon.",
+      "locations": [
+        {
+          "page_name": "Castle Wars",
+          "x": 2407,
+          "y": 3105,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 2,
+      "ordinal": 6,
+      "diary": "Ardougne Diary",
+      "tier": "Medium",
+      "text": "Claim buckets of sand from Bert in Yanille. Note: Ultimate Ironmen must instead fill a bucket with sand from Bert's sand pit.",
+      "locations": [
+        {
+          "page_name": "Bert",
+          "x": 2551,
+          "y": 3100,
+          "plane": 0
+        },
+        {
+          "page_name": "Yanille",
+          "x": 2577,
+          "y": 3090,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 2,
+      "ordinal": 7,
+      "diary": "Ardougne Diary",
+      "tier": "Medium",
+      "text": "Catch any fish on the Fishing Platform.",
+      "locations": [
+        {
+          "page_name": "Fishing Platform",
+          "x": 2778,
+          "y": 3282,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 2,
+      "ordinal": 8,
+      "diary": "Ardougne Diary",
+      "tier": "Medium",
+      "text": "Pickpocket the master farmer north of Ardougne.",
+      "locations": [
+        {
+          "page_name": "Ardougne",
+          "x": 2570,
+          "y": 3300,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 2,
+      "ordinal": 9,
+      "diary": "Ardougne Diary",
+      "tier": "Medium",
+      "text": "Collect some Nightshade from the Skavid Caves. Note: It can be found in the northernmost cave.",
+      "locations": [
+        {
+          "page_name": "Skavid Caves",
+          "x": 2529,
+          "y": 9437,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 2,
+      "ordinal": 10,
+      "diary": "Ardougne Diary",
+      "tier": "Medium",
+      "text": "Kill a swordchick in the Tower of Life.",
+      "locations": [
+        {
+          "page_name": "Tower of Life (building)",
+          "x": 2647,
+          "y": 3225,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 2,
+      "ordinal": 11,
+      "diary": "Ardougne Diary",
+      "tier": "Medium",
+      "text": "Equip Iban's upgraded staff or upgrade an Iban staff. Note: You can upgrade the staff without equipping it.",
+      "locations": []
+    },
+    {
+      "tier_id": 2,
+      "ordinal": 12,
+      "diary": "Ardougne Diary",
+      "tier": "Medium",
+      "text": "Visit the Island East of the Necromancer's tower.",
+      "locations": [
+        {
+          "page_name": "Necromancer Tower",
+          "x": 2666,
+          "y": 3247,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 3,
+      "ordinal": 1,
+      "diary": "Ardougne Diary",
+      "tier": "Hard",
+      "text": "Recharge some Jewellery at the Totem in the Legends Guild.",
+      "locations": [
+        {
+          "page_name": "Totem Pole (Legends' Guild",
+          "x": 2729,
+          "y": 3378,
+          "plane": 0
+        },
+        {
+          "page_name": "Legends' Guild",
+          "x": 2721,
+          "y": 3387,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 3,
+      "ordinal": 2,
+      "diary": "Ardougne Diary",
+      "tier": "Hard",
+      "text": "Enter the Magic Guild.",
+      "locations": [
+        {
+          "page_name": "Wizards' Guild",
+          "x": 2589,
+          "y": 3094,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 3,
+      "ordinal": 3,
+      "diary": "Ardougne Diary",
+      "tier": "Hard",
+      "text": "Steal from a chest in Ardougne Castle.",
+      "locations": [
+        {
+          "page_name": "Ardougne Castle",
+          "x": 2577,
+          "y": 3298,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 3,
+      "ordinal": 4,
+      "diary": "Ardougne Diary",
+      "tier": "Hard",
+      "text": "Have a zookeeper put you in Ardougne Zoo's monkey cage.",
+      "locations": [
+        {
+          "page_name": "Monkey minder",
+          "x": 2603,
+          "y": 3279,
+          "plane": 0
+        },
+        {
+          "page_name": "Ardougne Zoo",
+          "x": 2615,
+          "y": 3272,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 3,
+      "ordinal": 5,
+      "diary": "Ardougne Diary",
+      "tier": "Hard",
+      "text": "Teleport to the Watchtower.",
+      "locations": [
+        {
+          "page_name": "Watchtower (building)",
+          "x": 2547,
+          "y": 3115,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 3,
+      "ordinal": 6,
+      "diary": "Ardougne Diary",
+      "tier": "Hard",
+      "text": "Catch a Red Salamander.",
+      "locations": []
+    },
+    {
+      "tier_id": 3,
+      "ordinal": 7,
+      "diary": "Ardougne Diary",
+      "tier": "Hard",
+      "text": "Check the health of a Palm tree near tree gnome village. Note: This is the farming patch next to Gileth.",
+      "locations": [
+        {
+          "page_name": "Tree Gnome Village (location)",
+          "x": 2520,
+          "y": 3167,
+          "plane": 0
+        },
+        {
+          "page_name": "Gileth",
+          "x": 2489,
+          "y": 3179,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 3,
+      "ordinal": 8,
+      "diary": "Ardougne Diary",
+      "tier": "Hard",
+      "text": "Pick some Poison Ivy berries from the patch south of Ardougne. Note: This patch is located next to the Ardougne Monastery.",
+      "locations": [
+        {
+          "page_name": "Ardougne",
+          "x": 2570,
+          "y": 3300,
+          "plane": 0
+        },
+        {
+          "page_name": "Ardougne Monastery",
+          "x": 2595,
+          "y": 3215,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 3,
+      "ordinal": 9,
+      "diary": "Ardougne Diary",
+      "tier": "Hard",
+      "text": "Smith a Mithril platebody near Ardougne. Note: You'll have to use the Port Khazard, Yanille, or West Ardougne anvil for this.",
+      "locations": [
+        {
+          "page_name": "Ardougne",
+          "x": 2570,
+          "y": 3300,
+          "plane": 0
+        },
+        {
+          "page_name": "Port Khazard",
+          "x": 2653,
+          "y": 3159,
+          "plane": 0
+        },
+        {
+          "page_name": "Yanille",
+          "x": 2577,
+          "y": 3090,
+          "plane": 0
+        },
+        {
+          "page_name": "West Ardougne",
+          "x": 2500,
+          "y": 3305,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 3,
+      "ordinal": 10,
+      "diary": "Ardougne Diary",
+      "tier": "Hard",
+      "text": "Enter your POH from Yanille.",
+      "locations": [
+        {
+          "page_name": "Yanille",
+          "x": 2577,
+          "y": 3090,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 3,
+      "ordinal": 11,
+      "diary": "Ardougne Diary",
+      "tier": "Hard",
+      "text": "Smith a Dragon sq shield in West Ardougne.",
+      "locations": [
+        {
+          "page_name": "West Ardougne",
+          "x": 2500,
+          "y": 3305,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 3,
+      "ordinal": 12,
+      "diary": "Ardougne Diary",
+      "tier": "Hard",
+      "text": "Craft some Death runes from Essence. Note: Entering the Death Altar from the Mourner Headquarters is not recommended after the quest. It follows a lengthy route that requires the crystal trinket and a death talisman/tiara or catalytic talisman/tiara, and (if Song of the Elves has not been completed) mourner gear and the new key. It's even possible to lock yourself out of this entrance with the light puzzle, which may require you to enter it via the Abyss or through the Underground Pass anyway to change the rotation of the mirrors again.",
+      "locations": [
+        {
+          "page_name": "Death Altar",
+          "x": 2204,
+          "y": 4835,
+          "plane": 0
+        },
+        {
+          "page_name": "Mourner Headquarters",
+          "x": 2540,
+          "y": 3326,
+          "plane": 0
+        },
+        {
+          "page_name": "Abyss",
+          "x": 3041,
+          "y": 4832,
+          "plane": 0
+        },
+        {
+          "page_name": "Underground Pass (dungeon)",
+          "x": 2449,
+          "y": 3312,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 4,
+      "ordinal": 1,
+      "diary": "Ardougne Diary",
+      "tier": "Elite",
+      "text": "Catch a Manta ray in the Fishing Trawler and cook it in Port Khazard. Note: Completing or updating any other task in-between these steps will reset the progress for this task.",
+      "locations": [
+        {
+          "page_name": "Fishing Trawler",
+          "x": 2669,
+          "y": 3161,
+          "plane": 0
+        },
+        {
+          "page_name": "Port Khazard",
+          "x": 2653,
+          "y": 3159,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 4,
+      "ordinal": 2,
+      "diary": "Ardougne Diary",
+      "tier": "Elite",
+      "text": "Picklock the door to the basement of Yanille Agility Dungeon.",
+      "locations": [
+        {
+          "page_name": "Yanille Agility Dungeon",
+          "x": 2584,
+          "y": 9481,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 4,
+      "ordinal": 3,
+      "diary": "Ardougne Diary",
+      "tier": "Elite",
+      "text": "Pickpocket a Hero.",
+      "locations": []
+    },
+    {
+      "tier_id": 4,
+      "ordinal": 4,
+      "diary": "Ardougne Diary",
+      "tier": "Elite",
+      "text": "Make a rune crossbow yourself from scratch within Witchaven or Yanille. Note: You must use the spinning wheel in Witchaven to make the crossbow string and the anvil in Yanille to make the runite limbs. Fletching the yew stock and completing the rune crossbow can be done in either settlement. Completing or updating any other task in-between these steps will reset the progress for this task.",
+      "locations": [
+        {
+          "page_name": "Witchaven",
+          "x": 2720,
+          "y": 3287,
+          "plane": 0
+        },
+        {
+          "page_name": "Yanille",
+          "x": 2577,
+          "y": 3090,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 4,
+      "ordinal": 5,
+      "diary": "Ardougne Diary",
+      "tier": "Elite",
+      "text": "Imbue a Salve amulet at Nightmare Zone, or equip a Salve amulet that was imbued there. Note: You cannot use a Scroll of imbuing from Emir's Arena or use Zeal Tokens from Soul Wars. In Deadman Mode, the task is \"Attempt to equip an imbued Salve amulet at the Nightmare Zone plinth.\" NOTE: Whilst the text reads imbued, you must wear a Salve (ei) not Salve (i)",
+      "locations": [
+        {
+          "page_name": "Nightmare Zone",
+          "x": 2605,
+          "y": 3115,
+          "plane": 0
+        },
+        {
+          "page_name": "Emir's Arena",
+          "x": 3360,
+          "y": 3233,
+          "plane": 0
+        },
+        {
+          "page_name": "Soul Wars",
+          "x": 2206,
+          "y": 2900,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 4,
+      "ordinal": 6,
+      "diary": "Ardougne Diary",
+      "tier": "Elite",
+      "text": "Pick some Torstol from the patch north of Ardougne.",
+      "locations": [
+        {
+          "page_name": "Ardougne",
+          "x": 2570,
+          "y": 3300,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 4,
+      "ordinal": 7,
+      "diary": "Ardougne Diary",
+      "tier": "Elite",
+      "text": "Complete a lap of Ardougne's rooftop agility course.",
+      "locations": []
+    },
+    {
+      "tier_id": 4,
+      "ordinal": 8,
+      "diary": "Ardougne Diary",
+      "tier": "Elite",
+      "text": "Cast Ice Barrage on another player within Castle Wars. Note: You have to successfully hit the player, so multiple casts are recommended. In Deadman Mode, the task is \"Visit the Castle Wars lobby with at least 94 Magic after completing Desert Treasure I.\"",
+      "locations": [
+        {
+          "page_name": "Castle Wars",
+          "x": 2407,
+          "y": 3105,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 5,
+      "ordinal": 1,
+      "diary": "Desert Diary",
+      "tier": "Easy",
+      "text": "Catch a Golden Warbler.",
+      "locations": []
+    },
+    {
+      "tier_id": 5,
+      "ordinal": 2,
+      "diary": "Desert Diary",
+      "tier": "Easy",
+      "text": "Mine 5 clay in the north-eastern desert.",
+      "locations": [
+        {
+          "page_name": "Uzer mine",
+          "x": 3416,
+          "y": 3160,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 5,
+      "ordinal": 3,
+      "diary": "Desert Diary",
+      "tier": "Easy",
+      "text": "Enter the Kalphite Hive.",
+      "locations": []
+    },
+    {
+      "tier_id": 5,
+      "ordinal": 4,
+      "diary": "Desert Diary",
+      "tier": "Easy",
+      "text": "Enter the Desert with a set of Desert robes equipped. Note: Not to be confused with the desert outfit, which doesn't count for this task. You also cannot use the black desert shirt or black desert robe.",
+      "locations": []
+    },
+    {
+      "tier_id": 5,
+      "ordinal": 5,
+      "diary": "Desert Diary",
+      "tier": "Easy",
+      "text": "Kill a Vulture Note: These are found north of Menaphos or Sophanem.",
+      "locations": [
+        {
+          "page_name": "Menaphos",
+          "x": 3200,
+          "y": 2745,
+          "plane": 0
+        },
+        {
+          "page_name": "Sophanem",
+          "x": 3297,
+          "y": 2783,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 5,
+      "ordinal": 6,
+      "diary": "Desert Diary",
+      "tier": "Easy",
+      "text": "Have the Nardah Herbalist clean a Herb for you. Note: You have to talk to Zahur to complete this task. Do not use the grimy herb on her to clean it.",
+      "locations": [
+        {
+          "page_name": "Zahur",
+          "x": 3425,
+          "y": 2908,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 5,
+      "ordinal": 7,
+      "diary": "Desert Diary",
+      "tier": "Easy",
+      "text": "Collect 5 Potato Cactus from the Kalphite Hive. Note: You can bring a single potato cactus to the lair, then drop and pick it up five times.",
+      "locations": []
+    },
+    {
+      "tier_id": 5,
+      "ordinal": 8,
+      "diary": "Desert Diary",
+      "tier": "Easy",
+      "text": "Sell some artefacts to Simon Templeton. Note: The pyramid top from the nearby Agility Pyramid does not count.",
+      "locations": [
+        {
+          "page_name": "Simon Templeton",
+          "x": 3344,
+          "y": 2828,
+          "plane": 0
+        },
+        {
+          "page_name": "Agility Pyramid",
+          "x": 3365,
+          "y": 2842,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 5,
+      "ordinal": 9,
+      "diary": "Desert Diary",
+      "tier": "Easy",
+      "text": "Open the Sarcophagus in the first room of Pyramid Plunder",
+      "locations": [
+        {
+          "page_name": "Pyramid Plunder",
+          "x": 3289,
+          "y": 2793,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 5,
+      "ordinal": 10,
+      "diary": "Desert Diary",
+      "tier": "Easy",
+      "text": "Cut a desert cactus open to fill a waterskin.",
+      "locations": []
+    },
+    {
+      "tier_id": 5,
+      "ordinal": 11,
+      "diary": "Desert Diary",
+      "tier": "Easy",
+      "text": "Travel from the Shantay Pass to Pollnivneach by Magic Carpet.",
+      "locations": [
+        {
+          "page_name": "Shantay Pass",
+          "x": 3304,
+          "y": 3123,
+          "plane": 0
+        },
+        {
+          "page_name": "Pollnivneach",
+          "x": 3358,
+          "y": 2974,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 6,
+      "ordinal": 1,
+      "diary": "Desert Diary",
+      "tier": "Medium",
+      "text": "Climb to the summit of the Agility Pyramid.",
+      "locations": [
+        {
+          "page_name": "Agility Pyramid",
+          "x": 3365,
+          "y": 2842,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 6,
+      "ordinal": 2,
+      "diary": "Desert Diary",
+      "tier": "Medium",
+      "text": "Slay a desert lizard.",
+      "locations": []
+    },
+    {
+      "tier_id": 6,
+      "ordinal": 3,
+      "diary": "Desert Diary",
+      "tier": "Medium",
+      "text": "Catch an Orange Salamander.",
+      "locations": []
+    },
+    {
+      "tier_id": 6,
+      "ordinal": 4,
+      "diary": "Desert Diary",
+      "tier": "Medium",
+      "text": "Steal a feather from the Desert Phoenix.",
+      "locations": [
+        {
+          "page_name": "Desert Phoenix",
+          "x": 3419,
+          "y": 3155,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 6,
+      "ordinal": 5,
+      "diary": "Desert Diary",
+      "tier": "Medium",
+      "text": "Travel to Uzer via Magic Carpet.",
+      "locations": [
+        {
+          "page_name": "Ruins of Uzer",
+          "x": 3480,
+          "y": 3095,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 6,
+      "ordinal": 6,
+      "diary": "Desert Diary",
+      "tier": "Medium",
+      "text": "Travel to the Desert via Eagle. Note: You'll unlock travel from the Eagles' Peak Dungeon after the required quest.",
+      "locations": []
+    },
+    {
+      "tier_id": 6,
+      "ordinal": 7,
+      "diary": "Desert Diary",
+      "tier": "Medium",
+      "text": "Pray at the Elidinis statuette in Nardah Note: Requires you to have less than full Prayer points.",
+      "locations": [
+        {
+          "page_name": "Elidinis statuette",
+          "x": 3426,
+          "y": 2930,
+          "plane": 0
+        },
+        {
+          "page_name": "Nardah",
+          "x": 3427,
+          "y": 2911,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 6,
+      "ordinal": 8,
+      "diary": "Desert Diary",
+      "tier": "Medium",
+      "text": "Create a combat potion in the desert.",
+      "locations": []
+    },
+    {
+      "tier_id": 6,
+      "ordinal": 9,
+      "diary": "Desert Diary",
+      "tier": "Medium",
+      "text": "Teleport to Enakhra's Temple with the Camulet.",
+      "locations": [
+        {
+          "page_name": "Enakhra's Temple",
+          "x": 3104,
+          "y": 9312,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 6,
+      "ordinal": 10,
+      "diary": "Desert Diary",
+      "tier": "Medium",
+      "text": "Visit the Genie. Note: This task is automatically completed during Spirits of the Elid.",
+      "locations": [
+        {
+          "page_name": "Genie (Spirits of the Elid)",
+          "x": 3371,
+          "y": 9310,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 6,
+      "ordinal": 11,
+      "diary": "Desert Diary",
+      "tier": "Medium",
+      "text": "Teleport to Pollnivneach with a redirected teleport to house tablet. Note: Ironmen must instead enter their house via the Pollnivneach house portal.",
+      "locations": [
+        {
+          "page_name": "Pollnivneach",
+          "x": 3358,
+          "y": 2974,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 6,
+      "ordinal": 12,
+      "diary": "Desert Diary",
+      "tier": "Medium",
+      "text": "Chop some Teak Logs near Uzer. Note: Teak trees are found north-east of the oasis.",
+      "locations": [
+        {
+          "page_name": "Ruins of Uzer",
+          "x": 3480,
+          "y": 3095,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 7,
+      "ordinal": 1,
+      "diary": "Desert Diary",
+      "tier": "Hard",
+      "text": "Knock out and pickpocket a Menaphite Thug.",
+      "locations": []
+    },
+    {
+      "tier_id": 7,
+      "ordinal": 2,
+      "diary": "Desert Diary",
+      "tier": "Hard",
+      "text": "Mine some Granite. Mining granite at the Cape Conch mine in The Great Conch will also complete this task.",
+      "locations": [
+        {
+          "page_name": "Cape Conch mine",
+          "x": 3249,
+          "y": 2351,
+          "plane": 0
+        },
+        {
+          "page_name": "The Great Conch",
+          "x": 3200,
+          "y": 2435,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 7,
+      "ordinal": 3,
+      "diary": "Desert Diary",
+      "tier": "Hard",
+      "text": "Refill your waterskins in the Desert using Lunar magic. Note: The spell must be cast outside of a desert settlement.",
+      "locations": []
+    },
+    {
+      "tier_id": 7,
+      "ordinal": 4,
+      "diary": "Desert Diary",
+      "tier": "Hard",
+      "text": "Kill the Kalphite Queen.",
+      "locations": []
+    },
+    {
+      "tier_id": 7,
+      "ordinal": 5,
+      "diary": "Desert Diary",
+      "tier": "Hard",
+      "text": "Complete a lap of the Pollnivneach agility course.",
+      "locations": []
+    },
+    {
+      "tier_id": 7,
+      "ordinal": 6,
+      "diary": "Desert Diary",
+      "tier": "Hard",
+      "text": "Slay a Dust Devil in the desert cave with a Slayer helmet equipped.",
+      "locations": [
+        {
+          "page_name": "Smoke Dungeon",
+          "x": 3310,
+          "y": 2962,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 7,
+      "ordinal": 7,
+      "diary": "Desert Diary",
+      "tier": "Hard",
+      "text": "Activate Ancient Magicks at the altar in the Jaldraocht Pyramid.",
+      "locations": [
+        {
+          "page_name": "Altar_(Ancient_Pyramid)",
+          "x": 3232,
+          "y": 9311,
+          "plane": 0
+        },
+        {
+          "page_name": "Ancient Pyramid",
+          "x": 3232,
+          "y": 2898,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 7,
+      "ordinal": 8,
+      "diary": "Desert Diary",
+      "tier": "Hard",
+      "text": "Defeat a Locust Rider with Keris. Note: This weapon only has to be equipped as it dies, allowing you to deal damage with other weapons. Keris partisan and its variants also work for completing this task.",
+      "locations": []
+    },
+    {
+      "tier_id": 7,
+      "ordinal": 9,
+      "diary": "Desert Diary",
+      "tier": "Hard",
+      "text": "Burn some yew logs on the Nardah Mayor's balcony. Note: He lives directly east of the central fountain.",
+      "locations": [
+        {
+          "page_name": "Nardah Mayor",
+          "x": 3444,
+          "y": 2916,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 7,
+      "ordinal": 10,
+      "diary": "Desert Diary",
+      "tier": "Hard",
+      "text": "Create a Mithril Platebody in Nardah. Note: The anvil is found in the westernmost building.",
+      "locations": [
+        {
+          "page_name": "Nardah",
+          "x": 3427,
+          "y": 2911,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 8,
+      "ordinal": 1,
+      "diary": "Desert Diary",
+      "tier": "Elite",
+      "text": "Bake a wild pie at the Nardah Clay Oven.",
+      "locations": [
+        {
+          "page_name": "Nardah",
+          "x": 3427,
+          "y": 2911,
+          "plane": 0
+        },
+        {
+          "page_name": "Clay oven",
+          "x": 1648,
+          "y": 3627,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 8,
+      "ordinal": 2,
+      "diary": "Desert Diary",
+      "tier": "Elite",
+      "text": "Cast Ice Barrage against a foe in the Desert Note: The spell must be cast outside of a desert settlement, and must successfully hit.",
+      "locations": []
+    },
+    {
+      "tier_id": 8,
+      "ordinal": 3,
+      "diary": "Desert Diary",
+      "tier": "Elite",
+      "text": "Fletch some Dragon darts at the Bedabin Camp.",
+      "locations": [
+        {
+          "page_name": "Bedabin Camp",
+          "x": 3169,
+          "y": 3036,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 8,
+      "ordinal": 4,
+      "diary": "Desert Diary",
+      "tier": "Elite",
+      "text": "Speak to the KQ head in your POH. Note: The Kalphite Queen has a 1/128 chance of dropping her head on death, and is guaranteed to drop a tattered head on the 256th kill, both of which can be used to create the KQ head.",
+      "locations": []
+    },
+    {
+      "tier_id": 8,
+      "ordinal": 5,
+      "diary": "Desert Diary",
+      "tier": "Elite",
+      "text": "Steal from the Grand Gold Chest in the final room of Pyramid Plunder.",
+      "locations": [
+        {
+          "page_name": "Pyramid Plunder",
+          "x": 3289,
+          "y": 2793,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 8,
+      "ordinal": 6,
+      "diary": "Desert Diary",
+      "tier": "Elite",
+      "text": "Restore at least 85 Prayer points when praying at the Altar in Sophanem.",
+      "locations": [
+        {
+          "page_name": "Altar (Sophanem)",
+          "x": 3280,
+          "y": 2774,
+          "plane": 0
+        },
+        {
+          "page_name": "Sophanem",
+          "x": 3297,
+          "y": 2783,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 9,
+      "ordinal": 1,
+      "diary": "Falador Diary",
+      "tier": "Easy",
+      "text": "Find out what your family crest is from Sir Renitee Note: You must finish the dialogue.",
+      "locations": [
+        {
+          "page_name": "Sir Renitee",
+          "x": 2982,
+          "y": 3341,
+          "plane": 1
+        }
+      ]
+    },
+    {
+      "tier_id": 9,
+      "ordinal": 2,
+      "diary": "Falador Diary",
+      "tier": "Easy",
+      "text": "Climb over the western Falador wall.",
+      "locations": [
+        {
+          "page_name": "Falador",
+          "x": 3000,
+          "y": 3360,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 9,
+      "ordinal": 3,
+      "diary": "Falador Diary",
+      "tier": "Easy",
+      "text": "Browse Sarah's farm shop.",
+      "locations": [
+        {
+          "page_name": "Sarah's Farming shop.",
+          "x": 3038,
+          "y": 3294,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 9,
+      "ordinal": 4,
+      "diary": "Falador Diary",
+      "tier": "Easy",
+      "text": "Get a Haircut or a Shave from the Falador Hairdresser.",
+      "locations": [
+        {
+          "page_name": "Hairdresser",
+          "x": 2945,
+          "y": 3380,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 9,
+      "ordinal": 5,
+      "diary": "Falador Diary",
+      "tier": "Easy",
+      "text": "Fill a bucket from the pump north of Falador west bank.",
+      "locations": [
+        {
+          "page_name": "Falador west bank",
+          "x": 2943,
+          "y": 3374,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 9,
+      "ordinal": 6,
+      "diary": "Falador Diary",
+      "tier": "Easy",
+      "text": "Kill a duck in Falador Park.",
+      "locations": [
+        {
+          "page_name": "Falador Park",
+          "x": 3003,
+          "y": 3380,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 9,
+      "ordinal": 7,
+      "diary": "Falador Diary",
+      "tier": "Easy",
+      "text": "Make a mind tiara.",
+      "locations": []
+    },
+    {
+      "tier_id": 9,
+      "ordinal": 8,
+      "diary": "Falador Diary",
+      "tier": "Easy",
+      "text": "Take the boat to Entrana.",
+      "locations": [
+        {
+          "page_name": "Monk_of_Entrana",
+          "x": 3047,
+          "y": 3235,
+          "plane": 0
+        },
+        {
+          "page_name": "Entrana",
+          "x": 2840,
+          "y": 3358,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 9,
+      "ordinal": 9,
+      "diary": "Falador Diary",
+      "tier": "Easy",
+      "text": "Repair a broken strut in the Motherlode Mine.",
+      "locations": [
+        {
+          "page_name": "broken strut",
+          "x": 3102,
+          "y": 9701,
+          "plane": 0
+        },
+        {
+          "page_name": "Motherlode Mine",
+          "x": 3744,
+          "y": 5664,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 9,
+      "ordinal": 10,
+      "diary": "Falador Diary",
+      "tier": "Easy",
+      "text": "Claim a security book from the Security guard at Port Sarim jail. Note: The guard is found upstairs. Ask him about security and finish the dialogue.",
+      "locations": [
+        {
+          "page_name": "Security guard",
+          "x": 3013,
+          "y": 3192,
+          "plane": 1
+        },
+        {
+          "page_name": "Port Sarim",
+          "x": 3029,
+          "y": 3221,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 9,
+      "ordinal": 11,
+      "diary": "Falador Diary",
+      "tier": "Easy",
+      "text": "Smith some Blurite Limbs on Doric's anvil.",
+      "locations": [
+        {
+          "page_name": "Doric",
+          "x": 2952,
+          "y": 3452,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 10,
+      "ordinal": 1,
+      "diary": "Falador Diary",
+      "tier": "Medium",
+      "text": "Light a Bullseye lantern at the Chemist's in Rimmington.",
+      "locations": [
+        {
+          "page_name": "Chemist",
+          "x": 2932,
+          "y": 3210,
+          "plane": 0
+        },
+        {
+          "page_name": "Rimmington",
+          "x": 2956,
+          "y": 3232,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 10,
+      "ordinal": 2,
+      "diary": "Falador Diary",
+      "tier": "Medium",
+      "text": "Telegrab some Wine of Zamorak at the Chaos Temple by the Wilderness. Note: This altar is located north-west of the Goblin Village. You have to be inside the building until the jug appears in your inventory for the task to register as completed.",
+      "locations": [
+        {
+          "page_name": "Chaos Temple (Asgarnia)",
+          "x": 2934,
+          "y": 3516,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 10,
+      "ordinal": 3,
+      "diary": "Falador Diary",
+      "tier": "Medium",
+      "text": "Unlock the Crystal chest in Taverley.",
+      "locations": [
+        {
+          "page_name": "Crystal chest",
+          "x": 2914,
+          "y": 3452,
+          "plane": 0
+        },
+        {
+          "page_name": "Taverley",
+          "x": 2910,
+          "y": 3451,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 10,
+      "ordinal": 4,
+      "diary": "Falador Diary",
+      "tier": "Medium",
+      "text": "Place a Scarecrow in the Falador farm flower patch.",
+      "locations": [
+        {
+          "page_name": "Falador farm",
+          "x": 3043,
+          "y": 3294,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 10,
+      "ordinal": 5,
+      "diary": "Falador Diary",
+      "tier": "Medium",
+      "text": "Kill a Mogre at Mudskipper Point.",
+      "locations": [
+        {
+          "page_name": "Mudskipper Point",
+          "x": 2999,
+          "y": 3122,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 10,
+      "ordinal": 6,
+      "diary": "Falador Diary",
+      "tier": "Medium",
+      "text": "Visit the Port Sarim Rat Pits.",
+      "locations": [
+        {
+          "page_name": "Port Sarim",
+          "x": 3029,
+          "y": 3221,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 10,
+      "ordinal": 7,
+      "diary": "Falador Diary",
+      "tier": "Medium",
+      "text": "Grapple up and then jump off the north Falador wall.",
+      "locations": [
+        {
+          "page_name": "Falador",
+          "x": 3000,
+          "y": 3360,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 10,
+      "ordinal": 8,
+      "diary": "Falador Diary",
+      "tier": "Medium",
+      "text": "Pickpocket a Falador guard.",
+      "locations": [
+        {
+          "page_name": "Falador",
+          "x": 3000,
+          "y": 3360,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 10,
+      "ordinal": 9,
+      "diary": "Falador Diary",
+      "tier": "Medium",
+      "text": "Pray at the Altar of Guthix in Taverley whilst wearing full Initiate.",
+      "locations": [
+        {
+          "page_name": "Taverley",
+          "x": 2910,
+          "y": 3451,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 10,
+      "ordinal": 10,
+      "diary": "Falador Diary",
+      "tier": "Medium",
+      "text": "Mine some Gold ore at the Crafting Guild.",
+      "locations": [
+        {
+          "page_name": "Crafting Guild",
+          "x": 2932,
+          "y": 3281,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 10,
+      "ordinal": 11,
+      "diary": "Falador Diary",
+      "tier": "Medium",
+      "text": "Squeeze through the crevice in the Dwarven mines.",
+      "locations": []
+    },
+    {
+      "tier_id": 10,
+      "ordinal": 12,
+      "diary": "Falador Diary",
+      "tier": "Medium",
+      "text": "Chop and burn some Willow logs in Taverley. Note: Willow trees can be found to the south-east along the lake. Player-grown willow trees do not count towards completing the task.",
+      "locations": [
+        {
+          "page_name": "Taverley",
+          "x": 2910,
+          "y": 3451,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 10,
+      "ordinal": 13,
+      "diary": "Falador Diary",
+      "tier": "Medium",
+      "text": "Craft a fruit basket on the Falador Farm loom.",
+      "locations": [
+        {
+          "page_name": "Falador Farm",
+          "x": 3043,
+          "y": 3294,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 10,
+      "ordinal": 14,
+      "diary": "Falador Diary",
+      "tier": "Medium",
+      "text": "Teleport to Falador.",
+      "locations": [
+        {
+          "page_name": "Falador",
+          "x": 3000,
+          "y": 3360,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 11,
+      "ordinal": 1,
+      "diary": "Falador Diary",
+      "tier": "Hard",
+      "text": "Craft 140 Mind runes simultaneously from Essence without the use of Extracts. Note: Mind cores do not count.",
+      "locations": []
+    },
+    {
+      "tier_id": 11,
+      "ordinal": 2,
+      "diary": "Falador Diary",
+      "tier": "Hard",
+      "text": "Change your family crest to the Saradomin symbol. Note: This is done by talking to Sir Renitee.",
+      "locations": [
+        {
+          "page_name": "Sir Renitee",
+          "x": 2982,
+          "y": 3341,
+          "plane": 1
+        }
+      ]
+    },
+    {
+      "tier_id": 11,
+      "ordinal": 3,
+      "diary": "Falador Diary",
+      "tier": "Hard",
+      "text": "Kill the Giant Mole beneath Falador Park.",
+      "locations": [
+        {
+          "page_name": "Falador Park",
+          "x": 3003,
+          "y": 3380,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 11,
+      "ordinal": 4,
+      "diary": "Falador Diary",
+      "tier": "Hard",
+      "text": "Kill a Skeletal Wyvern in the Asgarnia Ice Dungeon.",
+      "locations": [
+        {
+          "page_name": "Asgarnia Ice Dungeon",
+          "x": 3008,
+          "y": 3150,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 11,
+      "ordinal": 5,
+      "diary": "Falador Diary",
+      "tier": "Hard",
+      "text": "Complete a lap of the Falador rooftop agility course.",
+      "locations": []
+    },
+    {
+      "tier_id": 11,
+      "ordinal": 6,
+      "diary": "Falador Diary",
+      "tier": "Hard",
+      "text": "Enter the mining guild while wearing a Prospector helmet. Note: This helmet can be obtained from the Motherlode Mine or the Volcanic Mine.",
+      "locations": [
+        {
+          "page_name": "mining guild",
+          "x": 3032,
+          "y": 9728,
+          "plane": 0
+        },
+        {
+          "page_name": "Motherlode Mine",
+          "x": 3744,
+          "y": 5664,
+          "plane": 0
+        },
+        {
+          "page_name": "Volcanic Mine",
+          "x": 3814,
+          "y": 3807,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 11,
+      "ordinal": 7,
+      "diary": "Falador Diary",
+      "tier": "Hard",
+      "text": "Kill the Blue Dragon under the Heroes' Guild.",
+      "locations": [
+        {
+          "page_name": "Heroes' Guild",
+          "x": 2893,
+          "y": 3510,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 11,
+      "ordinal": 8,
+      "diary": "Falador Diary",
+      "tier": "Hard",
+      "text": "Crack a wall safe within Rogues' Den. Note: Wall safes in the maze do not count towards completing this task.",
+      "locations": [
+        {
+          "page_name": "Wall safe (lobby)",
+          "x": 3052,
+          "y": 4975,
+          "plane": 0
+        },
+        {
+          "page_name": "Rogues' Den",
+          "x": 2906,
+          "y": 3537,
+          "plane": 0
+        },
+        {
+          "page_name": "Wall safe",
+          "x": 3016,
+          "y": 5048,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 11,
+      "ordinal": 9,
+      "diary": "Falador Diary",
+      "tier": "Hard",
+      "text": "Recharge your prayer in the Port Sarim church while wearing full Proselyte.",
+      "locations": [
+        {
+          "page_name": "Rimmington church",
+          "x": 2999,
+          "y": 3182,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 11,
+      "ordinal": 10,
+      "diary": "Falador Diary",
+      "tier": "Hard",
+      "text": "Enter the Warriors' Guild.",
+      "locations": [
+        {
+          "page_name": "Warriors' Guild",
+          "x": 2838,
+          "y": 3556,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 11,
+      "ordinal": 11,
+      "diary": "Falador Diary",
+      "tier": "Hard",
+      "text": "Equip a dwarven helmet within the dwarven mines.",
+      "locations": []
+    },
+    {
+      "tier_id": 12,
+      "ordinal": 1,
+      "diary": "Falador Diary",
+      "tier": "Elite",
+      "text": "Craft 252 Air Runes simultaneously from Essence without the use of Extracts.",
+      "locations": []
+    },
+    {
+      "tier_id": 12,
+      "ordinal": 2,
+      "diary": "Falador Diary",
+      "tier": "Elite",
+      "text": "Purchase a White 2h Sword from Sir Vyvin. Note: Selling this sword to him and then buying it back without having the proper rank does not count for this achievement.",
+      "locations": [
+        {
+          "page_name": "Sir Vyvin",
+          "x": 2984,
+          "y": 3339,
+          "plane": 2
+        }
+      ]
+    },
+    {
+      "tier_id": 12,
+      "ordinal": 3,
+      "diary": "Falador Diary",
+      "tier": "Elite",
+      "text": "Find at least 3 magic roots at once when digging up your magic tree in Falador. Note: You need to cut the tree down yourself.",
+      "locations": [
+        {
+          "page_name": "Falador",
+          "x": 3000,
+          "y": 3360,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 12,
+      "ordinal": 4,
+      "diary": "Falador Diary",
+      "tier": "Elite",
+      "text": "Perform a skillcape or quest cape emote at the top of Falador Castle.",
+      "locations": [
+        {
+          "page_name": "White Knights' Castle",
+          "x": 2974,
+          "y": 3342,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 12,
+      "ordinal": 5,
+      "diary": "Falador Diary",
+      "tier": "Elite",
+      "text": "Jump over the strange floor in Taverley dungeon. Note: Might take several tries. You must take no damage from the jump.",
+      "locations": [
+        {
+          "page_name": "Strange floor (Taverley Dungeon)",
+          "x": 2879,
+          "y": 9813,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 12,
+      "ordinal": 6,
+      "diary": "Falador Diary",
+      "tier": "Elite",
+      "text": "Mix a Saradomin brew in Falador east bank.",
+      "locations": [
+        {
+          "page_name": "Falador east bank",
+          "x": 3009,
+          "y": 3359,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 13,
+      "ordinal": 1,
+      "diary": "Fremennik Diary",
+      "tier": "Easy",
+      "text": "Catch a Cerulean twitch. Note: These birds are found in the Rellekka Hunter area. While you're here, with a high enough Hunter level you can also complete a medium and a hard task by catching a Snowy knight and Sabre-toothed kyatt, respectively.",
+      "locations": [
+        {
+          "page_name": "Rellekka Hunter area",
+          "x": 2721,
+          "y": 3791,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 13,
+      "ordinal": 2,
+      "diary": "Fremennik Diary",
+      "tier": "Easy",
+      "text": "Change your boots at Yrsa's Shoe Store. Note: Her shoe store has been removed in an update. You'll now have to talk to her for a makeover for 500 coins. Alternatively, you can freely browse her regular clothing store for the task to count as completed.",
+      "locations": [
+        {
+          "page_name": "Yrsa",
+          "x": 2624,
+          "y": 3674,
+          "plane": 0
+        },
+        {
+          "page_name": "Yrsa's Shoe Store",
+          "x": 2625,
+          "y": 3675,
+          "plane": 0
+        },
+        {
+          "page_name": "Yrsa's Accoutrements",
+          "x": 2624,
+          "y": 3674,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 13,
+      "ordinal": 3,
+      "diary": "Fremennik Diary",
+      "tier": "Easy",
+      "text": "Kill 5 Rock crabs. Note: The giant rock crabs and rock lobsters on Waterbirth Island do not count.",
+      "locations": [
+        {
+          "page_name": "Waterbirth Island",
+          "x": 2525,
+          "y": 3743,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 13,
+      "ordinal": 4,
+      "diary": "Fremennik Diary",
+      "tier": "Easy",
+      "text": "Craft a tiara from scratch in Rellekka. Note: You have to mine silver ore from the Rellekka mine, then use it on the furnace in the city's westernmost building. Completing or updating any other task in-between these steps will reset the progress for this task.",
+      "locations": [
+        {
+          "page_name": "Rellekka",
+          "x": 2658,
+          "y": 3677,
+          "plane": 0
+        },
+        {
+          "page_name": "Rellekka mine",
+          "x": 2683,
+          "y": 3704,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 13,
+      "ordinal": 5,
+      "diary": "Fremennik Diary",
+      "tier": "Easy",
+      "text": "Browse the Stonemasons shop. Note: He is located in western Keldagrim. Right-click him to trade.",
+      "locations": [
+        {
+          "page_name": "Stonemason",
+          "x": 2849,
+          "y": 10185,
+          "plane": 0
+        },
+        {
+          "page_name": "Keldagrim",
+          "x": 2879,
+          "y": 10176,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 13,
+      "ordinal": 6,
+      "diary": "Fremennik Diary",
+      "tier": "Easy",
+      "text": "Collect 5 Snape grass on Waterbirth Island. Note: You can drop and pick up the same snape grass five times.",
+      "locations": [
+        {
+          "page_name": "Waterbirth Island",
+          "x": 2525,
+          "y": 3743,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 13,
+      "ordinal": 7,
+      "diary": "Fremennik Diary",
+      "tier": "Easy",
+      "text": "Steal from the Keldagrim crafting or baker's stall. Note: These are located on the eastern side of the Keldagrim Palace.",
+      "locations": [
+        {
+          "page_name": "Keldagrim",
+          "x": 2879,
+          "y": 10176,
+          "plane": 0
+        },
+        {
+          "page_name": "Keldagrim Palace",
+          "x": 2860,
+          "y": 10213,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 13,
+      "ordinal": 8,
+      "diary": "Fremennik Diary",
+      "tier": "Easy",
+      "text": "Fill a bucket with water at the Rellekka well. Note: There's a bucket of milk north of the well that can be emptied and filled with water.",
+      "locations": []
+    },
+    {
+      "tier_id": 13,
+      "ordinal": 9,
+      "diary": "Fremennik Diary",
+      "tier": "Easy",
+      "text": "Enter the Troll Stronghold.",
+      "locations": [
+        {
+          "page_name": "Troll Stronghold (location)",
+          "x": 2836,
+          "y": 3680,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 13,
+      "ordinal": 10,
+      "diary": "Fremennik Diary",
+      "tier": "Easy",
+      "text": "Chop and burn some oak logs in the Fremennik Province. Note: Oak trees can be found near the Rellekka house portal.",
+      "locations": []
+    },
+    {
+      "tier_id": 14,
+      "ordinal": 1,
+      "diary": "Fremennik Diary",
+      "tier": "Medium",
+      "text": "Slay a Brine rat.",
+      "locations": []
+    },
+    {
+      "tier_id": 14,
+      "ordinal": 2,
+      "diary": "Fremennik Diary",
+      "tier": "Medium",
+      "text": "Travel to the Snowy Hunter Area via Eagle. Note: You'll unlock travel from the Eagles' Peak Dungeon after the required quest.",
+      "locations": [
+        {
+          "page_name": "Snowy Hunter Area",
+          "x": 2721,
+          "y": 3791,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 14,
+      "ordinal": 3,
+      "diary": "Fremennik Diary",
+      "tier": "Medium",
+      "text": "Mine some coal in Rellekka.",
+      "locations": [
+        {
+          "page_name": "Rellekka",
+          "x": 2658,
+          "y": 3677,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 14,
+      "ordinal": 4,
+      "diary": "Fremennik Diary",
+      "tier": "Medium",
+      "text": "Steal from the Rellekka Fish stalls.",
+      "locations": [
+        {
+          "page_name": "Rellekka",
+          "x": 2658,
+          "y": 3677,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 14,
+      "ordinal": 5,
+      "diary": "Fremennik Diary",
+      "tier": "Medium",
+      "text": "Travel to Miscellania by Fairy ring.",
+      "locations": [
+        {
+          "page_name": "Miscellania",
+          "x": 2560,
+          "y": 3870,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 14,
+      "ordinal": 6,
+      "diary": "Fremennik Diary",
+      "tier": "Medium",
+      "text": "Catch a Snowy knight.",
+      "locations": []
+    },
+    {
+      "tier_id": 14,
+      "ordinal": 7,
+      "diary": "Fremennik Diary",
+      "tier": "Medium",
+      "text": "Pick up your Pet Rock from your POH Menagerie. Note: You need to use your pet rock on a pet house, then retrieve it off the ground. You cannot be in building mode.",
+      "locations": []
+    },
+    {
+      "tier_id": 14,
+      "ordinal": 8,
+      "diary": "Fremennik Diary",
+      "tier": "Medium",
+      "text": "Visit the Lighthouse from Waterbirth island. Note: You must exit the Waterbirth Island Dungeon on the 5th sublevel.",
+      "locations": [
+        {
+          "page_name": "Lighthouse",
+          "x": 2509,
+          "y": 3641,
+          "plane": 0
+        },
+        {
+          "page_name": "Waterbirth island",
+          "x": 2525,
+          "y": 3743,
+          "plane": 0
+        },
+        {
+          "page_name": "Waterbirth Island Dungeon",
+          "x": 2634,
+          "y": 9667,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 14,
+      "ordinal": 9,
+      "diary": "Fremennik Diary",
+      "tier": "Medium",
+      "text": "Mine some gold at the Arzinian mine. Note: This task is automatically completed during Between a Rock....",
+      "locations": [
+        {
+          "page_name": "Between a Rock...",
+          "x": 2731,
+          "y": 3713,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 15,
+      "ordinal": 1,
+      "diary": "Fremennik Diary",
+      "tier": "Hard",
+      "text": "Teleport to Trollheim.",
+      "locations": [
+        {
+          "page_name": "Trollheim",
+          "x": 2891,
+          "y": 3678,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 15,
+      "ordinal": 2,
+      "diary": "Fremennik Diary",
+      "tier": "Hard",
+      "text": "Catch a Sabre-toothed Kyatt.",
+      "locations": []
+    },
+    {
+      "tier_id": 15,
+      "ordinal": 3,
+      "diary": "Fremennik Diary",
+      "tier": "Hard",
+      "text": "Mix a super defence potion in the Fremennik Province. Note: This has to be done in or near Rellekka.",
+      "locations": [
+        {
+          "page_name": "Rellekka",
+          "x": 2658,
+          "y": 3677,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 15,
+      "ordinal": 4,
+      "diary": "Fremennik Diary",
+      "tier": "Hard",
+      "text": "Steal from the Keldagrim Gem Stall.",
+      "locations": [
+        {
+          "page_name": "Green_Gemstone_Gems",
+          "x": 2887,
+          "y": 10210,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 15,
+      "ordinal": 5,
+      "diary": "Fremennik Diary",
+      "tier": "Hard",
+      "text": "Craft a Neitiznot shield on Neitiznot.",
+      "locations": [
+        {
+          "page_name": "Neitiznot",
+          "x": 2331,
+          "y": 3802,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 15,
+      "ordinal": 6,
+      "diary": "Fremennik Diary",
+      "tier": "Hard",
+      "text": "Mine 5 Adamantite ores on Jatizso.",
+      "locations": [
+        {
+          "page_name": "Jatizso",
+          "x": 2405,
+          "y": 3805,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 15,
+      "ordinal": 7,
+      "diary": "Fremennik Diary",
+      "tier": "Hard",
+      "text": "Obtain 100% support from your kingdom subjects.",
+      "locations": []
+    },
+    {
+      "tier_id": 15,
+      "ordinal": 8,
+      "diary": "Fremennik Diary",
+      "tier": "Hard",
+      "text": "Teleport to Waterbirth Island.",
+      "locations": [
+        {
+          "page_name": "Waterbirth Island",
+          "x": 2525,
+          "y": 3743,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 15,
+      "ordinal": 9,
+      "diary": "Fremennik Diary",
+      "tier": "Hard",
+      "text": "Obtain the Blast Furnace Foremans permission to use the Blast Furnace for free. Note: With the requirements, talk to him and use the following dialogue options (say \"What?\" then \"Can I use the furnace to smelt ore?\" then \"I have level 60!\"). Selecting the wrong choices may require you to pay him, in which case you can hop to another world to try again.",
+      "locations": [
+        {
+          "page_name": "Blast Furnace Foreman",
+          "x": 1944,
+          "y": 4958,
+          "plane": 0
+        },
+        {
+          "page_name": "Blast Furnace",
+          "x": 2930,
+          "y": 10197,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 16,
+      "ordinal": 1,
+      "diary": "Fremennik Diary",
+      "tier": "Elite",
+      "text": "Kill each of the Dagannoth Kings. Note: Completing or updating any other task in-between these steps will reset the progress for this task.",
+      "locations": [
+        {
+          "page_name": "Dagannoth Kings",
+          "x": 2634,
+          "y": 9667,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 16,
+      "ordinal": 2,
+      "diary": "Fremennik Diary",
+      "tier": "Elite",
+      "text": "Craft 56 astral runes simultaneously from Essence without the use of Extracts.",
+      "locations": []
+    },
+    {
+      "tier_id": 16,
+      "ordinal": 3,
+      "diary": "Fremennik Diary",
+      "tier": "Elite",
+      "text": "Create a dragonstone amulet in the Neitiznot furnace. Note: Crafting a dragonstone amulet (u) is sufficient, you don't need a ball of wool for this task.",
+      "locations": []
+    },
+    {
+      "tier_id": 16,
+      "ordinal": 4,
+      "diary": "Fremennik Diary",
+      "tier": "Elite",
+      "text": "Complete a lap of the Rellekka agility course.",
+      "locations": []
+    },
+    {
+      "tier_id": 16,
+      "ordinal": 5,
+      "diary": "Fremennik Diary",
+      "tier": "Elite",
+      "text": "Kill the generals of Armadyl, Bandos, Saradomin and Zamorak in the God Wars Dungeon. Note: Having started the The Frozen Door miniquest is recommended to simultaneously unlock the key to Nex. You do not have to kill the generals' bodyguards for this task. Unlike most tasks that involve multiple steps, your progress towards this task will not reset when doing other tasks.",
+      "locations": []
+    },
+    {
+      "tier_id": 16,
+      "ordinal": 6,
+      "diary": "Fremennik Diary",
+      "tier": "Elite",
+      "text": "Slay a Spiritual mage within the Godwars Dungeon .",
+      "locations": []
+    },
+    {
+      "tier_id": 17,
+      "ordinal": 1,
+      "diary": "Kandarin Diary",
+      "tier": "Easy",
+      "text": "Catch a Mackerel at Catherby.",
+      "locations": [
+        {
+          "page_name": "Catherby",
+          "x": 2814,
+          "y": 3443,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 17,
+      "ordinal": 2,
+      "diary": "Kandarin Diary",
+      "tier": "Easy",
+      "text": "Buy a candle from the Chandler in Catherby.",
+      "locations": [
+        {
+          "page_name": "Candle Shop",
+          "x": 2799,
+          "y": 3439,
+          "plane": 0
+        },
+        {
+          "page_name": "Catherby",
+          "x": 2814,
+          "y": 3443,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 17,
+      "ordinal": 3,
+      "diary": "Kandarin Diary",
+      "tier": "Easy",
+      "text": "Collect five Flax from the Seers' flax fields.",
+      "locations": []
+    },
+    {
+      "tier_id": 17,
+      "ordinal": 4,
+      "diary": "Kandarin Diary",
+      "tier": "Easy",
+      "text": "Play the Organ in Seers' church.",
+      "locations": [
+        {
+          "page_name": "Seers' Village church",
+          "x": 2697,
+          "y": 3463,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 17,
+      "ordinal": 5,
+      "diary": "Kandarin Diary",
+      "tier": "Easy",
+      "text": "Plant some Jute seeds in the patch north of McGrubor's Wood. Note: This is the farming patch next to Rhonen.",
+      "locations": [
+        {
+          "page_name": "McGrubor's Wood",
+          "x": 2652,
+          "y": 3485,
+          "plane": 0
+        },
+        {
+          "page_name": "Rhonen",
+          "x": 2666,
+          "y": 3525,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 17,
+      "ordinal": 6,
+      "diary": "Kandarin Diary",
+      "tier": "Easy",
+      "text": "Have Galahad make you a cup of tea.",
+      "locations": [
+        {
+          "page_name": "Galahad",
+          "x": 2613,
+          "y": 3477,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 17,
+      "ordinal": 7,
+      "diary": "Kandarin Diary",
+      "tier": "Easy",
+      "text": "Defeat one of each elemental in the workshop. Note: These are the earth, water, air, and fire elemental found on the 1st floor of the workshop. Only the roaming earth elementals count.",
+      "locations": [
+        {
+          "page_name": "Elemental Workshop (location)",
+          "x": 2710,
+          "y": 3497,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 17,
+      "ordinal": 8,
+      "diary": "Kandarin Diary",
+      "tier": "Easy",
+      "text": "Get a pet fish from Harry in Catherby. Note: You have to talk to Harry with all required items in your inventory.",
+      "locations": [
+        {
+          "page_name": "Harry's Fishing Shop",
+          "x": 2830,
+          "y": 3447,
+          "plane": 0
+        },
+        {
+          "page_name": "Catherby",
+          "x": 2814,
+          "y": 3443,
+          "plane": 0
+        },
+        {
+          "page_name": "Harry",
+          "x": 2833,
+          "y": 3444,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 17,
+      "ordinal": 9,
+      "diary": "Kandarin Diary",
+      "tier": "Easy",
+      "text": "Buy a Stew from the Seers' pub.",
+      "locations": [
+        {
+          "page_name": "Forester's Arms",
+          "x": 2695,
+          "y": 3493,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 17,
+      "ordinal": 10,
+      "diary": "Kandarin Diary",
+      "tier": "Easy",
+      "text": "Speak to Sherlock.",
+      "locations": [
+        {
+          "page_name": "Sherlock",
+          "x": 2733,
+          "y": 3413,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 17,
+      "ordinal": 11,
+      "diary": "Kandarin Diary",
+      "tier": "Easy",
+      "text": "Cross the Coal truck log shortcut. Note: You can take a pickaxe to mine coal here to complete a medium task.",
+      "locations": [
+        {
+          "page_name": "Log balance (Coal Trucks)",
+          "x": 2599,
+          "y": 3477,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 18,
+      "ordinal": 1,
+      "diary": "Kandarin Diary",
+      "tier": "Medium",
+      "text": "Complete a lap of the Barbarian agility course.",
+      "locations": []
+    },
+    {
+      "tier_id": 18,
+      "ordinal": 2,
+      "diary": "Kandarin Diary",
+      "tier": "Medium",
+      "text": "Create a Super Antipoison potion from scratch in the Seers/Catherby Area. Note: Completing or updating any other task in-between adding ingredients will reset the progress for this task.",
+      "locations": [
+        {
+          "page_name": "Seers' Village",
+          "x": 2710,
+          "y": 3485,
+          "plane": 0
+        },
+        {
+          "page_name": "Catherby",
+          "x": 2814,
+          "y": 3443,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 18,
+      "ordinal": 3,
+      "diary": "Kandarin Diary",
+      "tier": "Medium",
+      "text": "Enter the Ranging guild.",
+      "locations": [
+        {
+          "page_name": "Ranging guild",
+          "x": 2667,
+          "y": 3446,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 18,
+      "ordinal": 4,
+      "diary": "Kandarin Diary",
+      "tier": "Medium",
+      "text": "Use the grapple shortcut to get from the water obelisk to Catherby shore. Note: With 56 Magic, you can bring an unpowered orb and runes for Charge Water Orb to complete a hard task.",
+      "locations": [
+        {
+          "page_name": "Crossbow Tree",
+          "x": 2844,
+          "y": 3430,
+          "plane": 0
+        },
+        {
+          "page_name": "Obelisk of Water",
+          "x": 2844,
+          "y": 3422,
+          "plane": 0
+        },
+        {
+          "page_name": "Catherby",
+          "x": 2814,
+          "y": 3443,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 18,
+      "ordinal": 5,
+      "diary": "Kandarin Diary",
+      "tier": "Medium",
+      "text": "Catch and cook a Bass in Catherby. Note: Completing or updating any other task in-between these steps will reset the progress for this task.",
+      "locations": [
+        {
+          "page_name": "Catherby",
+          "x": 2814,
+          "y": 3443,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 18,
+      "ordinal": 6,
+      "diary": "Kandarin Diary",
+      "tier": "Medium",
+      "text": "Teleport to Camelot.",
+      "locations": [
+        {
+          "page_name": "Camelot",
+          "x": 2758,
+          "y": 3507,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 18,
+      "ordinal": 7,
+      "diary": "Kandarin Diary",
+      "tier": "Medium",
+      "text": "String a Maple shortbow in Seers' Village bank.",
+      "locations": [
+        {
+          "page_name": "Seers' Village bank",
+          "x": 2725,
+          "y": 3492,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 18,
+      "ordinal": 8,
+      "diary": "Kandarin Diary",
+      "tier": "Medium",
+      "text": "Pick some Limpwurt root from the farming patch in Catherby. Note: This is the flower patch next to Dantaera.",
+      "locations": [
+        {
+          "page_name": "Catherby",
+          "x": 2814,
+          "y": 3443,
+          "plane": 0
+        },
+        {
+          "page_name": "Dantaera",
+          "x": 2810,
+          "y": 3464,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 18,
+      "ordinal": 9,
+      "diary": "Kandarin Diary",
+      "tier": "Medium",
+      "text": "Create a Mind helmet. Note: This task is automatically completed during Elemental Workshop II.",
+      "locations": []
+    },
+    {
+      "tier_id": 18,
+      "ordinal": 10,
+      "diary": "Kandarin Diary",
+      "tier": "Medium",
+      "text": "Kill a Fire Giant inside Baxtorian Waterfall.",
+      "locations": [
+        {
+          "page_name": "Waterfall Dungeon",
+          "x": 2559,
+          "y": 9920,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 18,
+      "ordinal": 11,
+      "diary": "Kandarin Diary",
+      "tier": "Medium",
+      "text": "Complete a wave of Barbarian Assault.",
+      "locations": [
+        {
+          "page_name": "Barbarian Assault",
+          "x": 2533,
+          "y": 3571,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 18,
+      "ordinal": 12,
+      "diary": "Kandarin Diary",
+      "tier": "Medium",
+      "text": "Steal from the chest in Hemenster. Note: This chest is located in the building between the buildings with the range and anvil.",
+      "locations": []
+    },
+    {
+      "tier_id": 18,
+      "ordinal": 13,
+      "diary": "Kandarin Diary",
+      "tier": "Medium",
+      "text": "Travel to McGrubor's Wood by Fairy Ring.",
+      "locations": [
+        {
+          "page_name": "McGrubor's Wood",
+          "x": 2652,
+          "y": 3485,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 18,
+      "ordinal": 14,
+      "diary": "Kandarin Diary",
+      "tier": "Medium",
+      "text": "Mine some coal near the coal trucks.",
+      "locations": [
+        {
+          "page_name": "coal trucks",
+          "x": 2598,
+          "y": 3490,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 19,
+      "ordinal": 1,
+      "diary": "Kandarin Diary",
+      "tier": "Hard",
+      "text": "Catch a Leaping Sturgeon. Note: Must be caught at Otto's Grotto for this task.",
+      "locations": [
+        {
+          "page_name": "Otto's Grotto",
+          "x": 2502,
+          "y": 3489,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 19,
+      "ordinal": 2,
+      "diary": "Kandarin Diary",
+      "tier": "Hard",
+      "text": "Complete a lap of the Seers' Village agility course.",
+      "locations": []
+    },
+    {
+      "tier_id": 19,
+      "ordinal": 3,
+      "diary": "Kandarin Diary",
+      "tier": "Hard",
+      "text": "Create a Yew Longbow from scratch around Seers' Village. Note: This requires chopping a yew tree in the village, cutting the yew logs into a yew longbow (u), then finishing it with a bow string. Completing or updating any other task in-between these steps will reset the progress for this task.",
+      "locations": [
+        {
+          "page_name": "Seers' Village",
+          "x": 2710,
+          "y": 3485,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 19,
+      "ordinal": 4,
+      "diary": "Kandarin Diary",
+      "tier": "Hard",
+      "text": "Enter the Seers' Village courthouse with piety turned on.",
+      "locations": [
+        {
+          "page_name": "Seers' Village courthouse",
+          "x": 2735,
+          "y": 3469,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 19,
+      "ordinal": 5,
+      "diary": "Kandarin Diary",
+      "tier": "Hard",
+      "text": "Charge a Water Orb.",
+      "locations": []
+    },
+    {
+      "tier_id": 19,
+      "ordinal": 6,
+      "diary": "Kandarin Diary",
+      "tier": "Hard",
+      "text": "Burn some Maple logs with a bow in Seers' Village.",
+      "locations": [
+        {
+          "page_name": "Seers' Village",
+          "x": 2710,
+          "y": 3485,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 19,
+      "ordinal": 7,
+      "diary": "Kandarin Diary",
+      "tier": "Hard",
+      "text": "Kill a Shadow Hound in the Shadow dungeon.",
+      "locations": [
+        {
+          "page_name": "Shadow dungeon",
+          "x": 2688,
+          "y": 5088,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 19,
+      "ordinal": 8,
+      "diary": "Kandarin Diary",
+      "tier": "Hard",
+      "text": "Kill a Mithril Dragon. Note: The mithril dragon fought during Dragon Slayer II does not count for this task.",
+      "locations": []
+    },
+    {
+      "tier_id": 19,
+      "ordinal": 9,
+      "diary": "Kandarin Diary",
+      "tier": "Hard",
+      "text": "Purchase and equip a granite body from Barbarian Assault. Note: This requires having defeated the Penance Queen at the end of Barbarian Assault. Buying and equipping the granite body counts as two separate steps, and completing or updating any other task in-between these steps will reset the progress for this task.",
+      "locations": [
+        {
+          "page_name": "Barbarian Assault",
+          "x": 2533,
+          "y": 3571,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 19,
+      "ordinal": 10,
+      "diary": "Kandarin Diary",
+      "tier": "Hard",
+      "text": "Have the Seers' estate agent decorate your house with Fancy Stone. Note: You must finish the dialogue or the task will not count as completed.",
+      "locations": []
+    },
+    {
+      "tier_id": 19,
+      "ordinal": 11,
+      "diary": "Kandarin Diary",
+      "tier": "Hard",
+      "text": "Smith an Adamant spear at Otto's Grotto.",
+      "locations": [
+        {
+          "page_name": "Otto's Grotto",
+          "x": 2502,
+          "y": 3489,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 20,
+      "ordinal": 1,
+      "diary": "Kandarin Diary",
+      "tier": "Elite",
+      "text": "Read the Blackboard at Barbarian Assault after reaching level 5 in every role. Note: These levels are bought with honour points. Assuming no points are spent on armour or gambles, you'll need a total of 5,600 points (1,400 per role). In Deadman Mode, the task is instead \"Read the Blackboard at Barbarian Assault after finishing your training.\"",
+      "locations": [
+        {
+          "page_name": "Barbarian Assault",
+          "x": 2533,
+          "y": 3571,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 20,
+      "ordinal": 2,
+      "diary": "Kandarin Diary",
+      "tier": "Elite",
+      "text": "Pick some Dwarf weed from the herb patch at Catherby. Note: This is the herb patch next to Dantaera.",
+      "locations": [
+        {
+          "page_name": "Catherby",
+          "x": 2814,
+          "y": 3443,
+          "plane": 0
+        },
+        {
+          "page_name": "Dantaera",
+          "x": 2810,
+          "y": 3464,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 20,
+      "ordinal": 3,
+      "diary": "Kandarin Diary",
+      "tier": "Elite",
+      "text": "Fish and Cook 5 Sharks in Catherby using the Cooking gauntlets. Note: You specifically have to use the range in the building between the Catherby bank and the archery shop, the one in the building immediately north of that doesn't count. Extra sharks provided by Rada's blessing don't add up to the required number. Completing or updating any other task in-between these steps will reset the progress for this task.",
+      "locations": [
+        {
+          "page_name": "Catherby",
+          "x": 2814,
+          "y": 3443,
+          "plane": 0
+        },
+        {
+          "page_name": "Catherby bank",
+          "x": 2809,
+          "y": 3442,
+          "plane": 0
+        },
+        {
+          "page_name": "Hickton's Archery Emporium.",
+          "x": 2823,
+          "y": 3443,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 20,
+      "ordinal": 4,
+      "diary": "Kandarin Diary",
+      "tier": "Elite",
+      "text": "Mix a Stamina Mix on top of the Seers' Village bank. Note: You have to start the Seers' Village Agility Course to climb on top of the bank.",
+      "locations": [
+        {
+          "page_name": "Seers' Village bank",
+          "x": 2725,
+          "y": 3492,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 20,
+      "ordinal": 5,
+      "diary": "Kandarin Diary",
+      "tier": "Elite",
+      "text": "Smith a Rune Hasta at Otto's Grotto.",
+      "locations": [
+        {
+          "page_name": "Otto's Grotto",
+          "x": 2502,
+          "y": 3489,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 20,
+      "ordinal": 6,
+      "diary": "Kandarin Diary",
+      "tier": "Elite",
+      "text": "Construct a Pyre ship from Magic Logs. Note: You must use chewed bones for the ship, not mangled bones.",
+      "locations": []
+    },
+    {
+      "tier_id": 20,
+      "ordinal": 7,
+      "diary": "Kandarin Diary",
+      "tier": "Elite",
+      "text": "Teleport to Catherby. Note: Tele Group Catherby will also work here.",
+      "locations": [
+        {
+          "page_name": "Catherby",
+          "x": 2814,
+          "y": 3443,
+          "plane": 0
+        },
+        {
+          "page_name": "Tele Group Catherby",
+          "x": 2799,
+          "y": 3448,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 21,
+      "ordinal": 1,
+      "diary": "Karamja Diary",
+      "tier": "Easy",
+      "text": "Pick 5 bananas from the plantation located east of the volcano.",
+      "locations": [
+        {
+          "page_name": "Banana plantation",
+          "x": 2922,
+          "y": 3165,
+          "plane": 0
+        },
+        {
+          "page_name": "Karamja Volcano",
+          "x": 2845,
+          "y": 3174,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 21,
+      "ordinal": 2,
+      "diary": "Karamja Diary",
+      "tier": "Easy",
+      "text": "Use the rope swing to travel to the Moss Giant Island north-west of Karamja.",
+      "locations": [
+        {
+          "page_name": "Ropeswing_(Brimhaven)",
+          "x": 2703,
+          "y": 3205,
+          "plane": 0
+        },
+        {
+          "page_name": "Moss Giant Island",
+          "x": 2696,
+          "y": 3208,
+          "plane": 0
+        },
+        {
+          "page_name": "Karamja",
+          "x": 2843,
+          "y": 3070,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 21,
+      "ordinal": 3,
+      "diary": "Karamja Diary",
+      "tier": "Easy",
+      "text": "Mine some gold from the rocks on the north-west peninsula of Karamja.",
+      "locations": [
+        {
+          "page_name": "North Brimhaven mine",
+          "x": 2733,
+          "y": 3225,
+          "plane": 0
+        },
+        {
+          "page_name": "Karamja",
+          "x": 2843,
+          "y": 3070,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 21,
+      "ordinal": 4,
+      "diary": "Karamja Diary",
+      "tier": "Easy",
+      "text": "Travel to Port Sarim via the dock, east of Musa Point.",
+      "locations": [
+        {
+          "page_name": "Port Sarim",
+          "x": 3029,
+          "y": 3221,
+          "plane": 0
+        },
+        {
+          "page_name": "Musa Point",
+          "x": 2904,
+          "y": 3162,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 21,
+      "ordinal": 5,
+      "diary": "Karamja Diary",
+      "tier": "Easy",
+      "text": "Travel to Ardougne via the port near Brimhaven.",
+      "locations": [
+        {
+          "page_name": "Ardougne",
+          "x": 2570,
+          "y": 3300,
+          "plane": 0
+        },
+        {
+          "page_name": "Brimhaven",
+          "x": 2760,
+          "y": 3195,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 21,
+      "ordinal": 6,
+      "diary": "Karamja Diary",
+      "tier": "Easy",
+      "text": "Explore Cairn Island to the west of Karamja.",
+      "locations": [
+        {
+          "page_name": "Cairn Isle",
+          "x": 2765,
+          "y": 2976,
+          "plane": 0
+        },
+        {
+          "page_name": "Karamja",
+          "x": 2843,
+          "y": 3070,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 21,
+      "ordinal": 7,
+      "diary": "Karamja Diary",
+      "tier": "Easy",
+      "text": "Use the Fishing spots north of the banana plantation. Note: Fishing at any of the fishing spots there will count for this task.",
+      "locations": [
+        {
+          "page_name": "banana plantation",
+          "x": 2922,
+          "y": 3165,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 21,
+      "ordinal": 8,
+      "diary": "Karamja Diary",
+      "tier": "Easy",
+      "text": "Collect 5 seaweed from anywhere on Karamja. Note: You can just drop and pick up the same seaweed five times.",
+      "locations": [
+        {
+          "page_name": "Karamja",
+          "x": 2843,
+          "y": 3070,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 21,
+      "ordinal": 9,
+      "diary": "Karamja Diary",
+      "tier": "Easy",
+      "text": "Attempt the TzHaar Fight Pits or Fight Cave. Note: You can simply enter and leave after the first wave begins. No actual attempt is necessary, but the Fight Pits will not allow entrance without at least one other player.",
+      "locations": [
+        {
+          "page_name": "TzHaar Fight Pit",
+          "x": 2398,
+          "y": 5151,
+          "plane": 0
+        },
+        {
+          "page_name": "Fight Cave",
+          "x": 2439,
+          "y": 5172,
+          "plane": 0
+        },
+        {
+          "page_name": "Fight Pits",
+          "x": 2398,
+          "y": 5151,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 21,
+      "ordinal": 10,
+      "diary": "Karamja Diary",
+      "tier": "Easy",
+      "text": "Kill a jogre in the Pothole dungeon.",
+      "locations": [
+        {
+          "page_name": "Pothole dungeon",
+          "x": 2848,
+          "y": 9504,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 22,
+      "ordinal": 1,
+      "diary": "Karamja Diary",
+      "tier": "Medium",
+      "text": "Claim a ticket from the Agility Arena in Brimhaven.",
+      "locations": [
+        {
+          "page_name": "Brimhaven Agility Arena",
+          "x": 2809,
+          "y": 3194,
+          "plane": 0
+        },
+        {
+          "page_name": "Brimhaven",
+          "x": 2760,
+          "y": 3195,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 22,
+      "ordinal": 2,
+      "diary": "Karamja Diary",
+      "tier": "Medium",
+      "text": "Discover hidden wall in the dungeon below the volcano.",
+      "locations": [
+        {
+          "page_name": "Wall (Crandor and Karamja Dungeon)",
+          "x": 2836,
+          "y": 9600,
+          "plane": 0
+        },
+        {
+          "page_name": "Crandor and Karamja Dungeon",
+          "x": 2867,
+          "y": 9600,
+          "plane": 0
+        },
+        {
+          "page_name": "Karamja Volcano",
+          "x": 2845,
+          "y": 3174,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 22,
+      "ordinal": 3,
+      "diary": "Karamja Diary",
+      "tier": "Medium",
+      "text": "Visit the Isle of Crandor via the dungeon below the volcano. Note: You must go through the hidden wall, past the lesser demons, and then climb the rope to the surface of Crandor to complete this task.",
+      "locations": [
+        {
+          "page_name": "Crandor",
+          "x": 2836,
+          "y": 3271,
+          "plane": 0
+        },
+        {
+          "page_name": "Crandor and Karamja Dungeon",
+          "x": 2867,
+          "y": 9600,
+          "plane": 0
+        },
+        {
+          "page_name": "Karamja Volcano",
+          "x": 2845,
+          "y": 3174,
+          "plane": 0
+        },
+        {
+          "page_name": "Wall (Crandor and Karamja Dungeon)",
+          "x": 2836,
+          "y": 9600,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 22,
+      "ordinal": 4,
+      "diary": "Karamja Diary",
+      "tier": "Medium",
+      "text": "Use Vigroy and Hajedy's cart service.",
+      "locations": [
+        {
+          "page_name": "Vigroy",
+          "x": 2834,
+          "y": 2954,
+          "plane": 0
+        },
+        {
+          "page_name": "Hajedy",
+          "x": 2781,
+          "y": 3214,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 22,
+      "ordinal": 5,
+      "diary": "Karamja Diary",
+      "tier": "Medium",
+      "text": "Earn 100% favour in the village of Tai Bwo Wannai.",
+      "locations": [
+        {
+          "page_name": "Tai Bwo Wannai Cleanup",
+          "x": 2795,
+          "y": 3064,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 22,
+      "ordinal": 6,
+      "diary": "Karamja Diary",
+      "tier": "Medium",
+      "text": "Cook a spider on a stick. Note: Cooking a spider on a shaft also counts for this task. This does not have to be done on Karamja.",
+      "locations": [
+        {
+          "page_name": "Karamja",
+          "x": 2843,
+          "y": 3070,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 22,
+      "ordinal": 7,
+      "diary": "Karamja Diary",
+      "tier": "Medium",
+      "text": "Charter the Lady of the Waves from Cairn Isle to Port Khazard.",
+      "locations": [
+        {
+          "page_name": "Lady of the Waves",
+          "x": 2761,
+          "y": 2956,
+          "plane": 0
+        },
+        {
+          "page_name": "Cairn Isle",
+          "x": 2765,
+          "y": 2976,
+          "plane": 0
+        },
+        {
+          "page_name": "Port Khazard",
+          "x": 2653,
+          "y": 3159,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 22,
+      "ordinal": 8,
+      "diary": "Karamja Diary",
+      "tier": "Medium",
+      "text": "Cut a log from a teak tree. Note: Teak trees can be found in the Hardwood Grove or within the harder-to-access Kharazi Jungle.",
+      "locations": [
+        {
+          "page_name": "Hardwood Grove",
+          "x": 2817,
+          "y": 3089,
+          "plane": 0
+        },
+        {
+          "page_name": "Kharazi Jungle",
+          "x": 2865,
+          "y": 2907,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 22,
+      "ordinal": 9,
+      "diary": "Karamja Diary",
+      "tier": "Medium",
+      "text": "Cut a log from a mahogany tree. Note: Mahogany trees can be found in the Hardwood Grove or within the harder-to-access Kharazi Jungle.",
+      "locations": [
+        {
+          "page_name": "Hardwood Grove",
+          "x": 2817,
+          "y": 3089,
+          "plane": 0
+        },
+        {
+          "page_name": "Kharazi Jungle",
+          "x": 2865,
+          "y": 2907,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 22,
+      "ordinal": 10,
+      "diary": "Karamja Diary",
+      "tier": "Medium",
+      "text": "Catch a karambwan.",
+      "locations": []
+    },
+    {
+      "tier_id": 22,
+      "ordinal": 11,
+      "diary": "Karamja Diary",
+      "tier": "Medium",
+      "text": "Exchange gems for a machete. Note: This is done by talking to Safta Doc with the required items. (You must have gained some favour by repairing at least one village fence and then talking to Murcaily for trading sticks. Otherwise, you'll not be allowed to chop trees in the Hardwood Grove or trade for machetes with Safta Doc.)",
+      "locations": [
+        {
+          "page_name": "Safta Doc",
+          "x": 2791,
+          "y": 3102,
+          "plane": 0
+        },
+        {
+          "page_name": "Murcaily",
+          "x": 2816,
+          "y": 3084,
+          "plane": 0
+        },
+        {
+          "page_name": "Hardwood Grove",
+          "x": 2817,
+          "y": 3089,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 22,
+      "ordinal": 12,
+      "diary": "Karamja Diary",
+      "tier": "Medium",
+      "text": "Use the gnome glider to travel to Karamja.",
+      "locations": [
+        {
+          "page_name": "Karamja",
+          "x": 2843,
+          "y": 3070,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 22,
+      "ordinal": 13,
+      "diary": "Karamja Diary",
+      "tier": "Medium",
+      "text": "Grow a healthy fruit tree in the patch near Brimhaven.",
+      "locations": [
+        {
+          "page_name": "Brimhaven",
+          "x": 2760,
+          "y": 3195,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 22,
+      "ordinal": 14,
+      "diary": "Karamja Diary",
+      "tier": "Medium",
+      "text": "Trap a horned graahk.",
+      "locations": []
+    },
+    {
+      "tier_id": 22,
+      "ordinal": 15,
+      "diary": "Karamja Diary",
+      "tier": "Medium",
+      "text": "Chop the vines to gain deeper access to Brimhaven Dungeon. Note: These are the vines found immediately within the main entrance.",
+      "locations": [
+        {
+          "page_name": "Brimhaven Dungeon",
+          "x": 2744,
+          "y": 3155,
+          "plane": 0
+        },
+        {
+          "page_name": "Dungeon entrance (Brimhaven Dungeon)",
+          "x": 2743,
+          "y": 3153,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 22,
+      "ordinal": 16,
+      "diary": "Karamja Diary",
+      "tier": "Medium",
+      "text": "Cross the lava using the stepping stones within Brimhaven Dungeon. Note: Not to be confused with the stepping stones towards the red dragons.",
+      "locations": [
+        {
+          "page_name": "Brimhaven Dungeon",
+          "x": 2744,
+          "y": 3155,
+          "plane": 0
+        },
+        {
+          "page_name": "Stepping stones (Eastern Brimhaven Dungeon)",
+          "x": 2686,
+          "y": 9548,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 22,
+      "ordinal": 17,
+      "diary": "Karamja Diary",
+      "tier": "Medium",
+      "text": "Climb the stairs within Brimhaven Dungeon. Note: You have to climb the stairs south of the stepping stones of the previous task, next to the moss giants.",
+      "locations": [
+        {
+          "page_name": "Brimhaven Dungeon",
+          "x": 2744,
+          "y": 3155,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 22,
+      "ordinal": 18,
+      "diary": "Karamja Diary",
+      "tier": "Medium",
+      "text": "Charter a ship from the shipyard in the far east of Karamja. Note: The destination does not matter for this task.",
+      "locations": [
+        {
+          "page_name": "Shipyard (Karamja)",
+          "x": 2987,
+          "y": 3050,
+          "plane": 0
+        },
+        {
+          "page_name": "Karamja",
+          "x": 2843,
+          "y": 3070,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 22,
+      "ordinal": 19,
+      "diary": "Karamja Diary",
+      "tier": "Medium",
+      "text": "Mine a red topaz from a gem rock. Note: Gem rocks are found Shilo Village and rarely appear within the Tai Bwo Wannai Cleanup minigame.",
+      "locations": [
+        {
+          "page_name": "Shilo Village (location)",
+          "x": 2849,
+          "y": 2972,
+          "plane": 0
+        },
+        {
+          "page_name": "Tai Bwo Wannai Cleanup",
+          "x": 2795,
+          "y": 3064,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 23,
+      "ordinal": 1,
+      "diary": "Karamja Diary",
+      "tier": "Hard",
+      "text": "Become the Champion of the Fight Pits. Note: In Deadman Mode, this task is instead \"Speak to TzHaar-Mej-Kah at the Fight Pits.\"",
+      "locations": [
+        {
+          "page_name": "TzHaar Fight Pit",
+          "x": 2398,
+          "y": 5151,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 23,
+      "ordinal": 2,
+      "diary": "Karamja Diary",
+      "tier": "Hard",
+      "text": "Kill a Ket-Zek in the Fight Caves. Note: Ket-Zeks start to appear on the 31st wave. You can leave the arena safely after killing it. This wave can be reached with relatively little effort, as long as the Yt-MejKots are kept out of melee range and Protect from Missiles is used against the Tok-Xils. Though, you may as well try to complete the entire Fight Caves when going for this task.",
+      "locations": [
+        {
+          "page_name": "TzHaar Fight Cave",
+          "x": 2439,
+          "y": 5172,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 23,
+      "ordinal": 3,
+      "diary": "Karamja Diary",
+      "tier": "Hard",
+      "text": "Eat an oomlie wrap.",
+      "locations": []
+    },
+    {
+      "tier_id": 23,
+      "ordinal": 4,
+      "diary": "Karamja Diary",
+      "tier": "Hard",
+      "text": "Craft some nature runes from Essence.",
+      "locations": []
+    },
+    {
+      "tier_id": 23,
+      "ordinal": 5,
+      "diary": "Karamja Diary",
+      "tier": "Hard",
+      "text": "Cook a karambwan thoroughly.",
+      "locations": []
+    },
+    {
+      "tier_id": 23,
+      "ordinal": 6,
+      "diary": "Karamja Diary",
+      "tier": "Hard",
+      "text": "Kill a deathwing in the dungeon under the Kharazi Jungle.",
+      "locations": [
+        {
+          "page_name": "Shaman Caves",
+          "x": 2782,
+          "y": 2935,
+          "plane": 0
+        },
+        {
+          "page_name": "Kharazi Jungle",
+          "x": 2865,
+          "y": 2907,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 23,
+      "ordinal": 7,
+      "diary": "Karamja Diary",
+      "tier": "Hard",
+      "text": "Use the crossbow shortcut south of the volcano.",
+      "locations": [
+        {
+          "page_name": "Strong_Tree_(Karamja)",
+          "x": 2875,
+          "y": 3135,
+          "plane": 0
+        },
+        {
+          "page_name": "Karamja Volcano",
+          "x": 2845,
+          "y": 3174,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 23,
+      "ordinal": 8,
+      "diary": "Karamja Diary",
+      "tier": "Hard",
+      "text": "Collect 5 palm leaves. Note: You can just drop and pick up the same palm leaf five times.",
+      "locations": []
+    },
+    {
+      "tier_id": 23,
+      "ordinal": 9,
+      "diary": "Karamja Diary",
+      "tier": "Hard",
+      "text": "Be assigned a Slayer task by the Slayer Master in Shilo Village.",
+      "locations": [
+        {
+          "page_name": "Duradel",
+          "x": 2869,
+          "y": 2982,
+          "plane": 1
+        },
+        {
+          "page_name": "Shilo Village (location)",
+          "x": 2849,
+          "y": 2972,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 23,
+      "ordinal": 10,
+      "diary": "Karamja Diary",
+      "tier": "Hard",
+      "text": "Kill a metal dragon in Brimhaven Dungeon.",
+      "locations": [
+        {
+          "page_name": "Brimhaven Dungeon",
+          "x": 2744,
+          "y": 3155,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 24,
+      "ordinal": 1,
+      "diary": "Karamja Diary",
+      "tier": "Elite",
+      "text": "Craft 56 Nature runes simultaneously from Essence without the use of Extracts.",
+      "locations": []
+    },
+    {
+      "tier_id": 24,
+      "ordinal": 2,
+      "diary": "Karamja Diary",
+      "tier": "Elite",
+      "text": "Equip a Fire Cape or Infernal Cape in Mor Ul Rek.",
+      "locations": [
+        {
+          "page_name": "Mor Ul Rek",
+          "x": 2856,
+          "y": 3168,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 24,
+      "ordinal": 3,
+      "diary": "Karamja Diary",
+      "tier": "Elite",
+      "text": "Check the health of a palm tree in Brimhaven.",
+      "locations": [
+        {
+          "page_name": "Brimhaven",
+          "x": 2760,
+          "y": 3195,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 24,
+      "ordinal": 4,
+      "diary": "Karamja Diary",
+      "tier": "Elite",
+      "text": "Create an antivenom potion whilst standing in the horse shoe mine.",
+      "locations": [
+        {
+          "page_name": "Horseshoe mine",
+          "x": 2733,
+          "y": 3225,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 24,
+      "ordinal": 5,
+      "diary": "Karamja Diary",
+      "tier": "Elite",
+      "text": "Check the health of your Calquat tree patch. Note: This is the farming patch next to Imiago.",
+      "locations": [
+        {
+          "page_name": "Imiago",
+          "x": 2797,
+          "y": 3102,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 25,
+      "ordinal": 1,
+      "diary": "Kourend \u0026 Kebos Diary",
+      "tier": "Easy",
+      "text": "Mine some Iron at the Mount Karuulm mine.",
+      "locations": [
+        {
+          "page_name": "Mount Karuulm mine",
+          "x": 1279,
+          "y": 3814,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 25,
+      "ordinal": 2,
+      "diary": "Kourend \u0026 Kebos Diary",
+      "tier": "Easy",
+      "text": "Kill a Sandcrab .",
+      "locations": []
+    },
+    {
+      "tier_id": 25,
+      "ordinal": 3,
+      "diary": "Kourend \u0026 Kebos Diary",
+      "tier": "Easy",
+      "text": "Hand in a book at the Arceuus Library.",
+      "locations": [
+        {
+          "page_name": "Arceuus Library",
+          "x": 1606,
+          "y": 3833,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 25,
+      "ordinal": 4,
+      "diary": "Kourend \u0026 Kebos Diary",
+      "tier": "Easy",
+      "text": "Steal from a Hosidius Food Stall.",
+      "locations": []
+    },
+    {
+      "tier_id": 25,
+      "ordinal": 5,
+      "diary": "Kourend \u0026 Kebos Diary",
+      "tier": "Easy",
+      "text": "Browse the Warrens General Store.",
+      "locations": [
+        {
+          "page_name": "Warrens General Store",
+          "x": 1840,
+          "y": 10147,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 25,
+      "ordinal": 6,
+      "diary": "Kourend \u0026 Kebos Diary",
+      "tier": "Easy",
+      "text": "Take a boat to Land's End. Note: You have to travel with Veos or Cabin Boy Herbert from Port Sarim or Port Piscarilius.",
+      "locations": [
+        {
+          "page_name": "Land's End",
+          "x": 1510,
+          "y": 3430,
+          "plane": 0
+        },
+        {
+          "page_name": "Veos",
+          "x": 3054,
+          "y": 3245,
+          "plane": 0
+        },
+        {
+          "page_name": "Cabin Boy Herbert",
+          "x": 3054,
+          "y": 3245,
+          "plane": 0
+        },
+        {
+          "page_name": "Port Sarim",
+          "x": 3029,
+          "y": 3221,
+          "plane": 0
+        },
+        {
+          "page_name": "Port Piscarilius",
+          "x": 1803,
+          "y": 3752,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 25,
+      "ordinal": 7,
+      "diary": "Kourend \u0026 Kebos Diary",
+      "tier": "Easy",
+      "text": "Pray at the Altar in Kourend Castle Note: This altar is found on the top floor of the castle.",
+      "locations": [
+        {
+          "page_name": "Kourend Castle",
+          "x": 1628,
+          "y": 3673,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 25,
+      "ordinal": 8,
+      "diary": "Kourend \u0026 Kebos Diary",
+      "tier": "Easy",
+      "text": "Dig up some Saltpetre.",
+      "locations": [
+        {
+          "page_name": "Saltpetre (deposit)",
+          "x": 1708,
+          "y": 3545,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 25,
+      "ordinal": 9,
+      "diary": "Kourend \u0026 Kebos Diary",
+      "tier": "Easy",
+      "text": "Enter your Player Owned House from Hosidius.",
+      "locations": [
+        {
+          "page_name": "Hosidius",
+          "x": 1762,
+          "y": 3598,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 25,
+      "ordinal": 10,
+      "diary": "Kourend \u0026 Kebos Diary",
+      "tier": "Easy",
+      "text": "Do a lap of either tier of the Shayzien Agility Course.",
+      "locations": []
+    },
+    {
+      "tier_id": 25,
+      "ordinal": 11,
+      "diary": "Kourend \u0026 Kebos Diary",
+      "tier": "Easy",
+      "text": "Create a Strength potion in the Lovakengj Pub.",
+      "locations": [
+        {
+          "page_name": "The Deeper Lode",
+          "x": 1568,
+          "y": 3759,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 25,
+      "ordinal": 12,
+      "diary": "Kourend \u0026 Kebos Diary",
+      "tier": "Easy",
+      "text": "Fish a Trout from the River Molch. Note: The fishing spot is found south-east of the Farming Guild.",
+      "locations": [
+        {
+          "page_name": "River Molch",
+          "x": 1262,
+          "y": 3686,
+          "plane": 0
+        },
+        {
+          "page_name": "Farming Guild",
+          "x": 1249,
+          "y": 3737,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 26,
+      "ordinal": 1,
+      "diary": "Kourend \u0026 Kebos Diary",
+      "tier": "Medium",
+      "text": "Travel to the Fairy Ring south of Mount Karuulm.",
+      "locations": [
+        {
+          "page_name": "Mount Karuulm",
+          "x": 1311,
+          "y": 3807,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 26,
+      "ordinal": 2,
+      "diary": "Kourend \u0026 Kebos Diary",
+      "tier": "Medium",
+      "text": "Kill a Lizardman.",
+      "locations": []
+    },
+    {
+      "tier_id": 26,
+      "ordinal": 3,
+      "diary": "Kourend \u0026 Kebos Diary",
+      "tier": "Medium",
+      "text": "Use Kharedst's memoirs to teleport to all five cities in Great Kourend.",
+      "locations": [
+        {
+          "page_name": "Great Kourend",
+          "x": 1630,
+          "y": 3730,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 26,
+      "ordinal": 4,
+      "diary": "Kourend \u0026 Kebos Diary",
+      "tier": "Medium",
+      "text": "Mine some Volcanic Sulphur.",
+      "locations": []
+    },
+    {
+      "tier_id": 26,
+      "ordinal": 5,
+      "diary": "Kourend \u0026 Kebos Diary",
+      "tier": "Medium",
+      "text": "Enter the Farming Guild. Note: You have to walk through the guild's main entrance.",
+      "locations": [
+        {
+          "page_name": "Farming Guild",
+          "x": 1249,
+          "y": 3737,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 26,
+      "ordinal": 6,
+      "diary": "Kourend \u0026 Kebos Diary",
+      "tier": "Medium",
+      "text": "Switch to the Necromancy Spellbook at Tyss.",
+      "locations": [
+        {
+          "page_name": "Tyss",
+          "x": 1714,
+          "y": 3883,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 26,
+      "ordinal": 7,
+      "diary": "Kourend \u0026 Kebos Diary",
+      "tier": "Medium",
+      "text": "Repair a Piscarilius crane.",
+      "locations": []
+    },
+    {
+      "tier_id": 26,
+      "ordinal": 8,
+      "diary": "Kourend \u0026 Kebos Diary",
+      "tier": "Medium",
+      "text": "Deliver some intelligence to Captain Ginea.",
+      "locations": [
+        {
+          "page_name": "Captain Ginea",
+          "x": 1504,
+          "y": 3632,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 26,
+      "ordinal": 9,
+      "diary": "Kourend \u0026 Kebos Diary",
+      "tier": "Medium",
+      "text": "Catch a Bluegill on Molch Island.",
+      "locations": [
+        {
+          "page_name": "Lake Molch",
+          "x": 1370,
+          "y": 3633,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 26,
+      "ordinal": 10,
+      "diary": "Kourend \u0026 Kebos Diary",
+      "tier": "Medium",
+      "text": "Use the boulder leap shortcut in the Arceuus essence mine.",
+      "locations": [
+        {
+          "page_name": "Boulder (dense essence mine)",
+          "x": 1775,
+          "y": 3888,
+          "plane": 0
+        },
+        {
+          "page_name": "Dense essence mine",
+          "x": 1764,
+          "y": 3853,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 26,
+      "ordinal": 11,
+      "diary": "Kourend \u0026 Kebos Diary",
+      "tier": "Medium",
+      "text": "Subdue the Wintertodt Note: You must earn at least 500 points.",
+      "locations": [
+        {
+          "page_name": "Wintertodt",
+          "x": 1630,
+          "y": 3981,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 26,
+      "ordinal": 12,
+      "diary": "Kourend \u0026 Kebos Diary",
+      "tier": "Medium",
+      "text": "Catch a Chinchompa in the Kourend Woodland.",
+      "locations": [
+        {
+          "page_name": "Kourend Woodland",
+          "x": 1540,
+          "y": 3464,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 26,
+      "ordinal": 13,
+      "diary": "Kourend \u0026 Kebos Diary",
+      "tier": "Medium",
+      "text": "Chop some Mahogany logs north of the Farming Guild.",
+      "locations": [
+        {
+          "page_name": "Farming Guild",
+          "x": 1249,
+          "y": 3737,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 27,
+      "ordinal": 1,
+      "diary": "Kourend \u0026 Kebos Diary",
+      "tier": "Hard",
+      "text": "Enter the Woodcutting Guild.",
+      "locations": [
+        {
+          "page_name": "Woodcutting Guild",
+          "x": 1565,
+          "y": 3499,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 27,
+      "ordinal": 2,
+      "diary": "Kourend \u0026 Kebos Diary",
+      "tier": "Hard",
+      "text": "Smelt an Adamantite bar in The Forsaken Tower. Note: Using the Superheat Item spell does not count.",
+      "locations": []
+    },
+    {
+      "tier_id": 27,
+      "ordinal": 3,
+      "diary": "Kourend \u0026 Kebos Diary",
+      "tier": "Hard",
+      "text": "Kill a Lizardman Shaman in the Lizardman Temple.",
+      "locations": []
+    },
+    {
+      "tier_id": 27,
+      "ordinal": 4,
+      "diary": "Kourend \u0026 Kebos Diary",
+      "tier": "Hard",
+      "text": "Mine some Lovakite.",
+      "locations": []
+    },
+    {
+      "tier_id": 27,
+      "ordinal": 5,
+      "diary": "Kourend \u0026 Kebos Diary",
+      "tier": "Hard",
+      "text": "Plant some Logavano seeds at the Tithe Farm.",
+      "locations": [
+        {
+          "page_name": "Tithe Farm",
+          "x": 1796,
+          "y": 3505,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 27,
+      "ordinal": 6,
+      "diary": "Kourend \u0026 Kebos Diary",
+      "tier": "Hard",
+      "text": "Kill a Zombie in the Shayzien Crypts.",
+      "locations": [
+        {
+          "page_name": "Shayzien Crypts",
+          "x": 1483,
+          "y": 3550,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 27,
+      "ordinal": 7,
+      "diary": "Kourend \u0026 Kebos Diary",
+      "tier": "Hard",
+      "text": "Teleport to Xeric's Heart using Xeric's Talisman.",
+      "locations": [
+        {
+          "page_name": "Kourend Castle",
+          "x": 1628,
+          "y": 3673,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 27,
+      "ordinal": 8,
+      "diary": "Kourend \u0026 Kebos Diary",
+      "tier": "Hard",
+      "text": "Deliver an artefact to Captain Khaled.",
+      "locations": [
+        {
+          "page_name": "Captain Khaled",
+          "x": 1847,
+          "y": 3755,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 27,
+      "ordinal": 9,
+      "diary": "Kourend \u0026 Kebos Diary",
+      "tier": "Hard",
+      "text": "Kill a Wyrm in the Karuulm Slayer Dungeon.",
+      "locations": []
+    },
+    {
+      "tier_id": 27,
+      "ordinal": 10,
+      "diary": "Kourend \u0026 Kebos Diary",
+      "tier": "Hard",
+      "text": "Cast Monster Examine on a Troll south of Mount Quidamortem.",
+      "locations": [
+        {
+          "page_name": "Mount Quidamortem",
+          "x": 1246,
+          "y": 3550,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 28,
+      "ordinal": 1,
+      "diary": "Kourend \u0026 Kebos Diary",
+      "tier": "Elite",
+      "text": "Craft one or more Blood runes from Dark essence. Note: This requires mining a dark essence block and breaking it down into fragments, then using those fragments on the Kourend Blood Altar.",
+      "locations": [
+        {
+          "page_name": "Blood Altar (Kourend)",
+          "x": 1717,
+          "y": 3829,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 28,
+      "ordinal": 2,
+      "diary": "Kourend \u0026 Kebos Diary",
+      "tier": "Elite",
+      "text": "Chop some Redwood logs.",
+      "locations": []
+    },
+    {
+      "tier_id": 28,
+      "ordinal": 3,
+      "diary": "Kourend \u0026 Kebos Diary",
+      "tier": "Elite",
+      "text": "Defeat Skotizo in the Catacombs of Kourend.",
+      "locations": []
+    },
+    {
+      "tier_id": 28,
+      "ordinal": 4,
+      "diary": "Kourend \u0026 Kebos Diary",
+      "tier": "Elite",
+      "text": "Catch an Anglerfish and cook it whilst in Great Kourend.",
+      "locations": [
+        {
+          "page_name": "Great Kourend",
+          "x": 1630,
+          "y": 3730,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 28,
+      "ordinal": 5,
+      "diary": "Kourend \u0026 Kebos Diary",
+      "tier": "Elite",
+      "text": "Kill a Hydra in the Karuulm Slayer Dungeon. Note: Either variant may be killed to fulfill this requirement. Only the Alchemical Hydra requires a slayer task to kill.",
+      "locations": []
+    },
+    {
+      "tier_id": 28,
+      "ordinal": 6,
+      "diary": "Kourend \u0026 Kebos Diary",
+      "tier": "Elite",
+      "text": "Create an Ape Atoll teleport tablet.",
+      "locations": [
+        {
+          "page_name": "Ape Atoll teleport tablet",
+          "x": 2771,
+          "y": 9102,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 28,
+      "ordinal": 7,
+      "diary": "Kourend \u0026 Kebos Diary",
+      "tier": "Elite",
+      "text": "Complete a Raid in the Chambers of Xeric.",
+      "locations": [
+        {
+          "page_name": "Chambers of Xeric",
+          "x": 1245,
+          "y": 3557,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 28,
+      "ordinal": 8,
+      "diary": "Kourend \u0026 Kebos Diary",
+      "tier": "Elite",
+      "text": "Create your own Battlestaff from scratch within the Farming Guild.",
+      "locations": [
+        {
+          "page_name": "Farming Guild",
+          "x": 1249,
+          "y": 3737,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 29,
+      "ordinal": 1,
+      "diary": "Lumbridge \u0026 Draynor Diary",
+      "tier": "Easy",
+      "text": "Complete a lap of the Draynor Village agility course.",
+      "locations": []
+    },
+    {
+      "tier_id": 29,
+      "ordinal": 2,
+      "diary": "Lumbridge \u0026 Draynor Diary",
+      "tier": "Easy",
+      "text": "Slay a Cave bug beneath Lumbridge Swamp.",
+      "locations": [
+        {
+          "page_name": "Lumbridge Swamp Caves",
+          "x": 3169,
+          "y": 3172,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 29,
+      "ordinal": 3,
+      "diary": "Lumbridge \u0026 Draynor Diary",
+      "tier": "Easy",
+      "text": "Have Sedridor teleport you to the Rune essence mine.",
+      "locations": [
+        {
+          "page_name": "Archmage Sedridor",
+          "x": 3103,
+          "y": 9571,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 29,
+      "ordinal": 4,
+      "diary": "Lumbridge \u0026 Draynor Diary",
+      "tier": "Easy",
+      "text": "Craft some water runes from Essence.",
+      "locations": []
+    },
+    {
+      "tier_id": 29,
+      "ordinal": 5,
+      "diary": "Lumbridge \u0026 Draynor Diary",
+      "tier": "Easy",
+      "text": "Learn your age from Hans in Lumbridge.",
+      "locations": [
+        {
+          "page_name": "Hans",
+          "x": 3212,
+          "y": 3219,
+          "plane": 0
+        },
+        {
+          "page_name": "Lumbridge",
+          "x": 3188,
+          "y": 3220,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 29,
+      "ordinal": 6,
+      "diary": "Lumbridge \u0026 Draynor Diary",
+      "tier": "Easy",
+      "text": "Pickpocket a man or woman in Lumbridge.",
+      "locations": [
+        {
+          "page_name": "Lumbridge",
+          "x": 3188,
+          "y": 3220,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 29,
+      "ordinal": 7,
+      "diary": "Lumbridge \u0026 Draynor Diary",
+      "tier": "Easy",
+      "text": "Chop and burn some oak logs in Lumbridge.",
+      "locations": [
+        {
+          "page_name": "Lumbridge",
+          "x": 3188,
+          "y": 3220,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 29,
+      "ordinal": 8,
+      "diary": "Lumbridge \u0026 Draynor Diary",
+      "tier": "Easy",
+      "text": "Kill a Zombie in Draynor Sewers.",
+      "locations": [
+        {
+          "page_name": "Draynor Sewers",
+          "x": 3103,
+          "y": 9670,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 29,
+      "ordinal": 9,
+      "diary": "Lumbridge \u0026 Draynor Diary",
+      "tier": "Easy",
+      "text": "Catch some Anchovies in Al Kharid.",
+      "locations": [
+        {
+          "page_name": "Al Kharid",
+          "x": 3290,
+          "y": 3185,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 29,
+      "ordinal": 10,
+      "diary": "Lumbridge \u0026 Draynor Diary",
+      "tier": "Easy",
+      "text": "Bake some Bread on the Lumbridge kitchen range.",
+      "locations": [
+        {
+          "page_name": "Cooking range (Lumbridge Castle)",
+          "x": 3212,
+          "y": 3215,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 29,
+      "ordinal": 11,
+      "diary": "Lumbridge \u0026 Draynor Diary",
+      "tier": "Easy",
+      "text": "Mine some Iron ore at the Al Kharid mine.",
+      "locations": [
+        {
+          "page_name": "Al Kharid mine",
+          "x": 3298,
+          "y": 3293,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 29,
+      "ordinal": 12,
+      "diary": "Lumbridge \u0026 Draynor Diary",
+      "tier": "Easy",
+      "text": "Enter the H.A.M. Hideout.",
+      "locations": [
+        {
+          "page_name": "H.A.M. Hideout",
+          "x": 3137,
+          "y": 9663,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 30,
+      "ordinal": 1,
+      "diary": "Lumbridge \u0026 Draynor Diary",
+      "tier": "Medium",
+      "text": "Complete a lap of the Al Kharid agility course.",
+      "locations": []
+    },
+    {
+      "tier_id": 30,
+      "ordinal": 2,
+      "diary": "Lumbridge \u0026 Draynor Diary",
+      "tier": "Medium",
+      "text": "Grapple across the River Lum.",
+      "locations": [
+        {
+          "page_name": "Broken Raft",
+          "x": 3252,
+          "y": 3179,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 30,
+      "ordinal": 3,
+      "diary": "Lumbridge \u0026 Draynor Diary",
+      "tier": "Medium",
+      "text": "Purchase an upgraded device from Ava.",
+      "locations": [
+        {
+          "page_name": "Ava",
+          "x": 3094,
+          "y": 3357,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 30,
+      "ordinal": 4,
+      "diary": "Lumbridge \u0026 Draynor Diary",
+      "tier": "Medium",
+      "text": "Travel to the Wizards' Tower by Fairy ring.",
+      "locations": [
+        {
+          "page_name": "Wizards' Tower",
+          "x": 3109,
+          "y": 3160,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 30,
+      "ordinal": 5,
+      "diary": "Lumbridge \u0026 Draynor Diary",
+      "tier": "Medium",
+      "text": "Cast the Teleport to Lumbridge spell.",
+      "locations": [
+        {
+          "page_name": "Lumbridge Teleport",
+          "x": 3219,
+          "y": 3218,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 30,
+      "ordinal": 6,
+      "diary": "Lumbridge \u0026 Draynor Diary",
+      "tier": "Medium",
+      "text": "Catch some Salmon in Lumbridge.",
+      "locations": [
+        {
+          "page_name": "Lumbridge",
+          "x": 3188,
+          "y": 3220,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 30,
+      "ordinal": 7,
+      "diary": "Lumbridge \u0026 Draynor Diary",
+      "tier": "Medium",
+      "text": "Craft a coif in the Lumbridge cow pen. Note: Not to be confused with a cowl.",
+      "locations": [
+        {
+          "page_name": "Lumbridge cow pen",
+          "x": 3241,
+          "y": 3299,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 30,
+      "ordinal": 8,
+      "diary": "Lumbridge \u0026 Draynor Diary",
+      "tier": "Medium",
+      "text": "Chop some willow logs in Draynor Village.",
+      "locations": [
+        {
+          "page_name": "Draynor Village",
+          "x": 3103,
+          "y": 3265,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 30,
+      "ordinal": 9,
+      "diary": "Lumbridge \u0026 Draynor Diary",
+      "tier": "Medium",
+      "text": "Pickpocket Martin the Master Gardener.",
+      "locations": [
+        {
+          "page_name": "Martin the Master Gardener",
+          "x": 3078,
+          "y": 3258,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 30,
+      "ordinal": 10,
+      "diary": "Lumbridge \u0026 Draynor Diary",
+      "tier": "Medium",
+      "text": "Get a slayer task from Chaeldar.",
+      "locations": [
+        {
+          "page_name": "Chaeldar",
+          "x": 2444,
+          "y": 4431,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 30,
+      "ordinal": 11,
+      "diary": "Lumbridge \u0026 Draynor Diary",
+      "tier": "Medium",
+      "text": "Catch an Essence or Eclectic impling in Puro-Puro.",
+      "locations": [
+        {
+          "page_name": "Puro-Puro",
+          "x": 2593,
+          "y": 4320,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 30,
+      "ordinal": 12,
+      "diary": "Lumbridge \u0026 Draynor Diary",
+      "tier": "Medium",
+      "text": "Craft some Lava runes at the fire altar in Al Kharid. Note: Use the earth runes you brought on the altar, do not use the essence.",
+      "locations": [
+        {
+          "page_name": "fire altar",
+          "x": 2584,
+          "y": 4837,
+          "plane": 0
+        },
+        {
+          "page_name": "Al Kharid",
+          "x": 3290,
+          "y": 3185,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 31,
+      "ordinal": 1,
+      "diary": "Lumbridge \u0026 Draynor Diary",
+      "tier": "Hard",
+      "text": "Cast Bones to Peaches in Al Kharid palace. Note: Using the Bones to Peaches tablet does not count.",
+      "locations": [
+        {
+          "page_name": "Al Kharid palace",
+          "x": 3293,
+          "y": 3170,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 31,
+      "ordinal": 2,
+      "diary": "Lumbridge \u0026 Draynor Diary",
+      "tier": "Hard",
+      "text": "Squeeze past the jutting wall on your way to the cosmic altar.",
+      "locations": [
+        {
+          "page_name": "Jutting_wall_(Zanaris)",
+          "x": 2400,
+          "y": 4403,
+          "plane": 0
+        },
+        {
+          "page_name": "cosmic altar",
+          "x": 2141,
+          "y": 4832,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 31,
+      "ordinal": 3,
+      "diary": "Lumbridge \u0026 Draynor Diary",
+      "tier": "Hard",
+      "text": "Craft 56 Cosmic runes simultaneously from Essence without the use of Extracts.",
+      "locations": []
+    },
+    {
+      "tier_id": 31,
+      "ordinal": 4,
+      "diary": "Lumbridge \u0026 Draynor Diary",
+      "tier": "Hard",
+      "text": "Travel from Lumbridge to Edgeville on a Waka Canoe.",
+      "locations": [
+        {
+          "page_name": "Lumbridge",
+          "x": 3188,
+          "y": 3220,
+          "plane": 0
+        },
+        {
+          "page_name": "Edgeville",
+          "x": 3080,
+          "y": 3492,
+          "plane": 0
+        },
+        {
+          "page_name": "Waka Canoe",
+          "x": 1824,
+          "y": 4512,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 31,
+      "ordinal": 5,
+      "diary": "Lumbridge \u0026 Draynor Diary",
+      "tier": "Hard",
+      "text": "Collect at least 100 Tears of Guthix in one visit. Note: This minigame can only be tried once a week, so be aware. Each quest point increases the time you can spend collecting tears by one game tick. It's recommended to have at least 150 quest points before trying this task. See the Tears of Guthix (minigame) page for other strategies you can use to maximize points.",
+      "locations": [
+        {
+          "page_name": "Tears of Guthix (minigame)",
+          "x": 3257,
+          "y": 9517,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 31,
+      "ordinal": 6,
+      "diary": "Lumbridge \u0026 Draynor Diary",
+      "tier": "Hard",
+      "text": "Take the train from Dorgesh-Kaan to Keldagrim.",
+      "locations": [
+        {
+          "page_name": "Dorgesh-Kaan–Keldagrim train system",
+          "x": 2480,
+          "y": 5535,
+          "plane": 0
+        },
+        {
+          "page_name": "Dorgesh-Kaan",
+          "x": 2723,
+          "y": 5314,
+          "plane": 0
+        },
+        {
+          "page_name": "Keldagrim",
+          "x": 2879,
+          "y": 10176,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 31,
+      "ordinal": 7,
+      "diary": "Lumbridge \u0026 Draynor Diary",
+      "tier": "Hard",
+      "text": "Purchase some Barrows gloves from the Lumbridge bank chest .",
+      "locations": [
+        {
+          "page_name": "Culinaromancer's Chest",
+          "x": 3214,
+          "y": 9620,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 31,
+      "ordinal": 8,
+      "diary": "Lumbridge \u0026 Draynor Diary",
+      "tier": "Hard",
+      "text": "Pick some Belladonna from the farming patch at Draynor Manor.",
+      "locations": [
+        {
+          "page_name": "Draynor Manor",
+          "x": 3108,
+          "y": 3358,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 31,
+      "ordinal": 9,
+      "diary": "Lumbridge \u0026 Draynor Diary",
+      "tier": "Hard",
+      "text": "Light your mining helmet in the Lumbridge castle basement.",
+      "locations": [
+        {
+          "page_name": "Lumbridge castle",
+          "x": 3204,
+          "y": 3237,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 31,
+      "ordinal": 10,
+      "diary": "Lumbridge \u0026 Draynor Diary",
+      "tier": "Hard",
+      "text": "Recharge your prayer at Emir's Arena with Smite activated.",
+      "locations": [
+        {
+          "page_name": "Emir's Arena",
+          "x": 3360,
+          "y": 3233,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 31,
+      "ordinal": 11,
+      "diary": "Lumbridge \u0026 Draynor Diary",
+      "tier": "Hard",
+      "text": "Craft, string and enchant an Amulet of Power in Lumbridge. Note: Doing this upstairs in Lumbridge Castle does not count.",
+      "locations": [
+        {
+          "page_name": "Lumbridge",
+          "x": 3188,
+          "y": 3220,
+          "plane": 0
+        },
+        {
+          "page_name": "Lumbridge Castle",
+          "x": 3204,
+          "y": 3237,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 32,
+      "ordinal": 1,
+      "diary": "Lumbridge \u0026 Draynor Diary",
+      "tier": "Elite",
+      "text": "Steal from a Dorgesh-Kaan rich chest.",
+      "locations": []
+    },
+    {
+      "tier_id": 32,
+      "ordinal": 2,
+      "diary": "Lumbridge \u0026 Draynor Diary",
+      "tier": "Elite",
+      "text": "Grapple across a pylon on the Dorgesh-Kaan Agility Course.",
+      "locations": [
+        {
+          "page_name": "Dorgesh-Kaan Agility Course",
+          "x": 2741,
+          "y": 5241,
+          "plane": 2
+        }
+      ]
+    },
+    {
+      "tier_id": 32,
+      "ordinal": 3,
+      "diary": "Lumbridge \u0026 Draynor Diary",
+      "tier": "Elite",
+      "text": "Chop some magic logs at the Mage Training Arena.",
+      "locations": [
+        {
+          "page_name": "Mage Training Arena",
+          "x": 3364,
+          "y": 3312,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 32,
+      "ordinal": 4,
+      "diary": "Lumbridge \u0026 Draynor Diary",
+      "tier": "Elite",
+      "text": "Smith an Adamant platebody down Draynor sewer.",
+      "locations": [
+        {
+          "page_name": "Draynor sewer",
+          "x": 3103,
+          "y": 9670,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 32,
+      "ordinal": 5,
+      "diary": "Lumbridge \u0026 Draynor Diary",
+      "tier": "Elite",
+      "text": "Craft 140 or more Water runes simultaneously from Essence without the use of Extracts.",
+      "locations": []
+    },
+    {
+      "tier_id": 32,
+      "ordinal": 6,
+      "diary": "Lumbridge \u0026 Draynor Diary",
+      "tier": "Elite",
+      "text": "Perform the Quest cape emote in the Wise Old Man's house.",
+      "locations": [
+        {
+          "page_name": "Wise Old Man",
+          "x": 3089,
+          "y": 3257,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 33,
+      "ordinal": 1,
+      "diary": "Morytania Diary",
+      "tier": "Easy",
+      "text": "Craft any Snelm from scratch in Morytania. Note: Must be done outside of Mort Myre Swamp.",
+      "locations": [
+        {
+          "page_name": "Mort Myre Swamp",
+          "x": 3478,
+          "y": 3390,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 33,
+      "ordinal": 2,
+      "diary": "Morytania Diary",
+      "tier": "Easy",
+      "text": "Cook a thin Snail on the Port Phasmatys range.",
+      "locations": [
+        {
+          "page_name": "Port Phasmatys",
+          "x": 3679,
+          "y": 3486,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 33,
+      "ordinal": 3,
+      "diary": "Morytania Diary",
+      "tier": "Easy",
+      "text": "Get a slayer task from the Slayer Master in Canifis.",
+      "locations": [
+        {
+          "page_name": "Mazchna",
+          "x": 3511,
+          "y": 3509,
+          "plane": 0
+        },
+        {
+          "page_name": "Canifis",
+          "x": 3493,
+          "y": 3488,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 33,
+      "ordinal": 4,
+      "diary": "Morytania Diary",
+      "tier": "Easy",
+      "text": "Kill a Banshee in the Slayer Tower.",
+      "locations": []
+    },
+    {
+      "tier_id": 33,
+      "ordinal": 5,
+      "diary": "Morytania Diary",
+      "tier": "Easy",
+      "text": "Have Sbott in Canifis tan something for you.",
+      "locations": [
+        {
+          "page_name": "Sbott",
+          "x": 3488,
+          "y": 3500,
+          "plane": 0
+        },
+        {
+          "page_name": "Canifis",
+          "x": 3493,
+          "y": 3488,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 33,
+      "ordinal": 6,
+      "diary": "Morytania Diary",
+      "tier": "Easy",
+      "text": "Enter Mort Myre Swamp.",
+      "locations": [
+        {
+          "page_name": "Mort Myre Swamp",
+          "x": 3478,
+          "y": 3390,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 33,
+      "ordinal": 7,
+      "diary": "Morytania Diary",
+      "tier": "Easy",
+      "text": "Kill a Ghoul.",
+      "locations": []
+    },
+    {
+      "tier_id": 33,
+      "ordinal": 8,
+      "diary": "Morytania Diary",
+      "tier": "Easy",
+      "text": "Place a Scarecrow in the Morytania flower patch.",
+      "locations": []
+    },
+    {
+      "tier_id": 33,
+      "ordinal": 9,
+      "diary": "Morytania Diary",
+      "tier": "Easy",
+      "text": "Offer some bonemeal at the Ectofuntus.",
+      "locations": [
+        {
+          "page_name": "Ectofuntus",
+          "x": 3660,
+          "y": 3520,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 33,
+      "ordinal": 10,
+      "diary": "Morytania Diary",
+      "tier": "Easy",
+      "text": "Kill a werewolf in its human form using the Wolfbane Dagger .",
+      "locations": []
+    },
+    {
+      "tier_id": 33,
+      "ordinal": 11,
+      "diary": "Morytania Diary",
+      "tier": "Easy",
+      "text": "Restore your prayer points at the nature altar. Note: Requires you to have less than full Prayer points. If able, activate Piety while praying here to complete a hard task.",
+      "locations": [
+        {
+          "page_name": "Nature Grotto",
+          "x": 3441,
+          "y": 3337,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 34,
+      "ordinal": 1,
+      "diary": "Morytania Diary",
+      "tier": "Medium",
+      "text": "Catch a swamp lizard.",
+      "locations": []
+    },
+    {
+      "tier_id": 34,
+      "ordinal": 2,
+      "diary": "Morytania Diary",
+      "tier": "Medium",
+      "text": "Complete a lap of the Canifis agility course.",
+      "locations": []
+    },
+    {
+      "tier_id": 34,
+      "ordinal": 3,
+      "diary": "Morytania Diary",
+      "tier": "Medium",
+      "text": "Obtain some Bark from a Hollow tree.",
+      "locations": []
+    },
+    {
+      "tier_id": 34,
+      "ordinal": 4,
+      "diary": "Morytania Diary",
+      "tier": "Medium",
+      "text": "Travel to Dragontooth Isle. Note: This task is automatically completed during Ghost Ahoy.",
+      "locations": [
+        {
+          "page_name": "Dragontooth Island",
+          "x": 3806,
+          "y": 3549,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 34,
+      "ordinal": 5,
+      "diary": "Morytania Diary",
+      "tier": "Medium",
+      "text": "Kill a Terror Dog.",
+      "locations": []
+    },
+    {
+      "tier_id": 34,
+      "ordinal": 6,
+      "diary": "Morytania Diary",
+      "tier": "Medium",
+      "text": "Complete a game of trouble brewing. Note: You only have to complete the minigame once, winning it is optional. In Deadman Mode, the task is instead \"Speak to Honest Jimmy about Trouble Brewing.\"",
+      "locations": [
+        {
+          "page_name": "trouble brewing",
+          "x": 3813,
+          "y": 2973,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 34,
+      "ordinal": 7,
+      "diary": "Morytania Diary",
+      "tier": "Medium",
+      "text": "Board the Swampy boat at the Hollows.",
+      "locations": [
+        {
+          "page_name": "Swamp Boaty",
+          "x": 3523,
+          "y": 3284,
+          "plane": 0
+        },
+        {
+          "page_name": "Hollows",
+          "x": 3497,
+          "y": 3379,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 34,
+      "ordinal": 8,
+      "diary": "Morytania Diary",
+      "tier": "Medium",
+      "text": "Make a batch of cannonballs at the Port Phasmatys furnace.",
+      "locations": [
+        {
+          "page_name": "Port Phasmatys",
+          "x": 3679,
+          "y": 3486,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 34,
+      "ordinal": 9,
+      "diary": "Morytania Diary",
+      "tier": "Medium",
+      "text": "Kill a Fever Spider on Braindeath Island. Note: This task is automatically completed during Rum Deal.",
+      "locations": [
+        {
+          "page_name": "Braindeath Island",
+          "x": 2144,
+          "y": 5120,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 34,
+      "ordinal": 10,
+      "diary": "Morytania Diary",
+      "tier": "Medium",
+      "text": "Use an ectophial to return to Port Phasmatys.",
+      "locations": [
+        {
+          "page_name": "ectophial",
+          "x": 3660,
+          "y": 3522,
+          "plane": 0
+        },
+        {
+          "page_name": "Port Phasmatys",
+          "x": 3679,
+          "y": 3486,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 34,
+      "ordinal": 11,
+      "diary": "Morytania Diary",
+      "tier": "Medium",
+      "text": "Mix a Guthix Balance potion while in Morytania.",
+      "locations": []
+    },
+    {
+      "tier_id": 35,
+      "ordinal": 1,
+      "diary": "Morytania Diary",
+      "tier": "Hard",
+      "text": "Enter the Kharyrll Portal in your POH. Note: Teleporting to Kharyrll from a more expensive portal nexus also counts for this task. Higher-tier materials can optionally be used for the portal and centrepiece.",
+      "locations": [
+        {
+          "page_name": "Kharyrll Portal",
+          "x": 3494,
+          "y": 3473,
+          "plane": 0
+        },
+        {
+          "page_name": "Kharyrll",
+          "x": 3493,
+          "y": 3488,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 35,
+      "ordinal": 2,
+      "diary": "Morytania Diary",
+      "tier": "Hard",
+      "text": "Climb up the advanced spike chain within Slayer Tower. Note: This chain is located on the 1st floor near the Infernal Mages, leading to the 2nd floor to near the Nechryael.",
+      "locations": [
+        {
+          "page_name": "Spikey_chain_(Slayer_Tower)",
+          "x": 3421,
+          "y": 3551,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 35,
+      "ordinal": 3,
+      "diary": "Morytania Diary",
+      "tier": "Hard",
+      "text": "Harvest some Watermelon from the Allotment patch on Harmony Island.",
+      "locations": [
+        {
+          "page_name": "Harmony Island",
+          "x": 3805,
+          "y": 2844,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 35,
+      "ordinal": 4,
+      "diary": "Morytania Diary",
+      "tier": "Hard",
+      "text": "Chop and burn some mahogany logs on Mos Le'Harmless.",
+      "locations": [
+        {
+          "page_name": "Mos Le'Harmless",
+          "x": 3735,
+          "y": 2999,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 35,
+      "ordinal": 5,
+      "diary": "Morytania Diary",
+      "tier": "Hard",
+      "text": "Complete a temple trek with a hard companion. Note: Completion of Darkness of Hallowvale unlocks the reverse route. It's not necessary to complete any events for this task. In Deadman Mode, the task is instead \"Speak to a hard companion about completing a Temple Trek.\"",
+      "locations": [
+        {
+          "page_name": "Temple Trekking",
+          "x": 3480,
+          "y": 3240,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 35,
+      "ordinal": 6,
+      "diary": "Morytania Diary",
+      "tier": "Hard",
+      "text": "Kill a Cave Horror.",
+      "locations": []
+    },
+    {
+      "tier_id": 35,
+      "ordinal": 7,
+      "diary": "Morytania Diary",
+      "tier": "Hard",
+      "text": "Harvest some Bittercap Mushrooms from the patch in Canifis.",
+      "locations": [
+        {
+          "page_name": "Canifis",
+          "x": 3493,
+          "y": 3488,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 35,
+      "ordinal": 8,
+      "diary": "Morytania Diary",
+      "tier": "Hard",
+      "text": "Pray at the Altar of Nature with Piety activated.",
+      "locations": [
+        {
+          "page_name": "Nature Grotto",
+          "x": 3441,
+          "y": 3337,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 35,
+      "ordinal": 9,
+      "diary": "Morytania Diary",
+      "tier": "Hard",
+      "text": "Use the shortcut to get to the bridge over the Salve. Note: You have to use the shortcut to go downwards for this task, not upwards.",
+      "locations": [
+        {
+          "page_name": "River Salve",
+          "x": 3403,
+          "y": 3350,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 35,
+      "ordinal": 10,
+      "diary": "Morytania Diary",
+      "tier": "Hard",
+      "text": "Mine some Mithril ore in the Abandoned Mine.",
+      "locations": [
+        {
+          "page_name": "Abandoned Mine",
+          "x": 3440,
+          "y": 3232,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 36,
+      "ordinal": 1,
+      "diary": "Morytania Diary",
+      "tier": "Elite",
+      "text": "Catch a shark in Burgh de Rott with your bare hands.",
+      "locations": [
+        {
+          "page_name": "Burgh de Rott",
+          "x": 3502,
+          "y": 3220,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 36,
+      "ordinal": 2,
+      "diary": "Morytania Diary",
+      "tier": "Elite",
+      "text": "Cremate any Shade remains on a Magic or Redwood pyre.",
+      "locations": []
+    },
+    {
+      "tier_id": 36,
+      "ordinal": 3,
+      "diary": "Morytania Diary",
+      "tier": "Elite",
+      "text": "Fertilize the Morytania herb patch using Lunar Magic. Note: This herb patch is located west of Port Phasmatys.",
+      "locations": [
+        {
+          "page_name": "Port Phasmatys",
+          "x": 3679,
+          "y": 3486,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 36,
+      "ordinal": 4,
+      "diary": "Morytania Diary",
+      "tier": "Elite",
+      "text": "Craft a Black dragonhide body in Canifis bank.",
+      "locations": [
+        {
+          "page_name": "Canifis bank",
+          "x": 3509,
+          "y": 3484,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 36,
+      "ordinal": 5,
+      "diary": "Morytania Diary",
+      "tier": "Elite",
+      "text": "Kill an Abyssal demon in the Slayer Tower. Note: Abyssal demons on the 2nd floor do not require a Slayer task to kill like those in the basement.",
+      "locations": []
+    },
+    {
+      "tier_id": 36,
+      "ordinal": 6,
+      "diary": "Morytania Diary",
+      "tier": "Elite",
+      "text": "Loot the Barrows chest while wearing any complete barrows set. Note: This includes the weapon that is part of the equipped set.",
+      "locations": [
+        {
+          "page_name": "Barrows chest",
+          "x": 3552,
+          "y": 9695,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 37,
+      "ordinal": 1,
+      "diary": "Varrock Diary",
+      "tier": "Easy",
+      "text": "Browse Thessalia's store.",
+      "locations": [
+        {
+          "page_name": "Thessalia's Fine Clothes",
+          "x": 3201,
+          "y": 3417,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 37,
+      "ordinal": 2,
+      "diary": "Varrock Diary",
+      "tier": "Easy",
+      "text": "Have Aubury teleport you to the Essence mine. Note: You can right-click him to teleport.",
+      "locations": [
+        {
+          "page_name": "Aubury",
+          "x": 3250,
+          "y": 3403,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 37,
+      "ordinal": 3,
+      "diary": "Varrock Diary",
+      "tier": "Easy",
+      "text": "Mine some Iron in the south-east mining patch near Varrock.",
+      "locations": [
+        {
+          "page_name": "South-east Varrock mine",
+          "x": 3287,
+          "y": 3365,
+          "plane": 0
+        },
+        {
+          "page_name": "Varrock",
+          "x": 3210,
+          "y": 3448,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 37,
+      "ordinal": 4,
+      "diary": "Varrock Diary",
+      "tier": "Easy",
+      "text": "Make a normal plank at the Sawmill.",
+      "locations": []
+    },
+    {
+      "tier_id": 37,
+      "ordinal": 5,
+      "diary": "Varrock Diary",
+      "tier": "Easy",
+      "text": "Enter the second level of the Stronghold of Security.",
+      "locations": []
+    },
+    {
+      "tier_id": 37,
+      "ordinal": 6,
+      "diary": "Varrock Diary",
+      "tier": "Easy",
+      "text": "Jump over the fence south of Varrock.",
+      "locations": [
+        {
+          "page_name": "Fence (Varrock)",
+          "x": 3240,
+          "y": 3334,
+          "plane": 0
+        },
+        {
+          "page_name": "Varrock",
+          "x": 3210,
+          "y": 3448,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 37,
+      "ordinal": 7,
+      "diary": "Varrock Diary",
+      "tier": "Easy",
+      "text": "Chop down a dying tree in the Lumber Yard.",
+      "locations": [
+        {
+          "page_name": "Lumber Yard",
+          "x": 3298,
+          "y": 3518,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 37,
+      "ordinal": 8,
+      "diary": "Varrock Diary",
+      "tier": "Easy",
+      "text": "Buy a newspaper. Note: Can be bought from Benny in Varrock Square.",
+      "locations": [
+        {
+          "page_name": "Benny",
+          "x": 3220,
+          "y": 3431,
+          "plane": 0
+        },
+        {
+          "page_name": "Varrock Square",
+          "x": 3213,
+          "y": 3429,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 37,
+      "ordinal": 9,
+      "diary": "Varrock Diary",
+      "tier": "Easy",
+      "text": "Give a dog a bone! Note: This does not count when done during the investigation segment of Children of the Sun.",
+      "locations": []
+    },
+    {
+      "tier_id": 37,
+      "ordinal": 10,
+      "diary": "Varrock Diary",
+      "tier": "Easy",
+      "text": "Spin a bowl on the pottery wheel and fire it in the oven in Barb Village .",
+      "locations": [
+        {
+          "page_name": "Barbarian Village",
+          "x": 3080,
+          "y": 3427,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 37,
+      "ordinal": 11,
+      "diary": "Varrock Diary",
+      "tier": "Easy",
+      "text": "Speak to Haig Halen after obtaining at least 50 Kudos.",
+      "locations": [
+        {
+          "page_name": "Curator Haig Halen",
+          "x": 3260,
+          "y": 3451,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 37,
+      "ordinal": 12,
+      "diary": "Varrock Diary",
+      "tier": "Easy",
+      "text": "Craft some Earth runes from Essence.",
+      "locations": []
+    },
+    {
+      "tier_id": 37,
+      "ordinal": 13,
+      "diary": "Varrock Diary",
+      "tier": "Easy",
+      "text": "Catch some trout in the River Lum at Barbarian Village.",
+      "locations": [
+        {
+          "page_name": "River Lum",
+          "x": 3171,
+          "y": 3350,
+          "plane": 0
+        },
+        {
+          "page_name": "Barbarian Village",
+          "x": 3080,
+          "y": 3427,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 37,
+      "ordinal": 14,
+      "diary": "Varrock Diary",
+      "tier": "Easy",
+      "text": "Steal from the Tea stall in Varrock.",
+      "locations": [
+        {
+          "page_name": "Ye olde Tea Shoppe.",
+          "x": 3270,
+          "y": 3412,
+          "plane": 0
+        },
+        {
+          "page_name": "Varrock",
+          "x": 3210,
+          "y": 3448,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 38,
+      "ordinal": 1,
+      "diary": "Varrock Diary",
+      "tier": "Medium",
+      "text": "Have the Apothecary in Varrock make you a strength potion.",
+      "locations": [
+        {
+          "page_name": "Apothecary",
+          "x": 3195,
+          "y": 3404,
+          "plane": 0
+        },
+        {
+          "page_name": "Varrock",
+          "x": 3210,
+          "y": 3448,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 38,
+      "ordinal": 2,
+      "diary": "Varrock Diary",
+      "tier": "Medium",
+      "text": "Enter the Champions' Guild.",
+      "locations": [
+        {
+          "page_name": "Champions' Guild",
+          "x": 3191,
+          "y": 3357,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 38,
+      "ordinal": 3,
+      "diary": "Varrock Diary",
+      "tier": "Medium",
+      "text": "Select a colour for your kitten. Note: You can only have one kitten (or cat) following you at a time. If you already have one, you'll have to shoo it away, store it in a menagerie, or sell it for death runes to West Ardougne civilians. Storing it in your inventory or bank does not allow you to purchase a new one.",
+      "locations": []
+    },
+    {
+      "tier_id": 38,
+      "ordinal": 4,
+      "diary": "Varrock Diary",
+      "tier": "Medium",
+      "text": "Use the spirit tree north of Varrock. Note: This tree is located in the north-eastern corner of the Grand Exchange.",
+      "locations": [
+        {
+          "page_name": "spirit tree",
+          "x": 2460,
+          "y": 3445,
+          "plane": 0
+        },
+        {
+          "page_name": "Varrock",
+          "x": 3210,
+          "y": 3448,
+          "plane": 0
+        },
+        {
+          "page_name": "Grand Exchange",
+          "x": 3165,
+          "y": 3490,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 38,
+      "ordinal": 5,
+      "diary": "Varrock Diary",
+      "tier": "Medium",
+      "text": "Perform the 4 emotes from the Stronghold of Security.",
+      "locations": []
+    },
+    {
+      "tier_id": 38,
+      "ordinal": 6,
+      "diary": "Varrock Diary",
+      "tier": "Medium",
+      "text": "Enter the Tolna dungeon after completing A Soul's Bane.",
+      "locations": [
+        {
+          "page_name": "Tolna's rift",
+          "x": 3104,
+          "y": 5280,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 38,
+      "ordinal": 7,
+      "diary": "Varrock Diary",
+      "tier": "Medium",
+      "text": "Teleport to the digsite using a Digsite pendant.",
+      "locations": [
+        {
+          "page_name": "digsite",
+          "x": 3354,
+          "y": 3420,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 38,
+      "ordinal": 8,
+      "diary": "Varrock Diary",
+      "tier": "Medium",
+      "text": "Cast the teleport to Varrock spell.",
+      "locations": [
+        {
+          "page_name": "Varrock",
+          "x": 3210,
+          "y": 3448,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 38,
+      "ordinal": 9,
+      "diary": "Varrock Diary",
+      "tier": "Medium",
+      "text": "Get a Slayer task from Vannaka.",
+      "locations": [
+        {
+          "page_name": "Vannaka",
+          "x": 3147,
+          "y": 9914,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 38,
+      "ordinal": 10,
+      "diary": "Varrock Diary",
+      "tier": "Medium",
+      "text": "Make 20 Mahogany Planks in one go. Note: You can right-click the Sawmill operator to turn your logs into planks. You'll always need 20 mahogany logs, regardless of whether you're using sawmill vouchers.",
+      "locations": [
+        {
+          "page_name": "Sawmill operator",
+          "x": 3302,
+          "y": 3492,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 38,
+      "ordinal": 11,
+      "diary": "Varrock Diary",
+      "tier": "Medium",
+      "text": "Pick a White tree fruit.",
+      "locations": []
+    },
+    {
+      "tier_id": 38,
+      "ordinal": 12,
+      "diary": "Varrock Diary",
+      "tier": "Medium",
+      "text": "Use the balloon to travel from Varrock. Note: The destination does not matter for this task. You can even pick a locked destination and not take the trip.",
+      "locations": [
+        {
+          "page_name": "Varrock",
+          "x": 3210,
+          "y": 3448,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 38,
+      "ordinal": 13,
+      "diary": "Varrock Diary",
+      "tier": "Medium",
+      "text": "Complete a lap of the Varrock Agility course.",
+      "locations": [
+        {
+          "page_name": "Varrock Rooftop Course",
+          "x": 3220,
+          "y": 3414,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 39,
+      "ordinal": 1,
+      "diary": "Varrock Diary",
+      "tier": "Hard",
+      "text": "Trade furs with the Fancy Dress Seller for a spottier cape and equip it.",
+      "locations": [
+        {
+          "page_name": "Fancy-dress shop owner",
+          "x": 3281,
+          "y": 3398,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 39,
+      "ordinal": 2,
+      "diary": "Varrock Diary",
+      "tier": "Hard",
+      "text": "Speak to Orlando Smith when you have achieved 153 Kudos.",
+      "locations": [
+        {
+          "page_name": "Orlando Smith",
+          "x": 1759,
+          "y": 4956,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 39,
+      "ordinal": 3,
+      "diary": "Varrock Diary",
+      "tier": "Hard",
+      "text": "Make a Waka canoe near Edgeville.",
+      "locations": [
+        {
+          "page_name": "Waka canoe",
+          "x": 1824,
+          "y": 4512,
+          "plane": 0
+        },
+        {
+          "page_name": "Edgeville",
+          "x": 3080,
+          "y": 3492,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 39,
+      "ordinal": 4,
+      "diary": "Varrock Diary",
+      "tier": "Hard",
+      "text": "Teleport to Paddewwa.",
+      "locations": [
+        {
+          "page_name": "Paddewwa",
+          "x": 3104,
+          "y": 3491,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 39,
+      "ordinal": 5,
+      "diary": "Varrock Diary",
+      "tier": "Hard",
+      "text": "Teleport to Barbarian Village with a skull sceptre.",
+      "locations": [
+        {
+          "page_name": "Barbarian Village",
+          "x": 3080,
+          "y": 3427,
+          "plane": 0
+        },
+        {
+          "page_name": "skull sceptre",
+          "x": 3081,
+          "y": 3421,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 39,
+      "ordinal": 6,
+      "diary": "Varrock Diary",
+      "tier": "Hard",
+      "text": "Chop some yew logs in Varrock and burn them at the top of the Varrock church. Note: There is a yew tree next to the church. Completing or updating any other task in-between these steps will reset the progress for this task. In Deadman Mode, the task is instead \"Burn some Yew logs at the top of the Varrock church with 60 Woodcutting.\"",
+      "locations": [
+        {
+          "page_name": "Varrock",
+          "x": 3210,
+          "y": 3448,
+          "plane": 0
+        },
+        {
+          "page_name": "Varrock church",
+          "x": 3255,
+          "y": 3480,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 39,
+      "ordinal": 7,
+      "diary": "Varrock Diary",
+      "tier": "Hard",
+      "text": "Have the Varrock estate agent decorate your house with Fancy Stone. Note: You must finish the dialogue or the task will not count as completed.",
+      "locations": []
+    },
+    {
+      "tier_id": 39,
+      "ordinal": 8,
+      "diary": "Varrock Diary",
+      "tier": "Hard",
+      "text": "Collect at least 2 yew roots from the Tree patch in Varrock Palace. Note: While 60 Farming is required to grow the yew tree, you'll need 68 Farming to dig up more than a single root.",
+      "locations": [
+        {
+          "page_name": "Varrock Palace",
+          "x": 3212,
+          "y": 3474,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 39,
+      "ordinal": 9,
+      "diary": "Varrock Diary",
+      "tier": "Hard",
+      "text": "Pray at the altar in Varrock palace with Smite active. Note: The altar is found on the 1st floor of the palace.",
+      "locations": [
+        {
+          "page_name": "Varrock palace",
+          "x": 3212,
+          "y": 3474,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 39,
+      "ordinal": 10,
+      "diary": "Varrock Diary",
+      "tier": "Hard",
+      "text": "Squeeze through the obstacle pipe in Edgeville dungeon.",
+      "locations": [
+        {
+          "page_name": "Obstacle pipe (Edgeville Dungeon)",
+          "x": 3153,
+          "y": 9905,
+          "plane": 0
+        },
+        {
+          "page_name": "Edgeville dungeon",
+          "x": 3116,
+          "y": 9908,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 40,
+      "ordinal": 1,
+      "diary": "Varrock Diary",
+      "tier": "Elite",
+      "text": "Create a super combat potion in Varrock west bank.",
+      "locations": [
+        {
+          "page_name": "Varrock west bank",
+          "x": 3185,
+          "y": 3440,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 40,
+      "ordinal": 2,
+      "diary": "Varrock Diary",
+      "tier": "Elite",
+      "text": "Use Lunar magic to make 20 mahogany planks at the Lumberyard. Note: You must stand within the Lumber Yard, past the fence.",
+      "locations": [
+        {
+          "page_name": "Lumberyard",
+          "x": 3298,
+          "y": 3518,
+          "plane": 0
+        },
+        {
+          "page_name": "Lumber Yard",
+          "x": 3298,
+          "y": 3518,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 40,
+      "ordinal": 3,
+      "diary": "Varrock Diary",
+      "tier": "Elite",
+      "text": "Bake a summer pie in the Cooking Guild. Note: Instead of using a range, you can use the Bake Pie spell to prevent burning the pie.",
+      "locations": [
+        {
+          "page_name": "Cooks' Guild",
+          "x": 3138,
+          "y": 3452,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 40,
+      "ordinal": 4,
+      "diary": "Varrock Diary",
+      "tier": "Elite",
+      "text": "Smith and fletch ten rune darts within Varrock.",
+      "locations": [
+        {
+          "page_name": "Varrock",
+          "x": 3210,
+          "y": 3448,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 40,
+      "ordinal": 5,
+      "diary": "Varrock Diary",
+      "tier": "Elite",
+      "text": "Craft 100 or more earth runes simultaneously from Essence without the use of Extracts.",
+      "locations": []
+    },
+    {
+      "tier_id": 41,
+      "ordinal": 1,
+      "diary": "Western Provinces Diary",
+      "tier": "Easy",
+      "text": "Catch a Copper Longtail.",
+      "locations": []
+    },
+    {
+      "tier_id": 41,
+      "ordinal": 2,
+      "diary": "Western Provinces Diary",
+      "tier": "Easy",
+      "text": "Complete a novice game of Pest Control. Note: You must've earnt commendation points for this task to count as completed. In Deadman Mode, the task is instead \"Attempt to board the novice Pest Control lander with at least 40 combat.\"",
+      "locations": [
+        {
+          "page_name": "Pest Control",
+          "x": 2658,
+          "y": 2625,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 41,
+      "ordinal": 3,
+      "diary": "Western Provinces Diary",
+      "tier": "Easy",
+      "text": "Mine some Iron Ore near Piscatoris. Note: This must be done at the Piscatoris mine.",
+      "locations": [
+        {
+          "page_name": "Piscatoris",
+          "x": 2333,
+          "y": 3576,
+          "plane": 0
+        },
+        {
+          "page_name": "Piscatoris mine",
+          "x": 2338,
+          "y": 3640,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 41,
+      "ordinal": 4,
+      "diary": "Western Provinces Diary",
+      "tier": "Easy",
+      "text": "Complete a lap of the Gnome agility course.",
+      "locations": [
+        {
+          "page_name": "Gnome Stronghold Agility Course",
+          "x": 2480,
+          "y": 3428,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 41,
+      "ordinal": 5,
+      "diary": "Western Provinces Diary",
+      "tier": "Easy",
+      "text": "Score a goal in a Gnomeball match.",
+      "locations": [
+        {
+          "page_name": "Gnome Ball",
+          "x": 2393,
+          "y": 3496,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 41,
+      "ordinal": 6,
+      "diary": "Western Provinces Diary",
+      "tier": "Easy",
+      "text": "Claim any Chompy bird hat from Rantz. Note: You need to have a (comp) ogre bow in your inventory to claim hats.",
+      "locations": [
+        {
+          "page_name": "Rantz",
+          "x": 2630,
+          "y": 2981,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 41,
+      "ordinal": 7,
+      "diary": "Western Provinces Diary",
+      "tier": "Easy",
+      "text": "Teleport to Pest Control using the Minigame Teleport. Note: In Deadman Mode, the task is instead \"Travel to the Void Knight Outpost from Port Sarim.\"",
+      "locations": [
+        {
+          "page_name": "Pest Control",
+          "x": 2658,
+          "y": 2625,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 41,
+      "ordinal": 8,
+      "diary": "Western Provinces Diary",
+      "tier": "Easy",
+      "text": "Collect a swamp toad at the Gnome Stronghold. Note: Only a swamp toad collected from the swamp pen north-west of Grand Tree counts for this task.",
+      "locations": [
+        {
+          "page_name": "Tree Gnome Stronghold",
+          "x": 2440,
+          "y": 3460,
+          "plane": 0
+        },
+        {
+          "page_name": "Grand Tree",
+          "x": 2466,
+          "y": 3492,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 41,
+      "ordinal": 9,
+      "diary": "Western Provinces Diary",
+      "tier": "Easy",
+      "text": "Have Brimstail teleport you to the Essence Mine. Note: You can right-click him to teleport.",
+      "locations": [
+        {
+          "page_name": "Brimstail",
+          "x": 2409,
+          "y": 9817,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 41,
+      "ordinal": 10,
+      "diary": "Western Provinces Diary",
+      "tier": "Easy",
+      "text": "Fletch an Oak Shortbow in the Gnome Stronghold.",
+      "locations": [
+        {
+          "page_name": "Tree Gnome Stronghold",
+          "x": 2440,
+          "y": 3460,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 41,
+      "ordinal": 11,
+      "diary": "Western Provinces Diary",
+      "tier": "Easy",
+      "text": "Kill a Terrorbird in the Terrorbird enclosure. Note: This enclosure is found in the south-west of the Tree Gnome Stronghold, across the river.",
+      "locations": [
+        {
+          "page_name": "Tree Gnome Stronghold",
+          "x": 2440,
+          "y": 3460,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 42,
+      "ordinal": 1,
+      "diary": "Western Provinces Diary",
+      "tier": "Medium",
+      "text": "Take the agility shortcut from the Grand Tree to Otto's Grotto.",
+      "locations": [
+        {
+          "page_name": "Grand Tree",
+          "x": 2466,
+          "y": 3492,
+          "plane": 0
+        },
+        {
+          "page_name": "Otto's Grotto",
+          "x": 2502,
+          "y": 3489,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 42,
+      "ordinal": 2,
+      "diary": "Western Provinces Diary",
+      "tier": "Medium",
+      "text": "Travel to the Gnome Stronghold by Spirit Tree.",
+      "locations": [
+        {
+          "page_name": "Tree Gnome Stronghold",
+          "x": 2440,
+          "y": 3460,
+          "plane": 0
+        },
+        {
+          "page_name": "Spirit Tree",
+          "x": 2460,
+          "y": 3445,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 42,
+      "ordinal": 3,
+      "diary": "Western Provinces Diary",
+      "tier": "Medium",
+      "text": "Trap a Spined Larupia. Note: This creature is found in the Feldip Hunter area.",
+      "locations": [
+        {
+          "page_name": "Feldip Hunter area",
+          "x": 2558,
+          "y": 2911,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 42,
+      "ordinal": 4,
+      "diary": "Western Provinces Diary",
+      "tier": "Medium",
+      "text": "Fish some Bass on Ape Atoll.",
+      "locations": [
+        {
+          "page_name": "Ape Atoll",
+          "x": 2750,
+          "y": 2750,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 42,
+      "ordinal": 5,
+      "diary": "Western Provinces Diary",
+      "tier": "Medium",
+      "text": "Chop and burn some teak logs on Ape Atoll. Note: With 50 Woodcutting and 50 Firemaking, you can also chop and burn some mahogany logs here for a hard task. Completing or updating any other task in-between these steps will reset the progress for this task.",
+      "locations": [
+        {
+          "page_name": "Ape Atoll",
+          "x": 2750,
+          "y": 2750,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 42,
+      "ordinal": 6,
+      "diary": "Western Provinces Diary",
+      "tier": "Medium",
+      "text": "Complete an intermediate game of Pest Control. Note: You must've earnt commendation points for this task to count as completed. In Deadman Mode, the task is instead \"Attempt to board the intermediate Pest Control lander with at least 70 combat.\"",
+      "locations": [
+        {
+          "page_name": "Pest Control",
+          "x": 2658,
+          "y": 2625,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 42,
+      "ordinal": 7,
+      "diary": "Western Provinces Diary",
+      "tier": "Medium",
+      "text": "Travel to the Feldip Hills by Gnome Glider.",
+      "locations": [
+        {
+          "page_name": "Feldip Hills",
+          "x": 2515,
+          "y": 2954,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 42,
+      "ordinal": 8,
+      "diary": "Western Provinces Diary",
+      "tier": "Medium",
+      "text": "Claim a Chompy bird hat from Rantz after registering at least 125 kills. Note: You need to have a (comp) ogre bow in your inventory to claim hats.",
+      "locations": [
+        {
+          "page_name": "Rantz",
+          "x": 2630,
+          "y": 2981,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 42,
+      "ordinal": 9,
+      "diary": "Western Provinces Diary",
+      "tier": "Medium",
+      "text": "Travel from Eagles' Peak to the Feldip Hills by Eagle. Note: You'll unlock travel from the Eagles' Peak Dungeon after the required quest.",
+      "locations": [
+        {
+          "page_name": "Eagles' Peak (mountain)",
+          "x": 2332,
+          "y": 3486,
+          "plane": 0
+        },
+        {
+          "page_name": "Feldip Hills",
+          "x": 2515,
+          "y": 2954,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 42,
+      "ordinal": 10,
+      "diary": "Western Provinces Diary",
+      "tier": "Medium",
+      "text": "Make a Chocolate Bomb at the Grand Tree.",
+      "locations": [
+        {
+          "page_name": "Grand Tree",
+          "x": 2466,
+          "y": 3492,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 42,
+      "ordinal": 11,
+      "diary": "Western Provinces Diary",
+      "tier": "Medium",
+      "text": "Complete a delivery for the Gnome Restaurant.",
+      "locations": [
+        {
+          "page_name": "Gnome Restaurant",
+          "x": 2437,
+          "y": 3500,
+          "plane": 1
+        }
+      ]
+    },
+    {
+      "tier_id": 42,
+      "ordinal": 12,
+      "diary": "Western Provinces Diary",
+      "tier": "Medium",
+      "text": "Turn your small crystal seed into a Crystal saw. Note: You have to enchant it with the singing bowl in Brimstail's cave.",
+      "locations": [
+        {
+          "page_name": "Brimstail's cave",
+          "x": 2397,
+          "y": 9820,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 42,
+      "ordinal": 13,
+      "diary": "Western Provinces Diary",
+      "tier": "Medium",
+      "text": "Mine some Gold ore underneath the Grand Tree.",
+      "locations": [
+        {
+          "page_name": "Grand Tree",
+          "x": 2466,
+          "y": 3492,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 43,
+      "ordinal": 1,
+      "diary": "Western Provinces Diary",
+      "tier": "Hard",
+      "text": "Kill an Elf with a Crystal bow. Note: an inactive bow can be used if equipped whilst the elf dies to poison.",
+      "locations": []
+    },
+    {
+      "tier_id": 43,
+      "ordinal": 2,
+      "diary": "Western Provinces Diary",
+      "tier": "Hard",
+      "text": "Catch and cook a Monkfish in Piscatoris. Note: Monkfish is caught in the Piscatoris Fishing Colony.",
+      "locations": [
+        {
+          "page_name": "Piscatoris",
+          "x": 2333,
+          "y": 3576,
+          "plane": 0
+        },
+        {
+          "page_name": "Piscatoris Fishing Colony",
+          "x": 2332,
+          "y": 3683,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 43,
+      "ordinal": 3,
+      "diary": "Western Provinces Diary",
+      "tier": "Hard",
+      "text": "Complete a Veteran game of Pest Control. Note: You must've earnt commendation points for this task to count as completed. In Deadman Mode, the task is instead \"Attempt to board the veteran Pest Control lander with at least 100 combat.\"",
+      "locations": [
+        {
+          "page_name": "Pest Control",
+          "x": 2658,
+          "y": 2625,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 43,
+      "ordinal": 4,
+      "diary": "Western Provinces Diary",
+      "tier": "Hard",
+      "text": "Catch a Dashing Kebbit. Note: This kebbit is found in the Piscatoris falconry area.",
+      "locations": [
+        {
+          "page_name": "Piscatoris falconry area",
+          "x": 2378,
+          "y": 3596,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 43,
+      "ordinal": 5,
+      "diary": "Western Provinces Diary",
+      "tier": "Hard",
+      "text": "Complete a lap of the Ape Atoll agility course.",
+      "locations": [
+        {
+          "page_name": "Ape Atoll agility course",
+          "x": 2753,
+          "y": 2741,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 43,
+      "ordinal": 6,
+      "diary": "Western Provinces Diary",
+      "tier": "Hard",
+      "text": "Chop and burn some Mahogany logs on Ape Atoll. Note: Logs burnt by the Infernal axe do not count towards this task.",
+      "locations": [
+        {
+          "page_name": "Ape Atoll",
+          "x": 2750,
+          "y": 2750,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 43,
+      "ordinal": 7,
+      "diary": "Western Provinces Diary",
+      "tier": "Hard",
+      "text": "Mine some Adamantite ore in Tirannwn. Note: This can be done in the Isafdar mine outside of Lletya, or the Trahaearn mine in Prifddinas (with completion of Song of the Elves).",
+      "locations": [
+        {
+          "page_name": "Isafdar mine",
+          "x": 2278,
+          "y": 3158,
+          "plane": 0
+        },
+        {
+          "page_name": "Lletya",
+          "x": 2338,
+          "y": 3171,
+          "plane": 0
+        },
+        {
+          "page_name": "Trahaearn mine",
+          "x": 3296,
+          "y": 12448,
+          "plane": 0
+        },
+        {
+          "page_name": "Prifddinas",
+          "x": 3263,
+          "y": 6083,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 43,
+      "ordinal": 8,
+      "diary": "Western Provinces Diary",
+      "tier": "Hard",
+      "text": "Check the health of your Palm tree in Lletya.",
+      "locations": [
+        {
+          "page_name": "Lletya",
+          "x": 2338,
+          "y": 3171,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 43,
+      "ordinal": 9,
+      "diary": "Western Provinces Diary",
+      "tier": "Hard",
+      "text": "Claim a Chompy bird hat from Rantz after registering at least 300 kills. Note: You need to have a (comp) ogre bow in your inventory to claim hats.",
+      "locations": [
+        {
+          "page_name": "Rantz",
+          "x": 2630,
+          "y": 2981,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 43,
+      "ordinal": 10,
+      "diary": "Western Provinces Diary",
+      "tier": "Hard",
+      "text": "Build an Isafdar painting in your POH Quest hall.",
+      "locations": [
+        {
+          "page_name": "Isafdar (painting)",
+          "x": 2216,
+          "y": 3255,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 43,
+      "ordinal": 11,
+      "diary": "Western Provinces Diary",
+      "tier": "Hard",
+      "text": "Kill Zulrah. Note: In Deadman Mode, the task is listed as \"Attempt to visit Zulrah.\", but doing so will not complete the task, and you must kill Zulrah like normal to complete it.",
+      "locations": []
+    },
+    {
+      "tier_id": 43,
+      "ordinal": 12,
+      "diary": "Western Provinces Diary",
+      "tier": "Hard",
+      "text": "Teleport to Ape Atoll.",
+      "locations": [
+        {
+          "page_name": "Ape Atoll",
+          "x": 2750,
+          "y": 2750,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 43,
+      "ordinal": 13,
+      "diary": "Western Provinces Diary",
+      "tier": "Hard",
+      "text": "Pickpocket a Gnome.",
+      "locations": []
+    },
+    {
+      "tier_id": 44,
+      "ordinal": 1,
+      "diary": "Western Provinces Diary",
+      "tier": "Elite",
+      "text": "Fletch a Magic Longbow in Tirannwn.",
+      "locations": []
+    },
+    {
+      "tier_id": 44,
+      "ordinal": 2,
+      "diary": "Western Provinces Diary",
+      "tier": "Elite",
+      "text": "Kill the Thermonuclear Smoke Devil. Note: While this boss normally requires a Slayer task, this is not needed for the first kill. You do not have to contact a Slayer master for this task. You must be in the room when its death animation ends, or the task will not be completed. Be mindful of this if you are attempting the Combat Achievements. If this occurs, you will still be able to kill it again without a slayer task.",
+      "locations": []
+    },
+    {
+      "tier_id": 44,
+      "ordinal": 3,
+      "diary": "Western Provinces Diary",
+      "tier": "Elite",
+      "text": "Have Prissy Scilla protect your Magic tree.",
+      "locations": [
+        {
+          "page_name": "Prissy Scilla",
+          "x": 2436,
+          "y": 3415,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 44,
+      "ordinal": 4,
+      "diary": "Western Provinces Diary",
+      "tier": "Elite",
+      "text": "Use the Elven overpass advanced cliffside shortcut.",
+      "locations": [
+        {
+          "page_name": "Rocks (Tirannwn)",
+          "x": 2345,
+          "y": 3301,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 44,
+      "ordinal": 5,
+      "diary": "Western Provinces Diary",
+      "tier": "Elite",
+      "text": "Equip any complete void set. Note: In Deadman Mode, the task is instead \"Speak to the Elite Void Knight after claiming the Western hard diary reward.\"",
+      "locations": []
+    },
+    {
+      "tier_id": 44,
+      "ordinal": 6,
+      "diary": "Western Provinces Diary",
+      "tier": "Elite",
+      "text": "Claim a Chompy bird hat from Rantz after registering at least 1,000 kills. Note: You need to have a (comp) ogre bow in your inventory to claim hats.",
+      "locations": [
+        {
+          "page_name": "Rantz",
+          "x": 2630,
+          "y": 2981,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 44,
+      "ordinal": 7,
+      "diary": "Western Provinces Diary",
+      "tier": "Elite",
+      "text": "Pickpocket an Elf.",
+      "locations": []
+    },
+    {
+      "tier_id": 45,
+      "ordinal": 1,
+      "diary": "Wilderness Diary",
+      "tier": "Easy",
+      "text": "Cast Low Alchemy at the Fountain of Rune.",
+      "locations": [
+        {
+          "page_name": "Fountain of Rune",
+          "x": 3366,
+          "y": 3899,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 45,
+      "ordinal": 2,
+      "diary": "Wilderness Diary",
+      "tier": "Easy",
+      "text": "Enter the Wilderness from the Ardougne or Edgeville lever.",
+      "locations": [
+        {
+          "page_name": "Ardougne teleport lever",
+          "x": 2562,
+          "y": 3310,
+          "plane": 0
+        },
+        {
+          "page_name": "Edgeville teleport lever",
+          "x": 3090,
+          "y": 3475,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 45,
+      "ordinal": 3,
+      "diary": "Wilderness Diary",
+      "tier": "Easy",
+      "text": "Pray at the Chaos Altar in the Western Wilderness.",
+      "locations": [
+        {
+          "page_name": "Chaos Temple (church)",
+          "x": 2958,
+          "y": 3823,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 45,
+      "ordinal": 4,
+      "diary": "Wilderness Diary",
+      "tier": "Easy",
+      "text": "Enter the Chaos Runecrafting temple. Note: Entering it through the Tunnel of Chaos or Guardians of the Rift will not count for this task.",
+      "locations": [
+        {
+          "page_name": "Chaos Altar",
+          "x": 2270,
+          "y": 4841,
+          "plane": 0
+        },
+        {
+          "page_name": "Tunnel of Chaos",
+          "x": 3168,
+          "y": 5216,
+          "plane": 0
+        },
+        {
+          "page_name": "Guardians of the Rift",
+          "x": 3616,
+          "y": 9492,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 45,
+      "ordinal": 5,
+      "diary": "Wilderness Diary",
+      "tier": "Easy",
+      "text": "Kill a Mammoth in the Wilderness. Note: Mammoths are found south-east of Ferox Enclave.",
+      "locations": [
+        {
+          "page_name": "Ferox Enclave",
+          "x": 3137,
+          "y": 3623,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 45,
+      "ordinal": 6,
+      "diary": "Wilderness Diary",
+      "tier": "Easy",
+      "text": "Kill an Earth Warrior in the Wilderness beneath Edgeville.",
+      "locations": [
+        {
+          "page_name": "Edgeville Dungeon",
+          "x": 3116,
+          "y": 9908,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 45,
+      "ordinal": 7,
+      "diary": "Wilderness Diary",
+      "tier": "Easy",
+      "text": "Restore some prayer points at the demonic ruins.",
+      "locations": [
+        {
+          "page_name": "demonic ruins",
+          "x": 3289,
+          "y": 3885,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 45,
+      "ordinal": 8,
+      "diary": "Wilderness Diary",
+      "tier": "Easy",
+      "text": "Enter the King Black Dragon's lair. Note: This lair is located beneath the Lava Maze.",
+      "locations": [
+        {
+          "page_name": "Lava Maze",
+          "x": 3072,
+          "y": 3854,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 45,
+      "ordinal": 9,
+      "diary": "Wilderness Diary",
+      "tier": "Easy",
+      "text": "Collect 5 Red spiders' eggs from the Wilderness Note: These can be found in the northern part of the Edgeville Dungeon. You can also bring eggs into the wilderness, fulfilling the diary by dropping and picking them up five times.",
+      "locations": [
+        {
+          "page_name": "Edgeville Dungeon",
+          "x": 3116,
+          "y": 9908,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 45,
+      "ordinal": 10,
+      "diary": "Wilderness Diary",
+      "tier": "Easy",
+      "text": "Mine some Iron ore in the Wilderness.",
+      "locations": []
+    },
+    {
+      "tier_id": 45,
+      "ordinal": 11,
+      "diary": "Wilderness Diary",
+      "tier": "Easy",
+      "text": "Have the Mage of Zamorak teleport you to the Abyss. Note: The one-time teleport to the Abyss from Varrock during Temple of the Eye does not count for this task.",
+      "locations": [
+        {
+          "page_name": "Mage of Zamorak",
+          "x": 3107,
+          "y": 3555,
+          "plane": 0
+        },
+        {
+          "page_name": "Abyss",
+          "x": 3041,
+          "y": 4832,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 45,
+      "ordinal": 12,
+      "diary": "Wilderness Diary",
+      "tier": "Easy",
+      "text": "Equip any team cape in the Wilderness. Note: Entering the Wilderness with one already equipped does not count for this task.",
+      "locations": []
+    },
+    {
+      "tier_id": 46,
+      "ordinal": 1,
+      "diary": "Wilderness Diary",
+      "tier": "Medium",
+      "text": "Mine some Mithril ore in the wilderness.",
+      "locations": []
+    },
+    {
+      "tier_id": 46,
+      "ordinal": 2,
+      "diary": "Wilderness Diary",
+      "tier": "Medium",
+      "text": "Chop some yew logs from a fallen Ent. Note: This must be done within the Wilderness. You can find ents north and east of the chaos temple with the elder chaos druids.",
+      "locations": [
+        {
+          "page_name": "Chaos Temple (Wilderness)",
+          "x": 3240,
+          "y": 3608,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 46,
+      "ordinal": 3,
+      "diary": "Wilderness Diary",
+      "tier": "Medium",
+      "text": "Enter the Wilderness Godwars Dungeon. Note: While you're here, with a high enough Slayer level you can also complete another medium task and a hard task by killing a bloodveld and spiritual warrior, respectively.",
+      "locations": [
+        {
+          "page_name": "Wilderness God Wars Dungeon",
+          "x": 3017,
+          "y": 3740,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 46,
+      "ordinal": 4,
+      "diary": "Wilderness Diary",
+      "tier": "Medium",
+      "text": "Complete a lap of the Wilderness Agility course.",
+      "locations": []
+    },
+    {
+      "tier_id": 46,
+      "ordinal": 5,
+      "diary": "Wilderness Diary",
+      "tier": "Medium",
+      "text": "Kill a Green Dragon. Note: This must be done within the Wilderness.",
+      "locations": []
+    },
+    {
+      "tier_id": 46,
+      "ordinal": 6,
+      "diary": "Wilderness Diary",
+      "tier": "Medium",
+      "text": "Kill an Ankou in the Wilderness.",
+      "locations": []
+    },
+    {
+      "tier_id": 46,
+      "ordinal": 7,
+      "diary": "Wilderness Diary",
+      "tier": "Medium",
+      "text": "Charge an Earth Orb.",
+      "locations": []
+    },
+    {
+      "tier_id": 46,
+      "ordinal": 8,
+      "diary": "Wilderness Diary",
+      "tier": "Medium",
+      "text": "Kill a Bloodveld in the Wilderness Godwars Dungeon. Note: Can be safespotted in the south-west corner while having a Saradomin and Zamorak item equipped.",
+      "locations": [
+        {
+          "page_name": "Wilderness God Wars Dungeon",
+          "x": 3017,
+          "y": 3740,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 46,
+      "ordinal": 9,
+      "diary": "Wilderness Diary",
+      "tier": "Medium",
+      "text": "Talk to the Emblem Trader in Edgeville about emblems. (He's just north of the bank)",
+      "locations": [
+        {
+          "page_name": "Emblem Trader",
+          "x": 3424,
+          "y": 4064,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 46,
+      "ordinal": 10,
+      "diary": "Wilderness Diary",
+      "tier": "Medium",
+      "text": "Smith a Golden helmet in the Resource Area. Note: You cannot do this while you already have a gold helmet in your inventory or bank, this must be dropped first. With 75 Smithing, you can bring 2 adamantite bars here as well to smith an adamant scimitar for a hard task.",
+      "locations": [
+        {
+          "page_name": "Resource Area",
+          "x": 3174,
+          "y": 3944,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 46,
+      "ordinal": 11,
+      "diary": "Wilderness Diary",
+      "tier": "Medium",
+      "text": "Open the Muddy Chest in the lava maze. Note: With 53 Fishing, you can bring an oily fishing rod and fishing bait to catch a raw lava eel for a hard task.",
+      "locations": [
+        {
+          "page_name": "Muddy Chest",
+          "x": 3089,
+          "y": 3859,
+          "plane": 0
+        },
+        {
+          "page_name": "lava maze",
+          "x": 3072,
+          "y": 3854,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 47,
+      "ordinal": 1,
+      "diary": "Wilderness Diary",
+      "tier": "Hard",
+      "text": "Cast any of the 3 God spells against another player in the Wilderness. Note: You have to successfully hit the player, so multiple casts are recommended. God spells must first be cast 100 times inside the Mage Arena before they can be cast elsewhere, but this task is just as completable inside the arena.",
+      "locations": [
+        {
+          "page_name": "Mage Arena",
+          "x": 3095,
+          "y": 3955,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 47,
+      "ordinal": 2,
+      "diary": "Wilderness Diary",
+      "tier": "Hard",
+      "text": "Charge an Air Orb.",
+      "locations": []
+    },
+    {
+      "tier_id": 47,
+      "ordinal": 3,
+      "diary": "Wilderness Diary",
+      "tier": "Hard",
+      "text": "Catch a Black Salamander in the Wilderness.",
+      "locations": []
+    },
+    {
+      "tier_id": 47,
+      "ordinal": 4,
+      "diary": "Wilderness Diary",
+      "tier": "Hard",
+      "text": "Smith an Adamant scimitar in the Resource Area. Note: With 75 Woodcutting and 75 Firemaking, you can bring any axe and a tinderbox to cut and burn some magic logs for an elite task.",
+      "locations": [
+        {
+          "page_name": "Resource Area",
+          "x": 3174,
+          "y": 3944,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 47,
+      "ordinal": 5,
+      "diary": "Wilderness Diary",
+      "tier": "Hard",
+      "text": "Kill a Lava Dragon. Note: Lava dragons are found on Lava Dragon Isle.",
+      "locations": [
+        {
+          "page_name": "Lava Dragon Isle",
+          "x": 3204,
+          "y": 3828,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 47,
+      "ordinal": 6,
+      "diary": "Wilderness Diary",
+      "tier": "Hard",
+      "text": "Kill the Chaos Elemental.",
+      "locations": []
+    },
+    {
+      "tier_id": 47,
+      "ordinal": 7,
+      "diary": "Wilderness Diary",
+      "tier": "Hard",
+      "text": "Kill the Crazy Arc. , Chaos Fanatic \u0026 Scorpia. Note: While these bosses can be killed in any order, completing or updating any other task in-between will reset the progress for this task.",
+      "locations": []
+    },
+    {
+      "tier_id": 47,
+      "ordinal": 8,
+      "diary": "Wilderness Diary",
+      "tier": "Hard",
+      "text": "Take the agility shortcut from Trollheim into the Wilderness. Note: Not to be confused with the rocky shortcut further north. The shortcut for this task goes in one direction, and cannot be used to leave the Wilderness again.",
+      "locations": [
+        {
+          "page_name": "Rocks (Wilderness, Trollheim)",
+          "x": 2945,
+          "y": 3678,
+          "plane": 0
+        },
+        {
+          "page_name": "Trollheim",
+          "x": 2891,
+          "y": 3678,
+          "plane": 0
+        },
+        {
+          "page_name": "Rocky handholds (God Wars Dungeon, Wilderness)",
+          "x": 2934,
+          "y": 3768,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 47,
+      "ordinal": 9,
+      "diary": "Wilderness Diary",
+      "tier": "Hard",
+      "text": "Kill a Spiritual warrior in the Wilderness Godwars Dungeon. Note: With 83 Slayer, you can also kill a spiritual mage here to complete an elite task",
+      "locations": [
+        {
+          "page_name": "Wilderness God Wars Dungeon",
+          "x": 3017,
+          "y": 3740,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 47,
+      "ordinal": 10,
+      "diary": "Wilderness Diary",
+      "tier": "Hard",
+      "text": "Fish some Raw Lava Eel in the Wilderness.",
+      "locations": []
+    },
+    {
+      "tier_id": 48,
+      "ordinal": 1,
+      "diary": "Wilderness Diary",
+      "tier": "Elite",
+      "text": "Kill Callisto, Venenatis \u0026 Vet'ion. Note: The lesser versions of these bosses (Artio, Spindel, and Calvar'ion) also count towards this task. You must have claimed the rewards from the hard diary tasks before you can access these lesser bosses. While these bosses can be killed in any order, completing or updating any other task in-between will reset the progress for this task.",
+      "locations": []
+    },
+    {
+      "tier_id": 48,
+      "ordinal": 2,
+      "diary": "Wilderness Diary",
+      "tier": "Elite",
+      "text": "Teleport to Ghorrock.",
+      "locations": [
+        {
+          "page_name": "Ghorrock",
+          "x": 2915,
+          "y": 3935,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 48,
+      "ordinal": 3,
+      "diary": "Wilderness Diary",
+      "tier": "Elite",
+      "text": "Fish and Cook a Dark Crab in the Resource Area.",
+      "locations": [
+        {
+          "page_name": "Resource Area",
+          "x": 3174,
+          "y": 3944,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 48,
+      "ordinal": 4,
+      "diary": "Wilderness Diary",
+      "tier": "Elite",
+      "text": "Smith a rune scimitar from scratch in the Resource Area. Note: You must kill two separate Runite Golems and mine them each for runite ores, smelt two runite bars in the nearby furnace (Superheat Item does not work), then smith the rune scimitar on the anvil. The steps for mining the ores are still completed if the ores are destroyed by an infernal pickaxe. Completing or updating any other task in-between these steps will reset the progress for this task.",
+      "locations": [
+        {
+          "page_name": "Resource Area",
+          "x": 3174,
+          "y": 3944,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 48,
+      "ordinal": 5,
+      "diary": "Wilderness Diary",
+      "tier": "Elite",
+      "text": "Steal from the Rogues' chest. Note: You must right-click the chest to search for traps. You'll then be attacked by all nearby rogues.",
+      "locations": []
+    },
+    {
+      "tier_id": 48,
+      "ordinal": 6,
+      "diary": "Wilderness Diary",
+      "tier": "Elite",
+      "text": "Slay a spiritual mage inside the wilderness Godwars Dungeon .",
+      "locations": [
+        {
+          "page_name": "Wilderness God Wars Dungeon",
+          "x": 3017,
+          "y": 3740,
+          "plane": 0
+        }
+      ]
+    },
+    {
+      "tier_id": 48,
+      "ordinal": 7,
+      "diary": "Wilderness Diary",
+      "tier": "Elite",
+      "text": "Cut and burn some magic logs in the Resource Area. Note: Logs burnt by an infernal axe do not count towards this task. Logs may also be burnt on the Forester's Campfire. Completing or updating any other task in-between these steps will reset the progress for this task.",
+      "locations": [
+        {
+          "page_name": "Resource Area",
+          "x": 3174,
+          "y": 3944,
+          "plane": 0
+        }
+      ]
     }
   ]
 }

@@ -90,6 +90,12 @@ enum PanelSections
 		Status.LIVE,
 		null),
 
+	DIARY_ROUTE(
+		Tab.QUESTS,
+		"Diary route",
+		Status.LIVE,
+		null),
+
 	OVERLAY_SETTINGS(
 		Tab.VIEW,
 		"Overlays",

@@ -135,7 +135,13 @@ public class QuestGraphTest
 		// ironman who wanted the second sword bought two. Read as absent, this
 		// field says "this item has no caveats" -- a confident claim rather
 		// than a gap, which is the test for whether a bump is needed.
-		assertEquals(11, QuestGraph.SUPPORTED_VERSION);
+		//
+		// 12 adds diary_tasks. A bundle missing the key entirely reads every
+		// diary task as nonexistent rather than as "this build predates diary
+		// routing" -- the same confident-wrong-answer shape as every bump
+		// above, which is why QuestGraph#parse refuses a v12 document with no
+		// diary_tasks key at all rather than defaulting it to an empty list.
+		assertEquals(12, QuestGraph.SUPPORTED_VERSION);
 	}
 
 	/**
@@ -300,7 +306,7 @@ public class QuestGraphTest
 	public void parseAcceptsAWellFormedGraph() throws java.io.IOException
 	{
 		QuestGraph graph = QuestGraph.parse(GSON, new java.io.StringReader(
-			"{\"version\":11,\"quests\":[{\"id\":1,\"slug\":\"a\",\"name\":\"A\"}]}"));
+			"{\"version\":12,\"quests\":[{\"id\":1,\"slug\":\"a\",\"name\":\"A\"}],\"diary_tasks\":[]}"));
 
 		assertEquals(1, graph.quests().size());
 	}
@@ -357,7 +363,7 @@ public class QuestGraphTest
 	{
 		try
 		{
-			QuestGraph.parse(GSON, new java.io.StringReader("{\"version\":11,\"quests\":[]}"));
+			QuestGraph.parse(GSON, new java.io.StringReader("{\"version\":12,\"quests\":[]}"));
 			org.junit.Assert.fail("expected an IOException for an empty graph");
 		}
 		catch (java.io.IOException e)
@@ -412,5 +418,92 @@ public class QuestGraphTest
 			QuestGraph.class);
 
 		assertTrue(graph.quests().get(0).items().get(0).notes().isEmpty());
+	}
+
+	// ------------------------------------------------------------------
+	// diary_tasks -- version 12.
+
+	/**
+	 * A v12 document with no {@code diary_tasks} key at all is refused, the
+	 * same as a missing shops or boosts table before it -- see {@link
+	 * QuestGraph#SUPPORTED_VERSION}'s own doc. A present, empty array is a
+	 * different, honest fact and must not be confused with this.
+	 */
+	@Test
+	public void parseRefusesAV12GraphWithNoDiaryTasksKey()
+	{
+		try
+		{
+			QuestGraph.parse(GSON, new java.io.StringReader(
+				"{\"version\":12,\"quests\":[{\"id\":1,\"slug\":\"a\",\"name\":\"A\"}]}"));
+			org.junit.Assert.fail("expected an IOException for a v12 graph missing diary_tasks");
+		}
+		catch (java.io.IOException e)
+		{
+			assertTrue(e.getMessage().contains("diary_tasks"));
+		}
+	}
+
+	/** A present, empty diary_tasks array is a real, honest answer and parses cleanly. */
+	@Test
+	public void parseAcceptsAV12GraphWithAnEmptyDiaryTasksArray() throws java.io.IOException
+	{
+		QuestGraph graph = QuestGraph.parse(GSON, new java.io.StringReader(
+			"{\"version\":12,\"quests\":[{\"id\":1,\"slug\":\"a\",\"name\":\"A\"}],\"diary_tasks\":[]}"));
+
+		assertTrue(graph.diaryTasks().isEmpty());
+	}
+
+	/**
+	 * A diary task's identity and content, including a location candidate
+	 * with its coordinates and source page.
+	 */
+	@Test
+	public void parsesADiaryTaskWithALocation()
+	{
+		QuestGraph graph = GSON.fromJson("{\"version\":12,\"quests\":[],\"diary_tasks\":["
+			+ "{\"tier_id\":7,\"ordinal\":3,\"diary\":\"Ardougne\",\"tier\":\"Easy\","
+			+ "\"text\":\"Enter the Fishing Guild.\",\"locations\":["
+			+ "{\"page_name\":\"Fishing Guild\",\"x\":2611,\"y\":3392,\"plane\":0}]}]}",
+			QuestGraph.class);
+
+		QuestGraph.DiaryTask task = graph.diaryTasks().get(0);
+		assertEquals(7L, task.tierId());
+		assertEquals(3, task.ordinal());
+		assertEquals("Ardougne", task.diary());
+		assertEquals("Easy", task.tier());
+		assertEquals("Enter the Fishing Guild.", task.text());
+		assertEquals(1, task.locations().size());
+		QuestGraph.Location location = task.locations().get(0);
+		assertEquals("Fishing Guild", location.pageName());
+		assertEquals(2611, location.x());
+		assertEquals(3392, location.y());
+		assertEquals(0, location.plane());
+	}
+
+	/**
+	 * A task with no {@code locations} key parses to an empty list, never
+	 * null -- 206 of 492 real tasks have no location row, and that must be a
+	 * real, checked "location unknown" rather than a gap that crashes the
+	 * first caller to iterate it.
+	 */
+	@Test
+	public void aDiaryTaskWithNoLocationsKeyParsesToAnEmptyList()
+	{
+		QuestGraph graph = GSON.fromJson("{\"version\":12,\"quests\":[],\"diary_tasks\":["
+			+ "{\"tier_id\":7,\"ordinal\":3,\"diary\":\"Ardougne\",\"tier\":\"Easy\","
+			+ "\"text\":\"Enter the Fishing Guild.\"}]}",
+			QuestGraph.class);
+
+		assertTrue(graph.diaryTasks().get(0).locations().isEmpty());
+	}
+
+	/** A graph with no diary_tasks key at all -- via plain fromJson -- parses the accessor to an empty list. */
+	@Test
+	public void aGraphWithNoDiaryTasksKeyAccessorIsAnEmptyList()
+	{
+		QuestGraph graph = GSON.fromJson("{\"version\":12,\"quests\":[]}", QuestGraph.class);
+
+		assertTrue(graph.diaryTasks().isEmpty());
 	}
 }
