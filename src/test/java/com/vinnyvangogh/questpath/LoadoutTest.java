@@ -199,6 +199,51 @@ public class LoadoutTest
 	}
 
 	@Test
+	public void weaponStylesDefaultsToNullOnTheNineArgConstructor()
+	{
+		Loadout loadout = noSelections("Bank setup");
+
+		assertNull("a loadout built through the pre-existing constructor has no captured category",
+			loadout.weaponStyles());
+		assertTrue("no captured category shows every style block", loadout.showsMeleeBlock());
+		assertTrue("no captured category shows every style block", loadout.showsRangedBlock());
+		assertTrue("no captured category shows every style block", loadout.showsMagicBlock());
+	}
+
+	@Test
+	public void weaponStylesNarrowsWhichBlocksShow()
+	{
+		Loadout ranged = new Loadout("Ranged setup", threeItems(), null, null, null, null, null, null, 1L,
+			java.util.Collections.singletonList(Loadout.STYLE_RANGED));
+
+		assertEquals(java.util.Collections.singletonList(Loadout.STYLE_RANGED), ranged.weaponStyles());
+		assertFalse(ranged.showsMeleeBlock());
+		assertTrue(ranged.showsRangedBlock());
+		assertFalse(ranged.showsMagicBlock());
+	}
+
+	@Test
+	public void weaponStylesSurvivesWithMeleeWithRangedWithMagicAndWithName()
+	{
+		Loadout base = new Loadout("Setup", threeItems(), null, null, null, null, null, null, 1L,
+			java.util.Collections.singletonList(Loadout.STYLE_MAGIC));
+
+		Loadout afterMelee = base.withMelee("AGGRESSIVE", "PIETY");
+		Loadout afterRanged = afterMelee.withRanged("RAPID", "RIGOUR");
+		Loadout afterMagic = afterRanged.withMagic("ICE_BARRAGE", "AUGURY");
+		Loadout afterRename = afterMagic.withName("Renamed setup");
+
+		assertEquals("withMelee must not drop the captured category",
+			java.util.Collections.singletonList(Loadout.STYLE_MAGIC), afterMelee.weaponStyles());
+		assertEquals("withRanged must not drop the captured category",
+			java.util.Collections.singletonList(Loadout.STYLE_MAGIC), afterRanged.weaponStyles());
+		assertEquals("withMagic must not drop the captured category",
+			java.util.Collections.singletonList(Loadout.STYLE_MAGIC), afterMagic.weaponStyles());
+		assertEquals("withName must not drop the captured category",
+			java.util.Collections.singletonList(Loadout.STYLE_MAGIC), afterRename.weaponStyles());
+	}
+
+	@Test
 	public void nameIsTrimmedOnConstruction()
 	{
 		Loadout padded = noSelections("  PK setup  ");

@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.List;
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -45,6 +46,61 @@ public class LoadoutCodecTest
 		List<Loadout> decoded = LoadoutCodec.decode(GSON, json);
 
 		assertEquals(loadouts, decoded);
+	}
+
+	/**
+	 * A loadout saved before {@link Loadout#weaponStyles()} existed, or one
+	 * whose weapon stats were unknown at capture time, has a null {@code
+	 * weaponStyles} -- and {@link LoadoutCodec#revalidate} must carry that
+	 * null through, not silently turn it into an empty or guessed list.
+	 */
+	@Test
+	public void encodeThenDecodeRoundTripsALoadoutWithoutACapturedCategory()
+	{
+		Loadout original = loadout("PK setup");
+
+		String json = LoadoutCodec.encode(GSON, Collections.singletonList(original));
+		List<Loadout> decoded = LoadoutCodec.decode(GSON, json);
+
+		assertEquals(Collections.singletonList(original), decoded);
+		assertEquals(null, decoded.get(0).weaponStyles());
+		assertTrue("no captured category shows every style block", decoded.get(0).showsMeleeBlock());
+		assertTrue("no captured category shows every style block", decoded.get(0).showsRangedBlock());
+		assertTrue("no captured category shows every style block", decoded.get(0).showsMagicBlock());
+	}
+
+	/** The same round trip, this time with a captured, single-style category. */
+	@Test
+	public void encodeThenDecodeRoundTripsALoadoutWithACapturedCategory()
+	{
+		Loadout original = new Loadout("Ranged setup",
+			Collections.singletonList(new LoadoutItem(0, 1163, 1, "Bronze full helm")),
+			null, null, null, null, null, null, 1L, Collections.singletonList(Loadout.STYLE_RANGED));
+
+		String json = LoadoutCodec.encode(GSON, Collections.singletonList(original));
+		List<Loadout> decoded = LoadoutCodec.decode(GSON, json);
+
+		assertEquals(Collections.singletonList(original), decoded);
+		assertEquals(Collections.singletonList(Loadout.STYLE_RANGED), decoded.get(0).weaponStyles());
+		assertFalse("a ranged-only weapon hides the melee block", decoded.get(0).showsMeleeBlock());
+		assertTrue(decoded.get(0).showsRangedBlock());
+		assertFalse("a ranged-only weapon hides the magic block", decoded.get(0).showsMagicBlock());
+	}
+
+	/** A weapon like a salamander that is genuinely ambiguous shows every block it names. */
+	@Test
+	public void encodeThenDecodeRoundTripsALoadoutWithAnAmbiguousCategory()
+	{
+		Loadout original = new Loadout("Salamander setup",
+			Collections.singletonList(new LoadoutItem(0, 1163, 1, "Bronze full helm")),
+			null, null, null, null, null, null, 1L,
+			java.util.Arrays.asList(Loadout.STYLE_MELEE, Loadout.STYLE_RANGED));
+
+		List<Loadout> decoded = LoadoutCodec.decode(GSON, LoadoutCodec.encode(GSON, Collections.singletonList(original)));
+
+		assertTrue(decoded.get(0).showsMeleeBlock());
+		assertTrue(decoded.get(0).showsRangedBlock());
+		assertFalse(decoded.get(0).showsMagicBlock());
 	}
 
 	@Test

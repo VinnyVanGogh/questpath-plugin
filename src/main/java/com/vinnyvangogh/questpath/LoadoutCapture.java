@@ -1,6 +1,7 @@
 package com.vinnyvangogh.questpath;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import net.runelite.api.Client;
@@ -10,6 +11,8 @@ import net.runelite.api.ItemComposition;
 import net.runelite.api.ItemContainer;
 import net.runelite.api.gameval.InventoryID;
 import net.runelite.client.game.ItemManager;
+import net.runelite.http.api.item.ItemEquipmentStats;
+import net.runelite.http.api.item.ItemStats;
 
 /**
  * Snapshots currently worn equipment into a {@link Loadout}. Capture only --
@@ -77,6 +80,8 @@ public final class LoadoutCapture
 		}
 		Item[] contents = worn.getItems();
 		List<LoadoutItem> items = new ArrayList<>();
+		Integer weaponItemId = null;
+		int weaponSlot = EquipmentInventorySlot.WEAPON.getSlotIdx();
 		for (int slot = 0; slot < contents.length && slot < EquipmentInventorySlot.values().length; slot++)
 		{
 			Item item = contents[slot];
@@ -85,8 +90,14 @@ public final class LoadoutCapture
 				continue;
 			}
 			items.add(new LoadoutItem(slot, item.getId(), item.getQuantity(), nameOf(itemManager, item.getId())));
+			if (slot == weaponSlot)
+			{
+				weaponItemId = item.getId();
+			}
 		}
-		return Optional.of(new Loadout(name, items, null, null, null, null, null, null, System.currentTimeMillis()));
+		List<String> weaponStyles = captureWeaponStyles(itemManager, weaponItemId);
+		return Optional.of(new Loadout(name, items, null, null, null, null, null, null,
+			System.currentTimeMillis(), weaponStyles));
 	}
 
 	/** The item's display name, or empty when {@code ItemManager} has no composition for it. */
@@ -94,5 +105,90 @@ public final class LoadoutCapture
 	{
 		ItemComposition composition = itemManager.getItemComposition(itemId);
 		return composition == null || composition.getName() == null ? "" : composition.getName();
+	}
+
+	/**
+	 * The set of {@link Loadout#weaponStyles()} tokens for whatever is (or
+	 * isn't) in the weapon slot.
+	 *
+	 * <p><b>Why offensive bonuses, not the weapon-type varbit.</b> RuneLite
+	 * exposes the equipped weapon's category as {@code
+	 * client.getVarbitValue(net.runelite.api.gameval.VarbitID.COMBAT_WEAPON_CATEGORY)}
+	 * (confirmed present in the {@code runelite-api} 1.12.37 jar; the older
+	 * {@code Varbits.EQUIPPED_WEAPON_TYPE} also still exists but is not the
+	 * {@code gameval} constant this codebase prefers). But nothing in the jar
+	 * documents what its integer values mean -- RuneLite's own {@code
+	 * attackstyles} plugin (the only other reader of this varbit in the whole
+	 * RuneLite source tree) does not hardcode a category table either; it
+	 * resolves the value at runtime through {@code
+	 * client.getEnum(EnumID.WEAPON_STYLES)} and a {@code StructComposition}
+	 * lookup, machinery this plugin has no other use for and that would still
+	 * only tell us which attack-style *options* the weapon offers (including,
+	 * for a staff, its melee bash options) -- not the simple melee/ranged/
+	 * magic bucket this feature wants for a staff.
+	 *
+	 * <p>{@link ItemEquipmentStats}, already the source {@link LockedGear}
+	 * reads for {@code str}/{@code rstr}/{@code mdmg}, carries exactly that
+	 * bucket directly: a weapon has a positive {@code astab}, {@code aslash}
+	 * or {@code acrush} bonus iff it offers a melee attack roll, a positive
+	 * {@code arange} bonus iff it offers a ranged one, a positive {@code
+	 * amagic} bonus iff it offers a magic one. A plain elemental staff's
+	 * near-zero melee bonuses correctly leave it magic-only; a salamander's
+	 * simultaneous melee and ranged bonuses correctly come back ambiguous.
+	 * See {@link #classifyWeaponStyles} for the actual bucketing, kept pure
+	 * and separately testable.
+	 *
+	 * @return null when the weapon's stats are genuinely unknown to {@code
+	 *     ItemManager} -- never guessed from the item's name or slot
+	 */
+	private static List<String> captureWeaponStyles(ItemManager itemManager, Integer weaponItemId)
+	{
+		if (weaponItemId == null)
+		{
+			// Unarmed: no weapon-slot item at all. Falls into the same
+			// "everything else, melee" bucket classifyWeaponStyles gives a
+			// weapon with no positive offensive bonus in any style.
+			return classifyWeaponStyles(0, 0, 0, 0, 0);
+		}
+		ItemStats stats = itemManager.getItemStats(weaponItemId, false);
+		if (stats == null || !stats.isEquipable() || stats.getEquipment() == null)
+		{
+			return null;
+		}
+		ItemEquipmentStats equipment = stats.getEquipment();
+		return classifyWeaponStyles(equipment.getAstab(), equipment.getAslash(), equipment.getAcrush(),
+			equipment.getArange(), equipment.getAmagic());
+	}
+
+	/**
+	 * Buckets a weapon's offensive bonuses into {@link Loadout#weaponStyles()}
+	 * tokens: melee when any of {@code astab}/{@code aslash}/{@code acrush} is
+	 * positive, ranged when {@code arange} is positive, magic when {@code
+	 * amagic} is positive -- any, all, or (for a bonus-less weapon-slot item)
+	 * none of the three, in which case this falls back to melee alone, the
+	 * same bucket unarmed uses. Never returns null or an empty list. Package-
+	 * private and free of every RuneLite type so a test can call it directly
+	 * with hand-picked bonuses, with nothing to fake.
+	 */
+	static List<String> classifyWeaponStyles(int astab, int aslash, int acrush, int arange, int amagic)
+	{
+		List<String> styles = new ArrayList<>(3);
+		if (astab > 0 || aslash > 0 || acrush > 0)
+		{
+			styles.add(Loadout.STYLE_MELEE);
+		}
+		if (arange > 0)
+		{
+			styles.add(Loadout.STYLE_RANGED);
+		}
+		if (amagic > 0)
+		{
+			styles.add(Loadout.STYLE_MAGIC);
+		}
+		if (styles.isEmpty())
+		{
+			styles.add(Loadout.STYLE_MELEE);
+		}
+		return Collections.unmodifiableList(styles);
 	}
 }

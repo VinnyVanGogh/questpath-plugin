@@ -45,9 +45,32 @@ import java.util.Objects;
  * {@link LoadoutCodec}'s class javadoc for how this class's own validation
  * still runs on a value Gson deserialises, even though Gson itself bypasses
  * the constructor below.
+ *
+ * <p><b>{@link #weaponStyles()}: which style blocks this loadout's weapon can
+ * actually produce.</b> Captured once, at "Lock current gear" time, from the
+ * weapon-slot item's own offensive bonuses ({@code astab}/{@code aslash}/
+ * {@code acrush} &rarr; {@link #STYLE_MELEE}, {@code arange} &rarr; {@link
+ * #STYLE_RANGED}, {@code amagic} &rarr; {@link #STYLE_MAGIC}) -- see {@link
+ * LoadoutCapture}. {@code null} means "not captured": either this loadout was
+ * saved before this field existed, or the weapon's stats were unknown at
+ * capture time. Both are the same honest fallback -- {@link #showsMeleeBlock()}
+ * and its two siblings all answer {@code true} when this is {@code null},
+ * exactly like before this field existed. A non-null list is never empty --
+ * a weapon-slot item with no positive bonus in any of the three (or no weapon
+ * at all, i.e. unarmed) still resolves to a single-entry {@code
+ * [STYLE_MELEE]}, never to nothing.
  */
 public final class Loadout
 {
+	/** A {@link #weaponStyles()} token: the weapon can produce a melee style. */
+	public static final String STYLE_MELEE = "MELEE";
+
+	/** A {@link #weaponStyles()} token: the weapon can produce a ranged style. */
+	public static final String STYLE_RANGED = "RANGED";
+
+	/** A {@link #weaponStyles()} token: the weapon can produce a magic style. */
+	public static final String STYLE_MAGIC = "MAGIC";
+
 	@SerializedName("name")
 	private final String name;
 
@@ -75,6 +98,22 @@ public final class Loadout
 	@SerializedName("savedAtEpochMillis")
 	private final long savedAtEpochMillis;
 
+	@SerializedName("weaponStyles")
+	private final List<String> weaponStyles;
+
+	/**
+	 * Same as {@link #Loadout(String, List, String, String, String, String,
+	 * String, String, long, List)} with {@code weaponStyles} defaulted to
+	 * {@code null} ("not captured"). Kept for every caller that predates
+	 * {@link #weaponStyles()} -- see the class javadoc.
+	 */
+	public Loadout(String name, List<LoadoutItem> items, String meleeStyle, String strengthPrayer,
+		String rangedStyle, String rangedPrayer, String spell, String magicPrayer, long savedAtEpochMillis)
+	{
+		this(name, items, meleeStyle, strengthPrayer, rangedStyle, rangedPrayer, spell, magicPrayer,
+			savedAtEpochMillis, null);
+	}
+
 	/**
 	 * @param name trimmed and required to be non-empty after trimming;
 	 *     uniqueness is enforced by {@link LoadoutStore}, not here, because a
@@ -93,11 +132,18 @@ public final class Loadout
 	 * @param magicPrayer a {@code MagicPrayer} enum name, or null the same way
 	 * @param savedAtEpochMillis when this loadout was captured, in {@link
 	 *     System#currentTimeMillis()} terms
+	 * @param weaponStyles which of {@link #STYLE_MELEE}, {@link #STYLE_RANGED},
+	 *     {@link #STYLE_MAGIC} this loadout's weapon can produce, or null for
+	 *     "not captured" -- see the class javadoc. Copied and made unmodifiable
+	 *     when non-null; never validated against the three known tokens here,
+	 *     the same way {@code meleeStyle} et al. are opaque strings this class
+	 *     does not interpret
 	 * @throws IllegalArgumentException if {@code name} is null or blank after
 	 *     trimming
 	 */
 	public Loadout(String name, List<LoadoutItem> items, String meleeStyle, String strengthPrayer,
-		String rangedStyle, String rangedPrayer, String spell, String magicPrayer, long savedAtEpochMillis)
+		String rangedStyle, String rangedPrayer, String spell, String magicPrayer, long savedAtEpochMillis,
+		List<String> weaponStyles)
 	{
 		String trimmed = name == null ? null : name.trim();
 		if (trimmed == null || trimmed.isEmpty())
@@ -113,6 +159,7 @@ public final class Loadout
 		this.spell = spell;
 		this.magicPrayer = magicPrayer;
 		this.savedAtEpochMillis = savedAtEpochMillis;
+		this.weaponStyles = weaponStyles == null ? null : List.copyOf(weaponStyles);
 	}
 
 	/** The loadout's name -- trimmed, never null or blank. */
@@ -170,6 +217,39 @@ public final class Loadout
 	}
 
 	/**
+	 * Which of {@link #STYLE_MELEE}, {@link #STYLE_RANGED}, {@link
+	 * #STYLE_MAGIC} this loadout's weapon can produce, or null when that was
+	 * never captured -- see the class javadoc. Never empty when non-null.
+	 * Unmodifiable.
+	 */
+	public List<String> weaponStyles()
+	{
+		return weaponStyles;
+	}
+
+	/**
+	 * Whether the "Melee" style block should be shown for this loadout: true
+	 * when {@link #weaponStyles()} is null (not captured -- the honest
+	 * fallback) or names {@link #STYLE_MELEE}.
+	 */
+	public boolean showsMeleeBlock()
+	{
+		return weaponStyles == null || weaponStyles.contains(STYLE_MELEE);
+	}
+
+	/** The ranged half of {@link #showsMeleeBlock()}. */
+	public boolean showsRangedBlock()
+	{
+		return weaponStyles == null || weaponStyles.contains(STYLE_RANGED);
+	}
+
+	/** The magic half of {@link #showsMeleeBlock()}. */
+	public boolean showsMagicBlock()
+	{
+		return weaponStyles == null || weaponStyles.contains(STYLE_MAGIC);
+	}
+
+	/**
 	 * Whether both a melee style and a {@code StrengthPrayer} have been
 	 * chosen, so a max-hit UI can compute melee's number instead of only
 	 * listing the saved gear.
@@ -202,21 +282,21 @@ public final class Loadout
 	public Loadout withMelee(String meleeStyle, String strengthPrayer)
 	{
 		return new Loadout(name, items, meleeStyle, strengthPrayer, rangedStyle, rangedPrayer, spell,
-			magicPrayer, savedAtEpochMillis);
+			magicPrayer, savedAtEpochMillis, weaponStyles);
 	}
 
 	/** A copy of this loadout with its ranged choices replaced. Everything else is unchanged. */
 	public Loadout withRanged(String rangedStyle, String rangedPrayer)
 	{
 		return new Loadout(name, items, meleeStyle, strengthPrayer, rangedStyle, rangedPrayer, spell,
-			magicPrayer, savedAtEpochMillis);
+			magicPrayer, savedAtEpochMillis, weaponStyles);
 	}
 
 	/** A copy of this loadout with its magic choices replaced. Everything else is unchanged. */
 	public Loadout withMagic(String spell, String magicPrayer)
 	{
 		return new Loadout(name, items, meleeStyle, strengthPrayer, rangedStyle, rangedPrayer, spell,
-			magicPrayer, savedAtEpochMillis);
+			magicPrayer, savedAtEpochMillis, weaponStyles);
 	}
 
 	/**
@@ -228,7 +308,7 @@ public final class Loadout
 	Loadout withName(String newName)
 	{
 		return new Loadout(newName, items, meleeStyle, strengthPrayer, rangedStyle, rangedPrayer, spell,
-			magicPrayer, savedAtEpochMillis);
+			magicPrayer, savedAtEpochMillis, weaponStyles);
 	}
 
 	/**
@@ -268,14 +348,15 @@ public final class Loadout
 			&& Objects.equals(rangedStyle, that.rangedStyle)
 			&& Objects.equals(rangedPrayer, that.rangedPrayer)
 			&& Objects.equals(spell, that.spell)
-			&& Objects.equals(magicPrayer, that.magicPrayer);
+			&& Objects.equals(magicPrayer, that.magicPrayer)
+			&& Objects.equals(weaponStyles, that.weaponStyles);
 	}
 
 	@Override
 	public int hashCode()
 	{
 		return Objects.hash(name, items, meleeStyle, strengthPrayer, rangedStyle, rangedPrayer, spell,
-			magicPrayer, savedAtEpochMillis);
+			magicPrayer, savedAtEpochMillis, weaponStyles);
 	}
 
 	@Override
@@ -285,6 +366,6 @@ public final class Loadout
 			+ ", meleeStyle=" + meleeStyle + ", strengthPrayer=" + strengthPrayer
 			+ ", rangedStyle=" + rangedStyle + ", rangedPrayer=" + rangedPrayer
 			+ ", spell=" + spell + ", magicPrayer=" + magicPrayer
-			+ ", savedAtEpochMillis=" + savedAtEpochMillis + "}";
+			+ ", savedAtEpochMillis=" + savedAtEpochMillis + ", weaponStyles=" + weaponStyles + "}";
 	}
 }
