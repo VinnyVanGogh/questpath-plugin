@@ -139,7 +139,7 @@ class ShopRouteOverlay extends QuestpathOverlay
 		List<QuestItems.Total> outstanding = new ArrayList<>();
 		for (QuestItems.Total total : totals)
 		{
-			if (total.satisfied())
+			if (total.covered())
 			{
 				satisfiedCount++;
 			}

@@ -941,6 +941,7 @@ class QuestGraph
 	private Map<Long, Quest> byId;
 	private Map<String, Quest> byName;
 	private Map<String, Shop> shopsByName;
+	private transient Map<String, Item> itemsByName;
 
 	int version()
 	{
@@ -996,6 +997,41 @@ class QuestGraph
 			shopsByName = index;
 		}
 		return shopsByName.get(name);
+	}
+
+	/**
+	 * The first resolved, non-grouped item line anywhere in the graph with
+	 * this name, matched case-insensitively -- or null.
+	 *
+	 * <p>Every line naming one item carries the same sources, shops and
+	 * droppers (the export looks them up once per item), so any one of them
+	 * stands for all. Used when questpath's item plan retargets a line to a
+	 * member the line itself did not name, so the shop route can still find
+	 * where that member comes from.
+	 */
+	Item itemNamed(String name)
+	{
+		if (name == null)
+		{
+			return null;
+		}
+		if (itemsByName == null)
+		{
+			Map<String, Item> index = new java.util.HashMap<>();
+			for (Quest quest : quests())
+			{
+				for (Item item : quest.items())
+				{
+					if (item.unresolved() || item.grouped() || item.name() == null)
+					{
+						continue;
+					}
+					index.putIfAbsent(item.name().toLowerCase(), item);
+				}
+			}
+			itemsByName = index;
+		}
+		return itemsByName.get(name.toLowerCase());
 	}
 
 	/** One quest by id, or null when the graph does not carry it. */

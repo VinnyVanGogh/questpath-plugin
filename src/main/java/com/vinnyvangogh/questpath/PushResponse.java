@@ -49,6 +49,22 @@ class PushResponse
 	private Diary diary;
 
 	/**
+	 * questpath's per-account item plan, or {@code null} when this response
+	 * carries none. questpath sends {@code null} when it could not work the
+	 * plan out, and an older questpath sends no key; both mean "no decision"
+	 * and must leave the graph's own lines untouched rather than read as "no
+	 * choices to make". See {@link ItemPlan}.
+	 */
+	@SerializedName("item_plan")
+	private ItemPlan itemPlan;
+
+	/** The item plan, or null when questpath made no decision -- see {@link #itemPlan}. */
+	ItemPlan itemPlan()
+	{
+		return itemPlan;
+	}
+
+	/**
 	 * Whether this push response carries diary routing data at all -- see
 	 * {@link #diary}'s own doc for why this is checked separately from
 	 * whether {@link #diary()} returns something with content in it.

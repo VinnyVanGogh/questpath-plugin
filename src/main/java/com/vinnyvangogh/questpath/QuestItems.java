@@ -139,6 +139,23 @@ class QuestItems
 		private final List<String> dropSourceNames;
 		private final String groupName;
 		private final List<String> notes;
+		private PlanNote plan = PlanNote.NONE;
+
+		/**
+		 * Attaches questpath's decision for this line -- see {@link PlanNote}.
+		 * Returns this line, for chaining at construction.
+		 */
+		Line withPlan(PlanNote note)
+		{
+			this.plan = note == null ? PlanNote.NONE : note;
+			return this;
+		}
+
+		/** questpath's decision for this line; {@link PlanNote#NONE} when it made none. */
+		PlanNote plan()
+		{
+			return plan;
+		}
 
 		Line(String name, int itemId, int wanted, long owned, boolean optional, List<String> sources)
 		{
@@ -331,6 +348,149 @@ class QuestItems
 		}
 	}
 
+	/**
+	 * What questpath's item plan said about one line, reduced to what the
+	 * list renders and routes by -- see {@link ItemPlan}. Nothing in here is
+	 * decided by the plugin: the choice and the make steps are questpath's,
+	 * and the only local input is which make steps' materials are still in
+	 * hand ({@link ItemPlan.Item#makeQuantityGiven}).
+	 */
+	static final class PlanNote
+	{
+		/** No decision: questpath sent no plan, or nothing about this line. */
+		static final PlanNote NONE = new PlanNote(null, 0L, java.util.Collections.<String>emptyList());
+
+		private final ItemPlan.Item decided;
+		private final long makeQuantity;
+		private final List<String> makeInstructions;
+
+		PlanNote(ItemPlan.Item decided, long makeQuantity, List<String> makeInstructions)
+		{
+			this.decided = decided;
+			this.makeQuantity = makeQuantity;
+			this.makeInstructions = makeInstructions;
+		}
+
+		/** Whether questpath decided anything for this line. */
+		boolean decided()
+		{
+			return decided != null;
+		}
+
+		/** How many the still-possible make steps cover. */
+		long makeQuantity()
+		{
+			return makeQuantity;
+		}
+
+		/** The still-possible make steps, in questpath's words. */
+		List<String> makeInstructions()
+		{
+			return makeInstructions;
+		}
+
+		/** Whether every member of an "X or Y" line is out of reach. */
+		boolean unobtainable()
+		{
+			return decided != null && decided.unobtainable();
+		}
+
+		/**
+		 * One sentence for a tooltip, or null when there is nothing to say:
+		 * the make steps, the choice among members, or why nothing was made.
+		 */
+		String describe()
+		{
+			if (decided == null)
+			{
+				return null;
+			}
+			List<String> parts = new ArrayList<>();
+			for (String step : makeInstructions)
+			{
+				parts.add("Make: " + step);
+			}
+			if (decided.hasAlternatives())
+			{
+				String members = phrase(decided.members(), 4);
+				switch (decided.choice())
+				{
+					case "held":
+						parts.add("Any of " + members + " will do; you hold " + decided.target() + ".");
+						break;
+					case "make":
+						parts.add("Any of " + members + " will do; " + decided.target() + " can be made from what you own.");
+						break;
+					case "reachable":
+						parts.add("Any of " + members + " will do; " + decided.target() + " is the first you can get.");
+						break;
+					case "unobtainable":
+						parts.add("Any of " + members + " will do, but none can be reached on this account right now.");
+						break;
+					default:
+						break;
+				}
+			}
+			if (makeInstructions.isEmpty())
+			{
+				for (String why : decided.makeBlocked())
+				{
+					parts.add("Not made: " + why);
+				}
+			}
+			return parts.isEmpty() ? null : String.join(" ", parts);
+		}
+	}
+
+	/**
+	 * Applies questpath's decision to one graph line: the member to target,
+	 * where that member comes from, and what can be made from what is held.
+	 *
+	 * <p>Package-private and static so it can be tested without a client.
+	 *
+	 * @param plan the push response's item plan, or null when there is none --
+	 *     the line is then returned exactly as the graph gave it, and nothing
+	 *     claims a choice was made
+	 */
+	static Line planned(QuestGraph graph, QuestGraph.Item item, ItemPlan plan, Map<String, Long> held)
+	{
+		String name = item.name();
+		int itemId = item.itemId();
+		List<String> sources = item.sources();
+		List<String> shopNames = item.shopNames();
+		List<String> drops = item.dropSourceNames();
+		ItemPlan.Item decided = plan == null ? null : plan.forRequirement(item.name());
+		PlanNote note = PlanNote.NONE;
+		if (decided != null)
+		{
+			String target = decided.target();
+			if (target != null && !target.equalsIgnoreCase(item.name()))
+			{
+				// Retargeted to a member this line did not name: where that
+				// member comes from is whatever the graph says for it
+				// elsewhere, or nothing -- never the other member's shops.
+				QuestGraph.Item other = graph == null ? null : graph.itemNamed(target);
+				name = target;
+				itemId = decided.targetItemId() > 0 ? decided.targetItemId()
+					: other == null ? 0 : other.itemId();
+				sources = other == null ? java.util.Collections.<String>emptyList() : other.sources();
+				shopNames = other == null ? java.util.Collections.<String>emptyList() : other.shopNames();
+				drops = other == null ? java.util.Collections.<String>emptyList() : other.dropSourceNames();
+			}
+			if (decided.unobtainable())
+			{
+				// Shown, never routed to: no member can be reached.
+				sources = java.util.Collections.emptyList();
+				shopNames = java.util.Collections.emptyList();
+				drops = java.util.Collections.emptyList();
+			}
+			note = new PlanNote(decided, decided.makeQuantityGiven(held), decided.instructionsGiven(held));
+		}
+		long owned = held.getOrDefault(name.toLowerCase(), 0L);
+		return new Line(name, itemId, item.quantity(), owned, item.optional(), item.unresolved(), sources,
+			shopNames, drops, "", item.notes()).withPlan(note);
+	}
+
 	private QuestItems()
 	{
 	}
@@ -517,6 +677,17 @@ class QuestItems
 		java.util.Set<String> upcoming, java.util.Set<String> plan, Map<String, Long> knownItems,
 		Map<String, Long> carried, java.util.Set<String> placeholders)
 	{
+		return of(graph, account, held, bankSeen, upcoming, plan, knownItems, carried, placeholders, null);
+	}
+
+	/**
+	 * @param itemPlan questpath's per-account item plan from the last push,
+	 *     or null when there is none -- see {@link #planned}
+	 */
+	static QuestItems of(QuestGraph graph, PlayerState account, Map<String, Long> held, boolean bankSeen,
+		java.util.Set<String> upcoming, java.util.Set<String> plan, Map<String, Long> knownItems,
+		Map<String, Long> carried, java.util.Set<String> placeholders, ItemPlan itemPlan)
+	{
 		QuestItems out = new QuestItems();
 		out.bankSeen = bankSeen;
 		if (bankSeen)
@@ -619,7 +790,11 @@ class QuestItems
 				}
 				else
 				{
-					owned = held.getOrDefault(item.name().toLowerCase(), 0L);
+					// questpath's decision for this line, when it sent one:
+					// the member to target ("Dramen staff or Lunar staff")
+					// and what can be made from what is held. See planned.
+					needs.lines.add(planned(graph, item, itemPlan, held));
+					continue;
 				}
 				needs.lines.add(new Line(name, itemId, item.quantity(), owned,
 					item.optional(), item.unresolved(), item.sources(), item.shopNames(),
@@ -702,7 +877,7 @@ class QuestItems
 		Map<String, Total> wanted = new LinkedHashMap<>();
 		for (Total total : totals)
 		{
-			if (!total.satisfied())
+			if (!total.covered())
 			{
 				wanted.put(total.name().toLowerCase(), total);
 			}
@@ -911,6 +1086,7 @@ class QuestItems
 		private int wanted;
 		private int quests;
 		private boolean anyUnstated;
+		private PlanNote plan = PlanNote.NONE;
 
 		Total(String name, int itemId, long owned, long carried, boolean placeholder,
 			List<String> sources)
@@ -1034,6 +1210,13 @@ class QuestItems
 
 		void add(Line line, String questName)
 		{
+			// questpath's plan is per item across the whole scope, so every
+			// line of one item carries the same note: the first decided one
+			// stands, never a sum -- adding would make one horn grind twice.
+			if (!plan.decided() && line.plan().decided())
+			{
+				plan = line.plan();
+			}
 			quests++;
 			if (questName != null && !questName.isEmpty())
 			{
@@ -1110,10 +1293,55 @@ class QuestItems
 			return placeholder && owned <= 0;
 		}
 
-		/** How many more to get. Zero once satisfied, never negative. */
+		/**
+		 * How many more to get: required, less what is held, less what
+		 * questpath's plan says can be made from what is held. Zero once
+		 * covered, never negative.
+		 */
 		long outstanding()
 		{
-			return Math.max(0L, required() - owned);
+			return Math.max(0L, required() - owned - plan.makeQuantity());
+		}
+
+		/** questpath's decision for this item; {@link PlanNote#NONE} when it made none. */
+		PlanNote plan()
+		{
+			return plan;
+		}
+
+		/**
+		 * Whether nothing needs fetching: enough is held, or what is short
+		 * can be made from what is held. Every surface that sends the player
+		 * somewhere -- the shop route, shop and ground highlights, the Grand
+		 * Exchange list -- asks this rather than {@link #satisfied()}.
+		 */
+		boolean covered()
+		{
+			return satisfied() || owned + plan.makeQuantity() >= required();
+		}
+
+		/**
+		 * The name as a list row shows it: "(make)" when questpath says to
+		 * make it from what you hold, "(none reachable)" when no member of
+		 * its "X or Y" can be got, the plain name otherwise.
+		 */
+		String displayName()
+		{
+			if (makeFromOwned())
+			{
+				return name + "  (make)";
+			}
+			if (!satisfied() && plan.unobtainable())
+			{
+				return name + "  (none reachable)";
+			}
+			return name;
+		}
+
+		/** Whether this is short but questpath says to make it from what you hold. */
+		boolean makeFromOwned()
+		{
+			return !satisfied() && plan.makeQuantity() > 0;
 		}
 
 		int quests()
@@ -1230,6 +1458,8 @@ class QuestItems
 			{
 				hash = hash * 31 + line.name().hashCode();
 				hash = hash * 31 + Long.hashCode(line.owned());
+				hash = hash * 31 + Long.hashCode(line.plan().makeQuantity());
+				hash = hash * 31 + (line.plan().decided() ? 1 : 0);
 			}
 		}
 		return hash;

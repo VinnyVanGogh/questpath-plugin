@@ -190,8 +190,20 @@ class QuestpathPanel extends PluginPanel
 	private final JComboBox<String> questStatusFilter = new JComboBox<>();
 	private static final String STATUS_FILTER_ALL = "All statuses";
 
+	/**
+	 * The Quests tab's own Quests/Diaries/All filter -- see {@link
+	 * QuestJournalFilter}'s own class doc for what it drives beyond this
+	 * panel. Built once, like {@link #questStatusFilter}, and its choice is
+	 * read from {@link QuestpathConfig#questJournalFilter()} on first build
+	 * and written back through {@link #configManager} on every change, so
+	 * it survives both a panel rebuild and a client restart.
+	 */
+	private final JComboBox<QuestJournalFilter> journalFilterCombo = new JComboBox<>();
+
 	private final JPanel questResults = new JPanel();
 	private QuestVerdicts lastVerdicts;
+	private NextQuestStatus lastNextQuest;
+	private RouteWork lastRouteWork;
 
 	/** The overlay settings tab's contents, built once and kept. */
 	private final OverlaySettingsPanel overlaySettings;
@@ -451,6 +463,7 @@ class QuestpathPanel extends PluginPanel
 		styleSearch(questSearch, "Filter the quests below by name", this::refilterQuests);
 		styleSearch(itemSearch, "Filter the items below by name", this::refilterItems);
 		styleStatusFilter(questStatusFilter, this::refilterQuests);
+		styleJournalFilter(journalFilterCombo);
 
 		// The settings tab is built once and never refilled: it reads config,
 		// not account state, so nothing an experience drop does can change it.
@@ -536,6 +549,74 @@ class QuestpathPanel extends PluginPanel
 		combo.setAlignmentX(Component.LEFT_ALIGNMENT);
 		combo.setToolTipText("Show only one verdict group");
 		combo.addActionListener(e -> onChange.run());
+	}
+
+	/**
+	 * The Quests tab's own Quests/Diaries/All filter.
+	 *
+	 * Initial selection comes from {@link QuestpathConfig#questJournalFilter()}
+	 * so a choice made in a previous session is still selected the first time
+	 * this tab is built. {@code populatingJournalFilter} guards the write-back
+	 * the same way {@link OverlaySettingsPanel}'s own {@code populating} flag
+	 * does: without it, this initial {@code setSelectedItem} call would fire
+	 * its own listener and write the just-read value straight back as though
+	 * the player had chosen it.
+	 */
+	private boolean populatingJournalFilter = true;
+
+	private void styleJournalFilter(JComboBox<QuestJournalFilter> combo)
+	{
+		for (QuestJournalFilter filter : QuestJournalFilter.values())
+		{
+			combo.addItem(filter);
+		}
+		combo.setSelectedItem(config.questJournalFilter());
+		populatingJournalFilter = false;
+		combo.setBackground(ColorScheme.DARKER_GRAY_COLOR);
+		combo.setForeground(Color.WHITE);
+		combo.setMaximumSize(new Dimension(Integer.MAX_VALUE, 22));
+		combo.setAlignmentX(Component.LEFT_ALIGNMENT);
+		combo.setToolTipText("Quests: the quest route only. Diaries: the diary journal and route only."
+			+ " All: both, each in its own order. Also drives which of the two in-game route"
+			+ " overlays can show, the same as the in-game quest journal's own filter.");
+		combo.addActionListener(e ->
+		{
+			if (populatingJournalFilter)
+			{
+				return;
+			}
+			onJournalFilterChanged((QuestJournalFilter) combo.getSelectedItem());
+		});
+	}
+
+	/**
+	 * Writes the new filter through {@link ConfigManager}, exactly like
+	 * every control in {@link OverlaySettingsPanel}, then rebuilds the
+	 * Quests tab immediately from whatever {@link #lastVerdicts}, {@link
+	 * #lastNextQuest} and {@link #lastRouteWork} currently hold -- the same
+	 * "redraw now, do not wait for the next push" reasoning {@link
+	 * #onBuildRulesShowAllToggled} already documents for its own tab.
+	 */
+	private void onJournalFilterChanged(QuestJournalFilter filter)
+	{
+		if (filter == null)
+		{
+			return;
+		}
+		configManager.setConfiguration(QuestpathConfig.GROUP, "questJournalFilter", filter);
+		if (lastVerdicts == null && lastNextQuest == null && lastRouteWork == null)
+		{
+			// Nothing has rendered yet -- the first real render already
+			// reads the new value off config, so there is nothing to redraw.
+			return;
+		}
+		rebuildQuestsTab(lastVerdicts, lastNextQuest, lastRouteWork);
+		lastVerdictSignature = java.util.Arrays.asList(
+			lastVerdicts == null ? null : lastVerdicts.signature(),
+			lastNextQuest == null ? null : lastNextQuest.hashCode(),
+			lastRouteWork == null ? null : routeWorkSignature(lastRouteWork),
+			diaryPush.get(),
+			filter);
 	}
 
 	/**
@@ -824,6 +905,8 @@ class QuestpathPanel extends PluginPanel
 		// completed-quest read, so a quest finishing invalidates them
 		// together.
 		lastVerdicts = verdicts;
+		lastNextQuest = nextQuest;
+		lastRouteWork = routeWork;
 		// routeWork rides the signature too. It is derived from the same
 		// completed-quest read as the other two, but not only from it: a
 		// levelled skill can clear an outstanding quest without any quest
@@ -836,50 +919,23 @@ class QuestpathPanel extends PluginPanel
 		// object identity here reliably means "there is something new to
 		// show" -- the same reasoning routeWork's own inclusion already
 		// relies on for a push-delivered value with no cheaper signature to
-		// compare.
+		// compare. config.questJournalFilter() rides it too, the same way
+		// config.buildRulesShowAll() rides the Combat tab's own signature
+		// above -- so a filter change made through OverlaySettingsPanel or
+		// RuneLite's own config panel (rather than journalFilterCombo,
+		// which rebuilds immediately on its own) still reaches this tab on
+		// the next tick instead of sitting stale until something else
+		// invalidates it.
 		Object questsSignature = java.util.Arrays.asList(
 			verdicts == null ? null : verdicts.signature(),
 			nextQuest == null ? null : nextQuest.hashCode(),
 			routeWork == null ? null : routeWorkSignature(routeWork),
-			diaryPush.get());
+			diaryPush.get(),
+			config.questJournalFilter());
 		if (!java.util.Objects.equals(questsSignature, lastVerdictSignature))
 		{
-			clearBodies(PanelSections.Tab.QUESTS);
-			JPanel quests = tabBodies.get(PanelSections.Tab.QUESTS);
-			// Search first: it filters the browser list further down, but a
-			// player reaching for it should not have to scroll past "next on
-			// your route" to find it every time.
-			if (verdicts != null)
-			{
-				quests.add(questSearch);
-				quests.add(Box.createVerticalStrut(4));
-				quests.add(questStatusFilter);
-				quests.add(Box.createVerticalStrut(10));
-			}
-			quests.add(heading(PanelSections.NEXT_QUEST.title()));
-			quests.add(nextQuestBlock(nextQuest));
-			quests.add(Box.createVerticalStrut(14));
-			if (routeWork != null && !routeWork.outstanding().isEmpty())
-			{
-				quests.add(heading(PanelSections.ROUTE_OUTSTANDING.title()));
-				quests.add(routeOutstandingBlock(routeWork));
-				quests.add(Box.createVerticalStrut(14));
-			}
-			if (routeWork != null && !routeWork.partial().isEmpty())
-			{
-				quests.add(heading(PanelSections.ROUTE_PARTIAL.title()));
-				quests.add(routePartialBlock(routeWork));
-				quests.add(Box.createVerticalStrut(14));
-			}
-			quests.add(heading(PanelSections.DIARY_ROUTE.title()));
-			quests.add(diaryRouteBlock());
-			quests.add(Box.createVerticalStrut(14));
-			quests.add(heading(PanelSections.QUEST_VERDICT.title()));
-			quests.add(questResults);
-			fillQuestResults(verdicts);
-			renderPlannedSectionsFor(PanelSections.Tab.QUESTS);
+			rebuildQuestsTab(verdicts, nextQuest, routeWork);
 			lastVerdictSignature = questsSignature;
-			showBodies(PanelSections.Tab.QUESTS);
 		}
 
 		lastItems = items;
@@ -950,6 +1006,76 @@ class QuestpathPanel extends PluginPanel
 		showBodies(PanelSections.Tab.COMBAT);
 	}
 
+	/**
+	 * Tears down and rebuilds the whole Quests tab: the filter combo itself,
+	 * then whichever of the quest route and the diary route/journal {@link
+	 * QuestpathConfig#questJournalFilter()} currently permits.
+	 *
+	 * <p>Called from {@link #renderBody} when the combined signature (which
+	 * includes the filter) says something changed, and also directly from
+	 * {@link #onJournalFilterChanged}, which needs the tab to redraw
+	 * immediately rather than waiting for the next push -- the same
+	 * reasoning {@link #onBuildRulesShowAllToggled} already documents for
+	 * the Combat tab's own config-only change. Both callers keep {@code
+	 * lastVerdictSignature} in sync themselves afterwards; this method only
+	 * rebuilds the Swing tree.
+	 */
+	private void rebuildQuestsTab(QuestVerdicts verdicts, NextQuestStatus nextQuest, RouteWork routeWork)
+	{
+		QuestJournalFilter filter = config.questJournalFilter();
+
+		clearBodies(PanelSections.Tab.QUESTS);
+		JPanel quests = tabBodies.get(PanelSections.Tab.QUESTS);
+
+		quests.add(journalFilterCombo);
+		quests.add(Box.createVerticalStrut(10));
+
+		if (filter.showsQuests())
+		{
+			// Search first: it filters the browser list further down, but a
+			// player reaching for it should not have to scroll past "next on
+			// your route" to find it every time.
+			if (verdicts != null)
+			{
+				quests.add(questSearch);
+				quests.add(Box.createVerticalStrut(4));
+				quests.add(questStatusFilter);
+				quests.add(Box.createVerticalStrut(10));
+			}
+			quests.add(heading(PanelSections.NEXT_QUEST.title()));
+			quests.add(nextQuestBlock(nextQuest));
+			quests.add(Box.createVerticalStrut(14));
+			if (routeWork != null && !routeWork.outstanding().isEmpty())
+			{
+				quests.add(heading(PanelSections.ROUTE_OUTSTANDING.title()));
+				quests.add(routeOutstandingBlock(routeWork));
+				quests.add(Box.createVerticalStrut(14));
+			}
+			if (routeWork != null && !routeWork.partial().isEmpty())
+			{
+				quests.add(heading(PanelSections.ROUTE_PARTIAL.title()));
+				quests.add(routePartialBlock(routeWork));
+				quests.add(Box.createVerticalStrut(14));
+			}
+			quests.add(heading(PanelSections.QUEST_VERDICT.title()));
+			quests.add(questResults);
+			fillQuestResults(verdicts);
+		}
+
+		if (filter.showsDiaries())
+		{
+			quests.add(heading(PanelSections.DIARY_ROUTE.title()));
+			quests.add(diaryRouteBlock());
+			quests.add(Box.createVerticalStrut(14));
+			quests.add(heading(PanelSections.DIARY_JOURNAL.title()));
+			quests.add(diaryJournalBlock());
+			quests.add(Box.createVerticalStrut(14));
+		}
+
+		renderPlannedSectionsFor(PanelSections.Tab.QUESTS);
+		showBodies(PanelSections.Tab.QUESTS);
+	}
+
 	// ------------------------------------------------------------------
 	// Locked gear: a saved loadout's melee/ranged/magic max hit at live
 	// levels, while the account wears something else entirely. See
@@ -1014,18 +1140,47 @@ class QuestpathPanel extends PluginPanel
 			return panel;
 		}
 
-		// READY.
+		// READY. Only the style blocks this loadout's weapon can actually
+		// produce are shown -- see Loadout#showsMeleeBlock and its two
+		// siblings. A loadout with no captured weapon styles (an old
+		// loadout, or the weapon's stats were unknown at lock time) shows
+		// all three, exactly as before this feature existed.
+		Loadout selected = gear.selectedLoadout();
 		panel.add(pickerRow(gear));
-		panel.add(Box.createVerticalStrut(8));
-		panel.add(styleRow("Melee", gear.melee(), meleeControls(gear)));
-		panel.add(Box.createVerticalStrut(8));
-		panel.add(styleRow("Ranged", gear.ranged(), rangedControls(gear)));
-		panel.add(Box.createVerticalStrut(8));
-		panel.add(styleRow("Magic", gear.magic(), magicControls(gear)));
+		boolean anyStyleShown = false;
+		if (selected.showsMeleeBlock())
+		{
+			panel.add(Box.createVerticalStrut(8));
+			panel.add(styleRow("Melee", gear.melee(), meleeControls(gear)));
+			anyStyleShown = true;
+		}
+		if (selected.showsRangedBlock())
+		{
+			panel.add(Box.createVerticalStrut(8));
+			panel.add(styleRow("Ranged", gear.ranged(), rangedControls(gear)));
+			anyStyleShown = true;
+		}
+		if (selected.showsMagicBlock())
+		{
+			panel.add(Box.createVerticalStrut(8));
+			panel.add(styleRow("Magic", gear.magic(), magicControls(gear)));
+			anyStyleShown = true;
+		}
+		if (!anyStyleShown)
+		{
+			// Unreachable in practice -- classifyWeaponStyles always falls
+			// back to melee alone rather than an empty list -- but a
+			// hand-edited config value could still produce an empty,
+			// non-null weaponStyles list, and silently showing nothing
+			// would look like the section rendered wrong rather than like
+			// a state worth explaining.
+			panel.add(Box.createVerticalStrut(8));
+			panel.add(muted("This loadout's captured weapon styles don't match any known style."));
+		}
 		panel.add(Box.createVerticalStrut(6));
-		panel.add(muted("At your real levels, in " + gear.selectedLoadout().name()));
+		panel.add(muted("At your real levels, in " + selected.name()));
 		panel.add(Box.createVerticalStrut(6));
-		panel.add(itemListSection(gear.selectedLoadout()));
+		panel.add(itemListSection(selected));
 
 		return panel;
 	}
@@ -1058,15 +1213,23 @@ class QuestpathPanel extends PluginPanel
 		panel.add(picker);
 		panel.add(Box.createVerticalStrut(4));
 
-		JPanel buttons = new JPanel();
-		buttons.setLayout(new BoxLayout(buttons, BoxLayout.X_AXIS));
-		buttons.setAlignmentX(Component.LEFT_ALIGNMENT);
-		buttons.add(lockCurrentGearButton(gear));
-		buttons.add(Box.createHorizontalStrut(4));
-		buttons.add(renameButton(gear));
-		buttons.add(Box.createHorizontalStrut(4));
-		buttons.add(deleteButton(gear));
-		panel.add(buttons);
+		// Two rows, not one: "Lock current gear" / "Rename" / "Delete" side
+		// by side overflowed the standard PluginPanel width -- Delete showed
+		// only a sliver. "Lock current gear" gets its own full-width row
+		// (it's both the longest label and the button reached for most);
+		// Rename and Delete split the second row evenly.
+		JButton lockButton = lockCurrentGearButton(gear);
+		lockButton.setMaximumSize(new Dimension(Integer.MAX_VALUE, lockButton.getPreferredSize().height));
+		panel.add(lockButton);
+		panel.add(Box.createVerticalStrut(4));
+
+		JPanel secondRow = new JPanel(new GridLayout(1, 2, 4, 0));
+		secondRow.setAlignmentX(Component.LEFT_ALIGNMENT);
+		secondRow.setOpaque(false);
+		secondRow.setMaximumSize(new Dimension(Integer.MAX_VALUE, lockButton.getPreferredSize().height));
+		secondRow.add(renameButton(gear));
+		secondRow.add(deleteButton(gear));
+		panel.add(secondRow);
 
 		return panel;
 	}
@@ -2078,14 +2241,23 @@ class QuestpathPanel extends PluginPanel
 		// muted grey the rest of this panel already uses for "set aside" --
 		// visible as different without inventing a fifth colour nobody else
 		// on this panel means the same thing by.
+		// questpath's item plan: make steps, which member of an "X or Y" was
+		// chosen, or why nothing reachable -- worded by QuestItems.PlanNote.
+		String planNote = total.plan().describe();
+		if (planNote != null)
+		{
+			sharedNote = sharedNote == null ? planNote : sharedNote + ". " + planNote;
+		}
+		// Make-from-owned reads as in progress: nothing to fetch, one thing
+		// to do with what is already in the bank.
 		Color totalColour = skipped
 			? ColorScheme.MEDIUM_GRAY_COLOR
 			: total.satisfied()
 				? ColorScheme.PROGRESS_COMPLETE_COLOR
-				: total.inProgress()
+				: total.inProgress() || total.makeFromOwned()
 					? ColorScheme.PROGRESS_INPROGRESS_COLOR
 					: ColorScheme.LIGHT_GRAY_COLOR;
-		String label = skipped ? total.name() + "  (skipped)" : total.name();
+		String label = skipped ? total.name() + "  (skipped)" : total.displayName();
 		addRow(totalsGrid, label, total.describe(), totalColour,
 			itemTooltip(sharedNote, total.sources()));
 	}
@@ -2574,7 +2746,13 @@ class QuestpathPanel extends PluginPanel
 
 		if (stops.isEmpty() && locationUnknown.isEmpty() && unmatched.isEmpty())
 		{
-			panel.add(muted("No outstanding diary tasks this account can currently act on."));
+			// Two different facts behind the same empty result -- see
+			// DiaryJournal#progressNeverSynced's own doc, and
+			// DiaryRouteOverlay#rows for the same distinction made in the
+			// overlay.
+			panel.add(muted(DiaryJournal.progressNeverSynced(diary)
+				? "Diary progress not synced yet."
+				: "No outstanding diary tasks this account can currently act on."));
 			return panel;
 		}
 
@@ -2653,6 +2831,178 @@ class QuestpathPanel extends PluginPanel
 			shortestPathBridge.route(Set.of(point), outcome -> repaintAll());
 		});
 		return button;
+	}
+
+	// ------------------------------------------------------------------
+	// Diary journal: every bundled diary task, grouped Area > Tier, each
+	// marked against this account's own progress -- the in-game diary
+	// journal's own shape, per DiaryJournal's class doc. Distinct from
+	// diaryRouteBlock() above: that one is "what to walk to next", this one
+	// is "show me the whole diary, the way the game does."
+	// ------------------------------------------------------------------
+
+	/**
+	 * The whole diary journal: one collapsible group per area, each holding
+	 * its tiers and tasks, every task's row coloured and prefixed by {@link
+	 * DiaryJournal.TaskState}.
+	 *
+	 * <p>Still renders the full Area/Tier structure even before a sync --
+	 * {@link DiaryJournal#group} hands every task back as {@link
+	 * DiaryJournal.TaskState#NOT_SYNCED} rather than nothing at all, so the
+	 * journal stays something a player can browse ahead of ever syncing.
+	 * The banner above it is what actually says "not synced yet"; see
+	 * {@link DiaryJournal#progressNeverSynced}'s own doc for why that check
+	 * lives there rather than being re-derived here.
+	 */
+	private JPanel diaryJournalBlock()
+	{
+		JPanel panel = column();
+
+		PushResponse.Diary diary = diaryPush.get();
+		if (DiaryJournal.progressNeverSynced(diary))
+		{
+			panel.add(muted(diary == null
+				? "Diary progress not synced yet -- push this account's state from a questpath"
+					+ " that supports diary routing."
+				: "Diary progress not synced yet -- questpath has not read this account's"
+					+ " per-task diary progress."));
+			panel.add(Box.createVerticalStrut(6));
+		}
+
+		List<QuestGraph.DiaryTask> graphTasks = diaryGraphTasks.get();
+		List<DiaryJournal.Area> areas = DiaryJournal.group(graphTasks, diary);
+		if (areas.isEmpty())
+		{
+			panel.add(muted("questpath has not bundled any diary tasks yet."));
+			return panel;
+		}
+
+		for (DiaryJournal.Area area : areas)
+		{
+			panel.add(diaryAreaGroup(area));
+			panel.add(Box.createVerticalStrut(4));
+		}
+		return panel;
+	}
+
+	/**
+	 * One area's collapsible group: its tiers as bold sub-headings, each
+	 * tier's tasks underneath. Starts collapsed -- twelve areas' worth of
+	 * tasks open at once would be several hundred rows, the same reasoning
+	 * {@link OverlaySettingsPanel}'s own feature groups start collapsed for,
+	 * just applied to areas instead of settings.
+	 */
+	private CollapsibleGroup diaryAreaGroup(DiaryJournal.Area area)
+	{
+		JLabel header = new JLabel(area.name());
+		header.setFont(FontManager.getRunescapeBoldFont());
+		header.setForeground(Color.WHITE);
+		header.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+		JPanel body = column();
+		body.setBorder(BorderFactory.createEmptyBorder(4, 10, 0, 0));
+		for (DiaryJournal.Tier tier : area.tiers())
+		{
+			JLabel tierLabel = row(tier.name());
+			tierLabel.setFont(FontManager.getRunescapeBoldFont());
+			tierLabel.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
+			body.add(tierLabel);
+			for (DiaryJournal.Entry entry : tier.entries())
+			{
+				body.add(diaryTaskRow(entry));
+			}
+			body.add(Box.createVerticalStrut(6));
+		}
+
+		CollapsibleGroup group = new CollapsibleGroup(header, body, false);
+		group.alsoToggleOn(header);
+		return group;
+	}
+
+	/** One task's row: a state marker, its text, and "location unknown" when the graph has nowhere for it. */
+	private JLabel diaryTaskRow(DiaryJournal.Entry entry)
+	{
+		QuestGraph.DiaryTask task = entry.task();
+		StringBuilder text = new StringBuilder();
+		text.append("  ").append(diaryStateGlyph(entry.state())).append(' ').append(task.text());
+		if (entry.locationUnknown())
+		{
+			text.append("  -- location unknown");
+		}
+
+		JLabel label = row(text.toString());
+		label.setFont(FontManager.getRunescapeSmallFont());
+		label.setForeground(diaryStateColor(entry.state()));
+		String tooltip = diaryStateTooltip(entry);
+		if (tooltip != null)
+		{
+			label.setToolTipText(tooltip);
+		}
+		return label;
+	}
+
+	/**
+	 * A plain ASCII marker per state, never a unicode glyph -- the game's own
+	 * font has no glyph for one, which used to render as an orange tofu box;
+	 * see {@link CollapsibleGroup}'s own {@code Chevron} doc for the same
+	 * lesson learned once already on this panel.
+	 */
+	private static String diaryStateGlyph(DiaryJournal.TaskState state)
+	{
+		switch (state)
+		{
+			case DONE:
+				return "[x]";
+			case DOABLE:
+				return "[ ]";
+			case BLOCKED:
+				return "[!]";
+			case DEFERRED:
+				return "[-]";
+			case UNKNOWN:
+				return "[?]";
+			case NOT_SYNCED:
+			default:
+				return "[.]";
+		}
+	}
+
+	private static Color diaryStateColor(DiaryJournal.TaskState state)
+	{
+		switch (state)
+		{
+			case DONE:
+				return ColorScheme.PROGRESS_COMPLETE_COLOR;
+			case DOABLE:
+				return Color.WHITE;
+			case BLOCKED:
+				return ColorScheme.PROGRESS_ERROR_COLOR;
+			case UNKNOWN:
+				return ColorScheme.PROGRESS_INPROGRESS_COLOR;
+			case DEFERRED:
+			case NOT_SYNCED:
+			default:
+				return ColorScheme.LIGHT_GRAY_COLOR;
+		}
+	}
+
+	private static String diaryStateTooltip(DiaryJournal.Entry entry)
+	{
+		switch (entry.state())
+		{
+			case BLOCKED:
+				return entry.reason().isEmpty() ? "Blocked." : entry.reason();
+			case DEFERRED:
+				return entry.reason().isEmpty()
+					? "This diary tier is deferred -- never nudged, only listed here."
+					: "Deferred. " + entry.reason();
+			case UNKNOWN:
+				return "questpath cannot yet tell whether this task is done for this account.";
+			case NOT_SYNCED:
+				return "No diary progress has been read for this account yet.";
+			default:
+				return null;
+		}
 	}
 
 	/**

@@ -85,6 +85,37 @@ public interface QuestpathConfig extends Config
 	)
 	String questHelperSection = "questHelper";
 
+	@ConfigSection(
+		name = "Quests tab",
+		description = "Which half of the achievement-diary/quest split the Quests tab, and the"
+			+ " route overlays it drives, currently shows.",
+		position = 5,
+		closedByDefault = false
+	)
+	String questTabSection = "questTab";
+
+	@ConfigItem(
+		keyName = "questJournalFilter",
+		name = "Quests tab shows",
+		description = "Quests: the quest route only, on both the Quests tab and the \"Next on your"
+			+ " route\" overlay (still gated by that overlay's own on/off switch above). Diaries:"
+			+ " the diary journal and nearest-task route only, on both the tab and the \"Diary"
+			+ " route\" overlay -- this is what used to be that overlay's own separate on/off"
+			+ " switch, folded into this one setting instead. All: both, each in its own order."
+			+ " Same idea as the in-game quest journal's own Quests/Diaries/All filter.",
+		section = questTabSection,
+		position = 1
+	)
+	default QuestJournalFilter questJournalFilter()
+	{
+		// QUESTS, not ALL: this is also the diary route overlay's entire
+		// on/off switch now (see this item's own description), and that
+		// overlay used to default off. Defaulting here to QUESTS keeps a
+		// fresh install's diary overlay off exactly like before, without
+		// this plugin having to carry a second, now-redundant toggle for it.
+		return QuestJournalFilter.QUESTS;
+	}
+
 	@ConfigItem(
 		keyName = "syncEnabled",
 		name = "Send my account state",
@@ -507,28 +538,10 @@ public interface QuestpathConfig extends Config
 	}
 
 	@ConfigItem(
-		keyName = "overlayDiaryRoute",
-		name = "Diary route: nearest task",
-		description = "The nearest outstanding achievement diary task this account can currently"
-			+ " act on: its text, where it sends you, any warnings, and how fresh questpath's"
-			+ " read on that tier's progress is. Off by default, like every other in-game route"
-			+ " overlay here -- see overlayShopRoute.",
-		section = overlaySection,
-		position = 43
-	)
-	default boolean overlayDiaryRoute()
-	{
-		// Off by default, the same reasoning as overlayShopRoute: this is a
-		// feature only some accounts want on screen at all, and it also
-		// doubles as DiaryRouteGuard's own feature toggle -- see that
-		// class's shouldNudge doc.
-		return false;
-	}
-
-	@ConfigItem(
 		keyName = "overlayDiaryRouteWidth",
-		name = "- width",
-		description = "Width for the diary route panel alone.",
+		name = "Diary route -- width",
+		description = "Width for the diary route panel alone. Whether the panel shows at all is"
+			+ " questJournalFilter, above -- see that item's own description.",
 		section = overlaySection,
 		position = 44
 	)
@@ -539,7 +552,7 @@ public interface QuestpathConfig extends Config
 
 	@ConfigItem(
 		keyName = "overlayDiaryRouteLength",
-		name = "- length",
+		name = "Diary route -- length",
 		description = "How much of the current task's detail to show.",
 		section = overlaySection,
 		position = 45
@@ -775,6 +788,20 @@ public interface QuestpathConfig extends Config
 	default java.awt.Color groundHighlightColour()
 	{
 		return OverlayTheme.WARN;
+	}
+
+	@ConfigItem(
+		keyName = "groundTakeLeftClick",
+		name = "Left-click take items you need",
+		description = "Make \"Take\" the left-click option for a ground item your plan still"
+			+ " needs, so picking it up in passing does not need a right click. Never hides or"
+			+ " reorders anything for an item you do not need.",
+		section = groundSection,
+		position = 4
+	)
+	default boolean groundTakeLeftClick()
+	{
+		return true;
 	}
 
 	// ------------------------------------------------------------------

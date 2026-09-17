@@ -167,7 +167,9 @@ final class ShopRouteStops
 		List<QuestItems.Total> outstanding = new ArrayList<>();
 		for (QuestItems.Total total : totals)
 		{
-			if (!total.satisfied() && !skips.isSkipped(total.name()))
+			// covered(), not satisfied(): an item questpath says to make from
+			// what you already hold is not a stop -- see QuestItems.Total#covered.
+			if (!total.covered() && !skips.isSkipped(total.name()))
 			{
 				outstanding.add(total);
 			}

@@ -286,7 +286,7 @@ final class GrandExchangeShoppingList
 		List<Line> out = new ArrayList<>();
 		for (QuestItems.Total total : totals)
 		{
-			if (total.satisfied())
+			if (total.covered())
 			{
 				// Nothing to buy. A satisfied total on a buy list would be a
 				// line telling you to purchase zero of something you already

@@ -315,6 +315,7 @@
           "item_id": 273,
           "obtainable": true,
           "notes": [
+            "item",
             "obtainable during the quest"
           ]
         },
@@ -569,7 +570,6 @@
             "Shop: Drogo's Mining Emporium. (8 Coins)"
           ],
           "shop_names": [
-            "Drogo's Mining Emporium.",
             "Jiminua's Jungle Store.",
             "Obli's General Store.",
             "Jiminua's Jungle Store.",
@@ -761,9 +761,6 @@
             "Ore store",
             "Port Roberts Ore Stall",
             "TzHaar-Hur-Lek's Ore and Gem Store",
-            "Drogo's Mining Emporium.",
-            "Hendor's Awesome Ores",
-            "Mistrock Mining Supplies",
             "Ore seller.",
             "TzHaar-Hur-Rin's Ore and Gem Store",
             "TzHaar-Hur-Lek's Ore and Gem Store"
@@ -782,9 +779,6 @@
             "Shop: Hendor's Awesome Ores (17 Coins)"
           ],
           "shop_names": [
-            "Drogo's Mining Emporium.",
-            "Hendor's Awesome Ores",
-            "Mistrock Mining Supplies",
             "Deepfin Point Ore Exchange",
             "Ore store",
             "Port Roberts Ore Stall",
@@ -850,11 +844,7 @@
             "Miscellanian Food Shop",
             "Food Store",
             "Kenelme's Wares",
-            "Agelus' Farm Shop",
-            "Alice's Farming shop.",
-            "Cook (Blue Moon Inn)",
-            "Richard's Farming shop.",
-            "Sarah's Farming shop."
+            "Cook (Blue Moon Inn)"
           ],
           "drop_source_names": [
             "Tortoise#With riders"
@@ -945,12 +935,7 @@
             "Island Greengrocer",
             "Port Roberts Veg Stall",
             "Prifddinas Foodstuffs",
-            "Miscellanian Food Shop",
-            "Agelus' Farm Shop",
-            "Alice's Farming shop.",
-            "Richard's Farming shop.",
-            "Sarah's Farming shop.",
-            "Vanessa's Farming shop."
+            "Miscellanian Food Shop"
           ]
         },
         {
@@ -1216,9 +1201,6 @@
           "sources": [
             "Shop: Drogo's Mining Emporium. (28 Coins)",
             "Drop: Iron dragon#Standard (Always)"
-          ],
-          "shop_names": [
-            "Drogo's Mining Emporium."
           ],
           "notes": [
             "4 if you want your own blurite sword"
@@ -1569,14 +1551,14 @@
           ]
         },
         {
-          "name": "Magic/ranged weapon as well as a law and air rune or 10,000 coins",
+          "name": "Magic/ranged weapon as well as a law rune and air rune or 10,000 coins",
           "unresolved": true,
           "notes": [
             "to cast Telekinetic Grab if your Magic level is 33 or higher"
           ]
         },
         {
-          "name": "Member: Several other spawn locations or buy them at the sawmill",
+          "name": "Member: Plank#Spawns or buy them at the sawmill",
           "unresolved": true
         },
         {
@@ -2181,6 +2163,7 @@
             "Obli's General Store."
           ],
           "notes": [
+            "witch's house",
             "obtainable during the quest, may take some time"
           ]
         }
@@ -2227,13 +2210,13 @@
             "Miscellanian Food Shop",
             "Logava Gricoller's Cooking Supplies",
             "Arnold's Eclectic Supplies.",
-            "Food Store",
-            "Kenelme's Wares",
             "West Ardougne General Store",
             "Jiminua's Jungle Store.",
             "Lletya Food Store",
             "Obli's General Store.",
-            "Quartermaster's Stores"
+            "Quartermaster's Stores",
+            "Sigmund the Merchant (shop)",
+            "Jiminua's Jungle Store."
           ]
         },
         {
@@ -2810,7 +2793,6 @@
           ],
           "shop_names": [
             "Prifddinas Foodstuffs",
-            "Fishing Guild Shop.",
             "Warrior Guild Food Shop"
           ],
           "drop_source_names": [
@@ -2843,7 +2825,7 @@
           "name": "Pickaxe",
           "notes": [
             "41+ Mining",
-            "adamant or rune highly recommended"
+            "Adamant pickaxe or Rune pickaxe highly recommended"
           ],
           "group_name": "Pickaxe",
           "alternatives": [
@@ -3063,6 +3045,29 @@
           ]
         },
         {
+          "name": "Ruby",
+          "item_id": 1603,
+          "quantity": 2,
+          "sources": [
+            "Shop: Conara's Jewels (1000 Coins)",
+            "Shop: Elder Coco's Crafting Stall (1000 Coins)"
+          ],
+          "shop_names": [
+            "Conara's Jewels",
+            "Elder Coco's Crafting Stall",
+            "Kourend Castle Gem Stall.",
+            "Prifddinas Gem Stall",
+            "Toci's Gem Store",
+            "Ardougne Gem Stall.",
+            "Fortis Gem Stall",
+            "Green Gemstone Gems",
+            "Port Roberts Gem Stall"
+          ],
+          "drop_source_names": [
+            "Duke Sucellus"
+          ]
+        },
+        {
           "name": "Salmon",
           "item_id": 329,
           "sources": [
@@ -3089,8 +3094,6 @@
             "Shop: Keepa Kettilon's store (88 Coins)"
           ],
           "shop_names": [
-            "Fishing Guild Shop.",
-            "Keepa Kettilon's store",
             "The Shrimp and Parrot",
             "Legends Guild General Store."
           ],
@@ -3107,18 +3110,12 @@
             "Shop: Keepa Kettilon's store (44 Coins)"
           ],
           "shop_names": [
-            "Fishing Guild Shop.",
             "Keepa Kettilon's store",
             "The Shrimp and Parrot"
           ],
           "drop_source_names": [
             "Gourmet impling"
           ]
-        },
-        {
-          "name": "cut rubies",
-          "quantity": 2,
-          "unresolved": true
         }
       ]
     },
@@ -3342,7 +3339,7 @@
       ],
       "items": [
         {
-          "name": "Any bow capable of firing ice arrows or any thrown weapon",
+          "name": "Any bow capable of firing ice arrows or any Ranged#Weapons",
           "unresolved": true,
           "notes": [
             "yew bow or better"
@@ -4225,7 +4222,6 @@
             "Shop: Drogo's Mining Emporium. (8 Coins)"
           ],
           "shop_names": [
-            "Drogo's Mining Emporium.",
             "Jiminua's Jungle Store.",
             "Obli's General Store.",
             "Jiminua's Jungle Store.",
@@ -4295,7 +4291,6 @@
             "Shop: Drogo's Mining Emporium. (8 Coins)"
           ],
           "shop_names": [
-            "Drogo's Mining Emporium.",
             "Jiminua's Jungle Store.",
             "Obli's General Store.",
             "Jiminua's Jungle Store.",
@@ -4309,7 +4304,7 @@
           ]
         },
         {
-          "name": "Desert shirt, robe, and boots",
+          "name": "Desert shirt, Desert robe, and Desert boots",
           "unresolved": true,
           "notes": [
             "black versions do not work"
@@ -4351,6 +4346,9 @@
           "sources": [
             "Drop: Grand Gold Chest#Room 7 (1/650)",
             "Drop: Sarcophagus (Pyramid Plunder)#Room 7 (1/650)"
+          ],
+          "notes": [
+            "item"
           ]
         },
         {
@@ -4654,7 +4652,6 @@
             "Shop: Durrik's Goods (750 Coins)"
           ],
           "shop_names": [
-            "Drogo's Mining Emporium.",
             "Durrik's Goods"
           ],
           "drop_source_names": [
@@ -5165,10 +5162,6 @@
             "Shop: Gabooty's Tai Bwo Wannai Cooperative. (100 Trading sticks)",
             "Shop: Gabooty's Tai Bwo Wannai Cooperative. (120 Trading sticks)"
           ],
-          "shop_names": [
-            "Gabooty's Tai Bwo Wannai Cooperative.",
-            "Gabooty's Tai Bwo Wannai Cooperative."
-          ],
           "notes": [
             "small chance to acquire while panning for a quest item"
           ]
@@ -5404,7 +5397,6 @@
             "Port Roberts Fish Stall",
             "Sulisal's Superb Fishing Store",
             "Two Feet Charley's Fish Shop.",
-            "Harry's Fishing Shop.",
             "Etceteria Fish",
             "Fremennik Fish Monger",
             "Island Fishmonger",
@@ -5523,19 +5515,6 @@
             "Shop: Conara's Jewels (2000 Coins)",
             "Shop: Elder Coco's Crafting Stall (2000 Coins)"
           ],
-          "shop_names": [
-            "Conara's Jewels",
-            "Elder Coco's Crafting Stall",
-            "Gem Trader.",
-            "Herquin's Gems.",
-            "Kourend Castle Gem Stall.",
-            "Port Roberts Gem Stall",
-            "Prifddinas Gem Stall",
-            "Toci's Gem Store",
-            "Ardougne Gem Stall.",
-            "Fortis Gem Stall",
-            "Green Gemstone Gems"
-          ],
           "drop_source_names": [
             "Thermonuclear smoke devil",
             "Kraken"
@@ -5585,7 +5564,6 @@
             "Gem Trader.",
             "Kourend Castle Gem Stall.",
             "Prifddinas Gem Stall",
-            "Herquin's Gems.",
             "Ardougne Gem Stall.",
             "Fortis Gem Stall",
             "Green Gemstone Gems",
@@ -5604,7 +5582,6 @@
             "Shop: Durrik's Goods (750 Coins)"
           ],
           "shop_names": [
-            "Drogo's Mining Emporium.",
             "Durrik's Goods"
           ],
           "drop_source_names": [
@@ -5655,10 +5632,6 @@
           "sources": [
             "Shop: Gabooty's Tai Bwo Wannai Cooperative. (150 Trading sticks)",
             "Shop: Gabooty's Tai Bwo Wannai Cooperative. (180 Trading sticks)"
-          ],
-          "shop_names": [
-            "Gabooty's Tai Bwo Wannai Cooperative.",
-            "Gabooty's Tai Bwo Wannai Cooperative."
           ]
         },
         {
@@ -5715,6 +5688,7 @@
             "Rasolo the Wandering Merchant"
           ],
           "notes": [
+            "weapon",
             "obtainable during the quest"
           ]
         },
@@ -5753,10 +5727,6 @@
           "sources": [
             "Shop: Gabooty's Tai Bwo Wannai Cooperative. (100 Trading sticks)",
             "Shop: Gabooty's Tai Bwo Wannai Cooperative. (120 Trading sticks)"
-          ],
-          "shop_names": [
-            "Gabooty's Tai Bwo Wannai Cooperative.",
-            "Gabooty's Tai Bwo Wannai Cooperative."
           ]
         },
         {
@@ -5992,10 +5962,6 @@
           "sources": [
             "Shop: Gabooty's Tai Bwo Wannai Cooperative. (200 Trading sticks)",
             "Shop: Gabooty's Tai Bwo Wannai Cooperative. (240 Trading sticks)"
-          ],
-          "shop_names": [
-            "Gabooty's Tai Bwo Wannai Cooperative.",
-            "Gabooty's Tai Bwo Wannai Cooperative."
           ]
         },
         {
@@ -6037,8 +6003,6 @@
             "Kourend Castle Gem Stall.",
             "Prifddinas Gem Stall",
             "Toci's Gem Store",
-            "Gem Trader.",
-            "Herquin's Gems.",
             "Ardougne Gem Stall.",
             "Fortis Gem Stall",
             "Green Gemstone Gems",
@@ -6203,8 +6167,8 @@
             "Temple Supplies"
           ],
           "drop_source_names": [
-            "Chest (Dorgesh-Kaan Average)#Oldak's chests",
-            "Abyssal leech"
+            "Dagannoth Prime",
+            "Chest (Dorgesh-Kaan Average)#Oldak's chests"
           ],
           "notes": [
             "is given for free at the start of the quest"
@@ -6258,13 +6222,13 @@
             "Miscellanian Food Shop",
             "Logava Gricoller's Cooking Supplies",
             "Arnold's Eclectic Supplies.",
-            "Food Store",
-            "Kenelme's Wares",
             "West Ardougne General Store",
             "Jiminua's Jungle Store.",
             "Lletya Food Store",
             "Obli's General Store.",
-            "Quartermaster's Stores"
+            "Quartermaster's Stores",
+            "Sigmund the Merchant (shop)",
+            "Jiminua's Jungle Store."
           ]
         },
         {
@@ -6289,9 +6253,6 @@
           "sources": [
             "Shop: Drogo's Mining Emporium. (28 Coins)",
             "Drop: Iron dragon#Standard (Always)"
-          ],
-          "shop_names": [
-            "Drogo's Mining Emporium."
           ]
         },
         {
@@ -6349,9 +6310,6 @@
           "sources": [
             "Shop: Agelus' Farm Shop (2 Coins)",
             "Drop: Wheat (Always)"
-          ],
-          "shop_names": [
-            "Agelus' Farm Shop"
           ],
           "notes": [
             "obtainable during the quest, just south of Tegid in Taverley, or North of East Ardougne after visiting the zoo"
@@ -6861,11 +6819,7 @@
             "Miscellanian Food Shop",
             "Food Store",
             "Kenelme's Wares",
-            "Agelus' Farm Shop",
-            "Alice's Farming shop.",
-            "Cook (Blue Moon Inn)",
-            "Richard's Farming shop.",
-            "Sarah's Farming shop."
+            "Cook (Blue Moon Inn)"
           ],
           "drop_source_names": [
             "Tortoise#With riders"
@@ -7010,12 +6964,7 @@
             "Island Greengrocer",
             "Port Roberts Veg Stall",
             "Prifddinas Foodstuffs",
-            "Miscellanian Food Shop",
-            "Agelus' Farm Shop",
-            "Alice's Farming shop.",
-            "Richard's Farming shop.",
-            "Sarah's Farming shop.",
-            "Vanessa's Farming shop."
+            "Miscellanian Food Shop"
           ],
           "notes": [
             "obtainable during the quest"
@@ -7042,10 +6991,7 @@
             "Logava Gricoller's Cooking Supplies",
             "Miscellanian Food Shop",
             "Food Store",
-            "Kenelme's Wares",
-            "Agelus' Farm Shop",
-            "Alice's Farming shop.",
-            "Richard's Farming shop."
+            "Kenelme's Wares"
           ],
           "notes": [
             "obtainable during the quest"
@@ -7071,11 +7017,7 @@
             "Pollnivneach general store.",
             "Food Store",
             "Kenelme's Wares",
-            "Agelus' Farm Shop",
-            "Alice's Farming shop.",
-            "Richard's Farming shop.",
-            "Sarah's Farming shop.",
-            "Vanessa's Farming shop."
+            "Culinaromancer's Chest"
           ],
           "notes": [
             "obtainable during the quest"
@@ -7140,18 +7082,13 @@
             "Shop: Hendor's Awesome Ores (45 Coins)"
           ],
           "shop_names": [
-            "Drogo's Mining Emporium.",
-            "Hendor's Awesome Ores",
-            "Mistrock Mining Supplies",
             "Deepfin Point Ore Exchange",
             "Ore store",
             "Port Roberts Ore Stall",
             "TzHaar-Hur-Rin's Ore and Gem Store",
-            "TzHaar-Hur-Lek's Ore and Gem Store",
             "Petrified Pete's Ore Shop",
             "Ore seller.",
-            "TzHaar-Hur-Rin's Ore and Gem Store",
-            "TzHaar-Hur-Lek's Ore and Gem Store"
+            "TzHaar-Hur-Rin's Ore and Gem Store"
           ],
           "drop_source_names": [
             "Frost Nagua",
@@ -7269,7 +7206,7 @@
             "H.A.M. Guard"
           ],
           "notes": [
-            "obtainable during the quest, Costume needle does not work"
+            "obtainable during the quest, Costume needle works if you have thread"
           ]
         },
         {
@@ -7477,6 +7414,7 @@
         {
           "name": "Thread",
           "item_id": 1734,
+          "obtainable": true,
           "sources": [
             "Shop: Moon Clan Fine Clothes. (1 Coins)",
             "Shop: Carefree Crafting Stall (1 Coins)"
@@ -7502,6 +7440,9 @@
           "drop_source_names": [
             "Baby impling",
             "H.A.M. Guard"
+          ],
+          "notes": [
+            "obtainable during the quest"
           ]
         }
       ]
@@ -7896,7 +7837,6 @@
           "name": "Agility potion",
           "unresolved": true,
           "notes": [
-            "4",
             "must be 4 doses"
           ]
         },
@@ -8278,7 +8218,7 @@
           "name": "Using a Flamtaer hammer is highly recommended in case the minigame is unpopulated, as a regular hammer is insufficient to build the temple alone. An additional 13,000 coins allows you to buy a Flamtaer hammer from Razmire",
           "unresolved": true,
           "notes": [
-            "or 5,289 on the Grand Exchange"
+            "or 5,154 on the Grand Exchange"
           ]
         }
       ]
@@ -8367,11 +8307,7 @@
             "Miscellanian Food Shop",
             "Food Store",
             "Kenelme's Wares",
-            "Agelus' Farm Shop",
-            "Alice's Farming shop.",
-            "Cook (Blue Moon Inn)",
-            "Richard's Farming shop.",
-            "Sarah's Farming shop."
+            "Cook (Blue Moon Inn)"
           ],
           "drop_source_names": [
             "Tortoise#With riders"
@@ -8447,12 +8383,7 @@
             "Island Greengrocer",
             "Port Roberts Veg Stall",
             "Prifddinas Foodstuffs",
-            "Miscellanian Food Shop",
-            "Agelus' Farm Shop",
-            "Alice's Farming shop.",
-            "Richard's Farming shop.",
-            "Sarah's Farming shop.",
-            "Vanessa's Farming shop."
+            "Miscellanian Food Shop"
           ],
           "notes": [
             "obtainable during quest"
@@ -8479,10 +8410,7 @@
             "Logava Gricoller's Cooking Supplies",
             "Miscellanian Food Shop",
             "Food Store",
-            "Kenelme's Wares",
-            "Agelus' Farm Shop",
-            "Alice's Farming shop.",
-            "Richard's Farming shop."
+            "Kenelme's Wares"
           ],
           "notes": [
             "obtainable during quest"
@@ -9193,7 +9121,7 @@
           "unresolved": true,
           "notes": [
             "such as a gold ring",
-            "not onyx/dragonstone/explorer/beacon/'perfect' ring/nature/pineapple/Charos/fremennik/ancient"
+            "not onyx/dragonstone/explorer/beacon/'perfect' ring/nature/pineapple/Charos/fremennik/ancient/key"
           ]
         },
         {
@@ -9234,9 +9162,6 @@
           "sources": [
             "Shop: Drogo's Mining Emporium. (28 Coins)",
             "Drop: Iron dragon#Standard (Always)"
-          ],
-          "shop_names": [
-            "Drogo's Mining Emporium."
           ]
         },
         {
@@ -9332,7 +9257,6 @@
             "Shop: Durrik's Goods (750 Coins)"
           ],
           "shop_names": [
-            "Drogo's Mining Emporium.",
             "Durrik's Goods"
           ],
           "drop_source_names": [
@@ -9494,9 +9418,17 @@
           "sources": [
             "Shop: Drogo's Mining Emporium. (28 Coins)",
             "Drop: Iron dragon#Standard (Always)"
+          ]
+        },
+        {
+          "name": "Maple logs",
+          "item_id": 1517,
+          "sources": [
+            "Drop: Maple tree (Always)",
+            "Drop: Maple tree (Farming) (Always)"
           ],
-          "shop_names": [
-            "Drogo's Mining Emporium."
+          "drop_source_names": [
+            "Dagannoth Supreme"
           ]
         },
         {
@@ -9541,18 +9473,6 @@
           "item_id": 4085,
           "notes": [
             "can be made ahead of time"
-          ]
-        },
-        {
-          "name": "Yew logs",
-          "item_id": 1515,
-          "sources": [
-            "Drop: Yew tree (Always)",
-            "Drop: Yew tree (Farming) (Always)"
-          ],
-          "drop_source_names": [
-            "Skeleton thug",
-            "Skeleton brute"
           ]
         }
       ]
@@ -9994,6 +9914,7 @@
           "item_id": 275,
           "obtainable": true,
           "notes": [
+            "Waterfall Dungeon",
             "obtainable during the quest"
           ]
         },
@@ -10522,7 +10443,6 @@
             "Shop: Drogo's Mining Emporium. (8 Coins)"
           ],
           "shop_names": [
-            "Drogo's Mining Emporium.",
             "Jiminua's Jungle Store.",
             "Obli's General Store.",
             "Jiminua's Jungle Store.",
@@ -10597,9 +10517,6 @@
           "sources": [
             "Shop: Drogo's Mining Emporium. (28 Coins)",
             "Drop: Iron dragon#Standard (Always)"
-          ],
-          "shop_names": [
-            "Drogo's Mining Emporium."
           ]
         },
         {
@@ -10609,9 +10526,8 @@
             "Shop: Gabooty's Tai Bwo Wannai Cooperative. (150 Trading sticks)",
             "Shop: Gabooty's Tai Bwo Wannai Cooperative. (180 Trading sticks)"
           ],
-          "shop_names": [
-            "Gabooty's Tai Bwo Wannai Cooperative.",
-            "Gabooty's Tai Bwo Wannai Cooperative."
+          "notes": [
+            "gem"
           ]
         },
         {
@@ -10632,10 +10548,6 @@
           "sources": [
             "Shop: Gabooty's Tai Bwo Wannai Cooperative. (100 Trading sticks)",
             "Shop: Gabooty's Tai Bwo Wannai Cooperative. (120 Trading sticks)"
-          ],
-          "shop_names": [
-            "Gabooty's Tai Bwo Wannai Cooperative.",
-            "Gabooty's Tai Bwo Wannai Cooperative."
           ]
         },
         {
@@ -10683,10 +10595,6 @@
           "sources": [
             "Shop: Gabooty's Tai Bwo Wannai Cooperative. (200 Trading sticks)",
             "Shop: Gabooty's Tai Bwo Wannai Cooperative. (240 Trading sticks)"
-          ],
-          "shop_names": [
-            "Gabooty's Tai Bwo Wannai Cooperative.",
-            "Gabooty's Tai Bwo Wannai Cooperative."
           ]
         },
         {
@@ -11838,7 +11746,6 @@
             "Shop: Durrik's Goods (750 Coins)"
           ],
           "shop_names": [
-            "Drogo's Mining Emporium.",
             "Durrik's Goods"
           ],
           "drop_source_names": [
@@ -12575,7 +12482,10 @@
         {
           "name": "Shantay pass",
           "item_id": 1854,
-          "quantity": 10
+          "quantity": 10,
+          "notes": [
+            "item"
+          ]
         },
         {
           "name": "Silver bar",
@@ -12716,9 +12626,6 @@
           "sources": [
             "Shop: The Spice Is Right. (45 Coins)"
           ],
-          "shop_names": [
-            "The Spice Is Right."
-          ],
           "notes": [
             "use a knife on an evergreen tree or a regular tree with the description \"a commonly found tree\" with a bucket in your inventory"
           ]
@@ -12735,6 +12642,7 @@
           "item_id": 4684,
           "obtainable": true,
           "notes": [
+            "Icthlarin's Little Helper",
             "Can be bought on The Grand Exchange or bought from Raetul in Sophanem for 30 coins during the quest"
           ]
         },
@@ -12744,10 +12652,6 @@
           "notes": [
             "Such as the Shantay pass, Teleport tablets or scrolls, Fairy rings or the Pharaoh's sceptre"
           ]
-        },
-        {
-          "name": "Regular or overgrown cat, hellcat, or kitten. No food is required as the kitten can stay in your inventory for the most part, or automatically go in/out of your inventory",
-          "unresolved": true
         },
         {
           "name": "Tinderbox",
@@ -12786,6 +12690,10 @@
             "Drop: Willow tree (Always)",
             "Drop: Willow tree (Farming) (Always)"
           ]
+        },
+        {
+          "name": "cat or overgrown cat, hellcat, or kitten. No food is required as the kitten can stay in your inventory for the most part, or automatically go in/out of your inventory",
+          "unresolved": true
         }
       ]
     },
@@ -12826,9 +12734,6 @@
           "sources": [
             "Shop: Miltog's Lamps (630 Coins)",
             "Drop: Chest (Dorgesh-Kaan Average)#Normal (1/7)"
-          ],
-          "shop_names": [
-            "Miltog's Lamps"
           ],
           "notes": [
             "unf",
@@ -13604,18 +13509,13 @@
             "Shop: Hendor's Awesome Ores (45 Coins)"
           ],
           "shop_names": [
-            "Drogo's Mining Emporium.",
-            "Hendor's Awesome Ores",
-            "Mistrock Mining Supplies",
             "Deepfin Point Ore Exchange",
             "Ore store",
             "Port Roberts Ore Stall",
             "TzHaar-Hur-Rin's Ore and Gem Store",
-            "TzHaar-Hur-Lek's Ore and Gem Store",
             "Petrified Pete's Ore Shop",
             "Ore seller.",
-            "TzHaar-Hur-Rin's Ore and Gem Store",
-            "TzHaar-Hur-Lek's Ore and Gem Store"
+            "TzHaar-Hur-Rin's Ore and Gem Store"
           ],
           "drop_source_names": [
             "Frost Nagua",
@@ -13644,9 +13544,6 @@
           "sources": [
             "Shop: Drogo's Mining Emporium. (28 Coins)",
             "Drop: Iron dragon#Standard (Always)"
-          ],
-          "shop_names": [
-            "Drogo's Mining Emporium."
           ]
         },
         {
@@ -13833,7 +13730,7 @@
           ]
         },
         {
-          "name": "Each of these dyes: red, yellow, green, and blue",
+          "name": "Each of these dyes: red dye, yellow dye, green dye, and blue dye",
           "obtainable": true,
           "unresolved": true,
           "notes": [
@@ -14067,9 +13964,6 @@
             "Shop: The Deeper Lode (2 Coins)",
             "Drop: Shelves (Sorceress's house) (Always)"
           ],
-          "shop_names": [
-            "The Deeper Lode"
-          ],
           "notes": [
             "obtainable during the quest"
           ]
@@ -14207,7 +14101,7 @@
       ],
       "items": [
         {
-          "name": "A rune/pure essence",
+          "name": "A rune essence/pure essence",
           "unresolved": true
         },
         {
@@ -15087,8 +14981,6 @@
             "Shop: Jiminua's Jungle Store. (6 Coins)"
           ],
           "shop_names": [
-            "Jiminua's Jungle Store.",
-            "Jiminua's Jungle Store.",
             "Dom Onion's Reward Shop"
           ],
           "drop_source_names": [
@@ -15123,7 +15015,7 @@
       ],
       "items": [
         {
-          "name": "A death talisman/tiara, catalytic talisman/tiara, Runecraft cape or 50 junk items",
+          "name": "A death talisman/death tiara, catalytic talisman/catalytic tiara, Runecraft cape or Mourning's End Part II#The Death Altar",
           "unresolved": true
         },
         {
@@ -15159,7 +15051,7 @@
           ]
         },
         {
-          "name": "Full mourner clothes",
+          "name": "Full mourner gear",
           "unresolved": true
         },
         {
@@ -15337,7 +15229,7 @@
           ]
         },
         {
-          "name": "prayer points for the Evil spirits part of the quest",
+          "name": "prayer points for the Rum Deal#Evil spirits part of the quest",
           "quantity": 47,
           "unresolved": true
         }
@@ -15384,7 +15276,7 @@
           ]
         },
         {
-          "name": "Note: You can make a black desert robe and shirt during the quest if you brought a desert robe and shirt",
+          "name": "Note: You can make a black desert robe and black desert shirt during the quest if you brought a desert robe and desert shirt",
           "unresolved": true
         },
         {
@@ -15462,10 +15354,6 @@
           "sources": [
             "Shop: Conara's Jewels (900 Coins)",
             "Shop: Grum's Gold Exchange. (900 Coins)"
-          ],
-          "shop_names": [
-            "Conara's Jewels",
-            "Grum's Gold Exchange."
           ]
         },
         {
@@ -15623,10 +15511,6 @@
           ]
         },
         {
-          "name": "Empty vial",
-          "item_id": 9085
-        },
-        {
           "name": "Pot of weeds",
           "item_id": 6771,
           "notes": [
@@ -15695,6 +15579,36 @@
           "drop_source_names": [
             "Cave bug#Level 6",
             "Chaos druid warrior"
+          ]
+        },
+        {
+          "name": "Vial",
+          "item_id": 229,
+          "sources": [
+            "Shop: Jatix's Herblore Shop. (2 Coins)",
+            "Shop: Elder Raley's Herblore Stall (2 Coins)"
+          ],
+          "shop_names": [
+            "Jatix's Herblore Shop.",
+            "Elder Raley's Herblore Stall",
+            "Huito's Herbal Supplies",
+            "Prifddinas Herbal Supplies",
+            "The Lighthouse Store",
+            "Frincos' Fabulous Herb Store.",
+            "Grud's Herblore Stall.",
+            "Myths' Guild Herbalist",
+            "Port Roberts General Store",
+            "Salvager Overlook General Store",
+            "Auburnvale General Store",
+            "Tal Teklan General Store",
+            "Gunslik's Assorted Items",
+            "Jiminua's Jungle Store.",
+            "Obli's General Store.",
+            "Prifddinas General Store"
+          ],
+          "drop_source_names": [
+            "Borrokar",
+            "Freidir"
           ]
         },
         {
@@ -16566,32 +16480,6 @@
       ],
       "items": [
         {
-          "name": "Candle",
-          "item_id": 36,
-          "sources": [
-            "Shop: Darkmeyer Lantern Shop (3 Coins)",
-            "Shop: Candle Shop (3 Coins)"
-          ],
-          "shop_names": [
-            "Darkmeyer Lantern Shop",
-            "Candle Shop",
-            "Gunslik's Assorted Items",
-            "Jiminua's Jungle Store.",
-            "Obli's General Store.",
-            "Sigmund the Merchant (shop)",
-            "The Lighthouse Store",
-            "Jiminua's Jungle Store.",
-            "Obli's General Store.",
-            "Candle seller"
-          ],
-          "drop_source_names": [
-            "Cave bug#Level 6"
-          ],
-          "notes": [
-            "a black candle will not work"
-          ]
-        },
-        {
           "name": "Chisel",
           "item_id": 1755,
           "sources": [
@@ -16629,18 +16517,13 @@
             "Shop: Hendor's Awesome Ores (45 Coins)"
           ],
           "shop_names": [
-            "Drogo's Mining Emporium.",
-            "Hendor's Awesome Ores",
-            "Mistrock Mining Supplies",
             "Deepfin Point Ore Exchange",
             "Ore store",
             "Port Roberts Ore Stall",
             "TzHaar-Hur-Rin's Ore and Gem Store",
-            "TzHaar-Hur-Lek's Ore and Gem Store",
             "Petrified Pete's Ore Shop",
             "Ore seller.",
-            "TzHaar-Hur-Rin's Ore and Gem Store",
-            "TzHaar-Hur-Lek's Ore and Gem Store"
+            "TzHaar-Hur-Rin's Ore and Gem Store"
           ],
           "drop_source_names": [
             "Frost Nagua",
@@ -16653,6 +16536,13 @@
         {
           "name": "Enough remaining Prayer points to maintain Protect from Melee for about five seconds",
           "unresolved": true
+        },
+        {
+          "name": "Lit candle",
+          "item_id": 33,
+          "notes": [
+            "a black candle will not work"
+          ]
         },
         {
           "name": "Logs",
@@ -16672,6 +16562,9 @@
           "sources": [
             "Drop: Maple tree (Always)",
             "Drop: Maple tree (Farming) (Always)"
+          ],
+          "drop_source_names": [
+            "Dagannoth Supreme"
           ]
         },
         {
@@ -16959,10 +16852,11 @@
           ]
         },
         {
-          "name": "Two 5 kg pieces of granite",
+          "name": "Two Granite",
           "obtainable": true,
           "unresolved": true,
           "notes": [
+            "5kg",
             "obtainable during quest with level 45 Mining [boostable]"
           ]
         },
@@ -17056,8 +16950,11 @@
       ],
       "items": [
         {
-          "name": "A combination of three items picked for you at random, see list of potential items",
-          "unresolved": true
+          "name": "A combination of three items picked for you at random, see Fairytale I",
+          "unresolved": true,
+          "notes": [
+            "Growing Pains#Blessed secateurs"
+          ]
         },
         {
           "name": "Dramen staff",
@@ -17867,13 +17764,13 @@
             "Miscellanian Food Shop",
             "Logava Gricoller's Cooking Supplies",
             "Arnold's Eclectic Supplies.",
-            "Food Store",
-            "Kenelme's Wares",
             "West Ardougne General Store",
             "Jiminua's Jungle Store.",
             "Lletya Food Store",
             "Obli's General Store.",
-            "Quartermaster's Stores"
+            "Quartermaster's Stores",
+            "Sigmund the Merchant (shop)",
+            "Jiminua's Jungle Store."
           ]
         },
         {
@@ -17984,7 +17881,7 @@
           ]
         },
         {
-          "name": "Dramen staff and branch",
+          "name": "Dramen staff and Dramen branch",
           "unresolved": true
         },
         {
@@ -18072,10 +17969,6 @@
           "sources": [
             "Shop: Gabooty's Tai Bwo Wannai Drinky Store. (28 Trading sticks)",
             "Shop: Gabooty's Tai Bwo Wannai Drinky Store. (30 Trading sticks)"
-          ],
-          "shop_names": [
-            "Gabooty's Tai Bwo Wannai Drinky Store.",
-            "Gabooty's Tai Bwo Wannai Drinky Store."
           ]
         },
         {
@@ -18261,14 +18154,6 @@
               "name": "Expert mining gloves",
               "item_id": 21392
             }
-          ]
-        },
-        {
-          "name": "Gorilla, ninja and zombie greegree",
-          "obtainable": true,
-          "unresolved": true,
-          "notes": [
-            "or 3000 coins and combat equipment if making the greegrees during the quest"
           ]
         },
         {
@@ -18544,9 +18429,6 @@
             "Shop: ~ Uglug's stuffsies ~ (85 Coins)",
             "Drop: Chompy bird (Always)"
           ],
-          "shop_names": [
-            "~ Uglug's stuffsies ~"
-          ],
           "notes": [
             "several recommended in case of burning"
           ]
@@ -18567,13 +18449,7 @@
             "Henderson's Catch of the Day",
             "Two Feet Charley's Fish Shop.",
             "Cobado's Groceries",
-            "Fishing Guild Shop.",
-            "Harry's Fishing Shop.",
-            "Flosi's Fishmongers",
-            "Etceteria Fish",
-            "Fremennik Fish Monger",
-            "Island Fishmonger",
-            "Warrens Fish Monger"
+            "Flosi's Fishmongers"
           ]
         },
         {
@@ -18694,6 +18570,14 @@
           "drop_source_names": [
             "Cave goblin (monster)",
             "Wall beast"
+          ]
+        },
+        {
+          "name": "gorilla greegree, ninja greegree and zombie greegree",
+          "obtainable": true,
+          "unresolved": true,
+          "notes": [
+            "or 3000 coins and combat equipment if making the greegrees during the quest"
           ]
         }
       ]
@@ -19033,22 +18917,25 @@
             "Shop: Hendor's Awesome Ores (45 Coins)"
           ],
           "shop_names": [
-            "Drogo's Mining Emporium.",
-            "Hendor's Awesome Ores",
-            "Mistrock Mining Supplies",
             "Deepfin Point Ore Exchange",
             "Ore store",
             "Port Roberts Ore Stall",
             "TzHaar-Hur-Rin's Ore and Gem Store",
-            "TzHaar-Hur-Lek's Ore and Gem Store",
             "Petrified Pete's Ore Shop",
             "Ore seller.",
-            "TzHaar-Hur-Rin's Ore and Gem Store",
-            "TzHaar-Hur-Lek's Ore and Gem Store"
+            "TzHaar-Hur-Rin's Ore and Gem Store"
           ],
           "drop_source_names": [
             "Frost Nagua",
             "Amoxliatl#Post-quest"
+          ]
+        },
+        {
+          "name": "Cooked slimy eel",
+          "item_id": 3381,
+          "quantity": 15,
+          "notes": [
+            "highest healing"
           ]
         },
         {
@@ -19158,13 +19045,7 @@
             "Sulisal's Superb Fishing Store",
             "Two Feet Charley's Fish Shop.",
             "Henderson's Catch of the Day",
-            "Fishing Guild Shop.",
-            "Harry's Fishing Shop.",
-            "Aurel's Supplies",
-            "Etceteria Fish",
-            "Fremennik Fish Monger",
-            "Island Fishmonger",
-            "Warrens Fish Monger"
+            "Aurel's Supplies"
           ],
           "notes": [
             "randomly chosen, but you can manipulate the choice"
@@ -19250,6 +19131,9 @@
             "Ivan's Supplies",
             "Efaritay's Supplies",
             "Old Man Ral's Supplies"
+          ],
+          "notes": [
+            "b"
           ]
         },
         {
@@ -19498,14 +19382,6 @@
           "name": "piece of any food to enter Burgh de Rott for the first time",
           "quantity": 1,
           "unresolved": true
-        },
-        {
-          "name": "stew , salmon, snails, or slimy eels",
-          "quantity": 15,
-          "unresolved": true,
-          "notes": [
-            "highest healing"
-          ]
         }
       ]
     },
@@ -19990,18 +19866,13 @@
             "Shop: Hendor's Awesome Ores (45 Coins)"
           ],
           "shop_names": [
-            "Drogo's Mining Emporium.",
-            "Hendor's Awesome Ores",
-            "Mistrock Mining Supplies",
             "Deepfin Point Ore Exchange",
             "Ore store",
             "Port Roberts Ore Stall",
             "TzHaar-Hur-Rin's Ore and Gem Store",
-            "TzHaar-Hur-Lek's Ore and Gem Store",
             "Petrified Pete's Ore Shop",
             "Ore seller.",
-            "TzHaar-Hur-Rin's Ore and Gem Store",
-            "TzHaar-Hur-Lek's Ore and Gem Store"
+            "TzHaar-Hur-Rin's Ore and Gem Store"
           ],
           "drop_source_names": [
             "Frost Nagua",
@@ -20513,15 +20384,8 @@
       ],
       "items": [
         {
-          "name": "Lunar staff",
-          "item_id": 9084,
-          "sources": [
-            "Shop: Oneiromancer (30000 Coins)",
-            "Shop: Lost Property shop (60000 Coins)"
-          ],
-          "shop_names": [
-            "Oneiromancer"
-          ]
+          "name": "Dramen staff",
+          "item_id": 772
         },
         {
           "name": "Nuff's certificate",
@@ -21403,9 +21267,6 @@
           "sources": [
             "Shop: The Spice Is Right. (45 Coins)"
           ],
-          "shop_names": [
-            "The Spice Is Right."
-          ],
           "notes": [
             "evergreen shaped trees",
             "If you do not have one, you can use a knife on any tree that looks pointy with a bucket in your inventory"
@@ -21447,6 +21308,9 @@
           "sources": [
             "Drop: Maple tree (Always)",
             "Drop: Maple tree (Farming) (Always)"
+          ],
+          "drop_source_names": [
+            "Dagannoth Supreme"
           ]
         },
         {
@@ -21457,7 +21321,8 @@
             "Drop: Mutated Tortoise (5/64)"
           ],
           "drop_source_names": [
-            "Crazy archaeologist"
+            "Crazy archaeologist",
+            "Dagannoth Prime"
           ]
         },
         {
@@ -21742,7 +21607,7 @@
           "unresolved": true
         },
         {
-          "name": "Access to the Air, Water, Earth, Fire, and Mind Altars",
+          "name": "Access to the Air Altar, Water Altar, Earth Altar, Fire Altar, and Mind Altars",
           "unresolved": true
         },
         {
@@ -21805,6 +21670,9 @@
           "drop_source_names": [
             "Abyssal leech",
             "Abyssal guardian"
+          ],
+          "notes": [
+            "disambiguation"
           ]
         },
         {
@@ -21859,7 +21727,7 @@
           "unresolved": true
         },
         {
-          "name": "rune/pure essence",
+          "name": "rune essence/pure essence",
           "quantity": 5,
           "unresolved": true,
           "notes": [
@@ -21910,18 +21778,13 @@
             "Shop: Hendor's Awesome Ores (45 Coins)"
           ],
           "shop_names": [
-            "Drogo's Mining Emporium.",
-            "Hendor's Awesome Ores",
-            "Mistrock Mining Supplies",
             "Deepfin Point Ore Exchange",
             "Ore store",
             "Port Roberts Ore Stall",
             "TzHaar-Hur-Rin's Ore and Gem Store",
-            "TzHaar-Hur-Lek's Ore and Gem Store",
             "Petrified Pete's Ore Shop",
             "Ore seller.",
-            "TzHaar-Hur-Rin's Ore and Gem Store",
-            "TzHaar-Hur-Lek's Ore and Gem Store"
+            "TzHaar-Hur-Rin's Ore and Gem Store"
           ],
           "drop_source_names": [
             "Frost Nagua",
@@ -22488,7 +22351,7 @@
       ],
       "items": [
         {
-          "name": "A full sack of potatoes",
+          "name": "A full Potatoes",
           "unresolved": true,
           "notes": [
             "10",
@@ -22597,7 +22460,7 @@
           ]
         },
         {
-          "name": "Note: The player receives a willow sapling during the quest, although planting one beforehand may be faster. You will also receive a basket of apples to pay to protect the tree",
+          "name": "Note: The player receives a Auguste's sapling during the quest, although planting one beforehand may be faster. You will also receive a basket of apples to pay to protect the tree",
           "unresolved": true
         },
         {
@@ -22978,10 +22841,6 @@
           "sources": [
             "Shop: Davon's Amulet Store. (330 Coins)",
             "Shop: Davon's Amulet Store. (360 Coins)"
-          ],
-          "shop_names": [
-            "Davon's Amulet Store.",
-            "Davon's Amulet Store."
           ]
         },
         {
@@ -23029,7 +22888,7 @@
       ],
       "items": [
         {
-          "name": "A light source",
+          "name": "A Light sources",
           "notes": [
             "Kandarin headgear, Firemaking cape, Abyssal lantern, or a bruma torch are strongly recommended as they can't be extinguished by traps in the dungeon",
             "If you don't have one, the Sophanem guard under the temple of the lesser deities will sell you an unlit torch for 200 coins"
@@ -23406,13 +23265,7 @@
             "Henderson's Catch of the Day",
             "Two Feet Charley's Fish Shop.",
             "Cobado's Groceries",
-            "Fishing Guild Shop.",
-            "Harry's Fishing Shop.",
-            "Flosi's Fishmongers",
-            "Etceteria Fish",
-            "Fremennik Fish Monger",
-            "Island Fishmonger",
-            "Warrens Fish Monger"
+            "Flosi's Fishmongers"
           ],
           "notes": [
             "a"
@@ -23604,15 +23457,7 @@
             "Sulisal's Superb Fishing Store",
             "Cobado's Groceries",
             "Two Feet Charley's Fish Shop.",
-            "Fishing Guild Shop.",
-            "Gerrant's Fishy Business.",
-            "Harry's Fishing Shop.",
-            "Ishmael's Fish He Sells",
-            "Lovecraft's Tackle",
-            "Flosi's Fishmongers",
-            "Etceteria Fish",
-            "Fremennik Fish Monger",
-            "Island Fishmonger"
+            "Flosi's Fishmongers"
           ],
           "drop_source_names": [
             "Mogre"
@@ -23670,9 +23515,11 @@
           ]
         },
         {
-          "name": "Yak-hide armour top and legs",
+          "name": "Yak-hide armour and Yak-hide armour",
           "unresolved": true,
           "notes": [
+            "top",
+            "legs",
             "or 46 Crafting, a needle and two thread, or a costume needle"
           ]
         }
@@ -23789,10 +23636,6 @@
           "sources": [
             "Shop: Davon's Amulet Store. (330 Coins)",
             "Shop: Davon's Amulet Store. (360 Coins)"
-          ],
-          "shop_names": [
-            "Davon's Amulet Store.",
-            "Davon's Amulet Store."
           ]
         },
         {
@@ -24625,7 +24468,7 @@
           ]
         },
         {
-          "name": "Magic or Ranged gear for enemy fight",
+          "name": "Magic or Ranged equipment for enemy fight",
           "unresolved": true,
           "notes": [
             "cannot use Melee on them"
@@ -25606,7 +25449,7 @@
           ]
         },
         {
-          "name": "Priest gown top and bottom",
+          "name": "Priest gown top and Priest gown bottom",
           "obtainable": true,
           "unresolved": true,
           "notes": [
@@ -26308,7 +26151,7 @@
           ]
         },
         {
-          "name": "Two logs corresponding to the type of metal bars you are using. Bronze, iron, steel, mithril, adamantite, and runite bars require normal, oak, willow, maple, yew, or magic logs, respectively",
+          "name": "Two logs corresponding to the type of metal bars you are using. bronze bar, iron bar, steel bar, mithril bar, adamantite bar, and runite bar require logs, Oak logs, Willow logs, Maple logs, Yew logs, or magic logs, respectively",
           "unresolved": true
         },
         {
@@ -27041,165 +26884,8 @@
       ],
       "items": [
         {
-          "name": "A light source",
-          "group_name": "Light sources",
-          "alternatives": [
-            {
-              "name": "Lit torch",
-              "item_id": 594,
-              "requirements": [
-                {
-                  "skill": "Firemaking",
-                  "level": 1
-                }
-              ]
-            },
-            {
-              "name": "Lit candle",
-              "item_id": 33,
-              "requirements": [
-                {
-                  "skill": "Firemaking",
-                  "level": 1
-                }
-              ]
-            },
-            {
-              "name": "Lit black candle",
-              "item_id": 32,
-              "requirements": [
-                {
-                  "skill": "Firemaking",
-                  "level": 1
-                }
-              ]
-            },
-            {
-              "name": "Candle lantern",
-              "item_id": 4529,
-              "requirements": [
-                {
-                  "skill": "Firemaking",
-                  "level": 4
-                }
-              ]
-            },
-            {
-              "name": "Oil lamp",
-              "item_id": 4522,
-              "requirements": [
-                {
-                  "skill": "Firemaking",
-                  "level": 12
-                }
-              ]
-            },
-            {
-              "name": "Oil lantern",
-              "item_id": 4537,
-              "requirements": [
-                {
-                  "skill": "Firemaking",
-                  "level": 26
-                }
-              ]
-            },
-            {
-              "name": "Bullseye lantern",
-              "item_id": 4548,
-              "requirements": [
-                {
-                  "skill": "Firemaking",
-                  "level": 49
-                }
-              ]
-            },
-            {
-              "name": "Sapphire lantern",
-              "item_id": 4700,
-              "requirements": [
-                {
-                  "skill": "Firemaking",
-                  "level": 49
-                }
-              ]
-            },
-            {
-              "name": "Emerald lantern",
-              "item_id": 20722,
-              "requirements": [
-                {
-                  "skill": "Firemaking",
-                  "level": 49
-                }
-              ]
-            },
-            {
-              "name": "Mining helmet",
-              "item_id": 5014,
-              "requirements": [
-                {
-                  "skill": "Firemaking",
-                  "level": 65
-                }
-              ]
-            },
-            {
-              "name": "Firemaking cape",
-              "item_id": 9804,
-              "requirements": [
-                {
-                  "skill": "Firemaking",
-                  "level": 99
-                }
-              ]
-            },
-            {
-              "name": "Max cape",
-              "item_id": 13280,
-              "requirements": [
-                {
-                  "skill": "Firemaking",
-                  "level": 99
-                }
-              ]
-            },
-            {
-              "name": "Bruma torch",
-              "item_id": 20720
-            },
-            {
-              "name": "Jar of Light",
-              "item_id": 34030
-            },
-            {
-              "name": "Abyssal lantern",
-              "item_id": 26822,
-              "requirements": [
-                {
-                  "skill": "Firemaking",
-                  "level": 1
-                }
-              ]
-            },
-            {
-              "name": "Fire of Eternal Light",
-              "requirements": [
-                {
-                  "skill": "Firemaking",
-                  "level": 66
-                }
-              ]
-            },
-            {
-              "name": "Glowing fungus",
-              "item_id": 4075
-            },
-            {
-              "name": "Clue compass",
-              "item_id": 30363
-            }
-          ]
+          "name": "A Light sources#Light sources",
+          "unresolved": true
         },
         {
           "name": "An empty vial and a pestle and mortar if making the black dye during the quest",
@@ -27517,7 +27203,7 @@
           ]
         },
         {
-          "name": "One of each of the following runes: air, water, earth, fire, mind, law, death",
+          "name": "One of each of the following runes: air rune, water rune, earth rune, fire rune, mind rune, law rune, death rune",
           "unresolved": true
         },
         {
@@ -27559,7 +27245,7 @@
           ]
         },
         {
-          "name": "Runes for the following spells: multiple casts of all four elemental spells, Snare/Entangle, Weaken/Enfeeble, Telekinetic Grab, and Low/High Level Alchemy",
+          "name": "Runes for the following spells: multiple casts of all four elemental spells, Snare/Entangle, Weaken/Enfeeble, Telekinetic Grab, and Low Level Alchemy/High Level Alchemy",
           "unresolved": true,
           "notes": [
             "Air, Water, Earth, Fire, Body/Soul, Nature, Law, and the highest of Mind/Chaos/Death/Blood/Wrath that you can use to cast all four elemental spells"
@@ -29727,10 +29413,6 @@
           "sources": [
             "Shop: Gabooty's Tai Bwo Wannai Drinky Store. (28 Trading sticks)",
             "Shop: Gabooty's Tai Bwo Wannai Drinky Store. (30 Trading sticks)"
-          ],
-          "shop_names": [
-            "Gabooty's Tai Bwo Wannai Drinky Store.",
-            "Gabooty's Tai Bwo Wannai Drinky Store."
           ]
         },
         {
@@ -29802,13 +29484,13 @@
             "Miscellanian Food Shop",
             "Logava Gricoller's Cooking Supplies",
             "Arnold's Eclectic Supplies.",
-            "Food Store",
-            "Kenelme's Wares",
             "West Ardougne General Store",
             "Jiminua's Jungle Store.",
             "Lletya Food Store",
             "Obli's General Store.",
-            "Quartermaster's Stores"
+            "Quartermaster's Stores",
+            "Sigmund the Merchant (shop)",
+            "Jiminua's Jungle Store."
           ]
         },
         {
@@ -30182,13 +29864,13 @@
             "Miscellanian Food Shop",
             "Logava Gricoller's Cooking Supplies",
             "Arnold's Eclectic Supplies.",
-            "Food Store",
-            "Kenelme's Wares",
             "West Ardougne General Store",
             "Jiminua's Jungle Store.",
             "Lletya Food Store",
             "Obli's General Store.",
-            "Quartermaster's Stores"
+            "Quartermaster's Stores",
+            "Sigmund the Merchant (shop)",
+            "Jiminua's Jungle Store."
           ],
           "notes": [
             "at least 3 recommended"
@@ -30317,13 +29999,7 @@
             "Henderson's Catch of the Day",
             "Two Feet Charley's Fish Shop.",
             "Cobado's Groceries",
-            "Fishing Guild Shop.",
-            "Harry's Fishing Shop.",
-            "Flosi's Fishmongers",
-            "Etceteria Fish",
-            "Fremennik Fish Monger",
-            "Island Fishmonger",
-            "Warrens Fish Monger"
+            "Flosi's Fishmongers"
           ],
           "notes": [
             "It's highly recommended to get at least 3 of all the ingredients, as the Fishcake can burn"
@@ -30424,7 +30100,7 @@
           "unresolved": true
         },
         {
-          "name": "Necklace of passage or access to fairy rings and a Lunar/Dramen staff",
+          "name": "Necklace of passage or access to fairy rings and a Lunar staff/Dramen staff",
           "unresolved": true,
           "notes": [
             "DIS",
@@ -30940,16 +30616,6 @@
             "Shop: Agelus' Farm Shop (9 Coins)",
             "Shop: Alice's Farming shop. (9 Coins)"
           ],
-          "shop_names": [
-            "Agelus' Farm Shop",
-            "Alice's Farming shop.",
-            "Cobado's Groceries",
-            "Faustus' Fruit and Veg",
-            "Port Roberts Veg Stall",
-            "Richard's Farming shop.",
-            "Sarah's Farming shop.",
-            "Vanessa's Farming shop."
-          ],
           "notes": [
             "Can be picked from the sweetcorn fields south of Civitas illa Fortis in Varlamore without 20 Farming [boostable]"
           ]
@@ -31010,7 +30676,7 @@
           ]
         },
         {
-          "name": "Gorilla, Ninja monkey and Zombie monkey greegree",
+          "name": "Gorilla greegree, Ninja monkey greegree and Zombie monkey greegree",
           "unresolved": true,
           "notes": [
             "or 3,000 coins to purchase three monkey talismans"
@@ -31779,9 +31445,6 @@
             "Shop: ~ Uglug's stuffsies ~ (85 Coins)",
             "Drop: Chompy bird (Always)"
           ],
-          "shop_names": [
-            "~ Uglug's stuffsies ~"
-          ],
           "notes": [
             "bring several if you have a low cooking level"
           ]
@@ -32025,7 +31688,6 @@
             "Gem Trader.",
             "Kourend Castle Gem Stall.",
             "Prifddinas Gem Stall",
-            "Herquin's Gems.",
             "Ardougne Gem Stall.",
             "Fortis Gem Stall",
             "Green Gemstone Gems",
@@ -32142,7 +31804,7 @@
           "unresolved": true
         },
         {
-          "name": "air runes, 1 cosmic rune, and having your magic set to the standard Spellbook",
+          "name": "air runes, 1 cosmic rune, and having your magic set to the standard spells",
           "quantity": 3,
           "unresolved": true
         }
@@ -32947,7 +32609,6 @@
           ],
           "shop_names": [
             "Wayne's Chains! - Chainmail specialist.",
-            "Armour store.",
             "Quality Armour Shop"
           ],
           "drop_source_names": [
@@ -33325,11 +32986,7 @@
             "Miscellanian Food Shop",
             "Food Store",
             "Kenelme's Wares",
-            "Agelus' Farm Shop",
-            "Alice's Farming shop.",
-            "Cook (Blue Moon Inn)",
-            "Richard's Farming shop.",
-            "Sarah's Farming shop."
+            "Cook (Blue Moon Inn)"
           ],
           "drop_source_names": [
             "Tortoise#With riders"
@@ -33346,8 +33003,8 @@
             "Drop: Elder aquanite (1/16)"
           ],
           "drop_source_names": [
-            "Lobstrosity",
-            "Cave kraken"
+            "Dagannoth Prime",
+            "Dagannoth Supreme"
           ]
         },
         {
@@ -33701,7 +33358,7 @@
           ],
           "drop_source_names": [
             "Kraken",
-            "Dagannoth Rex"
+            "Dagannoth Prime"
           ]
         },
         {
@@ -33910,9 +33567,6 @@
           "drop_source_names": [
             "Chaos Fanatic",
             "Cerberus"
-          ],
-          "notes": [
-            "4"
           ]
         }
       ]
@@ -34091,8 +33745,8 @@
             "Bardur"
           ],
           "drop_source_names": [
-            "Dagannoth Rex",
-            "Borrokar"
+            "Dagannoth Prime",
+            "Dagannoth Rex"
           ],
           "notes": [
             "this is not the tradeable Neitiznot shield"
@@ -34214,7 +33868,7 @@
           ]
         },
         {
-          "name": "a pickaxe to obtain 3 ores to turn into Lunar bars",
+          "name": "a pickaxe to obtain 3 Lunar ore to turn into Lunar bar",
           "unresolved": true,
           "notes": [
             "requires 60 Mining [boostable]"
@@ -34538,6 +34192,7 @@
             "Armoury"
           ],
           "notes": [
+            "weapon",
             "except the love crossbow"
           ]
         },
@@ -35139,8 +34794,6 @@
             "Kourend Castle Gem Stall.",
             "Prifddinas Gem Stall",
             "Toci's Gem Store",
-            "Gem Trader.",
-            "Herquin's Gems.",
             "Ardougne Gem Stall.",
             "Fortis Gem Stall",
             "Green Gemstone Gems",
@@ -35568,7 +35221,7 @@
           ]
         },
         {
-          "name": "Normal spellbook, and runes to cast a fire spell",
+          "name": "Normal spellbook, and runes to cast a Fire spells",
           "unresolved": true,
           "notes": [
             "fire bolt or better"
@@ -35600,7 +35253,7 @@
         },
         {
           "skill": "construction",
-          "xp": 544
+          "xp": 542
         }
       ],
       "items": [
@@ -36038,8 +35691,11 @@
           ]
         },
         {
-          "name": "There is a Bronze pickaxe spawn at the mine, stuck in some rocks",
-          "unresolved": true
+          "name": "There is a Bronze pickaxe spawn at the mine, stuck in some Rocks",
+          "unresolved": true,
+          "notes": [
+            "Getting Ahead"
+          ]
         },
         {
           "name": "Thread unless you're using the Costume needle",
@@ -36117,13 +35773,13 @@
             "Miscellanian Food Shop",
             "Logava Gricoller's Cooking Supplies",
             "Arnold's Eclectic Supplies.",
-            "Food Store",
-            "Kenelme's Wares",
             "West Ardougne General Store",
             "Jiminua's Jungle Store.",
             "Lletya Food Store",
             "Obli's General Store.",
-            "Quartermaster's Stores"
+            "Quartermaster's Stores",
+            "Sigmund the Merchant (shop)",
+            "Jiminua's Jungle Store."
           ]
         },
         {
@@ -36606,7 +36262,7 @@
           "obtainable": true,
           "unresolved": true,
           "notes": [
-            "fish, raw bird meat, raw yak meat, raw pyre fox, raw chompy, and raw t-bone steak will NOT work; purchasable from shop during quest"
+            "purchasable from shop during quest. The following meats will NOT work: fish, raw bird meat, raw yak meat, raw pyre fox, raw chompy, and raw t-bone steak"
           ]
         },
         {
@@ -36617,18 +36273,13 @@
             "Shop: Hendor's Awesome Ores (45 Coins)"
           ],
           "shop_names": [
-            "Drogo's Mining Emporium.",
-            "Hendor's Awesome Ores",
-            "Mistrock Mining Supplies",
             "Deepfin Point Ore Exchange",
             "Ore store",
             "Port Roberts Ore Stall",
             "TzHaar-Hur-Rin's Ore and Gem Store",
-            "TzHaar-Hur-Lek's Ore and Gem Store",
             "Petrified Pete's Ore Shop",
             "Ore seller.",
-            "TzHaar-Hur-Rin's Ore and Gem Store",
-            "TzHaar-Hur-Lek's Ore and Gem Store"
+            "TzHaar-Hur-Rin's Ore and Gem Store"
           ],
           "drop_source_names": [
             "Frost Nagua",
@@ -36641,9 +36292,6 @@
           "sources": [
             "Shop: Drogo's Mining Emporium. (28 Coins)",
             "Drop: Iron dragon#Standard (Always)"
-          ],
-          "shop_names": [
-            "Drogo's Mining Emporium."
           ]
         },
         {
@@ -36754,6 +36402,9 @@
             "Lowe's Archery Emporium",
             "Lletya Archery Shop",
             "Armoury"
+          ],
+          "notes": [
+            "weapon"
           ]
         },
         {
@@ -36829,6 +36480,13 @@
       ],
       "items": [
         {
+          "name": "Dramen staff",
+          "item_id": 772,
+          "notes": [
+            "unless the Lumbridge \u0026 Draynor Diary has been fully completed"
+          ]
+        },
+        {
           "name": "Food and potions to defeat 5 enemies without armour, weapons, or magic",
           "unresolved": true
         },
@@ -36839,20 +36497,6 @@
         {
           "name": "Goblin potion",
           "unresolved": true
-        },
-        {
-          "name": "Lunar staff",
-          "item_id": 9084,
-          "sources": [
-            "Shop: Oneiromancer (30000 Coins)",
-            "Shop: Lost Property shop (60000 Coins)"
-          ],
-          "shop_names": [
-            "Oneiromancer"
-          ],
-          "notes": [
-            "unless the Lumbridge \u0026 Draynor Diary has been fully completed"
-          ]
         },
         {
           "name": "Ring of visibility",
@@ -37199,23 +36843,24 @@
       ],
       "items": [
         {
+          "name": "Any Crossbow_",
+          "unresolved": true,
+          "notes": [
+            "weapon"
+          ]
+        },
+        {
           "name": "Combat equipment and some food",
           "unresolved": true
         },
         {
-          "name": "Crossbow",
-          "item_id": 837,
-          "sources": [
-            "Shop: Daryl's Ranging Surplus (70 Coins)",
-            "Shop: Gulluck and Sons (70 Coins)"
-          ],
-          "shop_names": [
-            "Daryl's Ranging Surplus",
-            "Gulluck and Sons",
-            "Hickton's Archery Emporium.",
-            "Lowe's Archery Emporium",
-            "Lletya Archery Shop",
-            "Armoury"
+          "name": "Key",
+          "item_id": 275,
+          "obtainable": true,
+          "notes": [
+            "Tree Gnome Village Dungeon",
+            "unless Roving Elves has been started",
+            "obtainable during the quest"
           ]
         },
         {
@@ -37228,15 +36873,6 @@
           "drop_source_names": [
             "Skeleton thug",
             "Skeleton brute"
-          ]
-        },
-        {
-          "name": "Tree Gnome Village Dungeon key",
-          "obtainable": true,
-          "unresolved": true,
-          "notes": [
-            "unless Roving Elves has been started",
-            "obtainable during the quest"
           ]
         }
       ]
@@ -40475,8 +40111,11 @@
           "unresolved": true
         },
         {
-          "name": "Cannons on your boat for ship combat, or Magic/Ranged gear to skip it",
-          "unresolved": true
+          "name": "Cannon on your boat for ship combat, or Magic/Ranged gear to skip it",
+          "unresolved": true,
+          "notes": [
+            "facility"
+          ]
         }
       ]
     },
@@ -40604,6 +40243,9 @@
           "sources": [
             "Drop: Maple tree (Always)",
             "Drop: Maple tree (Farming) (Always)"
+          ],
+          "drop_source_names": [
+            "Dagannoth Supreme"
           ],
           "notes": [
             "obtainable during quest"
@@ -40807,14 +40449,6 @@
       ],
       "items": [
         {
-          "name": "Four fletched items of the same type of wood as the logs, such as unstrung longbows or shields",
-          "obtainable": true,
-          "unresolved": true,
-          "notes": [
-            "obtainable during the quest"
-          ]
-        },
-        {
           "name": "Knife",
           "item_id": 946,
           "obtainable": true,
@@ -40861,6 +40495,15 @@
           ],
           "notes": [
             "obtainable during the quest with an axe"
+          ]
+        },
+        {
+          "name": "Oak shield",
+          "item_id": 22251,
+          "obtainable": true,
+          "notes": [
+            "u",
+            "obtainable during the quest"
           ]
         }
       ]
@@ -41301,6 +40944,8 @@
       "slug": "a_ruff_situation",
       "name": "A Ruff Situation",
       "members": true,
+      "start_x": 3037,
+      "start_y": 3456,
       "requirements": [
         {
           "skill": "crafting",
@@ -41312,6 +40957,24 @@
           "skill": "crafting",
           "xp": 1000
         }
+      ],
+      "items": [
+        {
+          "name": "Costume needle",
+          "item_id": 29920
+        },
+        {
+          "name": "Fur, bear fur, grey wolf fur, fox fur, or jaguar fur. Can be purchased from Baraek for 20 coins in Varrock Square",
+          "unresolved": true
+        },
+        {
+          "name": "Grain. Can be picked from the nearby wheat field north of the Cooks' Guild",
+          "unresolved": true
+        },
+        {
+          "name": "Thread. Not required if using costume needle",
+          "unresolved": true
+        }
       ]
     },
     {
@@ -41319,6 +40982,8 @@
       "slug": "crab_quest",
       "name": "Crab Quest",
       "members": true,
+      "start_x": 3054,
+      "start_y": 2639,
       "requirements": [
         {
           "skill": "fishing",
@@ -41331,7 +40996,7 @@
       ],
       "rewards": [
         {
-          "skill": "crafting",
+          "skill": "fishing",
           "xp": 3000
         },
         {
@@ -43169,12 +42834,23 @@
     {
       "name": "Alain",
       "x": 2937,
-      "y": 3439
+      "y": 3439,
+      "town": "Taverley"
     },
     {
       "name": "Alan (Farming Guild)",
       "x": 1264,
-      "y": 3734
+      "y": 3734,
+      "town": "Farming Guild",
+      "reachability": {
+        "required_skills": [
+          {
+            "skill": "farming",
+            "level": 45,
+            "boostable": true
+          }
+        ]
+      }
     },
     {
       "name": "Aleck's Hunter Emporium.",
@@ -43185,12 +42861,23 @@
     {
       "name": "Alexandra",
       "x": 1236,
-      "y": 3753
+      "y": 3753,
+      "town": "Farming Guild",
+      "reachability": {
+        "required_skills": [
+          {
+            "skill": "farming",
+            "level": 45,
+            "boostable": true
+          }
+        ]
+      }
     },
     {
       "name": "Ali the Kebab seller",
       "x": 3354,
-      "y": 2978
+      "y": 2978,
+      "town": "Pollnivneach"
     },
     {
       "name": "Ali's Discount Wares.",
@@ -43289,27 +42976,14 @@
     {
       "name": "Argo",
       "x": 2471,
-      "y": 2706
+      "y": 2706,
+      "town": "Anglers' Retreat"
     },
     {
       "name": "Arhein's General Goods",
       "x": 2803,
       "y": 3432,
       "town": "Catherby"
-    },
-    {
-      "name": "Armour store.",
-      "x": 1939,
-      "y": 4968,
-      "town": "Blast Furnace",
-      "reachability": {
-        "required_quest_ids": [
-          80
-        ],
-        "required_quest_ids_started_only": [
-          80
-        ]
-      }
     },
     {
       "name": "Armoury",
@@ -43348,7 +43022,13 @@
     {
       "name": "Aub",
       "x": 1366,
-      "y": 3321
+      "y": 3321,
+      "town": "Nemus Retreat",
+      "reachability": {
+        "required_quest_ids": [
+          192
+        ]
+      }
     },
     {
       "name": "Auburn Pub",
@@ -43406,7 +43086,8 @@
     {
       "name": "Ayesha",
       "x": 3314,
-      "y": 3201
+      "y": 3201,
+      "town": "Al Kharid"
     },
     {
       "name": "Baba Yaga's Magic Shop.",
@@ -43432,23 +43113,35 @@
     {
       "name": "Baraek",
       "x": 3217,
-      "y": 3435
+      "y": 3435,
+      "town": "Varrock Square"
     },
     {
       "name": "Bardur",
       "x": 1850,
       "y": 4395,
-      "plane": 1
+      "plane": 1,
+      "town": "Waterbirth Island Dungeon"
     },
     {
       "name": "Barmaid",
       "x": 2916,
-      "y": 10194
+      "y": 10194,
+      "town": "Keldagrim",
+      "reachability": {
+        "required_quest_ids": [
+          80
+        ],
+        "required_quest_ids_started_only": [
+          80
+        ]
+      }
     },
     {
       "name": "Bartender (The Warrens)",
       "x": 1825,
-      "y": 10131
+      "y": 10131,
+      "town": "The Warrens"
     },
     {
       "name": "Battle Runes",
@@ -43465,7 +43158,8 @@
     {
       "name": "Betty",
       "x": 3013,
-      "y": 3262
+      "y": 3262,
+      "town": "Port Sarim"
     },
     {
       "name": "Betty's Magic Emporium",
@@ -43494,7 +43188,16 @@
       "name": "Blandebir",
       "x": 2916,
       "y": 10194,
-      "plane": 1
+      "plane": 1,
+      "town": "Keldagrim",
+      "reachability": {
+        "required_quest_ids": [
+          80
+        ],
+        "required_quest_ids_started_only": [
+          80
+        ]
+      }
     },
     {
       "name": "Blue Moon Inn",
@@ -43517,7 +43220,8 @@
     {
       "name": "Bolongo",
       "x": 2477,
-      "y": 3447
+      "y": 3447,
+      "town": "Tree Gnome Stronghold"
     },
     {
       "name": "Branwen's Farming Shop",
@@ -43572,17 +43276,6 @@
       }
     },
     {
-      "name": "Candle Shop",
-      "x": 2799,
-      "y": 3439,
-      "town": "Catherby"
-    },
-    {
-      "name": "Candle seller",
-      "x": 3170,
-      "y": 3176
-    },
-    {
       "name": "Carefree Crafting Stall",
       "x": 2887,
       "y": 10207,
@@ -43627,7 +43320,8 @@
     {
       "name": "Cook (Blue Moon Inn)",
       "x": 3230,
-      "y": 3400
+      "y": 3400,
+      "town": "Blue Moon Inn"
     },
     {
       "name": "Culinaromancer's Chest",
@@ -43654,37 +43348,43 @@
       "name": "Darkmeyer General Store",
       "x": 3641,
       "y": 3336,
-      "town": "Darkmeyer"
+      "town": "Darkmeyer",
+      "reachability": {
+        "unknown": true
+      }
     },
     {
       "name": "Darkmeyer Lantern Shop",
       "x": 3645,
       "y": 3359,
-      "town": "Darkmeyer"
+      "town": "Darkmeyer",
+      "reachability": {
+        "unknown": true
+      }
     },
     {
       "name": "Darkmeyer Meat Shop",
       "x": 3620,
       "y": 3387,
-      "town": "Darkmeyer"
+      "town": "Darkmeyer",
+      "reachability": {
+        "unknown": true
+      }
     },
     {
       "name": "Darkmeyer Seamstress",
       "x": 3601,
       "y": 3379,
-      "town": "Darkmeyer"
+      "town": "Darkmeyer",
+      "reachability": {
+        "unknown": true
+      }
     },
     {
       "name": "Daryl's Ranging Surplus",
       "x": 1540,
       "y": 3556,
       "town": "Shayzien"
-    },
-    {
-      "name": "Davon's Amulet Store.",
-      "x": 2803,
-      "y": 3152,
-      "town": "Brimhaven"
     },
     {
       "name": "Dead Man's Chest",
@@ -43736,7 +43436,12 @@
       "name": "Dorgesh-Kaan General Supplies",
       "x": 2718,
       "y": 5313,
-      "town": "Dorgesh-Kaan"
+      "town": "Dorgesh-Kaan",
+      "reachability": {
+        "required_quest_ids": [
+          104
+        ]
+      }
     },
     {
       "name": "Dragon Inn",
@@ -43749,12 +43454,6 @@
       "x": 3078,
       "y": 3251,
       "town": "Draynor Village"
-    },
-    {
-      "name": "Drogo's Mining Emporium.",
-      "x": 3037,
-      "y": 9846,
-      "town": "Dwarven Mine"
     },
     {
       "name": "Durrik's Goods",
@@ -44080,13 +43779,23 @@
       "name": "Fremennik Fish Monger",
       "x": 2647,
       "y": 3676,
-      "town": "Rellekka"
+      "town": "Rellekka",
+      "reachability": {
+        "required_quest_ids": [
+          61
+        ]
+      }
     },
     {
       "name": "Fremennik Fur Trader",
       "x": 2638,
       "y": 3676,
-      "town": "Rellekka"
+      "town": "Rellekka",
+      "reachability": {
+        "required_quest_ids": [
+          61
+        ]
+      }
     },
     {
       "name": "Frenita's Cookery Shop.",
@@ -44106,18 +43815,6 @@
       "y": 3488,
       "plane": 1,
       "town": "Grand Tree"
-    },
-    {
-      "name": "Gabooty's Tai Bwo Wannai Cooperative.",
-      "x": 2796,
-      "y": 3066,
-      "town": "Tai Bwo Wannai"
-    },
-    {
-      "name": "Gabooty's Tai Bwo Wannai Drinky Store.",
-      "x": 2796,
-      "y": 3066,
-      "town": "Tai Bwo Wannai"
     },
     {
       "name": "Gaius' Two Handed Shop.",
@@ -44153,7 +43850,8 @@
     {
       "name": "Grandpa Jack",
       "x": 2649,
-      "y": 3452
+      "y": 3452,
+      "town": "Hemenster"
     },
     {
       "name": "Green Gemstone Gems",
@@ -44183,12 +43881,6 @@
       "reachability": {
         "unknown": true
       }
-    },
-    {
-      "name": "Grum's Gold Exchange.",
-      "x": 3013,
-      "y": 3247,
-      "town": "Port Sarim"
     },
     {
       "name": "Guinevere's Dyes",
@@ -44273,21 +43965,6 @@
       "x": 3046,
       "y": 2983,
       "town": "The Pandemonium"
-    },
-    {
-      "name": "Hendor's Awesome Ores",
-      "x": 3032,
-      "y": 9746,
-      "town": "Mining Guild",
-      "reachability": {
-        "required_skills": [
-          {
-            "skill": "mining",
-            "level": 60,
-            "boostable": true
-          }
-        ]
-      }
     },
     {
       "name": "Herquin's Gems.",
@@ -44411,7 +44088,8 @@
     {
       "name": "Karim",
       "x": 3274,
-      "y": 3181
+      "y": 3181,
+      "town": "Al Kharid"
     },
     {
       "name": "Kastori Farming Supplies",
@@ -44556,26 +44234,58 @@
       "name": "Lletya Archery Shop",
       "x": 2326,
       "y": 3166,
-      "town": "Lletya"
+      "town": "Lletya",
+      "reachability": {
+        "required_quest_ids": [
+          82
+        ],
+        "required_quest_ids_started_only": [
+          82
+        ]
+      }
     },
     {
       "name": "Lletya Food Store",
       "x": 2341,
       "y": 3158,
       "plane": 1,
-      "town": "Lletya"
+      "town": "Lletya",
+      "reachability": {
+        "required_quest_ids": [
+          82
+        ],
+        "required_quest_ids_started_only": [
+          82
+        ]
+      }
     },
     {
       "name": "Lletya General Store",
       "x": 2335,
       "y": 3183,
-      "town": "Lletya"
+      "town": "Lletya",
+      "reachability": {
+        "required_quest_ids": [
+          82
+        ],
+        "required_quest_ids_started_only": [
+          82
+        ]
+      }
     },
     {
       "name": "Lletya Seamstress",
       "x": 2326,
       "y": 3178,
-      "town": "Lletya"
+      "town": "Lletya",
+      "reachability": {
+        "required_quest_ids": [
+          82
+        ],
+        "required_quest_ids_started_only": [
+          82
+        ]
+      }
     },
     {
       "name": "Logava Gricoller's Cooking Supplies",
@@ -44604,7 +44314,13 @@
     {
       "name": "Lucrezia",
       "x": 1360,
-      "y": 2922
+      "y": 2922,
+      "town": "Moonrise Brewery and Winery",
+      "reachability": {
+        "required_quest_ids": [
+          192
+        ]
+      }
     },
     {
       "name": "Lumbridge General Store",
@@ -44648,7 +44364,8 @@
     {
       "name": "Malignius Mortifer",
       "x": 2990,
-      "y": 3268
+      "y": 3268,
+      "town": "Falador"
     },
     {
       "name": "Martin Thwait's Lost and Found.",
@@ -44659,25 +44376,47 @@
     {
       "name": "Metarialus",
       "x": 3680,
-      "y": 9958
+      "y": 9958,
+      "town": "Port Phasmatys"
     },
     {
       "name": "Miltog's Lamps",
       "x": 2721,
       "y": 5322,
-      "town": "Dorgesh-Kaan"
+      "town": "Dorgesh-Kaan",
+      "reachability": {
+        "required_quest_ids": [
+          104
+        ]
+      }
     },
     {
       "name": "Miscellanian Food Shop",
       "x": 2520,
       "y": 10251,
-      "town": "Miscellania Expansion"
+      "town": "Miscellania Expansion",
+      "reachability": {
+        "required_quest_ids": [
+          103
+        ],
+        "required_quest_ids_started_only": [
+          103
+        ]
+      }
     },
     {
       "name": "Miscellanian General Store",
       "x": 2508,
       "y": 10258,
-      "town": "Miscellania Expansion"
+      "town": "Miscellania Expansion",
+      "reachability": {
+        "required_quest_ids": [
+          103
+        ],
+        "required_quest_ids_started_only": [
+          103
+        ]
+      }
     },
     {
       "name": "Mistrock Mining Supplies",
@@ -44758,7 +44497,12 @@
       "name": "Neitiznot supplies.",
       "x": 2337,
       "y": 3807,
-      "town": "Neitiznot"
+      "town": "Neitiznot",
+      "reachability": {
+        "required_quest_ids": [
+          61
+        ]
+      }
     },
     {
       "name": "Nemus Retreat (pub)",
@@ -44782,11 +44526,6 @@
       "x": 3607,
       "y": 3208,
       "town": "Meiyerditch"
-    },
-    {
-      "name": "Oneiromancer",
-      "x": 2151,
-      "y": 3868
     },
     {
       "name": "Ore seller.",
@@ -45153,7 +44892,15 @@
       "name": "Quartermaster's Stores",
       "x": 2195,
       "y": 3140,
-      "town": "Tyras Camp"
+      "town": "Tyras Camp",
+      "reachability": {
+        "required_quest_ids": [
+          57
+        ],
+        "required_quest_ids_started_only": [
+          57
+        ]
+      }
     },
     {
       "name": "Quetzacalli Gorge General Store",
@@ -45175,7 +44922,8 @@
     {
       "name": "Rasolo",
       "x": 2535,
-      "y": 3431
+      "y": 3431,
+      "town": "Baxtorian Falls"
     },
     {
       "name": "Rasolo the Wandering Merchant",
@@ -45234,7 +44982,12 @@
       "name": "Rellekka Longhall Bar",
       "x": 2659,
       "y": 3672,
-      "town": "Rellekka"
+      "town": "Rellekka",
+      "reachability": {
+        "required_quest_ids": [
+          61
+        ]
+      }
     },
     {
       "name": "Richard's Farming shop.",
@@ -45298,7 +45051,10 @@
       "name": "Seb's Shipyard Supplies",
       "x": 2082,
       "y": 2725,
-      "town": "Shipyard"
+      "town": "Shipyard",
+      "reachability": {
+        "unknown": true
+      }
     },
     {
       "name": "Sebamo's Sublime Staffs",
@@ -45327,12 +45083,18 @@
       "name": "Sigmund the Merchant (shop)",
       "x": 2642,
       "y": 3678,
-      "town": "Rellekka"
+      "town": "Rellekka",
+      "reachability": {
+        "required_quest_ids": [
+          61
+        ]
+      }
     },
     {
       "name": "Silk trader",
       "x": 3298,
-      "y": 3202
+      "y": 3202,
+      "town": "Al Kharid"
     },
     {
       "name": "Silver Cog Silver Stall",
@@ -45352,7 +45114,12 @@
       "name": "Skulgrimen's Battle Gear",
       "x": 2665,
       "y": 3693,
-      "town": "Rellekka"
+      "town": "Rellekka",
+      "reachability": {
+        "required_quest_ids": [
+          61
+        ]
+      }
     },
     {
       "name": "Solihib's Food Stall",
@@ -45460,7 +45227,8 @@
     {
       "name": "Tenzing",
       "x": 2821,
-      "y": 3556
+      "y": 3556,
+      "town": "Death Plateau (location)"
     },
     {
       "name": "The Asp \u0026 Snake Bar.",
@@ -45484,7 +45252,15 @@
       "name": "The Esoterican Arms",
       "x": 2529,
       "y": 10257,
-      "town": "Miscellania Expansion"
+      "town": "Miscellania Expansion",
+      "reachability": {
+        "required_quest_ids": [
+          103
+        ],
+        "required_quest_ids_started_only": [
+          103
+        ]
+      }
     },
     {
       "name": "The Flaming Arrow",
@@ -45579,12 +45355,6 @@
       "x": 2794,
       "y": 3187,
       "town": "Brimhaven"
-    },
-    {
-      "name": "The Spice Is Right.",
-      "x": 3284,
-      "y": 2756,
-      "town": "Sophanem"
     },
     {
       "name": "The Windbreaker",
@@ -45713,12 +45483,22 @@
     {
       "name": "Vasile",
       "x": 3485,
-      "y": 3237
+      "y": 3237,
+      "town": "Burgh de Rott",
+      "reachability": {
+        "required_quest_ids": [
+          99
+        ],
+        "required_quest_ids_started_only": [
+          99
+        ]
+      }
     },
     {
       "name": "Velrak the explorer",
       "x": 2931,
-      "y": 9686
+      "y": 9686,
+      "town": "Taverley Dungeon"
     },
     {
       "name": "Vermundi's Clothes Stall",
@@ -46092,6 +45872,18 @@
       "region": "asgarnia"
     },
     {
+      "source_name": "Dagannoth Prime",
+      "x": 2631,
+      "y": 9667,
+      "region": "fremennik"
+    },
+    {
+      "source_name": "Dagannoth Prime",
+      "x": 2687,
+      "y": 9667,
+      "region": "fremennik"
+    },
+    {
       "source_name": "Dagannoth Rex",
       "x": 2633,
       "y": 9661,
@@ -46102,6 +45894,30 @@
       "x": 2689,
       "y": 9661,
       "region": "fremennik"
+    },
+    {
+      "source_name": "Dagannoth Supreme",
+      "x": 2626,
+      "y": 9664,
+      "region": "fremennik"
+    },
+    {
+      "source_name": "Dagannoth Supreme",
+      "x": 2682,
+      "y": 9664,
+      "region": "fremennik"
+    },
+    {
+      "source_name": "Dark beast",
+      "x": 2007,
+      "y": 4655,
+      "region": "tirannwn"
+    },
+    {
+      "source_name": "Dark beast",
+      "x": 3202,
+      "y": 12406,
+      "region": "tirannwn"
     },
     {
       "source_name": "Dire bat",
@@ -46493,6 +46309,13 @@
       "x": 2898,
       "y": 3537,
       "region": "asgarnia"
+    },
+    {
+      "source_name": "Stalagmites (Lunar Isle)",
+      "x": 2338,
+      "y": 10336,
+      "plane": 2,
+      "region": "fremennik"
     },
     {
       "source_name": "The Hueycoatl",

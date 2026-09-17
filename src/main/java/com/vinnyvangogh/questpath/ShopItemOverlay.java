@@ -131,7 +131,7 @@ class ShopItemOverlay extends WidgetItemOverlay
 		}
 
 		QuestItems.Total total = lookupFor(items).get(itemId);
-		if (total == null || total.satisfied())
+		if (total == null || total.covered())
 		{
 			// Either this slot is not on the list at all, or it is and the
 			// account already has enough of it. A shop full of outlines for
@@ -170,7 +170,7 @@ class ShopItemOverlay extends WidgetItemOverlay
 
 		if (config.shopHighlightCounts())
 		{
-			long outstanding = Math.max(0L, total.required() - total.owned());
+			long outstanding = total.outstanding();
 			drawCount(g, bounds, Long.toString(outstanding),
 				items.freshness() != QuestItems.Freshness.CARRIED_ONLY);
 		}

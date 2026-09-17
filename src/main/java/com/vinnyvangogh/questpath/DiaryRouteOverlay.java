@@ -10,8 +10,13 @@ import net.runelite.api.coords.WorldPoint;
 /**
  * Names the current diary task, why it is worth walking to, and how fresh
  * questpath's read on that tier's progress is -- drawn while {@link
- * QuestpathConfig#overlayDiaryRoute()} is on.
+ * QuestpathConfig#questJournalFilter()} permits diaries. That filter is this
+ * overlay's entire on/off switch: it replaced the old, separate {@code
+ * overlayDiaryRoute} boolean -- see {@link QuestJournalFilter}'s own class
+ * doc, and {@code QuestpathPlugin}'s startup migration for what happens to
+ * an account that had the old switch on.
  *
+
  * <p>Drawing only, the same split {@link ShopRouteOverlay} keeps from {@link
  * ShopRouteStops}: every decision about which task is current and where it
  * sends you already happened in {@link DiaryRouteStops}, so this class only
@@ -46,7 +51,7 @@ class DiaryRouteOverlay extends QuestpathOverlay
 	@Override
 	boolean enabled(QuestpathConfig config)
 	{
-		return config.overlayDiaryRoute();
+		return config.questJournalFilter().showsDiaries();
 	}
 
 	@Override
@@ -76,6 +81,17 @@ class DiaryRouteOverlay extends QuestpathOverlay
 			DiaryRouteStops.stops(graphTasks.get(), diary, playerLocation.get());
 		if (stops.isEmpty())
 		{
+			// Two different facts behind the same empty stop list: questpath
+			// has never actually read this account's per-task diary
+			// progress (so "nothing doable" would be a guess dressed as an
+			// answer), versus it has, and there genuinely is nothing to
+			// route to right now. See DiaryJournal#progressNeverSynced's
+			// own doc -- the same check the Diaries panel section uses, so
+			// both surfaces draw the same line between the two.
+			if (DiaryJournal.progressNeverSynced(diary))
+			{
+				return List.of(OverlayRow.note("Diary progress not synced yet.", OverlayTheme.MUTED));
+			}
 			return List.of(OverlayRow.note(
 				"No actionable diary task with a known location right now.", OverlayTheme.MUTED));
 		}

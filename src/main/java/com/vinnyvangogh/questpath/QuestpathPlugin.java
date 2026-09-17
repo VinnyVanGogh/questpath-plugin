@@ -24,6 +24,8 @@ import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
 import net.runelite.api.ChatMessageType;
 import net.runelite.api.GameState;
+import net.runelite.api.MenuAction;
+import net.runelite.api.MenuEntry;
 import net.runelite.api.Quest;
 import net.runelite.api.QuestState;
 import net.runelite.api.Skill;
@@ -42,6 +44,7 @@ import net.runelite.api.events.GameTick;
 import net.runelite.api.ScriptID;
 import net.runelite.api.VarClientStr;
 import net.runelite.api.events.MenuOptionClicked;
+import net.runelite.api.events.PostMenuSort;
 import net.runelite.api.events.ScriptPostFired;
 import net.runelite.api.events.WidgetLoaded;
 import net.runelite.api.gameval.InterfaceID;
@@ -62,6 +65,7 @@ import net.runelite.api.gameval.VarPlayerID;
 import net.runelite.client.ui.ClientToolbar;
 import net.runelite.client.ui.NavigationButton;
 import net.runelite.client.ui.overlay.OverlayManager;
+import net.runelite.client.util.Text;
 
 /**
  * questpath — build-rule-aware quest planning, in the client.
@@ -314,6 +318,19 @@ public class QuestpathPlugin extends Plugin
 	 */
 	private GroundItemOverlay groundOverlay;
 	private FloatingNoteOverlay floatingNoteOverlay;
+
+	/**
+	 * The wanted-ground-item id lookup {@link #onPostMenuSort} reads, built
+	 * from the same {@link QuestItems#totals()} {@link GroundItemOverlay}
+	 * marks the tile with -- one source of truth, two small per-consumer
+	 * caches, the same duplication {@link GroundItemOverlay#lookupFor}
+	 * already carries and explains: this and that overlay are read by
+	 * different code under the one-file-per-agent rule, so neither may share
+	 * the other's private cache field.
+	 */
+	private Map<Integer, QuestItems.Total> groundTakeLookup = Collections.emptyMap();
+	private int groundTakeLookupSignature;
+	private boolean haveGroundTakeLookup;
 
 	/**
 	 * The quest graph currently in use -- fetched live from questpath when
@@ -581,6 +598,15 @@ public class QuestpathPlugin extends Plugin
 	private volatile PushResponse.Diary diaryPush;
 
 	/**
+	 * questpath's per-account item plan from the last accepted push, or null
+	 * when there is none -- before the first push, from an older questpath,
+	 * or when questpath could not work it out. Null keeps every graph line
+	 * as it is and claims no choice. Same lifecycle as {@link #knownItems}:
+	 * replaced wholesale, cleared on logout and on a rejected push.
+	 */
+	private volatile ItemPlan itemPlan;
+
+	/**
 	 * When each diary task ({@code (tier_id, ordinal)}) was last nudged
 	 * about, for {@link DiaryRouteGuard#shouldNudge}'s cooldown parameter.
 	 * Session state, not cleared on a rejected push -- a cooldown is about
@@ -608,6 +634,7 @@ public class QuestpathPlugin extends Plugin
 	@Override
 	protected void startUp()
 	{
+		migrateDiaryRouteToggle();
 		watchdog = new EdtWatchdog(scheduler);
 		watchdog.start();
 		// The plugin can be toggled off and on again within the same
@@ -773,6 +800,48 @@ public class QuestpathPlugin extends Plugin
 		// logged-in account whose StatChanged burst has been and gone.
 		refresh();
 		log.debug("questpath started");
+	}
+
+	/**
+	 * One-shot migration for the old {@code overlayDiaryRoute} on/off
+	 * switch, folded into {@link QuestpathConfig#questJournalFilter()} --
+	 * see {@link QuestJournalFilter}'s own class doc for why the switch was
+	 * replaced rather than kept alongside the new one.
+	 *
+	 * <p>Never renames or reuses a key without this: {@code AGENTS.md} is
+	 * explicit that a renamed or removed config key needs a migration or it
+	 * silently resets a saved setting. Read directly through {@link
+	 * ConfigManager} rather than {@code QuestpathConfig#overlayDiaryRoute()},
+	 * because that accessor no longer exists on the interface -- removing it
+	 * is what stopped RuneLite's own config panel from showing a dead
+	 * checkbox, and this is the one place still allowed to know the old key
+	 * name.
+	 *
+	 * <p><b>The mapping.</b> An account that had the old switch off keeps
+	 * the diary route overlay off, via {@code questJournalFilter}'s own
+	 * default of {@code QUESTS} -- nothing to do. An account that had it on
+	 * is moved to {@code ALL} rather than {@code DIARIES}, so a player who
+	 * also had the quest route overlay on (a fully independent switch, never
+	 * touched by this migration) does not lose it out from under them the
+	 * first time this version starts. Either way the old key is cleared
+	 * once read, which is what makes this a one-shot: the next startup finds
+	 * nothing there and returns immediately.
+	 */
+	private void migrateDiaryRouteToggle()
+	{
+		String oldValue = configManager.getConfiguration(QuestpathConfig.GROUP, "overlayDiaryRoute");
+		if (oldValue == null)
+		{
+			return;
+		}
+		if (Boolean.parseBoolean(oldValue)
+			&& configManager.getConfiguration(QuestpathConfig.GROUP, "questJournalFilter") == null)
+		{
+			configManager.setConfiguration(QuestpathConfig.GROUP, "questJournalFilter", QuestJournalFilter.ALL);
+			log.info("questpath: migrated the old \"Diary route: nearest task\" overlay switch to the new"
+				+ " Quests tab filter (set to All, so both route overlays keep showing).");
+		}
+		configManager.unsetConfiguration(QuestpathConfig.GROUP, "overlayDiaryRoute");
 	}
 
 	/**
@@ -1649,6 +1718,7 @@ public class QuestpathPlugin extends Plugin
 			routeOrder = Collections.emptyList();
 			partialRuns = Collections.emptyList();
 			knownItems = Collections.emptyMap();
+			itemPlan = null;
 			// The next login may be a different account, with a different
 			// diary verdict entirely -- see diaryPush's own doc.
 			diaryPush = null;
@@ -2249,6 +2319,151 @@ public class QuestpathPlugin extends Plugin
 	 * working while the feature is on, which is a far worse bug than the
 	 * feature is a good one.
 	 */
+	/**
+	 * Makes "Take" the left-click default for a ground item questpath's plan
+	 * still counts as short, and leaves every other entry alone.
+	 *
+	 * <p><b>Hook and verification.</b> {@code PostMenuSort} fires once per
+	 * menu build, after the client's own native sort has already applied any
+	 * {@code MenuEntry#setDeprioritized(true)} a plugin such as core's own
+	 * Ground Items set while the menu was being assembled, and before the
+	 * menu is shown -- it is the last point anything can still move an
+	 * entry, and it is the hook RuneLite's own {@code MenuEntrySwapperPlugin}
+	 * uses for its own swaps (confirmed by reading
+	 * {@code MenuEntrySwapperPlugin#onPostMenuSort} and
+	 * {@code GroundItemsPlugin#onMenuEntryAdded} from the actual RuneLite
+	 * source at this build's tag, not from memory: the ground item's id
+	 * comes back as {@code MenuEntry#getIdentifier()}, not
+	 * {@code getItemId()} -- core's own handler reads it the same way).
+	 * {@code client.isMenuOpen()} is checked first for the same reason
+	 * {@code MenuEntrySwapperPlugin} checks it: the menu is not rebuilt while
+	 * it is already open, so acting again here would just re-swap the same
+	 * two entries back and forth every subsequent frame.
+	 *
+	 * <p><b>Ordering.</b> Deciding which entries move, and where, is
+	 * {@link GroundItemTakePriority#reorder} -- kept free of every RuneLite
+	 * type so it can be unit-tested directly. This method's only job is
+	 * reducing the live menu down to {@link GroundItemTakePriority.Candidate}s
+	 * and applying the permutation it returns.
+	 *
+	 * <p><b>Scope.</b> Only entries whose type is one of the five
+	 * {@code GROUND_ITEM_*_OPTION} actions and whose option text is
+	 * literally "Take" (tags stripped) are ever touched -- never an
+	 * {@code EXAMINE_ITEM_GROUND}, a spell cast on a ground item, or
+	 * anything belonging to an NPC or object that happens to share the tile.
+	 * An item not on the wanted list is never inspected at all: its entry,
+	 * and its position relative to every other untouched entry, cannot move.
+	 */
+	@Subscribe
+	public void onPostMenuSort(PostMenuSort event)
+	{
+		if (config == null || !config.groundTakeLeftClick())
+		{
+			return;
+		}
+		if (client.isMenuOpen())
+		{
+			// Re-sorting an already-open menu would just swap the same two
+			// entries back and forth every subsequent frame -- see
+			// MenuEntrySwapperPlugin#onPostMenuSort for the same guard.
+			return;
+		}
+
+		OverlaySnapshot snapshot = overlaySnapshot;
+		QuestItems items = snapshot == null ? null : snapshot.items();
+		if (items == null || items.isEmpty())
+		{
+			return;
+		}
+
+		MenuEntry[] entries = client.getMenuEntries();
+		if (entries == null || entries.length == 0)
+		{
+			return;
+		}
+
+		Map<Integer, QuestItems.Total> needed = groundTakeLookupFor(items);
+		if (needed.isEmpty())
+		{
+			return;
+		}
+
+		List<GroundItemTakePriority.Candidate> candidates = new java.util.ArrayList<>();
+		for (int i = 0; i < entries.length; i++)
+		{
+			MenuEntry entry = entries[i];
+			MenuAction type = entry.getType();
+			if (type != MenuAction.GROUND_ITEM_FIRST_OPTION && type != MenuAction.GROUND_ITEM_SECOND_OPTION
+				&& type != MenuAction.GROUND_ITEM_THIRD_OPTION && type != MenuAction.GROUND_ITEM_FOURTH_OPTION
+				&& type != MenuAction.GROUND_ITEM_FIFTH_OPTION)
+			{
+				continue;
+			}
+			if (!"take".equalsIgnoreCase(Text.removeTags(entry.getOption())))
+			{
+				// Ground items can carry other primary ops besides Take
+				// (a plugin-added one, for instance); this feature is about
+				// picking the item up, nothing else that happens to share
+				// the same handful of MenuAction slots.
+				continue;
+			}
+			QuestItems.Total total = needed.get(entry.getIdentifier());
+			if (total == null || total.covered())
+			{
+				continue;
+			}
+			long shortfall = total.outstanding();
+			candidates.add(new GroundItemTakePriority.Candidate(i, entry.getIdentifier(), shortfall));
+		}
+
+		int[] order = GroundItemTakePriority.reorder(entries.length, candidates);
+		if (order == null)
+		{
+			return;
+		}
+
+		MenuEntry[] reordered = new MenuEntry[entries.length];
+		for (int i = 0; i < entries.length; i++)
+		{
+			reordered[i] = entries[order[i]];
+		}
+		for (GroundItemTakePriority.Candidate candidate : candidates)
+		{
+			entries[candidate.index()].setDeprioritized(false);
+		}
+		client.setMenuEntries(reordered);
+	}
+
+	/**
+	 * The wanted-ground-item id lookup, rebuilt only when {@link
+	 * QuestItems#signature()} changes. Mirrors {@link
+	 * GroundItemOverlay#lookupFor} -- see {@link #groundTakeLookup}'s own doc
+	 * for why this is a second small cache rather than a shared one.
+	 */
+	private Map<Integer, QuestItems.Total> groundTakeLookupFor(QuestItems items)
+	{
+		int signature = items.signature();
+		if (haveGroundTakeLookup && signature == groundTakeLookupSignature)
+		{
+			return groundTakeLookup;
+		}
+
+		Map<Integer, QuestItems.Total> built = new HashMap<>();
+		for (QuestItems.Total total : items.totals())
+		{
+			if (total.itemId() <= 0)
+			{
+				continue;
+			}
+			built.putIfAbsent(total.itemId(), total);
+		}
+
+		groundTakeLookup = built;
+		groundTakeLookupSignature = signature;
+		haveGroundTakeLookup = true;
+		return groundTakeLookup;
+	}
+
 	@Subscribe
 	public void onMenuOptionClicked(MenuOptionClicked event)
 	{
@@ -2383,7 +2598,7 @@ public class QuestpathPlugin extends Plugin
 		Map<String, QuestItems.Total> wantedAt = new HashMap<>();
 		for (QuestItems.Total total : items.totals())
 		{
-			if (total.satisfied() || shopItemSkips.isSkipped(total.name()))
+			if (total.covered() || shopItemSkips.isSkipped(total.name()))
 			{
 				continue;
 			}
@@ -2452,14 +2667,15 @@ public class QuestpathPlugin extends Plugin
 	 * changes as the player walks regardless of whether the account's own
 	 * state changed, so this cannot wait for {@link #refreshPending}.
 	 *
-	 * <p>Shares {@link QuestpathConfig#overlayDiaryRoute()} with {@link
+	 * <p>Shares {@link QuestpathConfig#questJournalFilter()} with {@link
 	 * DiaryRouteOverlay} rather than carrying a second toggle of its own --
-	 * see that config item's own doc for why one switch governs both the
-	 * always-on display and this occasional chat line.
+	 * see {@link QuestJournalFilter}'s own doc for why one switch governs
+	 * both the always-on display and this occasional chat line.
 	 */
 	private void checkDiaryApproach()
 	{
-		if (config == null || !config.overlayDiaryRoute() || diaryPush == null || questGraph == null)
+		if (config == null || !config.questJournalFilter().showsDiaries() || diaryPush == null
+			|| questGraph == null)
 		{
 			return;
 		}
@@ -2476,7 +2692,8 @@ public class QuestpathPlugin extends Plugin
 			new DiaryRouteStops.TaskKey(nearest.task().tierId(), nearest.task().ordinal());
 		Instant now = Instant.now();
 
-		boolean nudge = DiaryRouteGuard.shouldNudge(config.overlayDiaryRoute(), nearest.distanceTiles(),
+		boolean nudge = DiaryRouteGuard.shouldNudge(config.questJournalFilter().showsDiaries(),
+			nearest.distanceTiles(),
 			shopRouteBlocksQuestRouting(), routeQuestInProgress, diaryNudgedAt.get(key), now);
 		if (!nudge)
 		{
@@ -3022,6 +3239,7 @@ public class QuestpathPlugin extends Plugin
 						routeOrder = Collections.emptyList();
 						partialRuns = Collections.emptyList();
 						knownItems = Collections.emptyMap();
+						itemPlan = null;
 						// A rejection means questpath is not confirming this
 						// account's state, and a stale diary verdict shown
 						// against the wrong account is exactly the kind of
@@ -3044,6 +3262,10 @@ public class QuestpathPlugin extends Plugin
 					routeOrder = accepted.routeOrder();
 					partialRuns = accepted.partialRuns();
 					knownItems = accepted.knownItems();
+					// Replaced unconditionally, null included: a push answered
+					// without a plan means questpath made no decision this time,
+					// and the previous one is about holdings that have moved.
+					itemPlan = accepted.itemPlan();
 					// hasDiary() false (an older questpath) must leave this
 					// null, never overwrite a genuine earlier value with a
 					// misleading "no data" from a field that was never
@@ -3337,7 +3559,7 @@ public class QuestpathPlugin extends Plugin
 			new PlayerState(levels, experience, completed, inProgressQuestNames(), buildRules),
 			heldIncludingCollected(), owned.bankSeen(), pickupScope(),
 			new HashSet<>(routeOrder), knownItems, owned.carriedByName(),
-			owned.bankPlaceholders());
+			owned.bankPlaceholders(), itemPlan);
 	}
 
 	/**

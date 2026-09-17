@@ -37,7 +37,11 @@ class NextQuestOverlay extends QuestpathOverlay
 	@Override
 	boolean enabled(QuestpathConfig config)
 	{
-		return config.overlayNextQuest();
+		// Two independent switches, both required: this overlay's own
+		// on/off (unchanged) and the Quests tab filter, which now decides
+		// which of the two route overlays the filter permits -- see
+		// QuestJournalFilter's own class doc.
+		return config.overlayNextQuest() && config.questJournalFilter().showsQuests();
 	}
 
 	@Override

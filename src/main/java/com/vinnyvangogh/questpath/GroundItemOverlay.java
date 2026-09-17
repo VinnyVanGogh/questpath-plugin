@@ -245,7 +245,7 @@ class GroundItemOverlay extends Overlay
 		for (TileItem groundItem : groundItems)
 		{
 			QuestItems.Total total = needed.get(groundItem.getId());
-			if (total == null || total.satisfied())
+			if (total == null || total.covered())
 			{
 				// Either not on the list, or the account already has
 				// enough -- a ground item marked for something already
@@ -288,7 +288,7 @@ class GroundItemOverlay extends Overlay
 		}
 		if (config.groundHighlightCounts())
 		{
-			long outstanding = Math.max(0L, match.required() - match.owned());
+			long outstanding = match.outstanding();
 			label = label + " (" + outstanding + ")";
 		}
 

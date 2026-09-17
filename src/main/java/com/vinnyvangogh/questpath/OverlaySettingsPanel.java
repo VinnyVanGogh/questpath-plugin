@@ -311,17 +311,7 @@ class OverlaySettingsPanel extends JPanel
 				addField(sub, "Length", lengthCombo(config.overlayShopRouteLength(), "overlayShopRouteLength"));
 			}));
 		body.add(spacer());
-		body.add(toggleGroup(
-			"Diary route: nearest task",
-			"The nearest outstanding achievement diary task this account can currently act"
-				+ " on: its text, where it sends you, any warnings, and how fresh questpath's"
-				+ " read on that tier's progress is.",
-			config.overlayDiaryRoute(), "overlayDiaryRoute",
-			sub ->
-			{
-				addField(sub, "Width", widthCombo(config.overlayDiaryRouteWidth(), "overlayDiaryRouteWidth"));
-				addField(sub, "Length", lengthCombo(config.overlayDiaryRouteLength(), "overlayDiaryRouteLength"));
-			}));
+		body.add(diaryRouteGroup(config));
 		body.add(spacer());
 		body.add(toggleGroup(
 			"Grand Exchange: queued, next, left",
@@ -362,6 +352,33 @@ class OverlaySettingsPanel extends JPanel
 						"overlayBuildRulesSections"));
 			}));
 		return sectionGroup("Overlays", body);
+	}
+
+	/**
+	 * The diary route overlay's own group -- unlike every other one in
+	 * {@link #overlaysSection}, it has no enable checkbox of its own any
+	 * more. {@link QuestpathConfig#questJournalFilter()} is now this
+	 * overlay's entire on/off switch (Diaries or All turns it on, Quests
+	 * turns it off), the same filter that also drives the Quests tab's own
+	 * diary sections -- see {@link QuestJournalFilter}'s class doc. Folding
+	 * a second on/off into that one setting is why this group is a plain
+	 * {@link #sectionGroup}, its first field the filter combo itself, rather
+	 * than a {@link #toggleGroup}: there is no longer a boolean of its own
+	 * left to head one with.
+	 */
+	private CollapsibleGroup diaryRouteGroup(QuestpathConfig config)
+	{
+		JPanel sub = column();
+		sub.setBorder(BorderFactory.createEmptyBorder(INDENT.top, INDENT.left, INDENT.bottom, INDENT.right));
+		addField(sub, "Quests tab shows",
+			combo(QuestJournalFilter.values(), config.questJournalFilter(),
+				"Quests: this overlay is off, and so is the rest of the Diaries side of the Quests"
+					+ " tab. Diaries or All: this overlay is on. The same filter as the combo at the"
+					+ " top of the Quests tab itself -- changing it here changes it there too.",
+				"questJournalFilter"));
+		addField(sub, "Width", widthCombo(config.overlayDiaryRouteWidth(), "overlayDiaryRouteWidth"));
+		addField(sub, "Length", lengthCombo(config.overlayDiaryRouteLength(), "overlayDiaryRouteLength"));
+		return sectionGroup("Diary route: nearest task", sub);
 	}
 
 	/**
@@ -548,6 +565,12 @@ class OverlaySettingsPanel extends JPanel
 					colorField(config.groundHighlightColour(),
 						"The colour a needed item on the floor is marked in.",
 						"Ground marker colour", "groundHighlightColour"));
+				sub.add(toggle(
+					"Left-click take items you need",
+					"Make \"Take\" the left-click option for a ground item your plan still needs,"
+						+ " so picking it up in passing does not need a right click. Never hides or"
+						+ " reorders anything for an item you do not need.",
+					config.groundTakeLeftClick(), "groundTakeLeftClick"));
 			});
 	}
 

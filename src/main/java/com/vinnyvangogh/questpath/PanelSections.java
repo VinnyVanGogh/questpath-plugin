@@ -102,6 +102,12 @@ enum PanelSections
 		Status.LIVE,
 		null),
 
+	DIARY_JOURNAL(
+		Tab.QUESTS,
+		"Diary journal",
+		Status.LIVE,
+		null),
+
 	OVERLAY_SETTINGS(
 		Tab.VIEW,
 		"Overlays",
