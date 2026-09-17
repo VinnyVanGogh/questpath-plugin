@@ -8,25 +8,43 @@ import java.util.Objects;
 
 /**
  * A named snapshot of worn equipment, plus the combat choices a max-hit
- * calculation needs, saved so it can be compared against whatever the
- * account is actually wearing right now.
+ * calculation needs -- for all three styles at once -- saved so it can be
+ * compared against whatever the account is actually wearing right now.
  *
- * <p><b>{@link #attackStyle}, {@link #prayer} and {@link #spell} are opaque
- * enum names, not enums.</b> The enums themselves belong to another task's
+ * <p><b>One loadout, three independent sets of selections.</b> The panel this
+ * class serves shows a loadout's melee, ranged, and magic max hit
+ * simultaneously, not one style at a time, so a single {@code attackStyle}/
+ * {@code prayer}/{@code spell} triple (this class's first shape) cannot
+ * describe it -- melee and ranged each need their own style and prayer, and
+ * magic needs a spell and its own prayer. Hence six fields: {@link
+ * #meleeStyle}/{@link #strengthPrayer}, {@link #rangedStyle}/{@link
+ * #rangedPrayer}, {@link #spell}/{@link #magicPrayer}.
+ *
+ * <p><b>All six are opaque enum names, not enums.</b> The enums themselves
+ * ({@code AttackStyle}, {@code StrengthPrayer}, {@code RangedStyle}, {@code
+ * RangedPrayer}, {@code Spell}, {@code MagicPrayer}) belong to another task's
  * {@code MaxHit} code, which this class must not depend on -- a loadout is
- * pure data, saved and loaded long before or after that code runs. Each of
- * the three defaults to {@code null}, meaning "not chosen yet" -- distinct
- * from a real, deliberately-selected value (which, depending on what the
- * {@code MaxHit} enums turn out to contain, might itself be spelled something
- * like {@code "NONE"}). {@link #hasSelections()} is how the UI tells the two
- * apart without inspecting the strings itself.
+ * pure data, saved and loaded long before or after that code runs, and this
+ * class neither imports nor validates against any of them. Each field
+ * defaults to {@code null}, meaning "not chosen yet" -- distinct from a real,
+ * deliberately-selected value (which, depending on what the {@code MaxHit}
+ * enums turn out to contain, might itself be spelled something like {@code
+ * "NONE"}). {@link #hasMeleeSelections()}, {@link #hasRangedSelections()} and
+ * {@link #hasMagicSelections()} are how the UI tells the two apart, per
+ * style, without inspecting the strings itself.
+ *
+ * <p><b>No migration for the old three-field shape.</b> Nothing has shipped
+ * yet -- this plugin has no released version with a persisted {@code
+ * attackStyle}/{@code prayer}/{@code spell} loadout in the wild -- so there is
+ * no stored data to migrate and none is attempted.
  *
  * <p>Immutable: every field is set once, at construction, and {@link
- * #withSelections} and {@link #withName} return a new instance rather than
- * mutating this one. Gson-serialisable with {@code @SerializedName}, the same
- * shape {@link BuildRule} uses -- see {@link LoadoutCodec}'s class javadoc
- * for how this class's own validation still runs on a value Gson
- * deserialises, even though Gson itself bypasses the constructor below.
+ * #withMelee}, {@link #withRanged}, {@link #withMagic} and {@link #withName}
+ * each return a new instance rather than mutating this one. Gson-serialisable
+ * with {@code @SerializedName}, the same shape {@link BuildRule} uses -- see
+ * {@link LoadoutCodec}'s class javadoc for how this class's own validation
+ * still runs on a value Gson deserialises, even though Gson itself bypasses
+ * the constructor below.
  */
 public final class Loadout
 {
@@ -36,14 +54,23 @@ public final class Loadout
 	@SerializedName("items")
 	private final List<LoadoutItem> items;
 
-	@SerializedName("attackStyle")
-	private final String attackStyle;
+	@SerializedName("meleeStyle")
+	private final String meleeStyle;
 
-	@SerializedName("prayer")
-	private final String prayer;
+	@SerializedName("strengthPrayer")
+	private final String strengthPrayer;
+
+	@SerializedName("rangedStyle")
+	private final String rangedStyle;
+
+	@SerializedName("rangedPrayer")
+	private final String rangedPrayer;
 
 	@SerializedName("spell")
 	private final String spell;
+
+	@SerializedName("magicPrayer")
+	private final String magicPrayer;
 
 	@SerializedName("savedAtEpochMillis")
 	private final long savedAtEpochMillis;
@@ -54,17 +81,23 @@ public final class Loadout
 	 *     single loadout has no way to know about any other
 	 * @param items one entry per occupied equipment slot; null is treated as
 	 *     empty, and the list is copied and made unmodifiable
-	 * @param attackStyle an opaque enum name from the {@code MaxHit} code, or
-	 *     null for "not chosen yet" -- see the class javadoc
-	 * @param prayer the same, for the active prayer
-	 * @param spell the same, for the active spell
+	 * @param meleeStyle an {@code AttackStyle} enum name from the {@code
+	 *     MaxHit} code (ACCURATE/AGGRESSIVE/CONTROLLED/DEFENSIVE), or null for
+	 *     "not chosen yet" -- see the class javadoc
+	 * @param strengthPrayer a {@code StrengthPrayer} enum name (NONE, PIETY,
+	 *     ...), or null the same way
+	 * @param rangedStyle a {@code RangedStyle} enum name
+	 *     (ACCURATE/RAPID/LONGRANGE), or null the same way
+	 * @param rangedPrayer a {@code RangedPrayer} enum name, or null the same way
+	 * @param spell a {@code Spell} enum name, or null the same way
+	 * @param magicPrayer a {@code MagicPrayer} enum name, or null the same way
 	 * @param savedAtEpochMillis when this loadout was captured, in {@link
 	 *     System#currentTimeMillis()} terms
 	 * @throws IllegalArgumentException if {@code name} is null or blank after
 	 *     trimming
 	 */
-	public Loadout(String name, List<LoadoutItem> items, String attackStyle, String prayer, String spell,
-		long savedAtEpochMillis)
+	public Loadout(String name, List<LoadoutItem> items, String meleeStyle, String strengthPrayer,
+		String rangedStyle, String rangedPrayer, String spell, String magicPrayer, long savedAtEpochMillis)
 	{
 		String trimmed = name == null ? null : name.trim();
 		if (trimmed == null || trimmed.isEmpty())
@@ -73,9 +106,12 @@ public final class Loadout
 		}
 		this.name = trimmed;
 		this.items = items == null ? Collections.emptyList() : List.copyOf(items);
-		this.attackStyle = attackStyle;
-		this.prayer = prayer;
+		this.meleeStyle = meleeStyle;
+		this.strengthPrayer = strengthPrayer;
+		this.rangedStyle = rangedStyle;
+		this.rangedPrayer = rangedPrayer;
 		this.spell = spell;
+		this.magicPrayer = magicPrayer;
 		this.savedAtEpochMillis = savedAtEpochMillis;
 	}
 
@@ -91,22 +127,40 @@ public final class Loadout
 		return items;
 	}
 
-	/** The chosen attack style's enum name, or null when not chosen yet. */
-	public String attackStyle()
+	/** The chosen melee attack style's enum name, or null when not chosen yet. */
+	public String meleeStyle()
 	{
-		return attackStyle;
+		return meleeStyle;
 	}
 
-	/** The chosen prayer's enum name, or null when not chosen yet. */
-	public String prayer()
+	/** The chosen melee ({@code StrengthPrayer}) prayer's enum name, or null when not chosen yet. */
+	public String strengthPrayer()
 	{
-		return prayer;
+		return strengthPrayer;
+	}
+
+	/** The chosen ranged attack style's enum name, or null when not chosen yet. */
+	public String rangedStyle()
+	{
+		return rangedStyle;
+	}
+
+	/** The chosen ranged prayer's enum name, or null when not chosen yet. */
+	public String rangedPrayer()
+	{
+		return rangedPrayer;
 	}
 
 	/** The chosen spell's enum name, or null when not chosen yet. */
 	public String spell()
 	{
 		return spell;
+	}
+
+	/** The chosen magic prayer's enum name, or null when not chosen yet. */
+	public String magicPrayer()
+	{
+		return magicPrayer;
 	}
 
 	/** When this loadout was captured, in {@link System#currentTimeMillis()} terms. */
@@ -116,22 +170,53 @@ public final class Loadout
 	}
 
 	/**
-	 * Whether both an attack style and a prayer have been chosen, so a
-	 * max-hit UI can compute a number instead of only listing the saved gear.
-	 *
-	 * <p>{@link #spell} is deliberately excluded: it only applies to some
-	 * attack styles, so requiring it here would permanently block the number
-	 * for a melee or ranged loadout that will never need one.
+	 * Whether both a melee style and a {@code StrengthPrayer} have been
+	 * chosen, so a max-hit UI can compute melee's number instead of only
+	 * listing the saved gear.
 	 */
-	public boolean hasSelections()
+	public boolean hasMeleeSelections()
 	{
-		return attackStyle != null && prayer != null;
+		return meleeStyle != null && strengthPrayer != null;
 	}
 
-	/** A copy of this loadout with its combat choices replaced. Everything else is unchanged. */
-	public Loadout withSelections(String attackStyle, String prayer, String spell)
+	/**
+	 * Whether both a ranged style and a ranged prayer have been chosen, so a
+	 * max-hit UI can compute ranged's number instead of only listing the
+	 * saved gear.
+	 */
+	public boolean hasRangedSelections()
 	{
-		return new Loadout(name, items, attackStyle, prayer, spell, savedAtEpochMillis);
+		return rangedStyle != null && rangedPrayer != null;
+	}
+
+	/**
+	 * Whether both a spell and a magic prayer have been chosen, so a max-hit
+	 * UI can compute magic's number instead of only listing the saved gear.
+	 */
+	public boolean hasMagicSelections()
+	{
+		return spell != null && magicPrayer != null;
+	}
+
+	/** A copy of this loadout with its melee choices replaced. Everything else is unchanged. */
+	public Loadout withMelee(String meleeStyle, String strengthPrayer)
+	{
+		return new Loadout(name, items, meleeStyle, strengthPrayer, rangedStyle, rangedPrayer, spell,
+			magicPrayer, savedAtEpochMillis);
+	}
+
+	/** A copy of this loadout with its ranged choices replaced. Everything else is unchanged. */
+	public Loadout withRanged(String rangedStyle, String rangedPrayer)
+	{
+		return new Loadout(name, items, meleeStyle, strengthPrayer, rangedStyle, rangedPrayer, spell,
+			magicPrayer, savedAtEpochMillis);
+	}
+
+	/** A copy of this loadout with its magic choices replaced. Everything else is unchanged. */
+	public Loadout withMagic(String spell, String magicPrayer)
+	{
+		return new Loadout(name, items, meleeStyle, strengthPrayer, rangedStyle, rangedPrayer, spell,
+			magicPrayer, savedAtEpochMillis);
 	}
 
 	/**
@@ -142,7 +227,8 @@ public final class Loadout
 	 */
 	Loadout withName(String newName)
 	{
-		return new Loadout(newName, items, attackStyle, prayer, spell, savedAtEpochMillis);
+		return new Loadout(newName, items, meleeStyle, strengthPrayer, rangedStyle, rangedPrayer, spell,
+			magicPrayer, savedAtEpochMillis);
 	}
 
 	/**
@@ -177,21 +263,28 @@ public final class Loadout
 		return savedAtEpochMillis == that.savedAtEpochMillis
 			&& name.equals(that.name)
 			&& items.equals(that.items)
-			&& Objects.equals(attackStyle, that.attackStyle)
-			&& Objects.equals(prayer, that.prayer)
-			&& Objects.equals(spell, that.spell);
+			&& Objects.equals(meleeStyle, that.meleeStyle)
+			&& Objects.equals(strengthPrayer, that.strengthPrayer)
+			&& Objects.equals(rangedStyle, that.rangedStyle)
+			&& Objects.equals(rangedPrayer, that.rangedPrayer)
+			&& Objects.equals(spell, that.spell)
+			&& Objects.equals(magicPrayer, that.magicPrayer);
 	}
 
 	@Override
 	public int hashCode()
 	{
-		return Objects.hash(name, items, attackStyle, prayer, spell, savedAtEpochMillis);
+		return Objects.hash(name, items, meleeStyle, strengthPrayer, rangedStyle, rangedPrayer, spell,
+			magicPrayer, savedAtEpochMillis);
 	}
 
 	@Override
 	public String toString()
 	{
-		return "Loadout{name='" + name + "', items=" + items + ", attackStyle=" + attackStyle
-			+ ", prayer=" + prayer + ", spell=" + spell + ", savedAtEpochMillis=" + savedAtEpochMillis + "}";
+		return "Loadout{name='" + name + "', items=" + items
+			+ ", meleeStyle=" + meleeStyle + ", strengthPrayer=" + strengthPrayer
+			+ ", rangedStyle=" + rangedStyle + ", rangedPrayer=" + rangedPrayer
+			+ ", spell=" + spell + ", magicPrayer=" + magicPrayer
+			+ ", savedAtEpochMillis=" + savedAtEpochMillis + "}";
 	}
 }

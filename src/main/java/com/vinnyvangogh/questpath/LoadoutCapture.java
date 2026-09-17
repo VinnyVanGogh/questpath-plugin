@@ -48,8 +48,10 @@ public final class LoadoutCapture
 
 	/**
 	 * Snapshots the account's currently worn equipment as a new, unsaved
-	 * {@link Loadout} named {@code name}. Neither combat selection is set --
-	 * the result's {@link Loadout#hasSelections()} is always false.
+	 * {@link Loadout} named {@code name}. None of the six combat selections
+	 * are set -- {@link Loadout#hasMeleeSelections()}, {@link
+	 * Loadout#hasRangedSelections()} and {@link Loadout#hasMagicSelections()}
+	 * are all false on the result.
 	 *
 	 * <p><b>Must be called on the client thread.</b> {@link
 	 * Client#getItemContainer(int)} and {@link
@@ -84,7 +86,7 @@ public final class LoadoutCapture
 			}
 			items.add(new LoadoutItem(slot, item.getId(), item.getQuantity(), nameOf(itemManager, item.getId())));
 		}
-		return Optional.of(new Loadout(name, items, null, null, null, System.currentTimeMillis()));
+		return Optional.of(new Loadout(name, items, null, null, null, null, null, null, System.currentTimeMillis()));
 	}
 
 	/** The item's display name, or empty when {@code ItemManager} has no composition for it. */

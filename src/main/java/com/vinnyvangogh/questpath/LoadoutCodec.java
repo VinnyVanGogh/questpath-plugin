@@ -109,8 +109,9 @@ final class LoadoutCodec
 		}
 		try
 		{
-			return new Loadout(candidate.name(), items, candidate.attackStyle(),
-				candidate.prayer(), candidate.spell(), candidate.savedAtEpochMillis());
+			return new Loadout(candidate.name(), items, candidate.meleeStyle(), candidate.strengthPrayer(),
+				candidate.rangedStyle(), candidate.rangedPrayer(), candidate.spell(), candidate.magicPrayer(),
+				candidate.savedAtEpochMillis());
 		}
 		catch (RuntimeException e)
 		{

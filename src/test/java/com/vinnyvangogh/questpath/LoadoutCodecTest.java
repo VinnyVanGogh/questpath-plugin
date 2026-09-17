@@ -25,7 +25,7 @@ public class LoadoutCodecTest
 	private static Loadout loadout(String name)
 	{
 		return new Loadout(name, Collections.singletonList(new LoadoutItem(0, 1163, 1, "Bronze full helm")),
-			null, null, null, 1L);
+			null, null, null, null, null, null, 1L);
 	}
 
 	@Test
@@ -74,7 +74,7 @@ public class LoadoutCodecTest
 		String withOriginal = LoadoutCodec.encode(GSON, Collections.singletonList(loadout("PK setup")));
 		Loadout replacement = new Loadout("PK setup",
 			Collections.singletonList(new LoadoutItem(1, 1163, 1, "Iron full helm")),
-			"AGGRESSIVE", "PIETY", null, 2L);
+			"AGGRESSIVE", "PIETY", null, null, null, null, 2L);
 
 		String updated = LoadoutCodec.withSaved(GSON, withOriginal, replacement);
 
