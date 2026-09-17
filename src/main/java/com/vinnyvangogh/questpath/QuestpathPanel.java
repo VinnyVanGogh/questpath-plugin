@@ -668,6 +668,16 @@ class QuestpathPanel extends PluginPanel
 	 * The unbuilt tabs keep their text: what they say does not depend on being
 	 * logged in, and blanking them would make the plugin look broken rather
 	 * than logged out.
+	 *
+	 * <p><b>This is the state that actually covers "no RuneScape account is
+	 * logged in" for the whole Combat tab, Locked gear included.</b> It
+	 * replaces the entire tab body with a single "Log in to see your
+	 * levels." line and never calls {@code lockedGearSection} at all, since
+	 * {@code QuestpathPlugin.refresh()} returns early into this method
+	 * whenever {@code client.getGameState() != GameState.LOGGED_IN} --
+	 * before {@code LockedGear.resolve} is ever invoked. See {@link
+	 * LockedGear.Shape#NOT_LOGGED_IN}'s render site in {@link
+	 * #lockedGearSection} for the narrower case that shape actually covers.
 	 */
 	void showLoggedOut()
 	{
@@ -938,6 +948,19 @@ class QuestpathPanel extends PluginPanel
 
 		if (gear == null || gear.shape() == LockedGear.Shape.NOT_LOGGED_IN)
 		{
+			// This is NOT the "no account logged in" case in general --
+			// that one never reaches here at all, because QuestpathPlugin's
+			// refresh() returns early into showLoggedOut() (which replaces
+			// the whole Combat tab with "Log in to see your levels.")
+			// whenever GameState != LOGGED_IN, before LockedGear.resolve is
+			// ever called. This branch instead covers the narrower window
+			// where the client already reports LOGGED_IN but
+			// ConfigManager.getRSProfileKey() has not yet been derived from
+			// the account hash -- see LoadoutStore#all's own null-key check.
+			// Kept even though that window may be brief or never observed
+			// in practice: LoadoutStore's contract genuinely returns this
+			// status, and a snapshot that silently mapped it to some other
+			// message would be lying about which of the two states is true.
 			panel.add(muted("Log in to see your saved loadouts."));
 			return panel;
 		}

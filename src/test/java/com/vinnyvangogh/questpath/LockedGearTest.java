@@ -242,6 +242,44 @@ public class LockedGearTest
 		assertEquals("Gear ranged strength bonus too low to model", gear.ranged().result().reason());
 	}
 
+	/**
+	 * The variant the review asked for: only melee's summed bonus is
+	 * negative here (str -200, rstr 0). Where {@link
+	 * #negativeMeleeValueBecomesNotModelledInsteadOfThrowing} drives melee
+	 * and ranged negative together -- which cannot tell "each fails
+	 * independently" apart from a hypothetical bug that let one style's
+	 * failure blank the others -- this proves ranged (and magic, unrelated
+	 * to either bonus) still produce real, correct numbers while melee alone
+	 * reports not-modelled.
+	 */
+	@Test
+	public void onlyMeleeFailsWhileRangedAndMagicStayCorrect()
+	{
+		LoadoutItem cursed = new LoadoutItem(EquipmentInventorySlot.WEAPON.getSlotIdx(), 333, 1, "Cursed weapon");
+		Loadout saved = loadout("Half cursed", Collections.singletonList(cursed),
+			"ACCURATE", "NONE", "ACCURATE", "NONE", "FIRE_STRIKE", "NONE");
+		LoadoutStore.Result stored = LoadoutStore.Result.ok(Collections.singletonList(saved));
+
+		// str -200 (melee-only failure), rstr 0 (ranged unaffected), mdmg 0.
+		LockedGear gear = LockedGear.resolve(stored, "Half cursed", LEVELS, id -> known(-200, 0, 0));
+
+		assertEquals(LockedGear.StyleLine.Kind.RESULT, gear.melee().kind());
+		assertFalse("melee alone should fail its own guard", gear.melee().result().isKnown());
+		assertEquals("Gear strength bonus too low to model", gear.melee().result().reason());
+
+		assertEquals(LockedGear.StyleLine.Kind.RESULT, gear.ranged().kind());
+		assertTrue("ranged must not be taken down by melee's failure", gear.ranged().result().isKnown());
+		int expectedRanged = MaxHit.ranged(99, RangedStyle.ACCURATE, RangedPrayer.NONE,
+			new GearBonuses(0, 0, 0, Collections.emptySet(), null)).value();
+		assertEquals(expectedRanged, gear.ranged().result().value());
+
+		assertEquals(LockedGear.StyleLine.Kind.RESULT, gear.magic().kind());
+		assertTrue("magic must not be taken down by melee's failure either", gear.magic().result().isKnown());
+		int expectedMagic = MaxHit.magic(99, Spell.FIRE_STRIKE, MagicPrayer.NONE,
+			new GearBonuses(0, 0, 0, Collections.emptySet(), null)).value();
+		assertEquals(expectedMagic, gear.magic().result().value());
+	}
+
 	@Test
 	public void equalsAndHashCodeAreStructural()
 	{
