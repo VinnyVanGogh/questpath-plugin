@@ -228,6 +228,26 @@ public final class MaxHit
 				return MaxHitResult.notModelled(
 					"Powered staff item id " + staffItemId + " has no verified §20.4 formula/item id in this build");
 			}
+			// Guard against a below-usable-range result escaping as a
+			// "known" fact. Applied uniformly to every resolved staff, but
+			// only Thammaron's sceptre can actually trip it in practice:
+			// Trident of the Seas/Swamp and Sanguinesti staff each clamp to
+			// their own §20.4-stated minimum (1/4/6) inside
+			// poweredStaffBase(), Tumeken's shadow's raw formula never goes
+			// below 1, and Bone staff's raw formula never goes below 5 —
+			// none of those five can ever reach this branch. Accursed
+			// sceptre is explicitly exempted: its own §20.4-stated minimum
+			// is 0 (quoted), already enforced by its Math.max clamp inside
+			// poweredStaffBase(), and that 0 is a real, documented answer,
+			// not a fabricated one — "leave that minimum as it is" per the
+			// controller's ruling. Thammaron's sceptre has no stated
+			// minimum at all, so a sub-1 result here has no verified floor
+			// to clamp to; rather than invent one (or let a negative/zero
+			// number stand in as fact), this reports no answer.
+			if (resolved < 1 && staffItemId != ACCURSED_SCEPTRE)
+			{
+				return MaxHitResult.notModelled(poweredStaffName(staffItemId) + " gives no max hit at Magic " + magicLevel);
+			}
 			base = resolved;
 		}
 		else
@@ -296,16 +316,62 @@ public final class MaxHit
 		if (itemId == THAMMARONS_SCEPTRE)
 		{
 			// §20.4: "floor(Magic/3) − 8". No minimum is stated on the page
-			// for this weapon, so none is invented here.
+			// for this weapon, so none is invented here — this can return
+			// zero or a negative int below Magic 27. The caller (MaxHit#magic)
+			// turns any such sub-1 result into notModelled instead of a
+			// fabricated-looking known value; this method's job is only to
+			// compute §20.4's formula, not to decide what counts as usable.
 			return magicLevel / 3 - 8;
 		}
 		if (itemId == BONE_STAFF)
 		{
 			// §20.4: "floor(Magic/3) + 5". No minimum is stated on the page
-			// for this weapon, so none is invented here.
+			// for this weapon, but the formula itself never produces less
+			// than 5 for any magicLevel >= 0, so it can never trip the
+			// caller's sub-1 check in practice.
 			return magicLevel / 3 + 5;
 		}
 		return null;
+	}
+
+	/**
+	 * The human label for a powered staff's item id, used only to name the
+	 * weapon in a {@link MaxHitResult#notModelled(String)} reason. Callable
+	 * only with an id {@link #poweredStaffBase} has already resolved to a
+	 * non-null value, so every {@code MaxHit}-known id is covered; the
+	 * fallback exists only so this can never itself throw.
+	 */
+	private static String poweredStaffName(int itemId)
+	{
+		if (itemId == TRIDENT_OF_THE_SEAS)
+		{
+			return "Trident of the Seas";
+		}
+		if (itemId == TRIDENT_OF_THE_SWAMP)
+		{
+			return "Trident of the Swamp";
+		}
+		if (itemId == SANGUINESTI_STAFF)
+		{
+			return "Sanguinesti staff";
+		}
+		if (itemId == TUMEKENS_SHADOW)
+		{
+			return "Tumeken's shadow";
+		}
+		if (itemId == ACCURSED_SCEPTRE)
+		{
+			return "Accursed sceptre";
+		}
+		if (itemId == THAMMARONS_SCEPTRE)
+		{
+			return "Thammaron's sceptre";
+		}
+		if (itemId == BONE_STAFF)
+		{
+			return "Bone staff";
+		}
+		return "powered staff item " + itemId;
 	}
 
 	/**

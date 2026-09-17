@@ -31,9 +31,25 @@ public final class MaxHitResult
 	/**
 	 * A known max hit, plus every detected {@link GearEffect} that was not
 	 * applied to it (in {@link GearEffect} enum order).
+	 *
+	 * Only a negative {@code value} is rejected, not zero: nothing in
+	 * RESEARCH.md &sect;20 states that a melee, ranged, or magic max hit is
+	 * always at least 1 &mdash; Accursed sceptre's own &sect;20.4 row is the
+	 * opposite, stating its real minimum is 0 at Magic 0 (quoted), and
+	 * {@link MaxHit}'s powered-staff resolution deliberately preserves that
+	 * as a legitimate {@code known(0, ...)}. A negative value, in contrast,
+	 * is never a real max hit under any &sect;20 formula this project
+	 * implements; letting one escape as a "known" fact would be exactly the
+	 * fabricated-looking number this class's own contract forbids.
+	 *
+	 * @throws IllegalArgumentException if {@code value} is negative.
 	 */
 	public static MaxHitResult known(int value, List<GearEffect> notApplied)
 	{
+		if (value < 0)
+		{
+			throw new IllegalArgumentException("MaxHitResult.known() value must not be negative: " + value);
+		}
 		List<GearEffect> copy = notApplied == null || notApplied.isEmpty()
 			? Collections.emptyList()
 			: Collections.unmodifiableList(notApplied);

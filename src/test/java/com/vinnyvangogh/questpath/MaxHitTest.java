@@ -200,6 +200,47 @@ public class MaxHitTest
 		assertTrue("uncharged Thammaron's sceptre must not resolve to a value", !result.isKnown());
 	}
 
+	/**
+	 * Fix round 2: Thammaron's sceptre's formula ({@code floor(Magic/3) − 8})
+	 * has no §20.4-stated minimum and goes to zero or negative below Magic
+	 * 27. Before this fix that raw int flowed straight into {@code
+	 * MaxHitResult.known(...)}, so a negative "max hit" could be reported as
+	 * fact. It must now report notModelled instead, at every level where the
+	 * formula is below 1 — recomputed by hand for each level asserted here,
+	 * not assumed from a single boundary.
+	 */
+	@Test
+	public void thammaronsSceptreIsNotModelledBelowItsUsableRange()
+	{
+		// Magic 1: floor(1/3) − 8 = 0 − 8 = −8 (negative).
+		MaxHitResult atOne = MaxHit.magic(1, Spell.POWERED_STAFF, MagicPrayer.NONE,
+			poweredStaffGear(ItemID.WILD_CAVE_SCEPTRE_CHARGED));
+		assertTrue("Thammaron's sceptre, Magic 1: formula gives −8, must be notModelled", !atOne.isKnown());
+
+		// Magic 23: floor(23/3) − 8 = 7 − 8 = −1 (negative).
+		MaxHitResult at23 = MaxHit.magic(23, Spell.POWERED_STAFF, MagicPrayer.NONE,
+			poweredStaffGear(ItemID.WILD_CAVE_SCEPTRE_CHARGED));
+		assertTrue("Thammaron's sceptre, Magic 23: formula gives −1, must be notModelled", !at23.isKnown());
+
+		// Magic 24: floor(24/3) − 8 = 8 − 8 = 0. §20.4 states no minimum for
+		// this weapon (unlike Accursed sceptre's own documented 0), so this
+		// zero is not a verified answer either — still notModelled.
+		MaxHitResult at24 = MaxHit.magic(24, Spell.POWERED_STAFF, MagicPrayer.NONE,
+			poweredStaffGear(ItemID.WILD_CAVE_SCEPTRE_CHARGED));
+		assertTrue("Thammaron's sceptre, Magic 24: formula gives 0, must be notModelled", !at24.isKnown());
+	}
+
+	@Test
+	public void thammaronsSceptreBecomesKnownAtItsTrueBoundary()
+	{
+		// Magic 27 is the first level where floor(Magic/3) − 8 reaches 1:
+		// floor(27/3) − 8 = 9 − 8 = 1.
+		MaxHitResult result = MaxHit.magic(27, Spell.POWERED_STAFF, MagicPrayer.NONE,
+			poweredStaffGear(ItemID.WILD_CAVE_SCEPTRE_CHARGED));
+		assertEquals("Thammaron's sceptre, Magic 27 (§20.4: floor(Magic/3) − 8 = 1, the first usable level)",
+			1, result.value());
+	}
+
 	// ------------------------------------------------------------------
 	// Unmodelled effects: reported, never change value().
 	// ------------------------------------------------------------------
@@ -344,6 +385,28 @@ public class MaxHitTest
 	public void knownReasonThrows()
 	{
 		MaxHitResult.known(11, Collections.<GearEffect>emptyList()).reason();
+	}
+
+	@Test(expected = IllegalArgumentException.class)
+	public void knownRejectsANegativeValue()
+	{
+		// Fix round 2: this is the defence-in-depth half of the Thammaron's
+		// sceptre fix — MaxHit.magic() now catches the negative case before
+		// it ever reaches here, but MaxHitResult itself must refuse to
+		// construct a negative "known" result regardless of caller.
+		MaxHitResult.known(-1, Collections.<GearEffect>emptyList());
+	}
+
+	@Test
+	public void knownAcceptsZero()
+	{
+		// Zero is a legitimate known result — RESEARCH.md §20 does not state
+		// that every max hit is at least 1, and Accursed sceptre's own
+		// §20.4 row states its real minimum is 0 at Magic 0. Only negative
+		// values are rejected.
+		MaxHitResult result = MaxHitResult.known(0, Collections.<GearEffect>emptyList());
+		assertTrue(result.isKnown());
+		assertEquals(0, result.value());
 	}
 
 	@Test
