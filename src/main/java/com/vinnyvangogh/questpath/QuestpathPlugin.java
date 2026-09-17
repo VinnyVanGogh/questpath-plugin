@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import javax.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
@@ -140,6 +141,14 @@ public class QuestpathPlugin extends Plugin
 
 	@Inject
 	private net.runelite.client.game.ItemManager itemManager;
+
+	/**
+	 * Persists named gear loadouts. Guice hands out the one {@code
+	 * Singleton}-scoped instance -- see {@link LoadoutStore}'s own class doc
+	 * for why every method on it is synchronized.
+	 */
+	@Inject
+	private LoadoutStore loadoutStore;
 
 	/**
 	 * RuneLite's own hover-tooltip queue, shared with every other plugin.
@@ -700,7 +709,7 @@ public class QuestpathPlugin extends Plugin
 			this::dropLocation, this::lastKnownPlayerLocation, this::onShopRouteSent,
 			this::cancelShopRoute,
 			this::shopRouteActive, this::syncNow,
-			shopItemSkips, this::diaryGraphTasks, this::diaryPush);
+			shopItemSkips, this::diaryGraphTasks, this::diaryPush, lockedGearActions());
 		navButton = NavigationButton.builder()
 			.tooltip("Quest Path")
 			.icon(icon())
@@ -1208,6 +1217,270 @@ public class QuestpathPlugin extends Plugin
 		return shopTripActive();
 	}
 
+	// ------------------------------------------------------------------
+	// Locked gear: a saved loadout's max hit at live levels, independent of
+	// whatever the account is currently wearing. See LockedGear's own class
+	// doc for why the loadout is frozen and only the levels move.
+	// ------------------------------------------------------------------
+
+	/** The single config key the chosen loadout's name is persisted under, RSProfile-scoped like the loadouts themselves. */
+	private static final String LOCKED_GEAR_SELECTED_KEY = "lockedGearSelected";
+
+	/**
+	 * Bundles every locked-gear callback the panel needs, built once in
+	 * {@link #startUp()} alongside every other panel callback.
+	 */
+	private LockedGearActions lockedGearActions()
+	{
+		return new LockedGearActions(
+			this::lockCurrentGear,
+			this::selectLoadout,
+			this::deleteLoadout,
+			this::renameLoadout,
+			(loadoutName, style, prayer) -> editLoadout(loadoutName, loadout -> loadout.withMelee(style, prayer)),
+			(loadoutName, style, prayer) -> editLoadout(loadoutName, loadout -> loadout.withRanged(style, prayer)),
+			(loadoutName, spell, prayer) -> editLoadout(loadoutName, loadout -> loadout.withMagic(spell, prayer)));
+	}
+
+	/**
+	 * The RSProfile-scoped name of the loadout the Locked gear section
+	 * should show, or null if none has ever been chosen (or no account is
+	 * logged in). Read fresh from {@link ConfigManager} every time rather
+	 * than cached on this plugin -- an RSProfile-scoped read already answers
+	 * differently per account with no logout bookkeeping of its own needed,
+	 * the same reasoning {@link LoadoutStore} itself relies on.
+	 */
+	private String selectedLoadoutName()
+	{
+		if (configManager.getRSProfileKey() == null)
+		{
+			return null;
+		}
+		return configManager.getRSProfileConfiguration(QuestpathConfig.GROUP, LOCKED_GEAR_SELECTED_KEY);
+	}
+
+	private void setSelectedLoadoutName(String name)
+	{
+		if (name == null)
+		{
+			configManager.unsetRSProfileConfiguration(QuestpathConfig.GROUP, LOCKED_GEAR_SELECTED_KEY);
+		}
+		else
+		{
+			configManager.setRSProfileConfiguration(QuestpathConfig.GROUP, LOCKED_GEAR_SELECTED_KEY, name);
+		}
+	}
+
+	/**
+	 * Adapts {@code ItemManager.getItemStats(id, false)} into {@link
+	 * LockedGear.ItemStatsView} without {@link LockedGear} ever seeing an
+	 * {@code ItemManager} -- see runelite-api.md &sect;6-8. Client-thread
+	 * only, like every {@code ItemManager} call in this plugin.
+	 */
+	private LockedGear.ItemStatsView itemStatsView(int itemId)
+	{
+		net.runelite.http.api.item.ItemStats stats = itemManager.getItemStats(itemId, false);
+		if (stats == null || !stats.isEquipable())
+		{
+			return UNKNOWN_ITEM_STATS;
+		}
+		net.runelite.http.api.item.ItemEquipmentStats equipment = stats.getEquipment();
+		if (equipment == null)
+		{
+			return UNKNOWN_ITEM_STATS;
+		}
+		return new LockedGear.ItemStatsView()
+		{
+			@Override
+			public boolean known()
+			{
+				return true;
+			}
+
+			@Override
+			public int str()
+			{
+				return equipment.getStr();
+			}
+
+			@Override
+			public int rstr()
+			{
+				return equipment.getRstr();
+			}
+
+			@Override
+			public int mdmg()
+			{
+				return equipment.getMdmg();
+			}
+		};
+	}
+
+	/** Shared, since every field on it is a constant -- no need for a fresh instance per unknown item. */
+	private static final LockedGear.ItemStatsView UNKNOWN_ITEM_STATS = new LockedGear.ItemStatsView()
+	{
+		@Override
+		public boolean known()
+		{
+			return false;
+		}
+
+		@Override
+		public int str()
+		{
+			return 0;
+		}
+
+		@Override
+		public int rstr()
+		{
+			return 0;
+		}
+
+		@Override
+		public int mdmg()
+		{
+			return 0;
+		}
+	};
+
+	/**
+	 * "Lock current gear": snapshots whatever is currently worn under {@code
+	 * name} and saves it, replacing any existing loadout of the same name.
+	 * The panel has already confirmed an overwrite on the EDT before this
+	 * runs -- see {@link LockedGearActions#lockCurrentGear}'s own doc.
+	 *
+	 * <p>Runs entirely on the client thread: {@link LoadoutCapture#fromWorn}
+	 * needs {@code Client} and {@code ItemManager}, both client-thread-only.
+	 * Called from the EDT (a button click), so {@code clientThread.invoke}
+	 * queues this for the next tick rather than running it inline.
+	 */
+	private void lockCurrentGear(String name)
+	{
+		String trimmed = name == null ? "" : name.trim();
+		if (trimmed.isEmpty())
+		{
+			panel.lockedGearActionFailed("Loadout name must not be blank.");
+			return;
+		}
+		clientThread.invoke(() ->
+		{
+			Optional<Loadout> captured = LoadoutCapture.fromWorn(client, itemManager, trimmed);
+			if (!captured.isPresent())
+			{
+				// Not logged in, or the worn-equipment container has not
+				// loaded yet -- an honest failure, not a silent no-op.
+				panel.lockedGearActionFailed("Could not read worn equipment.");
+				return;
+			}
+			try
+			{
+				loadoutStore.save(captured.get());
+			}
+			catch (LoadoutStore.LoadoutStoreException e)
+			{
+				panel.lockedGearActionFailed(e.getMessage());
+				return;
+			}
+			setSelectedLoadoutName(trimmed);
+			refreshPending = true;
+		});
+	}
+
+	/** Selects a different saved loadout to show. Config-only, like {@code buildRulesShowAll}'s own toggle -- no client-thread hop needed. */
+	private void selectLoadout(String name)
+	{
+		setSelectedLoadoutName(name);
+		refreshPending = true;
+	}
+
+	/**
+	 * Deletes a saved loadout. The panel has already confirmed this on the
+	 * EDT. If the deleted loadout was selected, its config key is left
+	 * pointing at a name that no longer exists -- {@link
+	 * LockedGear#resolve} already falls back to the first loadout by name
+	 * whenever the selected name does not match one, which is exactly the
+	 * right behaviour here too.
+	 */
+	private void deleteLoadout(String name)
+	{
+		try
+		{
+			loadoutStore.delete(name);
+		}
+		catch (LoadoutStore.LoadoutStoreException e)
+		{
+			panel.lockedGearActionFailed(e.getMessage());
+			return;
+		}
+		refreshPending = true;
+	}
+
+	/**
+	 * Renames a saved loadout. If the renamed loadout was the selected one,
+	 * the selection is repointed at its new name -- otherwise it would stop
+	 * matching and the section would silently jump to whichever loadout
+	 * sorts first by name instead of staying on the one the player was just
+	 * looking at.
+	 */
+	private void renameLoadout(String from, String to)
+	{
+		try
+		{
+			loadoutStore.rename(from, to);
+		}
+		catch (LoadoutStore.LoadoutStoreException | IllegalArgumentException e)
+		{
+			panel.lockedGearActionFailed(e.getMessage());
+			return;
+		}
+		if (from != null && from.equals(selectedLoadoutName()))
+		{
+			setSelectedLoadoutName(to == null ? null : to.trim());
+		}
+		refreshPending = true;
+	}
+
+	/**
+	 * Applies one edit (a style/prayer or spell/prayer change) to the named
+	 * loadout and saves it. The loadout name always comes from the panel,
+	 * which already knows exactly which loadout it is showing -- including
+	 * before anything has ever been explicitly selected, the first-by-name
+	 * fallback {@link LockedGear#resolve} applies on its own.
+	 */
+	private void editLoadout(String loadoutName, java.util.function.UnaryOperator<Loadout> edit)
+	{
+		if (loadoutName == null)
+		{
+			return;
+		}
+		Optional<Loadout> current;
+		try
+		{
+			current = loadoutStore.byName(loadoutName);
+		}
+		catch (LoadoutStore.LoadoutStoreException e)
+		{
+			panel.lockedGearActionFailed(e.getMessage());
+			return;
+		}
+		if (!current.isPresent())
+		{
+			return;
+		}
+		try
+		{
+			loadoutStore.save(edit.apply(current.get()));
+		}
+		catch (LoadoutStore.LoadoutStoreException e)
+		{
+			panel.lockedGearActionFailed(e.getMessage());
+			return;
+		}
+		refreshPending = true;
+	}
+
 	/**
 	 * Whether a shop trip is underway at all -- see {@link #shopTripActive}'s
 	 * own doc for why this is not the same question as {@link
@@ -1517,8 +1790,14 @@ public class QuestpathPlugin extends Plugin
 			}
 		}
 
+		// Built here, on the client thread, exactly like every other read
+		// this pass makes: LockedGear.resolve reads item stats through
+		// itemStatsView, an ItemManager call that is client-thread-only.
+		LockedGear lockedGear =
+			LockedGear.resolve(loadoutStore.all(), selectedLoadoutName(), stats, this::itemStatsView);
+
 		panel.update(stats, xp, syncStatus(), buildRules, unmatchedQuests,
-			questVerdicts, items, route, routeWork(route), SyncSettings.from(config), report);
+			questVerdicts, items, route, routeWork(route), SyncSettings.from(config), report, lockedGear);
 
 		// Keeps the Grand Exchange row in step with a shopping list that
 		// changed while the search chatbox happened to already be open --

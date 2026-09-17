@@ -93,6 +93,20 @@ public enum GearEffect
 	WILDERNESS_BOW(false, "Craw's bow / Webweaver bow"),
 	/** Opponent-dependent, not a constant multiplier; the wiki explicitly special-cases this rather than giving a plain scalar. RESEARCH.md &sect;20.2.1. */
 	TWISTED_BOW(false, "Twisted bow"),
+	/**
+	 * Not a &sect;20.2 multiplier at all: the loaded dart's ranged-strength
+	 * bonus is never a separate worn-container item (it lives on the
+	 * blowpipe's own internal state), so {@link
+	 * GearBonuses#rangedStrength()}'s summed-stat approach cannot capture
+	 * it for this weapon. RESEARCH.md &sect;20.2 says as much: "This
+	 * project does not need a citation for the blowpipe/dart… case since
+	 * they were not fetched." When detected, {@link MaxHit#ranged} returns
+	 * {@code notModelled} for the whole result rather than a known value
+	 * built from an unverifiable ranged-strength sum &mdash; unlike every
+	 * other entry here, this one is never surfaced via {@code notApplied()}
+	 * alongside a computed number.
+	 */
+	TOXIC_BLOWPIPE(false, "Toxic blowpipe"),
 	/** Not covered by the fetched `Maximum ranged hit` page's mechanics at all. RESEARCH.md &sect;20.2. */
 	CHINCHOMPA(false, "Chinchompa"),
 	/** Dark bow with dragon arrows: &times;1.5, step-three bonus damage. RESEARCH.md &sect;20.2.1. */
@@ -119,8 +133,30 @@ public enum GearEffect
 	CHAOS_GAUNTLETS(false, "Chaos gauntlets"),
 	/** God spell cast with the matching god cape: +10 base damage modifier. RESEARCH.md &sect;20.3.1. */
 	CHARGE_GOD_CAPE(false, "Charge (god spell + god cape)"),
-	/** Tumeken's shadow's own passive: &times;4 inside ToA, &times;3 outside, capped at +100% of visible bonuses. RESEARCH.md &sect;20.3.1. */
+	/**
+	 * Tumeken's shadow's own passive: &times;4 inside ToA, &times;3 outside,
+	 * &times;1 unequipped, capped at +100% of Visible Bonuses. RESEARCH.md
+	 * &sect;20.3.1. Historical note: earlier versions of this class treated
+	 * the whole Shadow Bonus mechanic as unmodelled. It no longer is
+	 * &mdash; {@link MaxHit#magic} now applies the &times;3 (outside-ToA)
+	 * case whenever Tumeken's shadow is the worn weapon, which is why this
+	 * constant is never added to a loadout's detected effects any more. It
+	 * is kept, undetected, purely as documentation of the raw mechanic; see
+	 * {@link #TUMEKENS_SHADOW_TOA_BONUS} for the one piece of this that
+	 * genuinely stays unmodelled.
+	 */
 	SHADOW_BONUS(false, "Tumeken's shadow passive"),
+	/**
+	 * The difference between Tumeken's shadow's &times;4 inside-ToA Shadow
+	 * Bonus and the &times;3 outside-ToA value {@link MaxHit#magic}
+	 * actually applies. This project has no way to know whether the
+	 * account is inside the Tombs of Amascut, so it always computes with
+	 * the outside-ToA value and surfaces this instead whenever Tumeken's
+	 * shadow is the worn weapon &mdash; a ToA raider sees a magic max hit
+	 * that is a floor, not the true (higher) in-raid number. RESEARCH.md
+	 * &sect;20.3.1.
+	 */
+	TUMEKENS_SHADOW_TOA_BONUS(false, "Tumeken's shadow (inside ToA)"),
 	/** Vs. revenants: +20% (+35% with Forinthry surge). RESEARCH.md &sect;20.3.1. */
 	AVARICE(false, "Amulet of avarice"),
 	/** Standard spellbook only: +10% primary magic damage. RESEARCH.md &sect;20.3.1. */

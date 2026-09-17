@@ -45,6 +45,11 @@ public class MaxHitTest
 		return new GearBonuses(0, 0, 0, Collections.<GearEffect>emptySet(), itemId);
 	}
 
+	private static GearBonuses poweredStaffGear(int itemId, int magicDamagePercent)
+	{
+		return new GearBonuses(0, 0, magicDamagePercent, Collections.<GearEffect>emptySet(), itemId);
+	}
+
 	// ------------------------------------------------------------------
 	// §20.5.1 Melee (6 vectors, verbatim)
 	// ------------------------------------------------------------------
@@ -133,6 +138,186 @@ public class MaxHitTest
 			31, mg6.value());
 		assertEquals("Mg6 (§20.5 minus Slayer helm, not modelled in v1; full §20.5 answer is 35): SLAYER_HELMET_IMBUED must appear in notApplied()",
 			Collections.singletonList(GearEffect.SLAYER_HELMET_IMBUED), mg6.notApplied());
+	}
+
+	// ------------------------------------------------------------------
+	// Final whole-branch review fix (I-2): gear magic damage % (§20.3.1's
+	// Visible Bonuses, scaled by Shadow Bonus) is now applied. None of
+	// these five cite §20.5 — that section has no vector with a nonzero
+	// mdmg at all — each is derived and hand-computed straight from
+	// §20.3.1's PrimaryMagicDamage formula.
+	// ------------------------------------------------------------------
+
+	@Test
+	public void standardSpellWithGearMagicDamageBonus()
+	{
+		// §20.3.1: no Tumeken's shadow -> ShadowBonus = ×1 (identity), so
+		// VisibleBonuses applies directly. Fire Surge base 24, mdmg 10, no
+		// prayer, no void:
+		//   shadowTerm = min(1, (0.10 − 0) × 1) = 0.10
+		//   PrimaryMagicDamage = floor(24 × (1 + 0.10 + 0 + 0)) = floor(26.4) = 26
+		assertEquals("Fire Surge, mdmg 10, no prayer (§20.3.1: floor(24 × 1.10))",
+			26, MaxHit.magic(99, Spell.FIRE_SURGE, MagicPrayer.NONE, gear(0, 0, 10)).value());
+	}
+
+	@Test
+	public void standardSpellWithGearMagicDamageBonusAndAugury()
+	{
+		// Same as above, plus Augury (+4%):
+		//   PrimaryMagicDamage = floor(24 × (1 + 0.10 + 0 + 0.04)) = floor(24 × 1.14) = floor(27.36) = 27
+		assertEquals("Fire Surge, mdmg 10, Augury (§20.3.1: floor(24 × 1.14))",
+			27, MaxHit.magic(99, Spell.FIRE_SURGE, MagicPrayer.AUGURY, gear(0, 0, 10)).value());
+	}
+
+	@Test
+	public void gearMagicDamageBonusIsCappedAtOneHundredPercent()
+	{
+		// §20.3.1: "min(1, ...)" caps the term at +100% regardless of how
+		// high VisibleBonuses × ShadowBonus goes. mdmg 150, no Tumeken's
+		// (ShadowBonus ×1), no prayer, no void:
+		//   uncapped: (1.50 − 0) × 1 = 1.50, which min(1, ...) truncates to 1.0
+		//   PrimaryMagicDamage = floor(24 × (1 + 1.0 + 0 + 0)) = floor(24 × 2.0) = 48
+		// (an uncapped reading would give floor(24 × 2.5) = 60 instead — the
+		// cap is what makes 48, not 60, the answer here.)
+		assertEquals("Fire Surge, mdmg 150, capped at +100% (§20.3.1: floor(24 × 2.0), not floor(24 × 2.5))",
+			48, MaxHit.magic(99, Spell.FIRE_SURGE, MagicPrayer.NONE, gear(0, 0, 150)).value());
+	}
+
+	@Test
+	public void poweredStaffWithGearMagicDamageBonus()
+	{
+		// Trident of the Swamp, Magic 99: base = floor(99/3) − 2 = 31 (as
+		// Mg4). mdmg 20, no Tumeken's, no prayer, no void:
+		//   shadowTerm = min(1, (0.20 − 0) × 1) = 0.20
+		//   PrimaryMagicDamage = floor(31 × (1 + 0.20 + 0 + 0)) = floor(31 × 1.20) = floor(37.2) = 37
+		assertEquals("Trident of the Swamp, Magic 99, mdmg 20 (§20.3.1: floor(31 × 1.20))",
+			37, MaxHit.magic(99, Spell.POWERED_STAFF, MagicPrayer.NONE,
+				poweredStaffGear(ItemID.TOXIC_TOTS_CHARGED, 20)).value());
+	}
+
+	@Test
+	public void tumekensShadowWithGearMagicDamageBonus()
+	{
+		// Tumeken's shadow, Magic 85: base = floor(85/3) + 1 = 29 (as Mg5).
+		// Wielding Tumeken's shadow makes ShadowBonus = ×3 (outside ToA).
+		// mdmg 20, no prayer, no void:
+		//   shadowTerm = min(1, (0.20 − 0) × 3) = min(1, 0.60) = 0.60
+		//   PrimaryMagicDamage = floor(29 × (1 + 0.60 + 0 + 0)) = floor(29 × 1.60) = floor(46.4) = 46
+		MaxHitResult result = MaxHit.magic(85, Spell.POWERED_STAFF, MagicPrayer.NONE,
+			poweredStaffGear(ItemID.TUMEKENS_SHADOW, 20));
+		assertEquals("Tumeken's shadow, Magic 85, mdmg 20 (§20.3.1: floor(29 × 1.60), ShadowBonus ×3)",
+			46, result.value());
+		assertEquals("Tumeken's shadow: the inside-ToA ×4 case must be surfaced as not applied",
+			Collections.singletonList(GearEffect.TUMEKENS_SHADOW_TOA_BONUS), result.notApplied());
+	}
+
+	@Test
+	public void tumekensShadowToaBonusIsNotSurfacedForOtherStaves()
+	{
+		// TUMEKENS_SHADOW_TOA_BONUS is specific to actually wielding
+		// Tumeken's shadow — a different powered staff must not report it.
+		MaxHitResult result = MaxHit.magic(99, Spell.POWERED_STAFF, MagicPrayer.NONE,
+			poweredStaffGear(ItemID.TOXIC_TOTS_CHARGED, 20));
+		assertTrue("Trident of the Swamp must not surface Tumeken's shadow's ToA note",
+			!result.notApplied().contains(GearEffect.TUMEKENS_SHADOW_TOA_BONUS));
+	}
+
+	// ------------------------------------------------------------------
+	// Fix 2 (final-fix-rereview.md): the first pass of the I-2 fix
+	// subtracted Void's 5% from gear.magicDamagePercent() before scaling by
+	// ShadowBonus, on the theory that RESEARCH.md §20.3.1's "(VisibleBonuses
+	// − Void)" required it. That subtraction was wrong: magicDamagePercent
+	// is a pure item-stat sum (LockedGear#resolve sums each item's own
+	// ItemEquipmentStats#getMdmg()) that never included Void's 5% in the
+	// first place — Void is a set effect, not any single item's own
+	// displayed stat — so subtracting it again silently discarded Void's
+	// contribution whenever real item mdmg was also present. A standalone
+	// driver against the compiled class demonstrated this directly: Elite
+	// void mage + 10 item mdmg, Fire Surge, no prayer produced 26 instead
+	// of the correct 27. These two tests are that exact case, plus its
+	// mdmg-0 counterpart re-derived by hand rather than assumed from the
+	// pre-existing Mg3 vector.
+	// ------------------------------------------------------------------
+
+	@Test
+	public void eliteVoidMageWithGearMagicDamageBonus()
+	{
+		// The exact case final-fix-rereview.md verified by direct
+		// execution. Elite void mage, no Tumeken's (ShadowBonus ×1), mdmg
+		// 10, Fire Surge (base 24), no prayer:
+		//   shadowTerm = min(100, 10 × 1) = 10        (no Void subtraction — fix 2)
+		//   PrimaryMagicDamage = floor(24 × (1 + 0.10 + 0.05 + 0)) = floor(24 × 1.15) = floor(27.6) = 27
+		assertEquals("Elite void mage + mdmg 10, Fire Surge, no prayer (§20.3.1: floor(24 × 1.15), NOT 26)",
+			27, MaxHit.magic(99, Spell.FIRE_SURGE, MagicPrayer.NONE,
+				gear(0, 0, 10, GearEffect.ELITE_VOID_MAGE)).value());
+	}
+
+	@Test
+	public void eliteVoidMageWithNoGearMagicDamageBonus()
+	{
+		// Same setup with mdmg 0, re-derived independently of the
+		// pre-existing Mg3 §20.5 vector (which happens to share this exact
+		// input/output, since Mg3 also uses mdmg 0): with no item mdmg
+		// there is nothing for ShadowBonus to scale, so removing the Void
+		// subtraction changes nothing at this data point specifically —
+		// this is the case the original bug's own Math.max(0, ...) patch
+		// could pass without actually being correct.
+		//   shadowTerm = min(100, 0 × 1) = 0
+		//   PrimaryMagicDamage = floor(24 × (1 + 0 + 0.05 + 0)) = floor(24 × 1.05) = floor(25.2) = 25
+		assertEquals("Elite void mage + mdmg 0, Fire Surge, no prayer (§20.3.1: floor(24 × 1.05))",
+			25, MaxHit.magic(99, Spell.FIRE_SURGE, MagicPrayer.NONE,
+				gear(0, 0, 0, GearEffect.ELITE_VOID_MAGE)).value());
+	}
+
+	// ------------------------------------------------------------------
+	// Final whole-branch review fix (I-1): Toxic blowpipe. Ranged max hit
+	// must be entirely notModelled -- GearBonuses#rangedStrength()'s
+	// summed-stat approach cannot capture the loaded dart's real ranged
+	// strength for this weapon at all, so no partial number is shown
+	// either. Melee and magic must be completely unaffected.
+	// ------------------------------------------------------------------
+
+	@Test
+	public void toxicBlowpipeUnloadedIsNotModelled()
+	{
+		Set<GearEffect> effects = GearEffects.detect(Collections.singletonList(ItemID.TOXIC_BLOWPIPE));
+		assertEquals(Collections.singleton(GearEffect.TOXIC_BLOWPIPE), effects);
+
+		GearBonuses gearWithBlowpipe = new GearBonuses(0, 200, 0, effects, null);
+		MaxHitResult result = MaxHit.ranged(99, RangedStyle.RAPID, RangedPrayer.NONE, gearWithBlowpipe);
+		assertTrue("unloaded Toxic blowpipe (id " + ItemID.TOXIC_BLOWPIPE + ") must not resolve to a value",
+			!result.isKnown());
+		assertEquals("Toxic blowpipe uses dart strength; not modelled", result.reason());
+	}
+
+	@Test
+	public void toxicBlowpipeLoadedIsNotModelled()
+	{
+		Set<GearEffect> effects = GearEffects.detect(Collections.singletonList(ItemID.TOXIC_BLOWPIPE_LOADED));
+		assertEquals(Collections.singleton(GearEffect.TOXIC_BLOWPIPE), effects);
+
+		GearBonuses gearWithBlowpipe = new GearBonuses(0, 200, 0, effects, null);
+		MaxHitResult result = MaxHit.ranged(99, RangedStyle.RAPID, RangedPrayer.NONE, gearWithBlowpipe);
+		assertTrue("loaded Toxic blowpipe (id " + ItemID.TOXIC_BLOWPIPE_LOADED + ") must not resolve to a value",
+			!result.isKnown());
+		assertEquals("Toxic blowpipe uses dart strength; not modelled", result.reason());
+	}
+
+	@Test
+	public void toxicBlowpipeDoesNotAffectMeleeOrMagicLines()
+	{
+		// The same GearBonuses (blowpipe detected, plus a non-zero strength
+		// bonus and magic damage % so a real number would be produced if
+		// the blowpipe check leaked into the other two styles) must still
+		// resolve melee and magic normally.
+		Set<GearEffect> effects = GearEffects.detect(Collections.singletonList(ItemID.TOXIC_BLOWPIPE_LOADED));
+		GearBonuses gearWithBlowpipe = new GearBonuses(82, 200, 10, effects, null);
+
+		MaxHitResult melee = MaxHit.melee(99, AttackStyle.ACCURATE, StrengthPrayer.NONE, gearWithBlowpipe);
+		assertTrue("melee must be unaffected by a detected Toxic blowpipe", melee.isKnown());
+
+		MaxHitResult magic = MaxHit.magic(99, Spell.FIRE_SURGE, MagicPrayer.NONE, gearWithBlowpipe);
+		assertTrue("magic must be unaffected by a detected Toxic blowpipe", magic.isKnown());
 	}
 
 	// ------------------------------------------------------------------

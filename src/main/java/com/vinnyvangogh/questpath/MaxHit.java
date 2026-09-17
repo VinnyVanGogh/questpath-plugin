@@ -11,15 +11,24 @@ import net.runelite.api.gameval.ItemID;
  * RESEARCH.md &sect;20. No client dependency: levels are the caller's
  * (live) values, gear is the frozen loadout's {@link GearBonuses}.
  *
- * v1's scope is exactly &sect;20.6's ruling: base level + style bonus +
- * offensive prayer + Void/Elite Void. Every other multiplier &sect;20 names
- * is a real {@link GearEffect}, but this class never multiplies it in
- * &mdash; it only reports it via {@link MaxHitResult#notApplied()} when
- * {@link GearBonuses#effects()} contains it. All arithmetic below is done
- * in integers on purpose: every prayer, style, and void bonus &sect;20
- * lists is a whole percent or an exact eighth (1.125 = 9/8), so integer
- * multiply-then-divide reproduces the spec's floors exactly with no
- * floating-point rounding risk.
+ * v1's scope started as exactly &sect;20.6's ruling &mdash; base level +
+ * style bonus + offensive prayer + Void/Elite Void &mdash; and melee and
+ * ranged still match that description exactly. {@link #magic} no longer
+ * does: a final whole-branch review found that leaving out gear magic
+ * damage % (&sect;20.3.1's Visible Bonuses, scaled by Shadow Bonus) was
+ * silently under-reporting every Occult/Ancestral/Tormented-style loadout,
+ * so the controller overrode that part of the v1 scope and {@link #magic}
+ * now applies it; see that method's own javadoc for the formula. Every
+ * other multiplier &sect;20 names is still a real {@link GearEffect}, but
+ * this class never multiplies it in &mdash; it only reports it via {@link
+ * MaxHitResult#notApplied()} when {@link GearBonuses#effects()} contains
+ * it, or, for {@link GearEffect#TUMEKENS_SHADOW_TOA_BONUS} specifically,
+ * when the wielded weapon is Tumeken's shadow (see {@link #magicNotApplied}
+ * — that one entry is weapon state, not a detectable gear effect). All
+ * arithmetic below is done in integers on purpose: every prayer, style,
+ * void, and gear-magic-damage bonus &sect;20 lists is a whole percent or an
+ * exact eighth (1.125 = 9/8), so integer multiply-then-divide reproduces
+ * the spec's floors exactly with no floating-point rounding risk.
  */
 public final class MaxHit
 {
@@ -156,6 +165,19 @@ public final class MaxHit
 	{
 		Set<GearEffect> effects = gear.effects();
 
+		// Final whole-branch review fix (I-1): a Toxic blowpipe's loaded
+		// dart supplies its ranged strength from state this project never
+		// tracks (see GearEffect#TOXIC_BLOWPIPE's javadoc), so
+		// GearBonuses#rangedStrength()'s summed-stat approach cannot be
+		// trusted here at all — not even as a partial answer. This returns
+		// the whole result as notModelled, before any arithmetic, rather
+		// than a known value with the blowpipe merely listed as not
+		// applied.
+		if (effects.contains(GearEffect.TOXIC_BLOWPIPE))
+		{
+			return MaxHitResult.notModelled("Toxic blowpipe uses dart strength; not modelled");
+		}
+
 		// §20.2: floor((Rng + Boost) × Prayer). Boost is always 0.
 		int stage1 = (rangedLevel * (100 + prayer.percentBonus())) / 100;
 
@@ -192,17 +214,37 @@ public final class MaxHit
 
 	/**
 	 * Max magic hit: base spell damage (or a powered staff's level-based
-	 * formula) + Elite Void mage + prayer only. Every other &sect;20.3.1
-	 * term (Chaos Gauntlets, Charge, Shadow Bonus, Salve, Avarice, Smoke
-	 * battlestaff, Virtus, both sceptres, all three Tomes, Mark of
+	 * formula), scaled by &sect;20.3.1's Primary Magic Damage multiplier
+	 * sum &mdash; Visible Bonuses (gear magic damage %), Shadow Bonus
+	 * (Tumeken's shadow's own passive), Elite Void mage, and prayer. Every
+	 * other &sect;20.3.1 term (Chaos Gauntlets, Charge, Salve, Avarice,
+	 * Smoke battlestaff, Virtus, both sceptres, all three Tomes, Mark of
 	 * Darkness, Ahrim's Damned, Castle wars bracelet, Twinflame staff's
 	 * second hit) is reported via {@link MaxHitResult#notApplied()} instead
-	 * of applied, per &sect;20.6. {@link GearBonuses#magicDamagePercent()}
-	 * feeds the "Visible Bonuses" term of &sect;20.3.1's full pipeline,
-	 * which &sect;20.6 places outside v1's scope entirely (it is only ever
-	 * relevant multiplied by Tumeken's shadow's Shadow Bonus, itself
-	 * unmodelled) — it is stored on {@link GearBonuses} for callers that
-	 * need the raw stat, but this method does not read it.
+	 * of applied, per &sect;20.6.
+	 *
+	 * <p>Final whole-branch review fix (I-2): earlier versions of this
+	 * javadoc claimed {@link GearBonuses#magicDamagePercent()} "is only
+	 * ever relevant multiplied by Tumeken's shadow's Shadow Bonus, itself
+	 * unmodelled" and so was never read. That was wrong &mdash; &sect;20.3.1
+	 * states Shadow Bonus is &times;1 (identity), not &times;0, whenever
+	 * Tumeken's shadow is not equipped, so gear magic damage bonuses
+	 * (Occult necklace, Ancestral robes, Tormented bracelet, a god cape,
+	 * ...) are a real, always-active contributor with or without the
+	 * shadow. This method now reads it.
+	 *
+	 * <p>Fix 2 (final-fix-rereview.md): the fix above initially subtracted
+	 * Elite Void's +5% from {@link GearBonuses#magicDamagePercent()} before
+	 * scaling by Shadow Bonus, misreading &sect;20.3.1's quoted
+	 * "(VisibleBonuses &minus; Void)" as applying to any item-stat sum.
+	 * {@code magicDamagePercent} is summed purely from each worn item's own
+	 * displayed magic damage stat and never included Void's 5% (a set
+	 * effect, not an item stat) to begin with, so that subtraction removed
+	 * Void's contribution a second time whenever real item magic damage was
+	 * also present &mdash; verified wrong by direct execution: Elite void
+	 * mage + 10 item mdmg, Fire Surge, no prayer produced 26, not the
+	 * correct 27. See the inline comment inside this method for the fixed
+	 * arithmetic and the reasoning.
 	 *
 	 * @param magicLevel the caller's live Magic level.
 	 * @param spell the spell being cast, or {@link Spell#POWERED_STAFF} to
@@ -213,6 +255,7 @@ public final class MaxHit
 	public static MaxHitResult magic(int magicLevel, Spell spell, MagicPrayer prayer, GearBonuses gear)
 	{
 		Set<GearEffect> effects = gear.effects();
+		boolean tumekensShadowWorn = gear.poweredStaffItemId() != null && gear.poweredStaffItemId() == TUMEKENS_SHADOW;
 
 		int base;
 		if (spell.isPoweredStaff())
@@ -258,12 +301,55 @@ public final class MaxHit
 		// §20.3.1 Void row: +5%, Elite void mage + Void mage helm only.
 		int voidPercent = effects.contains(GearEffect.ELITE_VOID_MAGE) ? 5 : 0;
 
-		// §20.3.1: PrimaryMagicDamage = floor(BaseDamageModifier × (1 +
-		// ... + Void + ... + Prayer)), with every other additive term in
-		// v1's scope forced to zero per §20.6.
-		int maxHit = (base * (100 + voidPercent + prayer.percentBonus())) / 100;
+		// §20.3.1 Shadow Bonus row: "×4 inside ToA, ×3 outside, ×1
+		// unequipped". This project cannot know whether the account is
+		// inside ToA, so it always uses the lower outside-ToA value when
+		// Tumeken's shadow is the worn weapon — the difference is surfaced
+		// via GearEffect#TUMEKENS_SHADOW_TOA_BONUS below, never silently
+		// dropped. ×1 (identity) with no Tumeken's shadow, matching the
+		// table's own "unequipped" row.
+		int shadowMultiplier = tumekensShadowWorn ? 3 : 1;
 
-		return MaxHitResult.known(maxHit, notApplied(effects, MAGIC_EFFECTS));
+		// §20.3.1 Visible Bonuses row: "sum of displayed magic damage
+		// bonuses, excluding Elite Void's 5%". GearBonuses#magicDamagePercent()
+		// is summed directly from each worn item's own
+		// ItemEquipmentStats#getMdmg() (see LockedGear#resolve) — a pure
+		// item-stat sum, not a read of the in-game equipment screen. The
+		// row's "excluding Elite Void's 5%" wording describes the SCREEN's
+		// displayed number (which does show Void's 5% when it is worn) —
+		// this project's item-stat sum never included Void's 5% to begin
+		// with, since Void's bonus is a set effect, not any single item's
+		// own mdmg stat. So this value already is what the quoted formula's
+		// "(VisibleBonuses − Void)" is trying to isolate from the screen's
+		// number; it needs no further adjustment here.
+		int visibleBonusesPercent = gear.magicDamagePercent();
+
+		// §20.3.1's quoted term is "min(1, (VisibleBonuses − Void) ×
+		// ShadowBonus)". Fix 2 (final-fix-rereview.md): the "− Void"
+		// subtraction is deliberately NOT applied here, even though the
+		// quoted text includes it. That subtraction exists in the wiki's
+		// own formula to strip Void's 5% back OUT of the equipment
+		// screen's displayed bonus (which includes it) before Shadow Bonus
+		// scales the rest — it is not a generic instruction to subtract
+		// Void from any number shaped like Visible Bonuses. Since
+		// visibleBonusesPercent above is a pure item-stat sum that never
+		// contained Void's 5% in the first place, subtracting Void again
+		// here would remove its contribution a second time, in the wrong
+		// direction — which is exactly the bug this fix corrects. Verified
+		// by direct execution (final-fix-rereview.md): Elite void mage +
+		// 10 item mdmg, Fire Surge, no prayer must give floor(24 × (1 +
+		// 0.10 + 0.05)) = 27, not 26.
+		int shadowTermPercent = Math.min(100, visibleBonusesPercent * shadowMultiplier);
+
+		// §20.3.1: PrimaryMagicDamage = floor(BaseDamageModifier × (1 +
+		// min(1, (VisibleBonuses − Void) × ShadowBonus) + Void + Prayer)),
+		// with every other additive term in v1's scope forced to zero per
+		// §20.6 (Salve, Avarice, Smoke battlestaff, Virtus, and the whole
+		// Pre/Post-Hit-Roll tail). Void is still added here, once, as its
+		// own separate term — unaffected by fix 2 above.
+		int maxHit = (base * (100 + shadowTermPercent + voidPercent + prayer.percentBonus())) / 100;
+
+		return MaxHitResult.known(maxHit, magicNotApplied(effects, tumekensShadowWorn));
 	}
 
 	/**
@@ -385,6 +471,39 @@ public final class MaxHit
 		for (GearEffect effect : GearEffect.values())
 		{
 			if (relevantToStyle.contains(effect) && detected.contains(effect) && !effect.modelled())
+			{
+				out.add(effect);
+			}
+		}
+		return out;
+	}
+
+	/**
+	 * Magic's own {@link #notApplied} construction: everything the generic
+	 * helper would find via {@code detected}/{@link #MAGIC_EFFECTS}, plus
+	 * {@link GearEffect#TUMEKENS_SHADOW_TOA_BONUS} whenever {@code
+	 * tumekensShadowWorn} is true. That one entry cannot come from {@code
+	 * detected} the way every other entry does &mdash; it is not a gear
+	 * effect {@link GearEffects#detect} could ever find from an item id
+	 * (see that class's javadoc), it is a function of which weapon is
+	 * wielded, known only inside {@link #magic} itself. Folded into a
+	 * single {@link GearEffect#values()} pass so the result stays in
+	 * declaration order exactly like {@link #notApplied} does.
+	 */
+	private static List<GearEffect> magicNotApplied(Set<GearEffect> detected, boolean tumekensShadowWorn)
+	{
+		List<GearEffect> out = new ArrayList<>();
+		for (GearEffect effect : GearEffect.values())
+		{
+			if (effect == GearEffect.TUMEKENS_SHADOW_TOA_BONUS)
+			{
+				if (tumekensShadowWorn)
+				{
+					out.add(effect);
+				}
+				continue;
+			}
+			if (MAGIC_EFFECTS.contains(effect) && detected.contains(effect) && !effect.modelled())
 			{
 				out.add(effect);
 			}

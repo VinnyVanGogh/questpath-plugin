@@ -44,6 +44,13 @@ import net.runelite.api.gameval.ItemID;
  * <li>{@link GearEffect#CHAOS_GAUNTLETS} ({@code GAUNTLETS_OF_CHAOS}).</li>
  * <li>{@link GearEffect#TOME_OF_FIRE} (charged {@code TOME_OF_FIRE} only;
  * the uncharged variant is not treated as carrying the effect).</li>
+ * <li>{@link GearEffect#TOXIC_BLOWPIPE} ({@code TOXIC_BLOWPIPE},
+ * {@code TOXIC_BLOWPIPE_LOADED}) &mdash; final whole-branch review fix. An
+ * ornament-kit-recoloured variant exists in gameval ({@code
+ * TOXIC_BLOWPIPE_ORNAMENT}/{@code TOXIC_BLOWPIPE_LOADED_ORNAMENT}) but is
+ * deliberately not wired in here: the controller's ruling scoped this fix
+ * to exactly the two named ids, cross-verified against the real jar, and
+ * this project does not widen a scoped fix on its own initiative.</li>
  * </ul>
  *
  * <b>Deliberately NOT detected:</b> Salve amulet, Salve amulet (e), Salve
@@ -69,6 +76,10 @@ import net.runelite.api.gameval.ItemID;
  * direct jar check, so none of them can be detected here. A caller that
  * knows one of these is worn (e.g. from the loadout's own item list) may
  * still construct a {@link GearBonuses} with that effect included directly.
+ * {@link GearEffect#TUMEKENS_SHADOW_TOA_BONUS} is a different kind of
+ * exclusion: it is not an item at all, but ToA-location state, so no item
+ * id could ever detect it &mdash; {@link MaxHit#magic} surfaces it directly
+ * from the wielded weapon, not from this class.
  */
 public final class GearEffects
 {
@@ -113,6 +124,14 @@ public final class GearEffects
 	// Single-item effects.
 	private static final int CHAOS_GAUNTLETS_ID = ItemID.GAUNTLETS_OF_CHAOS;
 	private static final int TOME_OF_FIRE_ID = ItemID.TOME_OF_FIRE;
+
+	// Toxic blowpipe, unloaded and loaded. Both ids verified by
+	// `javap -constants -p net.runelite.api.gameval.ItemID` against
+	// runelite-api-1.12.37.jar (final whole-branch review fix, I-1):
+	//   public static final int TOXIC_BLOWPIPE = 12924;
+	//   public static final int TOXIC_BLOWPIPE_LOADED = 12926;
+	private static final int TOXIC_BLOWPIPE_ID = ItemID.TOXIC_BLOWPIPE;
+	private static final int TOXIC_BLOWPIPE_LOADED_ID = ItemID.TOXIC_BLOWPIPE_LOADED;
 
 	private GearEffects()
 	{
@@ -204,6 +223,11 @@ public final class GearEffects
 		if (ids.contains(TOME_OF_FIRE_ID))
 		{
 			effects.add(GearEffect.TOME_OF_FIRE);
+		}
+
+		if (ids.contains(TOXIC_BLOWPIPE_ID) || ids.contains(TOXIC_BLOWPIPE_LOADED_ID))
+		{
+			effects.add(GearEffect.TOXIC_BLOWPIPE);
 		}
 
 		return effects;
