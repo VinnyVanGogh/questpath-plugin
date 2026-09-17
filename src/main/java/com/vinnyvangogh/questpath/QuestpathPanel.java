@@ -24,6 +24,7 @@ import java.util.Set;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -31,6 +32,7 @@ import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -320,6 +322,22 @@ class QuestpathPanel extends PluginPanel
 	private final java.util.function.BooleanSupplier shopRouteActive;
 	private final ShopItemSkips shopItemSkips;
 
+	/** Every callback the Locked gear section calls back into the plugin for. See its own class doc. */
+	private final LockedGearActions lockedGearActions;
+
+	/** What the Locked gear section last rendered, cached only so a failed-action message can force an immediate redraw. */
+	private LockedGear lastLockedGear;
+
+	/**
+	 * The last locked-gear action's failure message, or null. Shown in the
+	 * section until the next action attempt, success or failure -- see
+	 * {@link #lockedGearActionFailed}.
+	 */
+	private String lockedGearMessage;
+
+	/** Whether the Locked gear section's item list is expanded. Not persisted -- a per-session UI convenience, like the search boxes' text. */
+	private boolean lockedGearItemsExpanded;
+
 	QuestpathPanel(SpriteManager sprites, QuestpathConfig config, ConfigManager configManager,
 		OverlaySettingsPanel overlaySettings,
 		java.util.function.BiFunction<String, Integer, SkillPlan> planner,
@@ -330,8 +348,9 @@ class QuestpathPanel extends PluginPanel
 		java.util.function.Supplier<WorldPoint> playerLocation, Runnable onShopRouteSent,
 		Runnable onCancelShopRoute,
 		java.util.function.BooleanSupplier shopRouteActive, Runnable onSyncNow,
-		ShopItemSkips shopItemSkips)
+		ShopItemSkips shopItemSkips, LockedGearActions lockedGearActions)
 	{
+		this.lockedGearActions = lockedGearActions;
 		this.onSyncNow = onSyncNow;
 		this.config = config;
 		this.configManager = configManager;
@@ -609,11 +628,36 @@ class QuestpathPanel extends PluginPanel
 	 */
 	void update(CombatStats stats, SkillXp xp, SyncStatus sync,
 		List<BuildRule> rules, List<String> unmatchedQuests, QuestVerdicts verdicts, QuestItems items,
-		NextQuestStatus nextQuest, RouteWork routeWork, SyncSettings settings, AccountReport report)
+		NextQuestStatus nextQuest, RouteWork routeWork, SyncSettings settings, AccountReport report,
+		LockedGear lockedGear)
 	{
 		SwingUtilities.invokeLater(() ->
 			render(stats, xp, sync, rules, unmatchedQuests, verdicts, items, nextQuest, routeWork,
-				settings, report));
+				settings, report, lockedGear));
+	}
+
+	/**
+	 * Called by the plugin's locked-gear callbacks when an action fails --
+	 * see {@link LockedGearActions}. Hops to the EDT itself, exactly like
+	 * {@link #update}, since a failure can be reported from the client
+	 * thread ({@code lockCurrentGear}) or straight from an EDT button
+	 * handler. Redraws immediately rather than waiting for the next tick's
+	 * {@link #update}, the same reasoning {@link #onBuildRulesShowAllToggled}
+	 * already uses for its own config-only change.
+	 */
+	void lockedGearActionFailed(String message)
+	{
+		SwingUtilities.invokeLater(() ->
+		{
+			lockedGearMessage = message;
+			if (lastStats == null)
+			{
+				// Nothing has rendered yet -- the first real render will
+				// already show this once it arrives.
+				return;
+			}
+			rebuildCombatTab();
+		});
 	}
 
 	/**
@@ -654,13 +698,14 @@ class QuestpathPanel extends PluginPanel
 
 	private void render(CombatStats stats, SkillXp xp, SyncStatus sync,
 		List<BuildRule> rules, List<String> unmatchedQuests, QuestVerdicts verdicts, QuestItems items,
-		NextQuestStatus nextQuest, RouteWork routeWork, SyncSettings settings, AccountReport report)
+		NextQuestStatus nextQuest, RouteWork routeWork, SyncSettings settings, AccountReport report,
+		LockedGear lockedGear)
 	{
 		long startedAt = System.nanoTime();
 		try
 		{
 			renderBody(stats, xp, sync, rules, unmatchedQuests, verdicts, items, nextQuest,
-				routeWork, settings, report);
+				routeWork, settings, report, lockedGear);
 		}
 		finally
 		{
@@ -708,16 +753,18 @@ class QuestpathPanel extends PluginPanel
 
 	private void renderBody(CombatStats stats, SkillXp xp, SyncStatus sync,
 		List<BuildRule> rules, List<String> unmatchedQuests, QuestVerdicts verdicts, QuestItems items,
-		NextQuestStatus nextQuest, RouteWork routeWork, SyncSettings settings, AccountReport report)
+		NextQuestStatus nextQuest, RouteWork routeWork, SyncSettings settings, AccountReport report,
+		LockedGear lockedGear)
 	{
 		clearBodies(PanelSections.Tab.SYNC);
 
 		lastStats = stats;
 		lastXp = xp;
 		lastRules = rules;
+		lastLockedGear = lockedGear;
 
 		Object combatSignature =
-			java.util.Arrays.asList(stats, xp.signature(), rules, config.buildRulesShowAll());
+			java.util.Arrays.asList(stats, xp.signature(), rules, config.buildRulesShowAll(), lockedGear);
 		if (!java.util.Objects.equals(combatSignature, lastCombatSignature))
 		{
 			rebuildCombatTab();
@@ -848,6 +895,9 @@ class QuestpathPanel extends PluginPanel
 		combat.add(heading(PanelSections.COMBAT.title()));
 		combat.add(combatBlock(stats));
 		combat.add(Box.createVerticalStrut(14));
+		combat.add(heading(PanelSections.LOCKED_GEAR.title()));
+		combat.add(lockedGearSection(lastLockedGear));
+		combat.add(Box.createVerticalStrut(14));
 		combat.add(heading(PanelSections.CEILING.title()));
 		combat.add(ceilingBlock(stats, xp, ceiling));
 		combat.add(Box.createVerticalStrut(14));
@@ -857,6 +907,460 @@ class QuestpathPanel extends PluginPanel
 		combat.add(buildRulesSection(stats, rules));
 		renderPlannedSectionsFor(PanelSections.Tab.COMBAT);
 		showBodies(PanelSections.Tab.COMBAT);
+	}
+
+	// ------------------------------------------------------------------
+	// Locked gear: a saved loadout's melee/ranged/magic max hit at live
+	// levels, while the account wears something else entirely. See
+	// LockedGear's own class doc for why the gear is frozen and only the
+	// levels move.
+	// ------------------------------------------------------------------
+
+	/**
+	 * The whole Locked gear section, for every {@link LockedGear.Shape}.
+	 * Rebuilt wholesale by {@link #rebuildCombatTab} along with the rest of
+	 * the Combat tab -- there is no persisted widget state here beyond
+	 * {@link #lockedGearItemsExpanded}, which this method reads back rather
+	 * than owning a JPanel across rebuilds.
+	 */
+	private JPanel lockedGearSection(LockedGear gear)
+	{
+		JPanel panel = column();
+
+		if (lockedGearMessage != null)
+		{
+			JLabel error = new JLabel(wrap(lockedGearMessage));
+			error.setForeground(ColorScheme.PROGRESS_ERROR_COLOR);
+			error.setAlignmentX(Component.LEFT_ALIGNMENT);
+			panel.add(error);
+			panel.add(Box.createVerticalStrut(6));
+		}
+
+		if (gear == null || gear.shape() == LockedGear.Shape.NOT_LOGGED_IN)
+		{
+			panel.add(muted("Log in to see your saved loadouts."));
+			return panel;
+		}
+
+		if (gear.shape() == LockedGear.Shape.CORRUPT)
+		{
+			JLabel error = new JLabel(wrap("Could not read your saved loadouts: " + gear.corruptDetail()
+				+ ". Nothing was overwritten."));
+			error.setForeground(ColorScheme.PROGRESS_ERROR_COLOR);
+			error.setAlignmentX(Component.LEFT_ALIGNMENT);
+			panel.add(error);
+			return panel;
+		}
+
+		if (gear.shape() == LockedGear.Shape.NO_LOADOUTS)
+		{
+			panel.add(muted("No loadout saved. Put on the gear you plan to fight in, then press Lock current gear."));
+			panel.add(Box.createVerticalStrut(6));
+			panel.add(lockCurrentGearButton(gear));
+			return panel;
+		}
+
+		// READY.
+		panel.add(pickerRow(gear));
+		panel.add(Box.createVerticalStrut(8));
+		panel.add(styleRow("Melee", gear.melee(), meleeControls(gear)));
+		panel.add(Box.createVerticalStrut(8));
+		panel.add(styleRow("Ranged", gear.ranged(), rangedControls(gear)));
+		panel.add(Box.createVerticalStrut(8));
+		panel.add(styleRow("Magic", gear.magic(), magicControls(gear)));
+		panel.add(Box.createVerticalStrut(6));
+		panel.add(muted("At your real levels, in " + gear.selectedLoadout().name()));
+		panel.add(Box.createVerticalStrut(6));
+		panel.add(itemListSection(gear.selectedLoadout()));
+
+		return panel;
+	}
+
+	/** The loadout picker combo, plus Lock current gear / Rename / Delete underneath it. */
+	private JPanel pickerRow(LockedGear gear)
+	{
+		JPanel panel = column();
+
+		JComboBox<String> picker = new JComboBox<>(gear.loadoutNames().toArray(new String[0]));
+		picker.setSelectedItem(gear.selectedLoadout().name());
+		picker.setBackground(ColorScheme.DARKER_GRAY_COLOR);
+		picker.setForeground(Color.WHITE);
+		picker.setFont(FontManager.getRunescapeSmallFont());
+		picker.setMaximumSize(new Dimension(Integer.MAX_VALUE, 22));
+		picker.setAlignmentX(Component.LEFT_ALIGNMENT);
+		picker.setToolTipText("Which saved loadout to show the max hit for");
+		// Attached after setSelectedItem above, so restoring the current
+		// selection on rebuild never fires a spurious select of itself.
+		picker.addActionListener(e ->
+		{
+			String chosen = (String) picker.getSelectedItem();
+			if (chosen == null || chosen.equals(gear.selectedLoadout().name()))
+			{
+				return;
+			}
+			lockedGearMessage = null;
+			lockedGearActions.selectLoadout.accept(chosen);
+		});
+		panel.add(picker);
+		panel.add(Box.createVerticalStrut(4));
+
+		JPanel buttons = new JPanel();
+		buttons.setLayout(new BoxLayout(buttons, BoxLayout.X_AXIS));
+		buttons.setAlignmentX(Component.LEFT_ALIGNMENT);
+		buttons.add(lockCurrentGearButton(gear));
+		buttons.add(Box.createHorizontalStrut(4));
+		buttons.add(renameButton(gear));
+		buttons.add(Box.createHorizontalStrut(4));
+		buttons.add(deleteButton(gear));
+		panel.add(buttons);
+
+		return panel;
+	}
+
+	/**
+	 * "Lock current gear". Prompts for a name on the EDT and, if it already
+	 * names a saved loadout, confirms the overwrite there too -- both before
+	 * ever handing off to the plugin, which is the only thing that hops to
+	 * the client thread. Works from every shape: {@code gear} may be a
+	 * {@link LockedGear.Shape#NO_LOADOUTS} snapshot with nothing to name yet.
+	 */
+	private JButton lockCurrentGearButton(LockedGear gear)
+	{
+		JButton button = new JButton("Lock current gear");
+		button.setFont(FontManager.getRunescapeSmallFont());
+		button.setAlignmentX(Component.LEFT_ALIGNMENT);
+		button.setToolTipText("<html><body style='width:200px'>Snapshots the gear you are wearing"
+			+ " right now and saves it under a name. Only your live levels move after this --"
+			+ " the gear itself stays exactly as locked until you press this again.</body></html>");
+		button.addActionListener(e ->
+		{
+			boolean ready = gear.shape() == LockedGear.Shape.READY;
+			String defaultName = ready ? gear.selectedLoadout().name() : "";
+			String name = JOptionPane.showInputDialog(this, "Name this loadout:", defaultName);
+			if (name == null)
+			{
+				return;
+			}
+			String trimmed = name.trim();
+			if (trimmed.isEmpty())
+			{
+				JOptionPane.showMessageDialog(this, "Loadout name must not be blank.", "Quest Path",
+					JOptionPane.WARNING_MESSAGE);
+				return;
+			}
+			if (ready && gear.loadoutNames().contains(trimmed))
+			{
+				int choice = JOptionPane.showConfirmDialog(this,
+					"A loadout named \"" + trimmed + "\" already exists. Overwrite it?",
+					"Quest Path", JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE);
+				if (choice != JOptionPane.OK_OPTION)
+				{
+					return;
+				}
+			}
+			lockedGearMessage = null;
+			lockedGearActions.lockCurrentGear.accept(trimmed);
+		});
+		return button;
+	}
+
+	private JButton renameButton(LockedGear gear)
+	{
+		JButton button = new JButton("Rename");
+		button.setFont(FontManager.getRunescapeSmallFont());
+		button.setAlignmentX(Component.LEFT_ALIGNMENT);
+		button.addActionListener(e ->
+		{
+			String current = gear.selectedLoadout().name();
+			String name = JOptionPane.showInputDialog(this, "Rename \"" + current + "\" to:", current);
+			if (name == null)
+			{
+				return;
+			}
+			String trimmed = name.trim();
+			if (trimmed.isEmpty() || trimmed.equals(current))
+			{
+				return;
+			}
+			lockedGearMessage = null;
+			lockedGearActions.renameLoadout.accept(current, trimmed);
+		});
+		return button;
+	}
+
+	private JButton deleteButton(LockedGear gear)
+	{
+		JButton button = new JButton("Delete");
+		button.setFont(FontManager.getRunescapeSmallFont());
+		button.setAlignmentX(Component.LEFT_ALIGNMENT);
+		button.addActionListener(e ->
+		{
+			String current = gear.selectedLoadout().name();
+			int choice = JOptionPane.showConfirmDialog(this,
+				"Delete loadout \"" + current + "\"? This cannot be undone.",
+				"Quest Path", JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE);
+			if (choice != JOptionPane.OK_OPTION)
+			{
+				return;
+			}
+			lockedGearMessage = null;
+			lockedGearActions.deleteLoadout.accept(current);
+		});
+		return button;
+	}
+
+	/**
+	 * One style's row: label, the big number or state text, its two compact
+	 * combos underneath, and (when relevant) the muted "Not applied" line.
+	 */
+	private JPanel styleRow(String label, LockedGear.StyleLine line, JComponent controls)
+	{
+		JPanel panel = column();
+
+		JLabel title = row(label);
+		title.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
+		panel.add(title);
+
+		switch (line.kind())
+		{
+			case NEEDS_SELECTION:
+			{
+				JLabel value = new JLabel("Choose a style and prayer");
+				value.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
+				value.setAlignmentX(Component.LEFT_ALIGNMENT);
+				panel.add(value);
+				break;
+			}
+			case UNKNOWN_STATS:
+			{
+				JLabel value = new JLabel(wrap("Stats unknown for: " + String.join(", ", line.unknownItemNames())));
+				value.setForeground(ColorScheme.PROGRESS_ERROR_COLOR);
+				value.setAlignmentX(Component.LEFT_ALIGNMENT);
+				panel.add(value);
+				break;
+			}
+			case RESULT:
+			default:
+			{
+				MaxHitResult result = line.result();
+				if (result.isKnown())
+				{
+					JLabel value = new JLabel(String.valueOf(result.value()));
+					value.setFont(FontManager.getRunescapeBoldFont().deriveFont(20f));
+					value.setForeground(Color.WHITE);
+					value.setAlignmentX(Component.LEFT_ALIGNMENT);
+					panel.add(value);
+				}
+				else
+				{
+					JLabel value = new JLabel(wrap(result.reason()));
+					value.setForeground(ColorScheme.PROGRESS_ERROR_COLOR);
+					value.setAlignmentX(Component.LEFT_ALIGNMENT);
+					panel.add(value);
+				}
+				break;
+			}
+		}
+
+		panel.add(Box.createVerticalStrut(2));
+		panel.add(controls);
+
+		if (line.kind() == LockedGear.StyleLine.Kind.RESULT && line.result().isKnown()
+			&& !line.result().notApplied().isEmpty())
+		{
+			StringBuilder names = new StringBuilder();
+			for (GearEffect effect : line.result().notApplied())
+			{
+				if (names.length() > 0)
+				{
+					names.append(", ");
+				}
+				names.append(effect.label());
+			}
+			panel.add(Box.createVerticalStrut(2));
+			panel.add(muted("Not applied: " + names));
+		}
+
+		return panel;
+	}
+
+	private JPanel meleeControls(LockedGear gear)
+	{
+		Loadout loadout = gear.selectedLoadout();
+		AttackStyle style = parseOrNull(AttackStyle.class, loadout.meleeStyle());
+		StrengthPrayer prayer = parseOrNull(StrengthPrayer.class, loadout.strengthPrayer());
+
+		JComboBox<AttackStyle> styleCombo = enumCombo(AttackStyle.values(), style, AttackStyle::label);
+		JComboBox<StrengthPrayer> prayerCombo = enumCombo(StrengthPrayer.values(), prayer, StrengthPrayer::label);
+
+		java.awt.event.ActionListener listener = e ->
+		{
+			AttackStyle chosenStyle = (AttackStyle) styleCombo.getSelectedItem();
+			StrengthPrayer chosenPrayer = (StrengthPrayer) prayerCombo.getSelectedItem();
+			if (chosenStyle == null || chosenPrayer == null)
+			{
+				return;
+			}
+			lockedGearMessage = null;
+			lockedGearActions.meleeSelectionChanged.accept(loadout.name(), chosenStyle.name(), chosenPrayer.name());
+		};
+		styleCombo.addActionListener(listener);
+		prayerCombo.addActionListener(listener);
+
+		return comboRow(styleCombo, prayerCombo);
+	}
+
+	private JPanel rangedControls(LockedGear gear)
+	{
+		Loadout loadout = gear.selectedLoadout();
+		RangedStyle style = parseOrNull(RangedStyle.class, loadout.rangedStyle());
+		RangedPrayer prayer = parseOrNull(RangedPrayer.class, loadout.rangedPrayer());
+
+		JComboBox<RangedStyle> styleCombo = enumCombo(RangedStyle.values(), style, RangedStyle::label);
+		JComboBox<RangedPrayer> prayerCombo = enumCombo(RangedPrayer.values(), prayer, RangedPrayer::label);
+
+		java.awt.event.ActionListener listener = e ->
+		{
+			RangedStyle chosenStyle = (RangedStyle) styleCombo.getSelectedItem();
+			RangedPrayer chosenPrayer = (RangedPrayer) prayerCombo.getSelectedItem();
+			if (chosenStyle == null || chosenPrayer == null)
+			{
+				return;
+			}
+			lockedGearMessage = null;
+			lockedGearActions.rangedSelectionChanged.accept(loadout.name(), chosenStyle.name(), chosenPrayer.name());
+		};
+		styleCombo.addActionListener(listener);
+		prayerCombo.addActionListener(listener);
+
+		return comboRow(styleCombo, prayerCombo);
+	}
+
+	private JPanel magicControls(LockedGear gear)
+	{
+		Loadout loadout = gear.selectedLoadout();
+		Spell spell = parseOrNull(Spell.class, loadout.spell());
+		MagicPrayer prayer = parseOrNull(MagicPrayer.class, loadout.magicPrayer());
+
+		JComboBox<Spell> spellCombo = enumCombo(Spell.values(), spell, Spell::label);
+		JComboBox<MagicPrayer> prayerCombo = enumCombo(MagicPrayer.values(), prayer, MagicPrayer::label);
+
+		java.awt.event.ActionListener listener = e ->
+		{
+			Spell chosenSpell = (Spell) spellCombo.getSelectedItem();
+			MagicPrayer chosenPrayer = (MagicPrayer) prayerCombo.getSelectedItem();
+			if (chosenSpell == null || chosenPrayer == null)
+			{
+				return;
+			}
+			lockedGearMessage = null;
+			lockedGearActions.magicSelectionChanged.accept(loadout.name(), chosenSpell.name(), chosenPrayer.name());
+		};
+		spellCombo.addActionListener(listener);
+		prayerCombo.addActionListener(listener);
+
+		return comboRow(spellCombo, prayerCombo);
+	}
+
+	private static JPanel comboRow(JComponent first, JComponent second)
+	{
+		JPanel row = new JPanel();
+		row.setLayout(new BoxLayout(row, BoxLayout.X_AXIS));
+		row.setAlignmentX(Component.LEFT_ALIGNMENT);
+		row.add(first);
+		row.add(Box.createHorizontalStrut(4));
+		row.add(second);
+		return row;
+	}
+
+	/**
+	 * A compact combo over one of the six {@code MaxHit} selection enums,
+	 * showing each constant's own {@code label()} rather than its enum name.
+	 * {@code selected} may be null (nothing chosen, or an unrecognised
+	 * stored name) -- the combo is left on whatever it defaults to, which is
+	 * harmless since no listener is attached until after this returns.
+	 */
+	private static <E extends Enum<E>> JComboBox<E> enumCombo(E[] values, E selected,
+		java.util.function.Function<E, String> labeler)
+	{
+		JComboBox<E> combo = new JComboBox<>(values);
+		combo.setRenderer(new DefaultListCellRenderer()
+		{
+			@Override
+			public Component getListCellRendererComponent(JList<?> list, Object value, int index,
+				boolean isSelected, boolean cellHasFocus)
+			{
+				@SuppressWarnings("unchecked")
+				E typed = (E) value;
+				String text = typed == null ? "" : labeler.apply(typed);
+				return super.getListCellRendererComponent(list, text, index, isSelected, cellHasFocus);
+			}
+		});
+		if (selected != null)
+		{
+			combo.setSelectedItem(selected);
+		}
+		combo.setBackground(ColorScheme.DARKER_GRAY_COLOR);
+		combo.setForeground(Color.WHITE);
+		combo.setFont(FontManager.getRunescapeSmallFont());
+		combo.setMaximumSize(new Dimension(105, 22));
+		combo.setAlignmentX(Component.LEFT_ALIGNMENT);
+		return combo;
+	}
+
+	/** {@code Enum.valueOf}, but null instead of throwing for a blank or unrecognised name -- e.g. a since-renamed enum constant. */
+	private static <E extends Enum<E>> E parseOrNull(Class<E> type, String name)
+	{
+		if (name == null)
+		{
+			return null;
+		}
+		try
+		{
+			return Enum.valueOf(type, name);
+		}
+		catch (IllegalArgumentException unrecognised)
+		{
+			return null;
+		}
+	}
+
+	/**
+	 * The loadout's items, names only, behind a collapsible toggle -- 225px
+	 * is not wide enough to show a dozen item names alongside three max-hit
+	 * readouts without the toggle. Expansion state is a per-session UI
+	 * convenience ({@link #lockedGearItemsExpanded}), not persisted config.
+	 */
+	private JPanel itemListSection(Loadout loadout)
+	{
+		JPanel panel = column();
+
+		JCheckBox toggle = new JCheckBox("Items (" + loadout.items().size() + ")");
+		toggle.setForeground(Color.WHITE);
+		toggle.setFont(FontManager.getRunescapeSmallFont());
+		toggle.setFocusPainted(false);
+		toggle.setOpaque(false);
+		toggle.setAlignmentX(Component.LEFT_ALIGNMENT);
+		toggle.setSelected(lockedGearItemsExpanded);
+
+		JPanel items = column();
+		items.setVisible(lockedGearItemsExpanded);
+		for (LoadoutItem item : loadout.items())
+		{
+			items.add(row(item.name().isEmpty() ? ("item " + item.itemId()) : item.name()));
+		}
+
+		toggle.addActionListener(e ->
+		{
+			lockedGearItemsExpanded = toggle.isSelected();
+			items.setVisible(lockedGearItemsExpanded);
+			revalidate();
+			repaint();
+		});
+
+		panel.add(toggle);
+		panel.add(items);
+		return panel;
 	}
 
 	/**

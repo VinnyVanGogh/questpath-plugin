@@ -24,6 +24,12 @@ enum PanelSections
 		Status.LIVE,
 		null),
 
+	LOCKED_GEAR(
+		Tab.COMBAT,
+		"Locked gear",
+		Status.LIVE,
+		null),
+
 	CEILING(
 		Tab.COMBAT,
 		"Free Ranged / Magic",
