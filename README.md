@@ -1,46 +1,179 @@
-# questpath
+# questpath for RuneLite
 
-A RuneLite plugin for accounts that are deliberately capping a skill.
+**The plan, inside the game.** One shop run for every quest item, shopkeepers
+calling out when you pass something you need, the next quest opening in Quest
+Helper as you arrive, and a warning before a build rule ends the account.
 
-Most quest tools check whether you *meet* a quest's requirements. This one is
-being built to also check whether the quest, or anything it depends on, would
-push a skill past a cap you are holding on purpose — the question a pure or a
-restricted account actually has.
+> **Early development.** Most overlays are opt-in, and features marked
+> *(in progress)* are partly built or next up.
 
-> **Status: v1, in progress.** The panel answers the combat questions today and
-> can push your account state to a self-hosted questpath. The quest planner
-> follows; the sidebar lists those sections and says plainly that they are not
-> built yet.
+![In-game: walking past Agelus' Farm Shop, which calls out that it stocks the grain you still need](docs/screenshots/passing-a-shop.jpg)
 
-## What it does now
+Walking past **Agelus' Farm Shop**. It calls out "Looking for a Grain? Say no
+more. (x10)" over the shop, and the same line lands in chat.
 
-A sidebar panel showing, from your real levels:
+---
 
-- **Combat level**, and how far through it you are.
-- **The free Ranged / Magic ceiling** — the highest level those skills can reach
-  without raising your combat level, given your Attack and Strength. It drifts
-  upward as Strength grows, so a hardcoded number leaves levels on the table.
-- **What the next combat level costs**, in every stat that could buy it,
-  cheapest first. For a pure this is the question behind every training
-  decision: one Strength level is worth having, one Defence level may be the
-  end of the build.
+## Why it exists
 
-All of that needs no configuration and makes no network requests.
+Most quest tools check whether you *meet* a quest's requirements. This one also
+checks whether the quest, or anything it depends on, would push a skill past a
+cap you're holding on purpose — the question a pure or a restricted account
+actually has.
 
-## Optional: sync to your own questpath
+For an ironman it removes the chore around every quest: gathering. Instead of a
+side quest before the quest, you get one list for your whole plan, one trip to
+collect it, and a shout when you walk past something on it.
 
-Off by default. With it on, the plugin pushes your quest completion, levels and
-experience to a [questpath](https://github.com/VinnyVanGogh) instance you host,
-so it stops polling third-party services for data your own client already has.
-The sidebar says whether the last push was accepted, refused, or never
-answered — a wrong pairing token says so rather than failing quietly.
+**It works without a server.** The plugin ships its own copy of the quest graph
+and a Java port of the [questpath](https://github.com/VinnyVanGogh) planner,
+tested against the same 218 quest verdicts as the website. Your route, build
+rules and diaries arrive when you sync.
 
-## What is coming
+---
 
-- Bank-aware quest item checklists — the client can see your bank, which is the
-  one thing no external quest tool can.
-- Quest verdicts against your own build rules: eligible, skill-blocked, or
-  permanently off the table because a prerequisite grants XP you refuse.
+## The shop run
+
+1. **One list for the whole plan.** One total per item across every quest on
+   your route, counted against bank, inventory and what you're wearing.
+2. **Send it to Shortest Path.** One button builds the trip, nearest stop first,
+   with items sold in the same place grouped together. Shortest Path draws the
+   path and tells you where to teleport.
+3. **Only places you can get to.** Guilds and quest-locked towns you can't enter
+   are skipped. If no shop you can reach sells an item, the route sends you to a
+   monster that drops it.
+4. **Shopkeepers shout as you pass.** Come within 16 tiles of a shop stocking
+   something you still need and it calls out, even if it isn't your next stop.
+5. **The trip moves itself on.** When the last one lands in your bags, the route
+   jumps to the next stop and chat says where. Skip an item and it goes to the
+   back, with a restore button.
+
+![In-game: the Shortest Path line leading to a Lumbridge Home Teleport, with the shop route overlay naming the next stop](docs/screenshots/shop-route-teleport.jpg)
+
+Shortest Path draws the line and marks the **Lumbridge Home Teleport**. The
+overlay's next stop here is a monster drop — a Lantern lens from a Wall beast —
+and the Items tab holds the trip's buttons and the 17 items skipped this trip.
+
+---
+
+## Items, wherever you're standing
+
+**Shops.** Stock your quests still need is outlined, with how many to buy above
+each slot. Hover to see which quest wants it.
+
+![A shop with a needed item outlined and a tooltip naming the quest it is for](docs/screenshots/shop-open.jpg)
+
+**Bank.** A Quest Path button in the bank title bar turns the bank into a quest
+tab: Ran out, Still needed, Ready to withdraw. Everything stays withdrawable,
+and the "Needed from your bank" overlay sits beside it.
+
+![The bank switched to the Quest Path tab, grouped into Ran out, Still needed and Ready to withdraw](docs/screenshots/bank-tab.jpg)
+
+**Ground.** Needed items lying within 15 tiles are outlined with how many you
+still need and which quests want them. *(Left-click Take: in progress.)*
+
+![Ashes on the ground outlined, reading 2 of 3 for Shades of Mort'ton and Desert Treasure I](docs/screenshots/ground-items.jpg)
+
+**On the go.** "Get while you're here" lists items you can pick up during your
+next few route quests that another quest also needs. Finish collecting one and a
+note can float up over the shopkeeper.
+
+**Grand Exchange.** For mains: a buy-list button in the GE item search, the list
+it opens in place of the results, and an overlay tracking queued, next and left.
+Hidden automatically on every ironman account.
+
+---
+
+## The sidebar
+
+| Tab | What it holds |
+|---|---|
+| **Combat** | Combat level and progress, locked gear with live max hits, the free Ranged/Magic ceiling, what the next combat level costs per stat in exact XP, and your build rules |
+| **Skills** | What a level costs: XP from quests now, later, or never on this build, and what's left to train |
+| **Quests** | Next on your route with progress, your whole route in order, "Still needs work", "Start, never finish", and every quest's verdict, searchable |
+| **Items** | Get while you're here, the shop route buttons, skipped items, and everything you need counted against what you hold |
+| **Sync** | Whether the last push went out, the account it's attributed to, and what was sent |
+| **View** | Every setting, grouped and readable, instead of a 225px config column |
+
+<details>
+<summary>Screenshots of each tab</summary>
+
+**Combat**
+
+![The Combat tab: combat level, locked gear with max hits, free ceiling, cost of the next combat level, and build rules](docs/screenshots/tab-combat.jpg)
+
+**Skills**
+
+![The Skills tab: what a level costs, with ready now, after more work, and off-the-table quests](docs/screenshots/tab-skills.jpg)
+
+**Quests**
+
+![The Quests tab: next on your route, the route in order, and still needs work](docs/screenshots/tab-quests.jpg)
+
+**Items**
+
+![The Items tab: get while you are here, shop route buttons, skipped items, and everything you need](docs/screenshots/tab-items.jpg)
+
+**Sync**
+
+![The Sync tab: push status, server and token, the account attributed, and what was sent](docs/screenshots/tab-sync.jpg)
+
+**View**
+
+![The View tab: sync, shared display settings, and each overlay with its own width and length](docs/screenshots/tab-view.jpg)
+
+</details>
+
+---
+
+## Quests, diaries and combat
+
+- **Next on your route.** An overlay you can leave on: the next quest, a
+  progress bar, and a preview of what's after it.
+- **Start in Quest Helper.** Right-click any quest to start it there. If Quest
+  Helper isn't installed, isn't on, or doesn't know the quest, the menu entry
+  says why instead of doing nothing.
+- **Opens as you arrive.** Walk within 8 tiles of a route quest's start point
+  (205 of 218 quests have one) and Quest Helper opens for it. Finish a route
+  quest and the next can start by itself.
+- **Stays out of your shop run.** Quest Helper's automatic starts are held back
+  while a shop trip is active, so they don't overwrite your path.
+- **Diary route.** The nearest diary tasks you can actually do, sent to Shortest
+  Path like the shop run, with a chat nudge when one is within 12 tiles.
+  *(Diary journal and a Quests/Diaries/All filter: in progress.)*
+- **Combat maths.** What each stat would cost to buy the next combat level, in
+  real XP, cheapest first — on a pure, one Strength level is a week of work and
+  one Defence level can end the build.
+- **Locked gear.** Save a loadout and see its melee, ranged and magic max hit at
+  your live levels, with style, prayer and spell per style.
+- **Build rules.** How much room is left before a rule breaks. No-XP and hard
+  caps escalate as you close in; soft caps and goals never do.
+
+---
+
+## Syncing with questpath
+
+Off by default. With sync on, the plugin pushes your quests, levels, XP, bank,
+inventory and equipment to a [questpath](https://github.com/VinnyVanGogh)
+instance you host, so it stops polling third-party services for data your own
+client already has.
+
+- The pairing token both authenticates the push and names the account it writes
+  to. Get it with `go run ./cmd/questpath -plugin-token` on the server.
+  *(Issuing it from the settings page: in progress.)*
+- Every push returns your build rules, constraints, route order, partial runs,
+  owned items and diary tasks.
+- The Sync tab says whether the last push was accepted, refused or never
+  answered. A wrong token says so rather than failing quietly.
+- On startup the plugin can fetch a fresher quest graph from the server, and
+  says which one it ended up on.
+- A "Sync with questpath" button pulls a plan you just edited on the site
+  straight into the game.
+
+What ships in the bundle: 325 shops, 118 monster drop locations, 205 quest start
+points, and 492 diary tasks with 376 of them placed on the map.
+
+---
 
 ## Building
 
@@ -51,6 +184,13 @@ answered — a wrong pairing token says so rather than failing quietly.
 
 The build targets Java 11 bytecode. To log in to the development client, follow
 [Using Jagex Accounts](https://github.com/runelite/runelite/wiki/Using-Jagex-Accounts).
+
+The planner here is a port of the Go one, and the two must agree:
+`PlannerVectorsTest` checks all 218 verdicts against vectors exported from the
+server. When it goes red, the answer is to close the gap — never to re-export
+the vectors, which writes the bug down as the expected result.
+
+---
 
 ## Licence
 
