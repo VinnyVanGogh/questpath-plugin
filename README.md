@@ -170,7 +170,7 @@ client already has.
 - A "Sync with questpath" button pulls a plan you just edited on the site
   straight into the game.
 
-What ships in the bundle: 325 shops, 118 monster drop locations, 205 quest start
+What ships in the bundle: 314 shops, 125 monster drop locations, 205 quest start
 points, and 492 diary tasks with 376 of them placed on the map.
 
 ---

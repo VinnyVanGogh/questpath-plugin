@@ -15,12 +15,12 @@
       {
         "skill": "strength",
         "level": 83,
-        "xp": 2928245
+        "xp": 2928283
       },
       {
         "skill": "hitpoints",
         "level": 25,
-        "xp": 8525
+        "xp": 8537
       },
       {
         "skill": "ranged",
@@ -40,12 +40,12 @@
       {
         "skill": "cooking",
         "level": 21,
-        "xp": 5124
+        "xp": 5202
       },
       {
         "skill": "woodcutting",
-        "level": 36,
-        "xp": 27282
+        "level": 37,
+        "xp": 29237
       },
       {
         "skill": "fletching",
@@ -55,7 +55,7 @@
       {
         "skill": "fishing",
         "level": 59,
-        "xp": 253046
+        "xp": 254047
       },
       {
         "skill": "firemaking",
@@ -70,12 +70,12 @@
       {
         "skill": "smithing",
         "level": 30,
-        "xp": 13366
+        "xp": 14571
       },
       {
         "skill": "mining",
         "level": 69,
-        "xp": 691927
+        "xp": 692575
       },
       {
         "skill": "herblore",
@@ -114,18 +114,19 @@
       },
       {
         "skill": "construction",
-        "level": 8,
-        "xp": 939
+        "level": 21,
+        "xp": 5058
       },
       {
         "skill": "sailing",
-        "level": 6,
-        "xp": 530
+        "level": 31,
+        "xp": 15227
       }
     ],
     "completed": [
       1,
       2,
+      4,
       5,
       10,
       11,
@@ -158,6 +159,8 @@
       195,
       198,
       203,
+      204,
+      205,
       213
     ],
     "rules": [
@@ -299,7 +302,7 @@
     {
       "quest_id": 4,
       "slug": "shield_of_arrav",
-      "status": "ELIGIBLE"
+      "status": "COMPLETE"
     },
     {
       "quest_id": 5,
@@ -944,7 +947,7 @@
     {
       "quest_id": 133,
       "slug": "tower_of_life",
-      "status": "SKILL_BLOCKED"
+      "status": "ELIGIBLE"
     },
     {
       "quest_id": 134,
@@ -1279,7 +1282,7 @@
     {
       "quest_id": 200,
       "slug": "ethically_acquired_antiquities",
-      "status": "QUEST_BLOCKED"
+      "status": "ELIGIBLE"
     },
     {
       "quest_id": 201,
@@ -1299,12 +1302,12 @@
     {
       "quest_id": 204,
       "slug": "prying_times",
-      "status": "SKILL_BLOCKED"
+      "status": "COMPLETE"
     },
     {
       "quest_id": 205,
       "slug": "current_affairs",
-      "status": "SKILL_BLOCKED"
+      "status": "COMPLETE"
     },
     {
       "quest_id": 206,
