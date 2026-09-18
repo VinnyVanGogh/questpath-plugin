@@ -78,9 +78,25 @@ still need and which quests want them. *(Left-click Take: in progress.)*
 next few route quests that another quest also needs. Finish collecting one and a
 note can float up over the shopkeeper.
 
-**Grand Exchange.** For mains: a buy-list button in the GE item search, the list
-it opens in place of the results, and an overlay tracking queued, next and left.
-Hidden automatically on every ironman account.
+**Grand Exchange.** For mains, and hidden automatically on every ironman
+account. The GE item search grows a buy-list button, and the list opens in place
+of the search results, so the next thing to buy is one click rather than a name
+you have to remember.
+
+![The Quest Path buy list open inside the Grand Exchange item search, listing Steel full helm, Steel platebody and Steel platelegs, with a tooltip over the one about to be selected](docs/screenshots/ge-buy-list.jpg)
+
+An overlay follows the whole trip while the offers run: what's next, what's
+queued, what's still left, and what the GE can't sell you at all. Progress counts
+against what you *need* rather than the size of the offer, so ten of something a
+quest wants one of reads "10 of 1" instead of a tidy "10 of 10" that would hide
+nine items sitting in the collection box.
+
+![The Grand Exchange overlay beside eight running buy offers, listing Next, Queued, Left, and four items not sold here](docs/screenshots/ge-tracker.jpg)
+
+Collect, and every item the trip has now fully covered says so in chat, naming
+the quest that wanted it.
+
+![Eight chat lines reading "Quest Path: you now have all 1 Adamant seeds -- for Song of the Elves" and similar, one per collected item](docs/screenshots/ge-collected.jpg)
 
 ---
 
