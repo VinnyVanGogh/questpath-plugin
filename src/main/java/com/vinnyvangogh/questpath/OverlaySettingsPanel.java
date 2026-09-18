@@ -395,6 +395,8 @@ class OverlaySettingsPanel extends JPanel
 		body.add(spacer());
 		body.add(bankGroup(config));
 		body.add(spacer());
+		body.add(lampsGroup(config));
+		body.add(spacer());
 		// Flat: nothing gates autoAdvanceQuestHelper, it is just one
 		// independent yes/no automation around Quest Helper's own
 		// start-quest flow, previously only reachable from RuneLite's own
@@ -453,6 +455,51 @@ class OverlaySettingsPanel extends JPanel
 					+ " than showing nothing.",
 				"floatingNotePlacement"));
 		return sectionGroup("Extras", body);
+	}
+
+	/**
+	 * Lamp mark-up, the same dependent shape as Bank and Shops: everything
+	 * inside means nothing with the advisor itself off.
+	 *
+	 * <p>The greying and the suggestions are two settings rather than one,
+	 * and that split is deliberate. The greying is the part that stops an
+	 * irreversible mistake; the boxes are an opinion about which of the
+	 * remaining squares is best. Someone who finds the opinion noisy must be
+	 * able to switch it off without also switching off the warning, which is
+	 * exactly what one combined setting would make them do.
+	 */
+	private CollapsibleGroup lampsGroup(QuestpathConfig config)
+	{
+		return toggleGroup(
+			"Experience lamps",
+			"When a lamp asks which skill to put its experience in, grey the skills your build"
+				+ " rules close and box the ones worth choosing. The interface shows"
+				+ " twenty-four identical squares for a choice that cannot be taken back.",
+			config.lampAdvisor(), "lampAdvisor",
+			sub ->
+			{
+				sub.add(toggle(
+					"Grey out skills a rule closes",
+					"Wash out any skill your rules forbid -- no experience at all, a cap this"
+						+ " lamp would cross, a cap already reached, or a level the lamp itself"
+						+ " requires. A skill questpath cannot price the lamp against is left"
+						+ " alone and says \"amount unknown\" on hover, rather than being"
+						+ " greyed on a guess.",
+					config.lampGreyBlocked(), "lampGreyBlocked"));
+				addField(sub, "Suggest",
+					combo(LampSuggestions.values(), config.lampSuggestions(),
+						"How many targets to box. Off leaves the greying on: deciding for"
+							+ " yourself is not the same as wanting no warnings.",
+						"lampSuggestions"));
+				addField(sub, "Best target",
+					colorField(config.lampBestColour(),
+						"The colour the single best skill is boxed in.",
+						"Best lamp target colour", "lampBestColour"));
+				addField(sub, "Runner-up",
+					colorField(config.lampNextColour(),
+						"The colour the second and third choices are boxed in.",
+						"Runner-up lamp target colour", "lampNextColour"));
+			});
 	}
 
 	/**

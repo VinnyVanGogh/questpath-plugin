@@ -168,6 +168,13 @@ class QuestpathPanel extends PluginPanel
 	private CombatStats lastStats;
 	private SkillXp lastXp;
 	private List<BuildRule> lastRules;
+	/**
+	 * The store behind the sidebar's own rules editor, and what to run after
+	 * an edit. Null in a preview harness, which the editor block renders as
+	 * "unavailable" rather than as a form that silently does nothing.
+	 */
+	private final LocalBuildRules localBuildRules;
+	private final Runnable onRulesEdited;
 
 	/**
 	 * The quest search box, and the last verdicts it filters.
@@ -378,8 +385,11 @@ class QuestpathPanel extends PluginPanel
 		ShopItemSkips shopItemSkips,
 		java.util.function.Supplier<List<QuestGraph.DiaryTask>> diaryGraphTasks,
 		java.util.function.Supplier<PushResponse.Diary> diaryPush,
-		LockedGearActions lockedGearActions)
+		LockedGearActions lockedGearActions,
+		LocalBuildRules localBuildRules, Runnable onRulesEdited)
 	{
+		this.localBuildRules = localBuildRules;
+		this.onRulesEdited = onRulesEdited;
 		this.lockedGearActions = lockedGearActions;
 		this.onSyncNow = onSyncNow;
 		this.config = config;
@@ -1619,12 +1629,18 @@ class QuestpathPanel extends PluginPanel
 
 		if (rules.isEmpty())
 		{
-			// Not "you have no rules". The plugin has no way to learn them
-			// except from a push, so an empty list here means it has not been
-			// told -- and telling someone their build is unconstrained when
-			// nobody has asked would be the worst thing this tab could say.
-			panel.add(muted("Not received yet. questpath sends these when a"
-				+ " push is accepted, so turn on sync and log in."));
+			// Not "you have no rules". An empty list means nobody has told
+			// the plugin what this account is holding, and telling someone
+			// their build is unconstrained when nobody has asked would be the
+			// worst thing this tab could say.
+			//
+			// The editor belongs here as well as below, because this is the
+			// state where it matters most: with no rules at all the guard is
+			// off everywhere and off silently, so the way to fix that has to
+			// sit directly under the sentence admitting it.
+			panel.add(muted("questpath has not been told your rules. Sync sends them"
+				+ " when it is on, or write them here -- with none, nothing is guarded."));
+			panel.add(buildRulesEditorBlock());
 			return panel;
 		}
 
@@ -1657,7 +1673,42 @@ class QuestpathPanel extends PluginPanel
 				: " non-blocking rules hidden")));
 		}
 
+		panel.add(Box.createVerticalStrut(6));
+		panel.add(buildRulesEditorBlock());
 		return panel;
+	}
+
+	/**
+	 * The editor for rules written here rather than pushed.
+	 *
+	 * <p>Always present, not only when the pushed list is empty. A player who
+	 * has synced once can still want a rule questpath does not know about,
+	 * and hiding the editor the moment a push lands would mean the way to add
+	 * one disappears exactly when the tab starts looking useful.
+	 */
+	private JPanel buildRulesEditorBlock()
+	{
+		JPanel block = column();
+		if (localBuildRules == null)
+		{
+			// No store -- a preview or a test harness. Saying so beats
+			// rendering a form whose buttons quietly do nothing.
+			block.add(muted("The rules editor is unavailable in this context."));
+			return block;
+		}
+		block.add(muted("Your own rules"));
+		block.add(new BuildRulesEditor(localBuildRules, rules ->
+		{
+			// Every verdict on every tab is derived from the rules, so a rule
+			// saved against a panel still showing the old answers is a panel
+			// confidently wrong about which quests the account can do --
+			// which is the one thing it exists to be right about.
+			if (onRulesEdited != null)
+			{
+				onRulesEdited.run();
+			}
+		}));
+		return block;
 	}
 
 	/** The rules {@link BuildRule#blocking()} reports true for, in the order given. */

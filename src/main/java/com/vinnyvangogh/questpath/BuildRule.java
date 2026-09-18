@@ -42,6 +42,35 @@ class BuildRule
 	@SerializedName("note")
 	private String note;
 
+	/**
+	 * A rule the player wrote in the plugin's own editor, rather than one
+	 * questpath pushed.
+	 *
+	 * <p>Deliberately the same type as a pushed rule. Nothing downstream —
+	 * not the verdict engine, not the lamp advisor — should be able to tell
+	 * the two apart: a rule is a rule, and giving locally-authored ones a
+	 * type of their own would mean two code paths through every check, which
+	 * is how one of them comes to be missing a case.
+	 *
+	 * <p>The class doc above says questpath owns these and the plugin never
+	 * writes them back. That is still true of <em>pushed</em> rules and is
+	 * the reason {@link LocalBuildRules} keeps its own set separately rather
+	 * than editing them: there is one editor per origin, and neither
+	 * overwrites the other.
+	 */
+	static BuildRule local(String skill, String type, int value, String note)
+	{
+		BuildRule rule = new BuildRule();
+		rule.skill = skill;
+		rule.type = type;
+		rule.value = value;
+		rule.note = note;
+		// blocking() derives this from the type regardless; it is set here
+		// for anything that serialises the rule back out.
+		rule.blocking = NO_XP.equals(type) || HARD_CAP.equals(type);
+		return rule;
+	}
+
 	String skillName()
 	{
 		return skill == null ? "" : skill;

@@ -70,6 +70,14 @@ public interface QuestpathConfig extends Config
 	String chatSection = "chat";
 
 	@ConfigSection(
+		name = "Experience lamps",
+		description = "Mark up the skill-choice interface when you rub a lamp",
+		position = 5,
+		closedByDefault = true
+	)
+	String lampSection = "lamps";
+
+	@ConfigSection(
 		name = "questpath sync",
 		description = "Push this account's state to your own questpath instance",
 		position = 0,
@@ -979,5 +987,73 @@ public interface QuestpathConfig extends Config
 	default boolean chatOnItemComplete()
 	{
 		return true;
+	}
+
+	@ConfigItem(
+		keyName = "lampAdvisor",
+		name = "Mark up experience lamps",
+		description = "When a lamp asks which skill to put its experience in, grey the skills"
+			+ " your build rules close and box the ones worth choosing. The choice cannot be"
+			+ " taken back and the interface gives you no help with it.",
+		section = lampSection,
+		position = 1
+	)
+	default boolean lampAdvisor()
+	{
+		return true;
+	}
+
+	@ConfigItem(
+		keyName = "lampGreyBlocked",
+		name = "Grey out skills a rule closes",
+		description = "Wash out any skill your build rules forbid: no experience at all, a cap"
+			+ " this lamp would cross, a cap already reached, or a level the lamp itself"
+			+ " requires. This is the part that stops a mistake, so it is on by default and"
+			+ " kept separate from the suggestions.",
+		section = lampSection,
+		position = 2
+	)
+	default boolean lampGreyBlocked()
+	{
+		return true;
+	}
+
+	@ConfigItem(
+		keyName = "lampSuggestions",
+		name = "Suggest where to put it",
+		description = "How many targets to box. Turning this off leaves the greying on --"
+			+ " deciding for yourself is not the same as wanting no warnings.",
+		section = lampSection,
+		position = 3
+	)
+	default LampSuggestions lampSuggestions()
+	{
+		return LampSuggestions.TOP_THREE;
+	}
+
+	@ConfigItem(
+		keyName = "lampBestColour",
+		name = "Best target colour",
+		description = "The colour the single best skill is boxed in.",
+		section = lampSection,
+		position = 4
+	)
+	default java.awt.Color lampBestColour()
+	{
+		return OverlayTheme.GOOD;
+	}
+
+	@ConfigItem(
+		keyName = "lampNextColour",
+		name = "Runner-up colour",
+		description = "The colour the second and third choices are boxed in. A different colour"
+			+ " from the best one, so the top pick stays identifiable with three boxes on"
+			+ " screen at once.",
+		section = lampSection,
+		position = 5
+	)
+	default java.awt.Color lampNextColour()
+	{
+		return OverlayTheme.ACCENT;
 	}
 }
