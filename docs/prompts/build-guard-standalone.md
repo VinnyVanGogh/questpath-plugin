@@ -4,17 +4,42 @@ A prompt for a fresh session in a new, empty repo. You have never seen
 questpath. Everything you need is on disk at the paths below — read them, do
 not work from this summary.
 
+## Before you create anything
+
+**Do not `mkdir` this plugin by hand.** Scaffold it:
+
+```bash
+cd ~/Documents/dev/runelite-plugin-dev
+scripts/new-plugin.sh "Build Guard" --with overlay,stats
+```
+
+That script's default target is `~/Documents/dev/runelite_plugins/`, one
+directory per plugin, each its own git repo — which is where this must live
+and nowhere else. `runelite-plugin-dev` itself is the toolchain, not a plugin,
+and stays put.
+
+The template carries decisions that are invisible until they bite. Two in
+particular: it derives the config group from the slug and refuses a slug
+already on the Hub, so **the config group and every `keyName` are frozen from
+the first published version** — renaming either silently resets that setting
+for every user, and these are settings whose entire job is to prevent an
+irreversible mistake.
+
+Run the `runelite-compliance` skill before designing any feature, and write
+each verdict into `BRIEF.md` Phase 0. No feature code before the verdict
+exists.
+
 ## Goal
 
 A small Plugin Hub plugin that warns an Old School RuneScape player before a
 quest, a lamp, or an activity puts experience into a skill they are
 deliberately holding down. No network. No sync. No server.
 
-The idea it exists for: most quest tools check whether you *meet* a quest's
+The idea it exists for: most quest tools check whether you _meet_ a quest's
 requirements. This one checks whether the quest, or anything it transitively
 depends on, would grant experience in a skill you are capping on purpose, or
 would demand a level above a cap. Both sides. Checking rewards alone is the
-bug — *Land of the Goblins* is not blocked by anything it grants, it is blocked
+bug — _Land of the Goblins_ is not blocked by anything it grants, it is blocked
 because a prerequisite **requires** Attack 15 and Prayer 25.
 
 ## Read these from disk, do not paraphrase
@@ -24,43 +49,45 @@ reasoning is most of the value.
 
 **The Go originals** (`~/Documents/dev/osrs`):
 
-| What | Path |
-|---|---|
-| Build rule model (4 types, blocking, cap levels) | `internal/domain/types.go` |
-| The 8 verdicts and their precedence | `internal/domain/planner.go` |
-| Verdict engine: classification | `internal/planner/classify.go` |
-| Verdict engine: the build guard | `internal/planner/guard.go` |
-| Lamp advisor (the one to port) | `internal/planner/lampchoice.go` |
-| Lamp types, states, block/risk reasons | `internal/domain/lamp.go` |
-| Lamp catalogue (9 standalone lamps, sourced) | `internal/items/lamps.go` |
-| XP curve | `internal/osrs/xp.go` |
-| Combat level and the free Ranged/Magic ceiling | `internal/osrs/combat.go` |
-| Verified external facts — **read §24 before any lamp work** | `RESEARCH.md` |
+| What                                                        | Path                             |
+| ----------------------------------------------------------- | -------------------------------- |
+| Build rule model (4 types, blocking, cap levels)            | `internal/domain/types.go`       |
+| The 8 verdicts and their precedence                         | `internal/domain/planner.go`     |
+| Verdict engine: classification                              | `internal/planner/classify.go`   |
+| Verdict engine: the build guard                             | `internal/planner/guard.go`      |
+| Lamp advisor (the one to port)                              | `internal/planner/lampchoice.go` |
+| Lamp types, states, block/risk reasons                      | `internal/domain/lamp.go`        |
+| Lamp catalogue (9 standalone lamps, sourced)                | `internal/items/lamps.go`        |
+| XP curve                                                    | `internal/osrs/xp.go`            |
+| Combat level and the free Ranged/Magic ceiling              | `internal/osrs/combat.go`        |
+| Verified external facts — **read §24 before any lamp work** | `RESEARCH.md`                    |
 
 **The existing Java port** (`~/Documents/dev/questpath-plugin`). This is a
 working plugin that already does all of it. Port from here first and consult
 the Go only where the Java is unclear:
 
-| What | Path (under `src/main/java/com/vinnyvangogh/questpath/`) |
-|---|---|
-| Build rule | `BuildRule.java` |
-| Local rule storage and merge | `LocalBuildRules.java`, `BuildRuleCodec.java` |
-| Sidebar rules editor | `BuildRulesEditor.java` |
-| The 8 verdicts | `QuestStatus.java` |
-| Verdict engine | `QuestClassifier.java` |
-| Account state | `PlayerState.java` |
-| Bundled quest graph loader | `QuestGraph.java` |
-| Lamp advisor | `LampAdvisor.java`, `LampVerdict.java`, `Lamp.java`, `LampCatalogue.java` |
-| Lamp interface widget ids | `LampSkillWidgets.java` |
-| Which lamp is in play | `LampWatcher.java` |
-| Lamp overlay | `LampOverlay.java` |
-| XP curve, combat maths | `XpTable.java`, `CombatMath.java` |
+| What                         | Path (under `src/main/java/com/vinnyvangogh/questpath/`)                  |
+| ---------------------------- | ------------------------------------------------------------------------- |
+| Build rule                   | `BuildRule.java`                                                          |
+| Local rule storage and merge | `LocalBuildRules.java`, `BuildRuleCodec.java`                             |
+| Sidebar rules editor         | `BuildRulesEditor.java`                                                   |
+| The 8 verdicts               | `QuestStatus.java`                                                        |
+| Verdict engine               | `QuestClassifier.java`                                                    |
+| Account state                | `PlayerState.java`                                                        |
+| Bundled quest graph loader   | `QuestGraph.java`                                                         |
+| Lamp advisor                 | `LampAdvisor.java`, `LampVerdict.java`, `Lamp.java`, `LampCatalogue.java` |
+| Lamp interface widget ids    | `LampSkillWidgets.java`                                                   |
+| Which lamp is in play        | `LampWatcher.java`                                                        |
+| Lamp overlay                 | `LampOverlay.java`                                                        |
+| XP curve, combat maths       | `XpTable.java`, `CombatMath.java`                                         |
 
 **Bundled data** — copy these, do not regenerate:
+
 - `src/main/resources/com/vinnyvangogh/questpath/quests.json` (218 quests)
 - `src/main/resources/com/vinnyvangogh/questpath/lamps.json` (the lamp catalogue)
 
 **Test vectors** — copy these too:
+
 - `src/test/resources/com/vinnyvangogh/questpath/planner-vectors.json` — **218
   quest verdicts**
 - `src/test/resources/com/vinnyvangogh/questpath/lamp-vectors.json` — the lamp
@@ -110,7 +137,7 @@ plugin rather than extracting the guard from it.
   bundled at build time. If anything ever does talk to a server, that config
   item must be off by default and carry the exact warning string:
   `"This feature submits your IP address to a 3rd-party server not controlled
-  or verified by RuneLite developers"`.
+or verified by RuneLite developers"`.
 - Config group name specific (`"build-guard"`, not `"guard"`), and **frozen**:
   renaming a group or a key silently resets every user's settings.
 - BSD-2 licence. No committed build artifacts. No
@@ -131,12 +158,13 @@ For **every** in-game feature, before designing it:
    not a feature yet.
 
 Two precedents already established and worth reusing:
-- The lamp overlay's nearest rule is *"No unhiding hidden interface
-  components"* and its precedent is the base client's **Attack Styles** plugin
+
+- The lamp overlay's nearest rule is _"No unhiding hidden interface
+  components"_ and its precedent is the base client's **Attack Styles** plugin
   (`net.runelite.client.plugins.attackstyles`), which takes per-skill user
   config, warns, and with `removeWarnedStyles` hides widgets outright.
-- Lamp locking's nearest rule is *"No conditional menu entry removal based on
-  NPC type, friend status, etc."* and its precedent is **Jam's Skiller Guard**,
+- Lamp locking's nearest rule is _"No conditional menu entry removal based on
+  NPC type, friend status, etc."_ and its precedent is **Jam's Skiller Guard**,
   which is on the Hub (the hub repo pins `plugins/skiller-guard`) and is
   BSD 2-Clause.
 
