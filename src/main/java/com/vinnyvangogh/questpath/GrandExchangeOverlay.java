@@ -257,16 +257,25 @@ class GrandExchangeOverlay extends QuestpathOverlay
 	/**
 	 * Why a line is not on the buy list, in the width of a right-hand value.
 	 *
-	 * <p>The two reasons stay distinct in the words as well as in the enum.
+	 * <p>The reasons stay distinct in the words as well as in the enum.
 	 * "not traded" is a fact about the game and the player can stop looking;
 	 * "can't look up" is a fact about questpath's own data, and the item may
-	 * well be on the Grand Exchange after all. Printing one as the other
-	 * would be the quiet kind of wrong this project keeps ruling out.
+	 * well be on the Grand Exchange after all; "members world" is a fact about
+	 * where the player is standing, and it stops being true the moment they
+	 * hop. Printing any of them as another would be the quiet kind of wrong
+	 * this project keeps ruling out -- and this third one most of all, because
+	 * it is the only one the player can fix in thirty seconds.
 	 */
 	private static String reason(GrandExchangeShoppingList.Line line)
 	{
-		return line.availability() == GrandExchangeShoppingList.Availability.NOT_ON_GE
-			? "not traded"
-			: "can't look up";
+		switch (line.availability())
+		{
+			case NOT_ON_GE:
+				return "not traded";
+			case MEMBERS_ONLY:
+				return "members world";
+			default:
+				return "can't look up";
+		}
 	}
 }

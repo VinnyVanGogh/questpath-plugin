@@ -71,6 +71,22 @@ final class GrandExchangeShoppingList
 		 * not traded" is a statement about the game.
 		 */
 		UNKNOWN,
+		/**
+		 * A members-only item, on a free-to-play world.
+		 *
+		 * <p>Its own value rather than folded into {@link #NOT_ON_GE},
+		 * because the two are different claims and the difference is
+		 * actionable. An item the Grand Exchange does not trade will never be
+		 * buyable there; a members item becomes buyable the moment you hop to
+		 * a members world. Printing "not traded" for one of these would tell
+		 * a player to stop looking for something they could have in thirty
+		 * seconds.
+		 *
+		 * <p>It is also the only value here that depends on where the player
+		 * is standing rather than on the item alone, so it must be recomputed
+		 * with the list and never cached across a world hop.
+		 */
+		MEMBERS_ONLY,
 	}
 
 	/**
@@ -365,9 +381,9 @@ final class GrandExchangeShoppingList
 	}
 
 	/**
-	 * Everything outstanding that a Grand Exchange cannot supply -- see
-	 * {@link Availability} for the two ways a line lands here and why they
-	 * are not merged.
+	 * Everything outstanding that a Grand Exchange cannot supply to this
+	 * account right now -- see {@link Availability} for the three ways a line
+	 * lands here and why none of them is merged into another.
 	 *
 	 * <p>Listed rather than dropped. These are still things the account
 	 * needs; they just come from somewhere else, and a buy list that silently

@@ -419,4 +419,106 @@ public class GrandExchangeShoppingListTest
 
 		assertTrue(lines.get(0).notes().isEmpty());
 	}
+
+	/**
+	 * A members item on a free-to-play world is tradeable and still not
+	 * buyable, and the buy list has to know the difference.
+	 *
+	 * <p>Reported from play. The list offered members items on a f2p world,
+	 * the client rendered each one "(Members)" in its own search results, and
+	 * the game answered every attempt with "You can't buy members-only items
+	 * on this world". Never suggesting something the account cannot act on is
+	 * the oldest rule this list has, and this broke it while looking entirely
+	 * healthy.
+	 */
+	@Test
+	public void aMembersItemOnAFreeWorldIsNotOnTheBuyList()
+	{
+		List<QuestItems.Total> totals = Arrays.asList(
+			total("Dragon axe", 6739, 1, 0),
+			total("Rope", 954, 1, 0));
+
+		List<GrandExchangeShoppingList.Line> lines = GrandExchangeShoppingList.of(totals, null,
+			(itemId, name) -> itemId == 6739
+				? GrandExchangeShoppingList.Availability.MEMBERS_ONLY
+				: GrandExchangeShoppingList.Availability.BUYABLE);
+
+		List<GrandExchangeShoppingList.Line> toBuy = GrandExchangeShoppingList.left(lines);
+		assertEquals(1, toBuy.size());
+		assertEquals("Rope", toBuy.get(0).name());
+		assertEquals("the next suggestion must never be one the game will refuse",
+			"Rope", GrandExchangeShoppingList.next(lines).name());
+	}
+
+	/**
+	 * Moved, not dropped -- the same rule an untradeable item follows. The
+	 * account still needs it, and unlike Karamjan rum it becomes buyable the
+	 * moment they hop to a members world, so hiding it outright would be the
+	 * worse of the two errors.
+	 */
+	@Test
+	public void aMembersItemIsListedSeparatelyRatherThanDropped()
+	{
+		List<QuestItems.Total> totals = Arrays.asList(
+			total("Dragon axe", 6739, 1, 0),
+			total("Rope", 954, 1, 0));
+
+		List<GrandExchangeShoppingList.Line> lines = GrandExchangeShoppingList.of(totals, null,
+			(itemId, name) -> itemId == 6739
+				? GrandExchangeShoppingList.Availability.MEMBERS_ONLY
+				: GrandExchangeShoppingList.Availability.BUYABLE);
+
+		assertEquals("both items stay on the list", 2, lines.size());
+		List<GrandExchangeShoppingList.Line> elsewhere = GrandExchangeShoppingList.unbuyable(lines);
+		assertEquals(1, elsewhere.size());
+		assertEquals("Dragon axe", elsewhere.get(0).name());
+		assertEquals(GrandExchangeShoppingList.Availability.MEMBERS_ONLY,
+			elsewhere.get(0).availability());
+	}
+
+	/**
+	 * "members world" stays distinct from "not traded", because only one of
+	 * them is permanent.
+	 *
+	 * <p>Reporting a members item as untradeable would tell a player to stop
+	 * looking for something a world hop would hand them, which is worse than
+	 * saying nothing at all.
+	 */
+	@Test
+	public void aMembersItemIsKeptApartFromAnUntradeableOne()
+	{
+		List<QuestItems.Total> totals = Arrays.asList(
+			total("Dragon axe", 6739, 1, 0),
+			total("Karamjan rum", 431, 1, 0));
+
+		List<GrandExchangeShoppingList.Line> lines = GrandExchangeShoppingList.of(totals, null,
+			(itemId, name) -> itemId == 6739
+				? GrandExchangeShoppingList.Availability.MEMBERS_ONLY
+				: GrandExchangeShoppingList.Availability.NOT_ON_GE);
+
+		List<GrandExchangeShoppingList.Line> elsewhere = GrandExchangeShoppingList.unbuyable(lines);
+		assertEquals(2, elsewhere.size());
+		assertEquals(GrandExchangeShoppingList.Availability.MEMBERS_ONLY,
+			elsewhere.get(0).availability());
+		assertEquals(GrandExchangeShoppingList.Availability.NOT_ON_GE,
+			elsewhere.get(1).availability());
+	}
+
+	/**
+	 * On a members world the same item is simply buyable.
+	 *
+	 * <p>The direction that would be expensive to get backwards: a paying
+	 * member silently losing most of their buy list is far harder to notice
+	 * than a free player being offered one item too many.
+	 */
+	@Test
+	public void aMembersItemOnAMembersWorldIsOrdinary()
+	{
+		List<GrandExchangeShoppingList.Line> lines = GrandExchangeShoppingList.of(
+			Collections.singletonList(total("Dragon axe", 6739, 1, 0)), null,
+			(itemId, name) -> GrandExchangeShoppingList.Availability.BUYABLE);
+
+		assertEquals(1, GrandExchangeShoppingList.left(lines).size());
+		assertTrue(GrandExchangeShoppingList.unbuyable(lines).isEmpty());
+	}
 }

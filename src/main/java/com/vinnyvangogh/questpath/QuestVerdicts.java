@@ -131,7 +131,15 @@ class QuestVerdicts
 		switch (status)
 		{
 			case ELIGIBLE:
-				return "Do now";
+				// "Can do now", not "Do now". This heading sits under "Can I
+				// do this quest?" and lists every quest the account is
+				// eligible for -- 53 of them on a mature account, nearly all
+				// of which are not on the route and are not being
+				// recommended. An imperative reads as an instruction, and
+				// directly below the "Next on your route" section it reads as
+				// a claim that these are the plan. It is a statement about
+				// capability, so it is phrased as one.
+				return "Can do now";
 			case BOOSTABLE:
 				return "With a boost";
 			case SKILL_BLOCKED:

@@ -2216,9 +2216,42 @@ public class QuestpathPlugin extends Plugin
 		{
 			return GrandExchangeShoppingList.Availability.UNKNOWN;
 		}
-		return item.isGeTradeable()
-			? GrandExchangeShoppingList.Availability.BUYABLE
-			: GrandExchangeShoppingList.Availability.NOT_ON_GE;
+		if (!item.isGeTradeable())
+		{
+			return GrandExchangeShoppingList.Availability.NOT_ON_GE;
+		}
+		if (item.isMembers() && !onMembersWorld())
+		{
+			// Tradeable, and not by this account right now. The game refuses
+			// the offer outright -- "You can't buy members-only items on this
+			// world" -- so listing it as the next thing to buy is the same
+			// failure Karamjan rum is here to prevent: suggesting something
+			// the account cannot act on. It moves to "Not sold here" with its
+			// own reason rather than vanishing, because the item is still
+			// genuinely needed and is one world hop away.
+			return GrandExchangeShoppingList.Availability.MEMBERS_ONLY;
+		}
+		return GrandExchangeShoppingList.Availability.BUYABLE;
+	}
+
+	/**
+	 * Whether the world the account is on right now sells members items.
+	 *
+	 * <p>Read live rather than cached: it is the one input to
+	 * {@link #tradeability} that changes without the item or the account
+	 * changing, and a cached answer survives a world hop as a buy list that
+	 * is confidently wrong in whichever direction it was cached.
+	 *
+	 * <p>An empty world-type set means the client has not told us yet. Treated
+	 * as members, deliberately: the cost of being wrong that way is a listed
+	 * item the player cannot buy this second, and the cost of being wrong the
+	 * other way is silently hiding most of the buy list from a paying member.
+	 * The second is much worse and much harder to notice.
+	 */
+	private boolean onMembersWorld()
+	{
+		java.util.EnumSet<net.runelite.api.WorldType> types = client.getWorldType();
+		return types == null || types.isEmpty() || types.contains(net.runelite.api.WorldType.MEMBERS);
 	}
 
 	/**
