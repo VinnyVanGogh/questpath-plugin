@@ -13,8 +13,19 @@ package com.vinnyvangogh.questpath;
  * skills has its own setting, and it defaults on. Folding the two together
  * would mean someone who merely found the boxes noisy switching off the
  * warnings as well, without meaning to.
+ *
+ * <p><b>Public, and it has to be.</b> RuneLite implements {@link
+ * QuestpathConfig} with a JDK dynamic proxy, and that proxy class lives in the
+ * {@code jdk.proxy2} module. A package-private return type is invisible to it,
+ * so {@code config.lampSuggestions()} throws {@code IllegalAccessError} the
+ * first time anything reads it — which takes the whole plugin down at
+ * {@code startUp}, not just this setting. Every other enum a {@code
+ * @ConfigItem} returns ({@link PanelWidth}, {@link OverlayDisplayMode},
+ * {@link NotePlacement}, {@link QuestJournalFilter}) is public for exactly
+ * this reason. Nothing at compile time or in the test suite catches it: the
+ * proxy is only generated at runtime, inside a client no test starts.
  */
-enum LampSuggestions
+public enum LampSuggestions
 {
 	/** The best target and the next two. */
 	TOP_THREE("Top three", 3),
