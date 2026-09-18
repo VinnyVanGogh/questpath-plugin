@@ -18,6 +18,8 @@ that get a plugin rejected. Everything below is specific to this one.
    plan, the deliverable list, and the open decisions. It spans both repos, so
    it lives in one of them rather than being copied into both. Reach it with
    `claude --add-dir ~/Documents/dev/osrs`.
+4. `docs/TODO-build-guard.md` — everything that can still put experience into
+   a capped skill, ranked, each with its Plugin Hub rules check.
 
 ## The relationship to the Go app
 
