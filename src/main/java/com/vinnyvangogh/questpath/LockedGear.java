@@ -89,27 +89,39 @@ public final class LockedGear
 		private final Kind kind;
 		private final List<String> unknownItemNames;
 		private final MaxHitResult result;
+		private final MaxHitStep nextStep;
 
-		private StyleLine(Kind kind, List<String> unknownItemNames, MaxHitResult result)
+		private StyleLine(Kind kind, List<String> unknownItemNames, MaxHitResult result, MaxHitStep nextStep)
 		{
 			this.kind = kind;
 			this.unknownItemNames = unknownItemNames;
 			this.result = result;
+			this.nextStep = nextStep;
 		}
 
 		static StyleLine needsSelection()
 		{
-			return new StyleLine(Kind.NEEDS_SELECTION, null, null);
+			return new StyleLine(Kind.NEEDS_SELECTION, null, null, null);
 		}
 
 		static StyleLine unknownStats(List<String> itemNames)
 		{
-			return new StyleLine(Kind.UNKNOWN_STATS, Collections.unmodifiableList(new ArrayList<>(itemNames)), null);
+			return new StyleLine(Kind.UNKNOWN_STATS, Collections.unmodifiableList(new ArrayList<>(itemNames)), null, null);
 		}
 
 		static StyleLine result(MaxHitResult result)
 		{
-			return new StyleLine(Kind.RESULT, null, result);
+			return new StyleLine(Kind.RESULT, null, result, null);
+		}
+
+		/**
+		 * A result plus the next level that raises it, where one exists.
+		 * {@code nextStep} is null when no higher level below 99 changes
+		 * the number -- see {@link MaxHit#nextStep}.
+		 */
+		static StyleLine result(MaxHitResult result, MaxHitStep nextStep)
+		{
+			return new StyleLine(Kind.RESULT, null, result, nextStep);
 		}
 
 		/** Which shape this row is in. */
@@ -146,6 +158,32 @@ public final class LockedGear
 			return result;
 		}
 
+		/**
+		 * Whether a higher level is known to raise this style's max hit.
+		 *
+		 * False for a row that is not a {@link Kind#RESULT}, for a
+		 * not-modelled result, for a magic line whose spell does not scale
+		 * with Magic, and at 99.
+		 */
+		public boolean hasNextStep()
+		{
+			return nextStep != null;
+		}
+
+		/**
+		 * The next level at which this style's max hit increases.
+		 *
+		 * @throws IllegalStateException if {@link #hasNextStep()} is false
+		 */
+		public MaxHitStep nextStep()
+		{
+			if (nextStep == null)
+			{
+				throw new IllegalStateException("nextStep() called on a StyleLine with no next step");
+			}
+			return nextStep;
+		}
+
 		@Override
 		public boolean equals(Object o)
 		{
@@ -169,7 +207,11 @@ public final class LockedGear
 				case UNKNOWN_STATS:
 					return unknownItemNames.equals(that.unknownItemNames);
 				case RESULT:
-					return resultEquals(result, that.result);
+					// The breakpoint is part of what the row renders, so two
+					// rows that differ only in it are not the same row --
+					// otherwise the panel keeps a stale "next at" line after
+					// a level-up that moved it.
+					return resultEquals(result, that.result) && Objects.equals(nextStep, that.nextStep);
 				default:
 					return false;
 			}
@@ -208,7 +250,7 @@ public final class LockedGear
 				case UNKNOWN_STATS:
 					return Objects.hash(kind, unknownItemNames);
 				case RESULT:
-					return Objects.hash(kind, resultHashCode(result));
+					return Objects.hash(kind, resultHashCode(result), nextStep);
 				default:
 					return 0;
 			}
@@ -224,7 +266,8 @@ public final class LockedGear
 				case UNKNOWN_STATS:
 					return "StyleLine{UNKNOWN_STATS=" + unknownItemNames + "}";
 				default:
-					return "StyleLine{RESULT=" + result + "}";
+					return "StyleLine{RESULT=" + result
+						+ (nextStep == null ? "" : " next=" + nextStep) + "}";
 			}
 		}
 	}
@@ -482,6 +525,20 @@ public final class LockedGear
 		return item.name() == null || item.name().isEmpty() ? "item " + item.itemId() : item.name();
 	}
 
+	/**
+	 * The breakpoint for a style line, or null when the current result is
+	 * not a number to improve on. Only a known result gets one: a
+	 * not-modelled line has nothing to compare a higher level against.
+	 */
+	private static MaxHitStep stepFor(Skill skill, int level, MaxHitResult result, IntFunction<MaxHitResult> at)
+	{
+		if (!result.isKnown())
+		{
+			return null;
+		}
+		return MaxHit.nextStep(skill, level, result.value(), at);
+	}
+
 	private static StyleLine meleeLine(Loadout selected, CombatStats levels, GearBonuses gear, List<String> unknownNames)
 	{
 		if (!selected.hasMeleeSelections())
@@ -503,9 +560,14 @@ public final class LockedGear
 		{
 			return StyleLine.unknownStats(unknownNames);
 		}
+		final AttackStyle chosenStyle = style;
+		final StrengthPrayer chosenPrayer = prayer;
 		try
 		{
-			return StyleLine.result(MaxHit.melee(levels.get(Skill.STRENGTH), style, prayer, gear));
+			int level = levels.get(Skill.STRENGTH);
+			MaxHitResult result = MaxHit.melee(level, chosenStyle, chosenPrayer, gear);
+			return StyleLine.result(result, stepFor(Skill.STRENGTH, level, result,
+				l -> MaxHit.melee(l, chosenStyle, chosenPrayer, gear)));
 		}
 		catch (IllegalArgumentException negativeValue)
 		{
@@ -540,9 +602,14 @@ public final class LockedGear
 		{
 			return StyleLine.unknownStats(unknownNames);
 		}
+		final RangedStyle chosenStyle = style;
+		final RangedPrayer chosenPrayer = prayer;
 		try
 		{
-			return StyleLine.result(MaxHit.ranged(levels.get(Skill.RANGED), style, prayer, gear));
+			int level = levels.get(Skill.RANGED);
+			MaxHitResult result = MaxHit.ranged(level, chosenStyle, chosenPrayer, gear);
+			return StyleLine.result(result, stepFor(Skill.RANGED, level, result,
+				l -> MaxHit.ranged(l, chosenStyle, chosenPrayer, gear)));
 		}
 		catch (IllegalArgumentException negativeValue)
 		{
@@ -571,9 +638,14 @@ public final class LockedGear
 		{
 			return StyleLine.unknownStats(unknownNames);
 		}
+		final Spell chosenSpell = spell;
+		final MagicPrayer chosenPrayer = prayer;
 		try
 		{
-			return StyleLine.result(MaxHit.magic(levels.get(Skill.MAGIC), spell, prayer, gear));
+			int level = levels.get(Skill.MAGIC);
+			MaxHitResult result = MaxHit.magic(level, chosenSpell, chosenPrayer, gear);
+			return StyleLine.result(result, stepFor(Skill.MAGIC, level, result,
+				l -> MaxHit.magic(l, chosenSpell, chosenPrayer, gear)));
 		}
 		catch (IllegalArgumentException negativeValue)
 		{

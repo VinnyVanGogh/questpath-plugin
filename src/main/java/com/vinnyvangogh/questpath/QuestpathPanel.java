@@ -1367,6 +1367,7 @@ class QuestpathPanel extends PluginPanel
 					value.setForeground(Color.WHITE);
 					value.setAlignmentX(Component.LEFT_ALIGNMENT);
 					panel.add(value);
+					panel.add(nextStepLabel(line));
 				}
 				else
 				{
@@ -1399,6 +1400,24 @@ class QuestpathPanel extends PluginPanel
 		}
 
 		return panel;
+	}
+
+	/**
+	 * The line under a known max hit saying which level raises it next.
+	 *
+	 * The question a frozen loadout is being asked is "what is the next
+	 * level worth training to", and a max hit floors, so most levels move
+	 * nothing. Where no level does -- a standard spell, or 99 -- that is
+	 * said outright rather than left to look like a missing line.
+	 */
+	private static JLabel nextStepLabel(LockedGear.StyleLine line)
+	{
+		if (!line.hasNextStep())
+		{
+			return muted("No higher level raises it");
+		}
+		MaxHitStep next = line.nextStep();
+		return muted(next.maxHit() + " at " + next.skill().getName() + " " + next.level());
 	}
 
 	private JPanel meleeControls(LockedGear gear)

@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.IntFunction;
+import net.runelite.api.Skill;
 import net.runelite.api.gameval.ItemID;
 
 /**
@@ -110,8 +112,68 @@ public final class MaxHit
 	private static final int THAMMARONS_SCEPTRE = ItemID.WILD_CAVE_SCEPTRE_CHARGED;
 	private static final int BONE_STAFF = ItemID.RAT_BONE_STAFF;
 
+	/**
+	 * The highest real skill level, and so the highest level {@link
+	 * #nextStep} will look at. Boosts are deliberately not considered: a
+	 * breakpoint you can only stand on for a minute is not a training
+	 * target.
+	 */
+	public static final int MAX_SKILL_LEVEL = 99;
+
 	private MaxHit()
 	{
+	}
+
+	/**
+	 * The next level above {@code currentLevel}, at or below {@link
+	 * #MAX_SKILL_LEVEL}, whose max hit beats {@code currentMax} -- or
+	 * {@code null} when no such level exists.
+	 *
+	 * <p>This walks the real formula one level at a time rather than
+	 * solving it. The formulae in this class floor at three separate points
+	 * and pick up whole-percent prayer and gear multipliers on the way, so
+	 * an inverted closed form would be a second implementation to keep in
+	 * step with the first -- and the failure mode of the two drifting is a
+	 * confidently wrong training target. Ninety-eight integer evaluations
+	 * per style cost nothing on a once-per-tick refresh.
+	 *
+	 * <p>{@code null} is returned, never a guess, for every case where the
+	 * answer is not a computed fact: no higher level helps (a
+	 * standard-spellbook magic line never scales with Magic at all), the
+	 * account is already at 99, or the formula stops producing a known
+	 * value further up the ladder.
+	 *
+	 * @param skill the skill whose level drives this style's max hit.
+	 * @param currentLevel the account's live level in that skill.
+	 * @param currentMax the max hit at {@code currentLevel}.
+	 * @param at evaluates this style's max hit at an arbitrary level.
+	 */
+	public static MaxHitStep nextStep(Skill skill, int currentLevel, int currentMax, IntFunction<MaxHitResult> at)
+	{
+		for (int level = Math.max(currentLevel, 0) + 1; level <= MAX_SKILL_LEVEL; level++)
+		{
+			MaxHitResult result;
+			try
+			{
+				result = at.apply(level);
+			}
+			catch (IllegalArgumentException negativeValue)
+			{
+				// The same guard the three style lines apply at the live
+				// level: a loadout whose arithmetic breaks further up the
+				// ladder has no honest breakpoint to report.
+				return null;
+			}
+			if (!result.isKnown())
+			{
+				return null;
+			}
+			if (result.value() > currentMax)
+			{
+				return MaxHitStep.at(skill, level, result.value());
+			}
+		}
+		return null;
 	}
 
 	/**
