@@ -244,6 +244,85 @@ public class LoadoutTest
 	}
 
 	@Test
+	public void meleePotionDefaultsToNullOnTheTenArgConstructor()
+	{
+		Loadout loadout = new Loadout("Bank setup", threeItems(), null, null, null, null, null, null, 1L,
+			java.util.Collections.singletonList(Loadout.STYLE_MELEE));
+
+		assertNull("a loadout built through the pre-existing ten-arg constructor has no potion recorded",
+			loadout.meleePotion());
+	}
+
+	@Test
+	public void withMeleePotionReturnsACopyLeavingEverythingElseUnchanged()
+	{
+		Loadout base = noSelections("Bank setup").withMelee("AGGRESSIVE", "PIETY");
+
+		Loadout potted = base.withMeleePotion("SUPER_STRENGTH_POTION");
+
+		assertNull("the original is untouched", base.meleePotion());
+		assertEquals("SUPER_STRENGTH_POTION", potted.meleePotion());
+		assertEquals("style and prayer survive", "AGGRESSIVE", potted.meleeStyle());
+		assertEquals("PIETY", potted.strengthPrayer());
+		assertEquals(base.name(), potted.name());
+		assertEquals(base.items(), potted.items());
+	}
+
+	@Test
+	public void meleePotionSurvivesWithMeleeWithRangedWithMagicAndWithName()
+	{
+		Loadout base = noSelections("Setup").withMeleePotion("ZAMORAK_BREW");
+
+		Loadout afterMelee = base.withMelee("AGGRESSIVE", "PIETY");
+		Loadout afterRanged = afterMelee.withRanged("RAPID", "RIGOUR");
+		Loadout afterMagic = afterRanged.withMagic("ICE_BARRAGE", "AUGURY");
+		Loadout afterRename = afterMagic.withName("Renamed setup");
+
+		assertEquals("withMelee must not drop the potion", "ZAMORAK_BREW", afterMelee.meleePotion());
+		assertEquals("withRanged must not drop the potion", "ZAMORAK_BREW", afterRanged.meleePotion());
+		assertEquals("withMagic must not drop the potion", "ZAMORAK_BREW", afterMagic.meleePotion());
+		assertEquals("withName must not drop the potion", "ZAMORAK_BREW", afterRename.meleePotion());
+	}
+
+	@Test
+	public void meleePotionSurvivesTheJsonRoundTrip()
+	{
+		Loadout original = noSelections("Potted").withMeleePotion("SUPER_STRENGTH_POTION");
+
+		Loadout parsed = GSON.fromJson(GSON.toJson(original), Loadout.class);
+
+		assertEquals("SUPER_STRENGTH_POTION", parsed.meleePotion());
+	}
+
+	/**
+	 * A loadout saved before this field existed round-trips through JSON
+	 * with no {@code meleePotion} key at all, and Gson's field-reflection
+	 * deserialisation must leave that as null rather than as some other
+	 * default -- the same "not chosen yet" reading {@link
+	 * LockedGear#resolve} then normalises to {@code StrengthPotion.NONE}.
+	 */
+	@Test
+	public void aLoadoutJsonWithNoMeleePotionKeyParsesToNull()
+	{
+		Loadout parsed = GSON.fromJson(
+			"{\"name\":\"Old save\",\"items\":[],\"meleeStyle\":\"ACCURATE\",\"strengthPrayer\":\"NONE\","
+				+ "\"savedAtEpochMillis\":1}",
+			Loadout.class);
+
+		assertNull(parsed.meleePotion());
+	}
+
+	@Test
+	public void equalsAndHashCodeDistinguishMeleePotion()
+	{
+		Loadout unpotted = noSelections("Setup");
+		Loadout potted = unpotted.withMeleePotion("SUPER_STRENGTH_POTION");
+
+		assertFalse("differing only in potion must not compare equal", unpotted.equals(potted));
+		assertFalse(unpotted.hashCode() == potted.hashCode());
+	}
+
+	@Test
 	public void nameIsTrimmedOnConstruction()
 	{
 		Loadout padded = noSelections("  PK setup  ");

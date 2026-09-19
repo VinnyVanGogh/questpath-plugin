@@ -38,13 +38,22 @@ import java.util.Objects;
  * attackStyle}/{@code prayer}/{@code spell} loadout in the wild -- so there is
  * no stored data to migrate and none is attempted.
  *
+ * <p><b>{@link #meleePotion()} is the one selection not gated by {@link
+ * #hasMeleeSelections()}.</b> Null there still means "not chosen yet" for
+ * consistency with the other five fields, but a potion has a real, common off
+ * state -- most melee play is un-potted -- so {@link LockedGear} resolves a
+ * null (or unparseable) {@code meleePotion} as {@code StrengthPotion.NONE}
+ * rather than withholding the whole melee line for it. Practically: a loadout
+ * saved before this field existed keeps computing exactly the number it
+ * always did, with no re-selection forced on upgrade.
+ *
  * <p>Immutable: every field is set once, at construction, and {@link
- * #withMelee}, {@link #withRanged}, {@link #withMagic} and {@link #withName}
- * each return a new instance rather than mutating this one. Gson-serialisable
- * with {@code @SerializedName}, the same shape {@link BuildRule} uses -- see
- * {@link LoadoutCodec}'s class javadoc for how this class's own validation
- * still runs on a value Gson deserialises, even though Gson itself bypasses
- * the constructor below.
+ * #withMelee}, {@link #withMeleePotion}, {@link #withRanged}, {@link
+ * #withMagic} and {@link #withName} each return a new instance rather than
+ * mutating this one. Gson-serialisable with {@code @SerializedName}, the same
+ * shape {@link BuildRule} uses -- see {@link LoadoutCodec}'s class javadoc for
+ * how this class's own validation still runs on a value Gson deserialises,
+ * even though Gson itself bypasses the constructor below.
  *
  * <p><b>{@link #weaponStyles()}: which style blocks this loadout's weapon can
  * actually produce.</b> Captured once, at "Lock current gear" time, from the
@@ -101,17 +110,35 @@ public final class Loadout
 	@SerializedName("weaponStyles")
 	private final List<String> weaponStyles;
 
+	@SerializedName("meleePotion")
+	private final String meleePotion;
+
 	/**
 	 * Same as {@link #Loadout(String, List, String, String, String, String,
-	 * String, String, long, List)} with {@code weaponStyles} defaulted to
-	 * {@code null} ("not captured"). Kept for every caller that predates
-	 * {@link #weaponStyles()} -- see the class javadoc.
+	 * String, String, long, List, String)} with {@code weaponStyles} and
+	 * {@code meleePotion} both defaulted to {@code null} ("not captured" /
+	 * "not chosen yet"). Kept for every caller that predates {@link
+	 * #weaponStyles()} -- see the class javadoc.
 	 */
 	public Loadout(String name, List<LoadoutItem> items, String meleeStyle, String strengthPrayer,
 		String rangedStyle, String rangedPrayer, String spell, String magicPrayer, long savedAtEpochMillis)
 	{
 		this(name, items, meleeStyle, strengthPrayer, rangedStyle, rangedPrayer, spell, magicPrayer,
-			savedAtEpochMillis, null);
+			savedAtEpochMillis, null, null);
+	}
+
+	/**
+	 * Same as {@link #Loadout(String, List, String, String, String, String,
+	 * String, String, long, List, String)} with {@code meleePotion} defaulted
+	 * to {@code null} ("not chosen yet"). Kept for every caller that predates
+	 * {@link #meleePotion()} -- see the class javadoc.
+	 */
+	public Loadout(String name, List<LoadoutItem> items, String meleeStyle, String strengthPrayer,
+		String rangedStyle, String rangedPrayer, String spell, String magicPrayer, long savedAtEpochMillis,
+		List<String> weaponStyles)
+	{
+		this(name, items, meleeStyle, strengthPrayer, rangedStyle, rangedPrayer, spell, magicPrayer,
+			savedAtEpochMillis, weaponStyles, null);
 	}
 
 	/**
@@ -138,12 +165,16 @@ public final class Loadout
 	 *     when non-null; never validated against the three known tokens here,
 	 *     the same way {@code meleeStyle} et al. are opaque strings this class
 	 *     does not interpret
+	 * @param meleePotion a {@code StrengthPotion} enum name (NONE,
+	 *     SUPER_STRENGTH_POTION, ...), or null -- see the class javadoc for why
+	 *     this one field is read as {@code StrengthPotion.NONE} rather than
+	 *     "not chosen yet" downstream
 	 * @throws IllegalArgumentException if {@code name} is null or blank after
 	 *     trimming
 	 */
 	public Loadout(String name, List<LoadoutItem> items, String meleeStyle, String strengthPrayer,
 		String rangedStyle, String rangedPrayer, String spell, String magicPrayer, long savedAtEpochMillis,
-		List<String> weaponStyles)
+		List<String> weaponStyles, String meleePotion)
 	{
 		String trimmed = name == null ? null : name.trim();
 		if (trimmed == null || trimmed.isEmpty())
@@ -160,6 +191,7 @@ public final class Loadout
 		this.magicPrayer = magicPrayer;
 		this.savedAtEpochMillis = savedAtEpochMillis;
 		this.weaponStyles = weaponStyles == null ? null : List.copyOf(weaponStyles);
+		this.meleePotion = meleePotion;
 	}
 
 	/** The loadout's name -- trimmed, never null or blank. */
@@ -184,6 +216,16 @@ public final class Loadout
 	public String strengthPrayer()
 	{
 		return strengthPrayer;
+	}
+
+	/**
+	 * The chosen melee ({@code StrengthPotion}) potion's enum name, or null.
+	 * Unlike every other selection here, null does not gate the melee line --
+	 * see the class javadoc.
+	 */
+	public String meleePotion()
+	{
+		return meleePotion;
 	}
 
 	/** The chosen ranged attack style's enum name, or null when not chosen yet. */
@@ -253,6 +295,10 @@ public final class Loadout
 	 * Whether both a melee style and a {@code StrengthPrayer} have been
 	 * chosen, so a max-hit UI can compute melee's number instead of only
 	 * listing the saved gear.
+	 *
+	 * <p>Deliberately does not also require {@link #meleePotion()}: a potion
+	 * has an honest off state and defaults to it rather than blocking the
+	 * whole line -- see the class javadoc.
 	 */
 	public boolean hasMeleeSelections()
 	{
@@ -278,25 +324,32 @@ public final class Loadout
 		return spell != null && magicPrayer != null;
 	}
 
-	/** A copy of this loadout with its melee choices replaced. Everything else is unchanged. */
+	/** A copy of this loadout with its melee style and prayer replaced. Everything else, including {@link #meleePotion()}, is unchanged. */
 	public Loadout withMelee(String meleeStyle, String strengthPrayer)
 	{
 		return new Loadout(name, items, meleeStyle, strengthPrayer, rangedStyle, rangedPrayer, spell,
-			magicPrayer, savedAtEpochMillis, weaponStyles);
+			magicPrayer, savedAtEpochMillis, weaponStyles, meleePotion);
+	}
+
+	/** A copy of this loadout with its melee potion replaced. Everything else is unchanged. */
+	public Loadout withMeleePotion(String meleePotion)
+	{
+		return new Loadout(name, items, meleeStyle, strengthPrayer, rangedStyle, rangedPrayer, spell,
+			magicPrayer, savedAtEpochMillis, weaponStyles, meleePotion);
 	}
 
 	/** A copy of this loadout with its ranged choices replaced. Everything else is unchanged. */
 	public Loadout withRanged(String rangedStyle, String rangedPrayer)
 	{
 		return new Loadout(name, items, meleeStyle, strengthPrayer, rangedStyle, rangedPrayer, spell,
-			magicPrayer, savedAtEpochMillis, weaponStyles);
+			magicPrayer, savedAtEpochMillis, weaponStyles, meleePotion);
 	}
 
 	/** A copy of this loadout with its magic choices replaced. Everything else is unchanged. */
 	public Loadout withMagic(String spell, String magicPrayer)
 	{
 		return new Loadout(name, items, meleeStyle, strengthPrayer, rangedStyle, rangedPrayer, spell,
-			magicPrayer, savedAtEpochMillis, weaponStyles);
+			magicPrayer, savedAtEpochMillis, weaponStyles, meleePotion);
 	}
 
 	/**
@@ -308,7 +361,7 @@ public final class Loadout
 	Loadout withName(String newName)
 	{
 		return new Loadout(newName, items, meleeStyle, strengthPrayer, rangedStyle, rangedPrayer, spell,
-			magicPrayer, savedAtEpochMillis, weaponStyles);
+			magicPrayer, savedAtEpochMillis, weaponStyles, meleePotion);
 	}
 
 	/**
@@ -349,14 +402,15 @@ public final class Loadout
 			&& Objects.equals(rangedPrayer, that.rangedPrayer)
 			&& Objects.equals(spell, that.spell)
 			&& Objects.equals(magicPrayer, that.magicPrayer)
-			&& Objects.equals(weaponStyles, that.weaponStyles);
+			&& Objects.equals(weaponStyles, that.weaponStyles)
+			&& Objects.equals(meleePotion, that.meleePotion);
 	}
 
 	@Override
 	public int hashCode()
 	{
 		return Objects.hash(name, items, meleeStyle, strengthPrayer, rangedStyle, rangedPrayer, spell,
-			magicPrayer, savedAtEpochMillis, weaponStyles);
+			magicPrayer, savedAtEpochMillis, weaponStyles, meleePotion);
 	}
 
 	@Override
@@ -364,6 +418,7 @@ public final class Loadout
 	{
 		return "Loadout{name='" + name + "', items=" + items
 			+ ", meleeStyle=" + meleeStyle + ", strengthPrayer=" + strengthPrayer
+			+ ", meleePotion=" + meleePotion
 			+ ", rangedStyle=" + rangedStyle + ", rangedPrayer=" + rangedPrayer
 			+ ", spell=" + spell + ", magicPrayer=" + magicPrayer
 			+ ", savedAtEpochMillis=" + savedAtEpochMillis + ", weaponStyles=" + weaponStyles + "}";

@@ -177,24 +177,26 @@ public final class MaxHit
 	}
 
 	/**
-	 * Max melee hit: base Strength level + style + prayer + Void melee only.
-	 * Every other &sect;20.1.1 multiplier (Dharok's, Obsidian, Salve,
-	 * Osmumten's fang, every weapon special, ...) is reported via {@link
-	 * MaxHitResult#notApplied()} instead of applied, per &sect;20.6.
+	 * Max melee hit: base Strength level + potion + style + prayer + Void
+	 * melee only. Every other &sect;20.1.1 multiplier (Dharok's, Obsidian,
+	 * Salve, Osmumten's fang, every weapon special, ...) is reported via
+	 * {@link MaxHitResult#notApplied()} instead of applied, per &sect;20.6.
 	 *
 	 * @param strengthLevel the caller's live Strength level.
 	 * @param style the melee attack style in use.
 	 * @param prayer the active strength prayer, or {@link StrengthPrayer#NONE}.
+	 * @param potion the active strength potion, or {@link StrengthPotion#NONE}.
 	 * @param gear the frozen loadout's gear bonuses.
 	 */
-	public static MaxHitResult melee(int strengthLevel, AttackStyle style, StrengthPrayer prayer, GearBonuses gear)
+	public static MaxHitResult melee(int strengthLevel, AttackStyle style, StrengthPrayer prayer,
+		StrengthPotion potion, GearBonuses gear)
 	{
 		Set<GearEffect> effects = gear.effects();
 
-		// RESEARCH.md §20.1: floor(floor(Str + Potion) × Prayer). Potion
-		// Bonus is always 0 in this project, so floor(Str + 0) = Str
-		// trivially; only the × Prayer floor is real.
-		int stage1 = (strengthLevel * (100 + prayer.percentBonus())) / 100;
+		// RESEARCH.md §20.1: floor(floor(Str + Potion) × Prayer). Potion's
+		// own formula (floor(Str × percent) + flat) is itself already an
+		// integer, so Str + Potion needs no separate floor of its own.
+		int stage1 = ((strengthLevel + potion.bonus(strengthLevel)) * (100 + prayer.percentBonus())) / 100;
 
 		// §20.1: + Style Bonus + 8.
 		int stage2 = stage1 + style.styleBonus() + 8;

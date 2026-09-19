@@ -111,7 +111,7 @@ final class LoadoutCodec
 		{
 			return new Loadout(candidate.name(), items, candidate.meleeStyle(), candidate.strengthPrayer(),
 				candidate.rangedStyle(), candidate.rangedPrayer(), candidate.spell(), candidate.magicPrayer(),
-				candidate.savedAtEpochMillis(), candidate.weaponStyles());
+				candidate.savedAtEpochMillis(), candidate.weaponStyles(), candidate.meleePotion());
 		}
 		catch (RuntimeException e)
 		{

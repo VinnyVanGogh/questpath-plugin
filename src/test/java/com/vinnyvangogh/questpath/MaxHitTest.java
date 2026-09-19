@@ -58,22 +58,58 @@ public class MaxHitTest
 	public void meleeVectors()
 	{
 		assertEquals("M1: Str 99, no gear, no prayer, no style bonus",
-			11, MaxHit.melee(99, AttackStyle.ACCURATE, StrengthPrayer.NONE, gear(0, 0, 0)).value());
+			11, MaxHit.melee(99, AttackStyle.ACCURATE, StrengthPrayer.NONE, StrengthPotion.NONE, gear(0, 0, 0)).value());
 
 		assertEquals("M2: Str 99, no gear, Piety, aggressive (+3)",
-			13, MaxHit.melee(99, AttackStyle.AGGRESSIVE, StrengthPrayer.PIETY, gear(0, 0, 0)).value());
+			13, MaxHit.melee(99, AttackStyle.AGGRESSIVE, StrengthPrayer.PIETY, StrengthPotion.NONE, gear(0, 0, 0)).value());
 
 		assertEquals("M3: Str 99, no gear, Void melee (1.1), controlled (+1)",
-			12, MaxHit.melee(99, AttackStyle.CONTROLLED, StrengthPrayer.NONE, gear(0, 0, 0, GearEffect.VOID_MELEE)).value());
+			12, MaxHit.melee(99, AttackStyle.CONTROLLED, StrengthPrayer.NONE, StrengthPotion.NONE,
+				gear(0, 0, 0, GearEffect.VOID_MELEE)).value());
 
 		assertEquals("M4: Str 99, Abyssal whip (+82 str), Piety, aggressive (+3), no void",
-			30, MaxHit.melee(99, AttackStyle.AGGRESSIVE, StrengthPrayer.PIETY, gear(82, 0, 0)).value());
+			30, MaxHit.melee(99, AttackStyle.AGGRESSIVE, StrengthPrayer.PIETY, StrengthPotion.NONE, gear(82, 0, 0)).value());
 
 		assertEquals("M5: Str 75, no gear, no prayer, no style bonus",
-			8, MaxHit.melee(75, AttackStyle.ACCURATE, StrengthPrayer.NONE, gear(0, 0, 0)).value());
+			8, MaxHit.melee(75, AttackStyle.ACCURATE, StrengthPrayer.NONE, StrengthPotion.NONE, gear(0, 0, 0)).value());
 
 		assertEquals("M6: Str 99, Rune scimitar (+44 str), Superhuman Strength, controlled (+1)",
-			20, MaxHit.melee(99, AttackStyle.CONTROLLED, StrengthPrayer.SUPERHUMAN_STRENGTH, gear(44, 0, 0)).value());
+			20, MaxHit.melee(99, AttackStyle.CONTROLLED, StrengthPrayer.SUPERHUMAN_STRENGTH, StrengthPotion.NONE,
+				gear(44, 0, 0)).value());
+	}
+
+	/**
+	 * {@link StrengthPotion}, hand-derived from &sect;20.1's own formula and
+	 * potion table rather than a &sect;20.5 worked vector -- none of M1-M6
+	 * carries a potion, so there is nothing to quote verbatim here. Each row
+	 * still traces back to a sourced number: the potion bonus formula, and
+	 * either a no-potion vector already pinned above (P1) or independent
+	 * arithmetic through the same &sect;20.1 stages (P2).
+	 */
+	@Test
+	public void meleePotionVectors()
+	{
+		assertEquals("StrengthPotion.NONE contributes nothing at any level",
+			0, StrengthPotion.NONE.bonus(1));
+		assertEquals(0, StrengthPotion.NONE.bonus(99));
+
+		assertEquals("Super strength potion at 99: floor(99*15%) + 5 = 14 + 5 = 19",
+			19, StrengthPotion.SUPER_STRENGTH_POTION.bonus(99));
+
+		assertEquals("P1: Str 99, Super strength potion, no prayer, Accurate (+0), no gear -- "
+				+ "stage1 = floor((99+19)*100/100) = 118, stage2 = 118+0+8 = 126, "
+				+ "maxHit = floor((320 + 126*64)/640) = floor(13.1) = 13, "
+				+ "strictly above M1's un-potted 11",
+			13, MaxHit.melee(99, AttackStyle.ACCURATE, StrengthPrayer.NONE, StrengthPotion.SUPER_STRENGTH_POTION,
+				gear(0, 0, 0)).value());
+
+		assertEquals("P2: Str 99, Super strength potion, Piety, Accurate (+0), no gear -- "
+				+ "stage1 = floor(118*123/100) = 145, stage2 = 145+0+8 = 153, "
+				+ "maxHit = floor((320 + 153*64)/640) = floor(15.8) = 15 -- "
+				+ "the potion bonus is added before the prayer floor, per "
+				+ "RESEARCH.md's floor(floor(Str + Potion) x Prayer)",
+			15, MaxHit.melee(99, AttackStyle.ACCURATE, StrengthPrayer.PIETY, StrengthPotion.SUPER_STRENGTH_POTION,
+				gear(0, 0, 0)).value());
 	}
 
 	// ------------------------------------------------------------------
@@ -313,7 +349,7 @@ public class MaxHitTest
 		Set<GearEffect> effects = GearEffects.detect(Collections.singletonList(ItemID.TOXIC_BLOWPIPE_LOADED));
 		GearBonuses gearWithBlowpipe = new GearBonuses(82, 200, 10, effects, null);
 
-		MaxHitResult melee = MaxHit.melee(99, AttackStyle.ACCURATE, StrengthPrayer.NONE, gearWithBlowpipe);
+		MaxHitResult melee = MaxHit.melee(99, AttackStyle.ACCURATE, StrengthPrayer.NONE, StrengthPotion.NONE, gearWithBlowpipe);
 		assertTrue("melee must be unaffected by a detected Toxic blowpipe", melee.isKnown());
 
 		MaxHitResult magic = MaxHit.magic(99, Spell.FIRE_SURGE, MagicPrayer.NONE, gearWithBlowpipe);
@@ -433,7 +469,7 @@ public class MaxHitTest
 	@Test
 	public void meleeUnmodelledEffectIsReportedNotApplied()
 	{
-		MaxHitResult result = MaxHit.melee(99, AttackStyle.ACCURATE, StrengthPrayer.NONE,
+		MaxHitResult result = MaxHit.melee(99, AttackStyle.ACCURATE, StrengthPrayer.NONE, StrengthPotion.NONE,
 			gear(0, 0, 0, GearEffect.DHAROKS_EQUIPMENT));
 
 		assertEquals("Dharok's is not applied: value must match the no-gear M1 vector", 11, result.value());
@@ -465,7 +501,7 @@ public class MaxHitTest
 	{
 		// A ranged-only effect (Twisted bow) must not leak into melee's
 		// notApplied list, and vice versa.
-		MaxHitResult melee = MaxHit.melee(99, AttackStyle.ACCURATE, StrengthPrayer.NONE,
+		MaxHitResult melee = MaxHit.melee(99, AttackStyle.ACCURATE, StrengthPrayer.NONE, StrengthPotion.NONE,
 			gear(0, 0, 0, GearEffect.TWISTED_BOW));
 		assertTrue("Twisted bow is a ranged effect and must not appear in melee's notApplied",
 			melee.notApplied().isEmpty());
@@ -623,7 +659,7 @@ public class MaxHitTest
 		// Accurate and Defensive both carry a 0 style bonus (§20.1); this
 		// asserts Defensive really does match Accurate's M1 vector rather
 		// than assuming it from the table.
-		assertEquals(11, MaxHit.melee(99, AttackStyle.DEFENSIVE, StrengthPrayer.NONE, gear(0, 0, 0)).value());
+		assertEquals(11, MaxHit.melee(99, AttackStyle.DEFENSIVE, StrengthPrayer.NONE, StrengthPotion.NONE, gear(0, 0, 0)).value());
 	}
 
 	@Test
@@ -632,7 +668,8 @@ public class MaxHitTest
 		// Str 85 × Superhuman Strength (1.10) = 93.5, which floors to 93,
 		// not rounds to 94 — the exact floor case §20.1's floor #2 calls
 		// for.
-		MaxHitResult result = MaxHit.melee(85, AttackStyle.ACCURATE, StrengthPrayer.SUPERHUMAN_STRENGTH, gear(0, 0, 0));
+		MaxHitResult result = MaxHit.melee(85, AttackStyle.ACCURATE, StrengthPrayer.SUPERHUMAN_STRENGTH,
+			StrengthPotion.NONE, gear(0, 0, 0));
 		// effStr = floor(85*1.10) + 0 + 8 = 93 + 8 = 101; maxHit = floor(0.5 + 101*64/640) = floor(10.6) = 10.
 		assertEquals(10, result.value());
 	}

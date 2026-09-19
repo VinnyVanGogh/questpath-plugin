@@ -1453,7 +1453,36 @@ class QuestpathPanel extends PluginPanel
 		styleCombo.addActionListener(listener);
 		prayerCombo.addActionListener(listener);
 
-		return comboRow(styleCombo, prayerCombo);
+		// Potion gets its own row and its own listener rather than a third
+		// slot on the row above: comboRow is a fixed two-up layout every
+		// other style block already relies on, and unlike style/prayer a
+		// potion has a real "None" off state -- it can never be left
+		// unselected the way an unmade style/prayer choice can, so it needs
+		// no shared null guard with them.
+		StrengthPotion potion = parseOrNull(StrengthPotion.class, loadout.meleePotion());
+		if (potion == null)
+		{
+			potion = StrengthPotion.NONE;
+		}
+		JComboBox<StrengthPotion> potionCombo = enumCombo(StrengthPotion.values(), potion, StrengthPotion::label);
+		potionCombo.addActionListener(e ->
+		{
+			StrengthPotion chosenPotion = (StrengthPotion) potionCombo.getSelectedItem();
+			if (chosenPotion == null)
+			{
+				return;
+			}
+			lockedGearMessage = null;
+			lockedGearActions.meleePotionChanged.accept(loadout.name(), chosenPotion.name());
+		});
+
+		JPanel column = new JPanel();
+		column.setLayout(new BoxLayout(column, BoxLayout.Y_AXIS));
+		column.setAlignmentX(Component.LEFT_ALIGNMENT);
+		column.add(comboRow(styleCombo, prayerCombo));
+		column.add(Box.createVerticalStrut(4));
+		column.add(potionCombo);
+		return column;
 	}
 
 	private JPanel rangedControls(LockedGear gear)

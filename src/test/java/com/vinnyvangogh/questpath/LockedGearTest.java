@@ -88,6 +88,12 @@ public class LockedGearTest
 			1_000L);
 	}
 
+	private static Loadout loadoutWithMeleePotion(String name, List<LoadoutItem> items, String meleeStyle,
+		String strengthPrayer, String meleePotion)
+	{
+		return new Loadout(name, items, meleeStyle, strengthPrayer, null, null, null, null, 1_000L, null, meleePotion);
+	}
+
 	@Test
 	public void notLoggedInShape()
 	{
@@ -278,6 +284,64 @@ public class LockedGearTest
 		int expectedMagic = MaxHit.magic(99, Spell.FIRE_STRIKE, MagicPrayer.NONE,
 			new GearBonuses(0, 0, 0, Collections.emptySet(), null)).value();
 		assertEquals(expectedMagic, gear.magic().result().value());
+	}
+
+	/**
+	 * A loadout saved before {@link Loadout#meleePotion()} existed -- {@code
+	 * meleePotion} is null -- keeps computing exactly the number it always
+	 * did. Potion is the one selection {@link Loadout#hasMeleeSelections()}
+	 * does not gate on, precisely so this stays true without forcing a
+	 * re-selection on upgrade; see {@link Loadout}'s own class javadoc.
+	 */
+	@Test
+	public void noMeleePotionSelectedDefaultsToNoPotionRatherThanBlockingTheLine()
+	{
+		Loadout saved = loadout("Unpotted", Collections.emptyList(), "ACCURATE", "NONE", null, null, null, null);
+		LoadoutStore.Result stored = LoadoutStore.Result.ok(Collections.singletonList(saved));
+
+		LockedGear gear = LockedGear.resolve(stored, "Unpotted", LEVELS, id -> UNKNOWN);
+
+		assertEquals(LockedGear.StyleLine.Kind.RESULT, gear.melee().kind());
+		// M1 from MaxHitTest: Str 99, no gear, no prayer, no potion, Accurate (+0) = 11.
+		assertEquals(11, gear.melee().result().value());
+	}
+
+	/**
+	 * A real potion selection changes the number -- the wiring end to end,
+	 * not just {@link StrengthPotion#bonus} in isolation. Matches P1 from
+	 * {@link MaxHitTest#meleePotionVectors()}.
+	 */
+	@Test
+	public void meleePotionSelectionRaisesTheNumber()
+	{
+		Loadout saved = loadoutWithMeleePotion("Potted", Collections.emptyList(),
+			"ACCURATE", "NONE", "SUPER_STRENGTH_POTION");
+		LoadoutStore.Result stored = LoadoutStore.Result.ok(Collections.singletonList(saved));
+
+		LockedGear gear = LockedGear.resolve(stored, "Potted", LEVELS, id -> UNKNOWN);
+
+		assertEquals(LockedGear.StyleLine.Kind.RESULT, gear.melee().kind());
+		assertEquals("P1 from MaxHitTest#meleePotionVectors", 13, gear.melee().result().value());
+	}
+
+	/**
+	 * The asymmetry with {@link #unrecognisedSelectionNameFallsBackToNeedsSelection}:
+	 * an unrecognised (e.g. since-renamed) potion enum name still resolves
+	 * the melee line, using no potion, rather than withholding it. Style and
+	 * prayer have no honest "unselected" value to fall back to; a potion
+	 * does.
+	 */
+	@Test
+	public void unrecognisedMeleePotionNameFallsBackToNoPotionRatherThanNeedsSelection()
+	{
+		Loadout saved = loadoutWithMeleePotion("Renamed potion", Collections.emptyList(),
+			"ACCURATE", "NONE", "NOT_A_REAL_POTION");
+		LoadoutStore.Result stored = LoadoutStore.Result.ok(Collections.singletonList(saved));
+
+		LockedGear gear = LockedGear.resolve(stored, "Renamed potion", LEVELS, id -> UNKNOWN);
+
+		assertEquals(LockedGear.StyleLine.Kind.RESULT, gear.melee().kind());
+		assertEquals(11, gear.melee().result().value());
 	}
 
 	@Test

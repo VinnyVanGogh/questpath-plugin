@@ -1372,6 +1372,7 @@ public class QuestpathPlugin extends Plugin
 			this::deleteLoadout,
 			this::renameLoadout,
 			(loadoutName, style, prayer) -> editLoadout(loadoutName, loadout -> loadout.withMelee(style, prayer)),
+			(loadoutName, potion) -> editLoadout(loadoutName, loadout -> loadout.withMeleePotion(potion)),
 			(loadoutName, style, prayer) -> editLoadout(loadoutName, loadout -> loadout.withRanged(style, prayer)),
 			(loadoutName, spell, prayer) -> editLoadout(loadoutName, loadout -> loadout.withMagic(spell, prayer)));
 	}

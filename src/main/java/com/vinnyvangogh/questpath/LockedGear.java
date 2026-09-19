@@ -556,18 +556,36 @@ public final class LockedGear
 		{
 			return StyleLine.needsSelection();
 		}
+		// Potion is not gated the way style and prayer are: a null or
+		// unrecognised value reads as StrengthPotion.NONE rather than as
+		// "needs selection" -- see Loadout's class javadoc for why a
+		// potion's honest off state is common enough to default to rather
+		// than withhold the whole line for.
+		StrengthPotion potion = StrengthPotion.NONE;
+		if (selected.meleePotion() != null)
+		{
+			try
+			{
+				potion = StrengthPotion.valueOf(selected.meleePotion());
+			}
+			catch (IllegalArgumentException unrecognisedName)
+			{
+				potion = StrengthPotion.NONE;
+			}
+		}
 		if (!unknownNames.isEmpty())
 		{
 			return StyleLine.unknownStats(unknownNames);
 		}
 		final AttackStyle chosenStyle = style;
 		final StrengthPrayer chosenPrayer = prayer;
+		final StrengthPotion chosenPotion = potion;
 		try
 		{
 			int level = levels.get(Skill.STRENGTH);
-			MaxHitResult result = MaxHit.melee(level, chosenStyle, chosenPrayer, gear);
+			MaxHitResult result = MaxHit.melee(level, chosenStyle, chosenPrayer, chosenPotion, gear);
 			return StyleLine.result(result, stepFor(Skill.STRENGTH, level, result,
-				l -> MaxHit.melee(l, chosenStyle, chosenPrayer, gear)));
+				l -> MaxHit.melee(l, chosenStyle, chosenPrayer, chosenPotion, gear)));
 		}
 		catch (IllegalArgumentException negativeValue)
 		{

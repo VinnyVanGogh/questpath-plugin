@@ -27,7 +27,7 @@ public class MaxHitStepTest
 
 	private static int meleeAt(int level, GearBonuses gear)
 	{
-		return MaxHit.melee(level, AttackStyle.AGGRESSIVE, StrengthPrayer.NONE, gear).value();
+		return MaxHit.melee(level, AttackStyle.AGGRESSIVE, StrengthPrayer.NONE, StrengthPotion.NONE, gear).value();
 	}
 
 	/**
@@ -42,7 +42,7 @@ public class MaxHitStepTest
 		int current = meleeAt(level, g);
 
 		MaxHitStep step = MaxHit.nextStep(Skill.STRENGTH, level, current,
-			l -> MaxHit.melee(l, AttackStyle.AGGRESSIVE, StrengthPrayer.NONE, g));
+			l -> MaxHit.melee(l, AttackStyle.AGGRESSIVE, StrengthPrayer.NONE, StrengthPotion.NONE, g));
 
 		assertNotNull("a level 70 melee loadout has somewhere to go before 99", step);
 		assertEquals(Skill.STRENGTH, step.skill());
@@ -64,7 +64,7 @@ public class MaxHitStepTest
 		int current = meleeAt(99, g);
 
 		assertNull(MaxHit.nextStep(Skill.STRENGTH, 99, current,
-			l -> MaxHit.melee(l, AttackStyle.AGGRESSIVE, StrengthPrayer.NONE, g)));
+			l -> MaxHit.melee(l, AttackStyle.AGGRESSIVE, StrengthPrayer.NONE, StrengthPotion.NONE, g)));
 	}
 
 	/**

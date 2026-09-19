@@ -9,7 +9,7 @@ import java.util.function.Consumer;
  *
  * Each field is a callback exactly like every other one already passed into
  * {@link QuestpathPanel} (see its {@code onSyncNow}) -- this class only
- * groups seven of them together, rather than adding seven more raw
+ * groups eight of them together, rather than adding eight more raw
  * parameters to a constructor that already takes fifteen.
  */
 final class LockedGearActions
@@ -52,6 +52,15 @@ final class LockedGearActions
 	 */
 	final TriConsumer<String, String, String> meleeSelectionChanged;
 
+	/**
+	 * The melee potion selection changed for the named loadout: {@code
+	 * (loadoutName, potionName)}. Its own callback rather than a fourth arm on
+	 * {@link #meleeSelectionChanged}: style and prayer travel together because
+	 * one {@code withMelee} call needs both at once, but the potion has its
+	 * own {@code withMeleePotion} mutator and no such pairing to keep atomic.
+	 */
+	final BiConsumer<String, String> meleePotionChanged;
+
 	/** The ranged style + ranged prayer selection changed: {@code (loadoutName, styleName, prayerName)}. */
 	final TriConsumer<String, String, String> rangedSelectionChanged;
 
@@ -61,6 +70,7 @@ final class LockedGearActions
 	LockedGearActions(Consumer<String> lockCurrentGear, Consumer<String> selectLoadout,
 		Consumer<String> deleteLoadout, BiConsumer<String, String> renameLoadout,
 		TriConsumer<String, String, String> meleeSelectionChanged,
+		BiConsumer<String, String> meleePotionChanged,
 		TriConsumer<String, String, String> rangedSelectionChanged,
 		TriConsumer<String, String, String> magicSelectionChanged)
 	{
@@ -69,6 +79,7 @@ final class LockedGearActions
 		this.deleteLoadout = deleteLoadout;
 		this.renameLoadout = renameLoadout;
 		this.meleeSelectionChanged = meleeSelectionChanged;
+		this.meleePotionChanged = meleePotionChanged;
 		this.rangedSelectionChanged = rangedSelectionChanged;
 		this.magicSelectionChanged = magicSelectionChanged;
 	}

@@ -49,6 +49,28 @@ public class LoadoutCodecTest
 	}
 
 	/**
+	 * {@code decode} rebuilds every stored loadout through {@link
+	 * Loadout}'s own constructor rather than trusting Gson's raw
+	 * deserialisation -- see {@code revalidate}'s own javadoc. That
+	 * reconstruction call is exactly the place a field can be silently
+	 * dropped: it happened once already here, forgetting to carry {@code
+	 * meleePotion} through, and the generic round trip above would not have
+	 * caught it because {@link #loadout} never sets one. This does.
+	 */
+	@Test
+	public void meleePotionSurvivesRevalidation()
+	{
+		Loadout withPotion = loadout("PK setup").withMelee("AGGRESSIVE", "PIETY")
+			.withMeleePotion("SUPER_STRENGTH_POTION");
+		List<Loadout> loadouts = Collections.singletonList(withPotion);
+
+		String json = LoadoutCodec.encode(GSON, loadouts);
+		List<Loadout> decoded = LoadoutCodec.decode(GSON, json);
+
+		assertEquals("SUPER_STRENGTH_POTION", decoded.get(0).meleePotion());
+	}
+
+	/**
 	 * A loadout saved before {@link Loadout#weaponStyles()} existed, or one
 	 * whose weapon stats were unknown at capture time, has a null {@code
 	 * weaponStyles} -- and {@link LoadoutCodec#revalidate} must carry that
