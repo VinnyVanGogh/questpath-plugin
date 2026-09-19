@@ -9,6 +9,8 @@ import net.runelite.api.gameval.ItemID;
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -322,6 +324,84 @@ public class LockedGearTest
 
 		assertEquals(LockedGear.StyleLine.Kind.RESULT, gear.melee().kind());
 		assertEquals("P1 from MaxHitTest#meleePotionVectors", 13, gear.melee().result().value());
+	}
+
+	/**
+	 * Neither buff active: nothing to compare against, so both comparisons
+	 * are absent rather than repeating the number already shown above them.
+	 */
+	@Test
+	public void withoutComparisonsAreAbsentWhenNeitherBuffIsActive()
+	{
+		Loadout saved = loadout("Bare", Collections.emptyList(), "ACCURATE", "NONE", null, null, null, null);
+		LoadoutStore.Result stored = LoadoutStore.Result.ok(Collections.singletonList(saved));
+
+		LockedGear.StyleLine melee = LockedGear.resolve(stored, "Bare", LEVELS, id -> UNKNOWN).melee();
+
+		assertEquals(LockedGear.StyleLine.Kind.RESULT, melee.kind());
+		assertNull(melee.withoutPrayerValue());
+		assertNull(melee.withoutPotionValue());
+	}
+
+	/** Only prayer is active: only the prayer comparison appears. */
+	@Test
+	public void onlyWithoutPrayerAppearsWhenOnlyPrayerIsActive()
+	{
+		Loadout saved = loadout("Prayer only", Collections.emptyList(), "ACCURATE", "PIETY", null, null, null, null);
+		LoadoutStore.Result stored = LoadoutStore.Result.ok(Collections.singletonList(saved));
+
+		LockedGear.StyleLine melee = LockedGear.resolve(stored, "Prayer only", LEVELS, id -> UNKNOWN).melee();
+
+		assertEquals(LockedGear.StyleLine.Kind.RESULT, melee.kind());
+		assertNotNull("removing the active prayer must be comparable", melee.withoutPrayerValue());
+		assertNull(melee.withoutPotionValue());
+		// M1: Accurate, no prayer, no potion, no gear = 11.
+		assertEquals(Integer.valueOf(11), melee.withoutPrayerValue());
+	}
+
+	/** Only potion is active: only the potion comparison appears. */
+	@Test
+	public void onlyWithoutPotionAppearsWhenOnlyPotionIsActive()
+	{
+		Loadout saved = loadoutWithMeleePotion("Potion only", Collections.emptyList(),
+			"ACCURATE", "NONE", "SUPER_STRENGTH_POTION");
+		LoadoutStore.Result stored = LoadoutStore.Result.ok(Collections.singletonList(saved));
+
+		LockedGear.StyleLine melee = LockedGear.resolve(stored, "Potion only", LEVELS, id -> UNKNOWN).melee();
+
+		assertEquals(LockedGear.StyleLine.Kind.RESULT, melee.kind());
+		assertNull(melee.withoutPrayerValue());
+		assertEquals(Integer.valueOf(11), melee.withoutPotionValue());
+	}
+
+	/**
+	 * Both buffs active: each comparison independently drops exactly one of
+	 * them, verified against {@link MaxHit#melee} called directly with the
+	 * same gear rather than against hand arithmetic -- the same "trust the
+	 * one implementation, don't restate it" reasoning {@link MaxHitTest}'s
+	 * own class doc states.
+	 */
+	@Test
+	public void withoutValuesEachDropExactlyOneBuff()
+	{
+		Loadout saved = loadoutWithMeleePotion("Fully buffed", Collections.emptyList(),
+			"AGGRESSIVE", "PIETY", "SUPER_STRENGTH_POTION");
+		LoadoutStore.Result stored = LoadoutStore.Result.ok(Collections.singletonList(saved));
+
+		LockedGear.StyleLine melee = LockedGear.resolve(stored, "Fully buffed", LEVELS, id -> UNKNOWN).melee();
+		assertEquals(LockedGear.StyleLine.Kind.RESULT, melee.kind());
+
+		GearBonuses noGear = new GearBonuses(0, 0, 0, Collections.emptySet(), null);
+		int withBoth = MaxHit.melee(99, AttackStyle.AGGRESSIVE, StrengthPrayer.PIETY,
+			StrengthPotion.SUPER_STRENGTH_POTION, noGear).value();
+		int withoutPrayerExpected = MaxHit.melee(99, AttackStyle.AGGRESSIVE, StrengthPrayer.NONE,
+			StrengthPotion.SUPER_STRENGTH_POTION, noGear).value();
+		int withoutPotionExpected = MaxHit.melee(99, AttackStyle.AGGRESSIVE, StrengthPrayer.PIETY,
+			StrengthPotion.NONE, noGear).value();
+
+		assertEquals(withBoth, melee.result().value());
+		assertEquals(Integer.valueOf(withoutPrayerExpected), melee.withoutPrayerValue());
+		assertEquals(Integer.valueOf(withoutPotionExpected), melee.withoutPotionValue());
 	}
 
 	/**

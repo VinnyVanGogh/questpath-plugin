@@ -1378,6 +1378,10 @@ class QuestpathPanel extends PluginPanel
 					value.setAlignmentX(Component.LEFT_ALIGNMENT);
 					panel.add(value);
 					panel.add(nextStepLabel(line));
+					for (JLabel comparison : withoutBuffLabels(line))
+					{
+						panel.add(comparison);
+					}
 				}
 				else
 				{
@@ -1428,6 +1432,30 @@ class QuestpathPanel extends PluginPanel
 		}
 		MaxHitStep next = line.nextStep();
 		return muted(next.maxHit() + " at " + next.skill().getName() + " " + next.level());
+	}
+
+	/**
+	 * "What if I dropped this buff" -- zero, one, or two muted lines, in
+	 * that order: without the active prayer, without the active potion.
+	 *
+	 * <p>Only shown when the buff is actually on: {@link
+	 * LockedGear.StyleLine#withoutPrayerValue()} and {@link
+	 * LockedGear.StyleLine#withoutPotionValue()} are both null exactly when
+	 * there is nothing to compare against, so an empty list here is the
+	 * honest "no prayer, no potion" case rather than a missing feature.
+	 */
+	private static List<JLabel> withoutBuffLabels(LockedGear.StyleLine line)
+	{
+		List<JLabel> labels = new ArrayList<>(2);
+		if (line.withoutPrayerValue() != null)
+		{
+			labels.add(muted("Without prayer: " + line.withoutPrayerValue()));
+		}
+		if (line.withoutPotionValue() != null)
+		{
+			labels.add(muted("Without potion: " + line.withoutPotionValue()));
+		}
+		return labels;
 	}
 
 	private JPanel meleeControls(LockedGear gear)

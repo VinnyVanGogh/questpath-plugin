@@ -90,28 +90,34 @@ public final class LockedGear
 		private final List<String> unknownItemNames;
 		private final MaxHitResult result;
 		private final MaxHitStep nextStep;
+		private final Integer withoutPrayerValue;
+		private final Integer withoutPotionValue;
 
-		private StyleLine(Kind kind, List<String> unknownItemNames, MaxHitResult result, MaxHitStep nextStep)
+		private StyleLine(Kind kind, List<String> unknownItemNames, MaxHitResult result, MaxHitStep nextStep,
+			Integer withoutPrayerValue, Integer withoutPotionValue)
 		{
 			this.kind = kind;
 			this.unknownItemNames = unknownItemNames;
 			this.result = result;
 			this.nextStep = nextStep;
+			this.withoutPrayerValue = withoutPrayerValue;
+			this.withoutPotionValue = withoutPotionValue;
 		}
 
 		static StyleLine needsSelection()
 		{
-			return new StyleLine(Kind.NEEDS_SELECTION, null, null, null);
+			return new StyleLine(Kind.NEEDS_SELECTION, null, null, null, null, null);
 		}
 
 		static StyleLine unknownStats(List<String> itemNames)
 		{
-			return new StyleLine(Kind.UNKNOWN_STATS, Collections.unmodifiableList(new ArrayList<>(itemNames)), null, null);
+			return new StyleLine(Kind.UNKNOWN_STATS, Collections.unmodifiableList(new ArrayList<>(itemNames)),
+				null, null, null, null);
 		}
 
 		static StyleLine result(MaxHitResult result)
 		{
-			return new StyleLine(Kind.RESULT, null, result, null);
+			return new StyleLine(Kind.RESULT, null, result, null, null, null);
 		}
 
 		/**
@@ -121,7 +127,18 @@ public final class LockedGear
 		 */
 		static StyleLine result(MaxHitResult result, MaxHitStep nextStep)
 		{
-			return new StyleLine(Kind.RESULT, null, result, nextStep);
+			return new StyleLine(Kind.RESULT, null, result, nextStep, null, null);
+		}
+
+		/**
+		 * A result plus the next-level breakpoint and the two "what if I
+		 * dropped this buff" comparisons melee alone currently computes --
+		 * see {@link #withoutPrayerValue()} and {@link #withoutPotionValue()}.
+		 */
+		static StyleLine result(MaxHitResult result, MaxHitStep nextStep, Integer withoutPrayerValue,
+			Integer withoutPotionValue)
+		{
+			return new StyleLine(Kind.RESULT, null, result, nextStep, withoutPrayerValue, withoutPotionValue);
 		}
 
 		/** Which shape this row is in. */
@@ -184,6 +201,36 @@ public final class LockedGear
 			return nextStep;
 		}
 
+		/**
+		 * What this style's max hit would be with the same gear, style and
+		 * potion but no prayer active, or null when there is nothing to
+		 * compare: no prayer is currently selected (removing "none" changes
+		 * nothing), or this style does not compute the comparison at all
+		 * (only melee does, as of the potion work this accompanied).
+		 *
+		 * <p>Never negative and never throws: mathematically, if {@link
+		 * #result()} itself is known, removing a bonus that only ever adds
+		 * to effective strength cannot push the arithmetic negative where the
+		 * full bonus did not -- see {@code LockedGear#meleeLine}'s own
+		 * comment for the proof, which is why this is a bare {@code Integer}
+		 * rather than another {@link MaxHitResult}.
+		 */
+		public Integer withoutPrayerValue()
+		{
+			return withoutPrayerValue;
+		}
+
+		/**
+		 * The potion half of {@link #withoutPrayerValue()}: this style's max
+		 * hit with no potion active, or null when there is nothing to
+		 * compare (no potion selected, or this style has no potion at all --
+		 * ranged and magic never populate this).
+		 */
+		public Integer withoutPotionValue()
+		{
+			return withoutPotionValue;
+		}
+
 		@Override
 		public boolean equals(Object o)
 		{
@@ -207,11 +254,14 @@ public final class LockedGear
 				case UNKNOWN_STATS:
 					return unknownItemNames.equals(that.unknownItemNames);
 				case RESULT:
-					// The breakpoint is part of what the row renders, so two
-					// rows that differ only in it are not the same row --
-					// otherwise the panel keeps a stale "next at" line after
-					// a level-up that moved it.
-					return resultEquals(result, that.result) && Objects.equals(nextStep, that.nextStep);
+					// The breakpoint and the two comparisons are all part of
+					// what the row renders, so two rows that differ only in
+					// one of them are not the same row -- otherwise the panel
+					// keeps a stale "next at" or "without prayer" line after
+					// a level-up or a selection change moved it.
+					return resultEquals(result, that.result) && Objects.equals(nextStep, that.nextStep)
+						&& Objects.equals(withoutPrayerValue, that.withoutPrayerValue)
+						&& Objects.equals(withoutPotionValue, that.withoutPotionValue);
 				default:
 					return false;
 			}
@@ -250,7 +300,7 @@ public final class LockedGear
 				case UNKNOWN_STATS:
 					return Objects.hash(kind, unknownItemNames);
 				case RESULT:
-					return Objects.hash(kind, resultHashCode(result), nextStep);
+					return Objects.hash(kind, resultHashCode(result), nextStep, withoutPrayerValue, withoutPotionValue);
 				default:
 					return 0;
 			}
@@ -267,7 +317,9 @@ public final class LockedGear
 					return "StyleLine{UNKNOWN_STATS=" + unknownItemNames + "}";
 				default:
 					return "StyleLine{RESULT=" + result
-						+ (nextStep == null ? "" : " next=" + nextStep) + "}";
+						+ (nextStep == null ? "" : " next=" + nextStep)
+						+ (withoutPrayerValue == null ? "" : " withoutPrayer=" + withoutPrayerValue)
+						+ (withoutPotionValue == null ? "" : " withoutPotion=" + withoutPotionValue) + "}";
 			}
 		}
 	}
@@ -584,8 +636,30 @@ public final class LockedGear
 		{
 			int level = levels.get(Skill.STRENGTH);
 			MaxHitResult result = MaxHit.melee(level, chosenStyle, chosenPrayer, chosenPotion, gear);
+
+			// "What if I dropped this buff" -- only when it is actually
+			// active; comparing against "no prayer" while already at no
+			// prayer would just repeat the number above it. Never null'd out
+			// by a failure: mathematically, if the full result above didn't
+			// throw, neither of these can. Both prayer and potion only ever
+			// add to effective strength (StrengthPrayer.NONE and
+			// StrengthPotion.NONE both contribute zero), so removing one
+			// can only lower effStr -- and effStr with neither active is
+			// bounded below by style.styleBonus() + 8 + the real strength
+			// level (at least 1), which is always positive. A negative
+			// maxHit is only reachable through a strongly negative gear
+			// strength bonus multiplying effStr, and a smaller effStr
+			// multiplied by that same negative-leaning term is never more
+			// negative than a larger one was -- see MaxHit#melee's own
+			// stage-by-stage comment for the arithmetic this leans on.
+			Integer withoutPrayer = chosenPrayer == StrengthPrayer.NONE ? null
+				: MaxHit.melee(level, chosenStyle, StrengthPrayer.NONE, chosenPotion, gear).value();
+			Integer withoutPotion = chosenPotion == StrengthPotion.NONE ? null
+				: MaxHit.melee(level, chosenStyle, chosenPrayer, StrengthPotion.NONE, gear).value();
+
 			return StyleLine.result(result, stepFor(Skill.STRENGTH, level, result,
-				l -> MaxHit.melee(l, chosenStyle, chosenPrayer, chosenPotion, gear)));
+				l -> MaxHit.melee(l, chosenStyle, chosenPrayer, chosenPotion, gear)),
+				withoutPrayer, withoutPotion);
 		}
 		catch (IllegalArgumentException negativeValue)
 		{
