@@ -11,6 +11,7 @@ import net.runelite.api.coords.WorldPoint;
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
@@ -358,5 +359,62 @@ public class ShopRouteStopsTest
 		assertTrue(stops.get(0).current());
 		assertTrue("but there is nowhere to send anybody",
 			ShopRouteStops.destinations(totals, new ShopItemSkips(), locates()).isEmpty());
+	}
+
+	@Test
+	public void uncoveredTeleportDecomposesToRunesWithRuneShop()
+	{
+		QuestItems.Total camelot = new QuestItems.Total("Camelot teleport", 8010, 0L, 0L, false,
+			Collections.emptyList(), Collections.emptyList());
+		QuestItems.Line recLine = new QuestItems.Line("Camelot teleport", 8010, 1, 0L, false, false,
+			Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), "", Collections.emptyList(), true);
+		camelot.add(recLine, "Merlin's Crystal");
+
+		List<QuestItems.Total> decomposed = ShopRouteStops.decomposeTeleports(Collections.singletonList(camelot), true);
+		assertEquals(2, decomposed.size()); // Air rune (5) and Law rune (1)
+
+		QuestItems.Total airRune = decomposed.stream().filter(t -> t.name().equals("Air rune")).findFirst().orElse(null);
+		QuestItems.Total lawRune = decomposed.stream().filter(t -> t.name().equals("Law rune")).findFirst().orElse(null);
+
+		assertNotNull(airRune);
+		assertNotNull(lawRune);
+		assertEquals(5, airRune.required());
+		assertEquals(1, lawRune.required());
+		assertTrue(airRune.shopNames().contains("Aubury's Rune Shop."));
+		assertTrue(lawRune.shopNames().contains("Aubury's Rune Shop."));
+	}
+
+	@Test
+	public void coveredTeleportDoesNotDecompose()
+	{
+		QuestItems.Total varrock = new QuestItems.Total("Varrock teleport", 8007, 1L, 0L, false,
+			Collections.emptyList(), Collections.emptyList());
+		QuestItems.Line recLine = new QuestItems.Line("Varrock teleport", 8007, 1, 1L, false, false,
+			Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), "", Collections.emptyList(), true);
+		varrock.add(recLine, "Demon Slayer");
+
+		assertTrue(varrock.covered());
+		List<QuestItems.Total> result = ShopRouteStops.decomposeTeleports(Collections.singletonList(varrock), true);
+		assertEquals(1, result.size());
+		assertEquals("Varrock teleport", result.get(0).name());
+	}
+
+	@Test
+	public void destinationsRoutesToAuburyForDecomposedTeleport()
+	{
+		QuestItems.Total camelot = new QuestItems.Total("Camelot teleport", 8010, 0L, 0L, false,
+			Collections.emptyList(), Collections.emptyList());
+		QuestItems.Line recLine = new QuestItems.Line("Camelot teleport", 8010, 1, 0L, false, false,
+			Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), "", Collections.emptyList(), true);
+		camelot.add(recLine, "Merlin's Crystal");
+
+		WorldPoint aubury = new WorldPoint(3253, 3401, 0);
+		Function<String, WorldPoint> shops = placing("Aubury's Rune Shop.", aubury);
+
+		Set<WorldPoint> destinations = ShopRouteStops.destinations(Collections.singletonList(camelot),
+			new ShopItemSkips(), shops);
+
+		assertFalse(destinations.isEmpty());
+		assertTrue(destinations.contains(aubury));
 	}
 }

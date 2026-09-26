@@ -134,7 +134,8 @@ class ShopRouteOverlay extends QuestpathOverlay
 				OverlayTheme.MUTED));
 		}
 
-		List<QuestItems.Total> totals = items.totals();
+		boolean includeRecommended = config != null && config.recommendedItems();
+		List<QuestItems.Total> totals = items.totals(includeRecommended);
 		int satisfiedCount = 0;
 		List<QuestItems.Total> outstanding = new ArrayList<>();
 		for (QuestItems.Total total : totals)

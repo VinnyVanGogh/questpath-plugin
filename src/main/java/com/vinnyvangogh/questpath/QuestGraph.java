@@ -411,6 +411,9 @@ class QuestGraph
 		@SerializedName("items")
 		private List<Item> items;
 
+		@SerializedName("recommended_items")
+		private List<Item> recommendedItems;
+
 		long id()
 		{
 			return id;
@@ -502,6 +505,11 @@ class QuestGraph
 		List<Item> items()
 		{
 			return items == null ? Collections.emptyList() : items;
+		}
+
+		public List<Item> recommendedItems()
+		{
+			return recommendedItems == null ? Collections.emptyList() : recommendedItems;
 		}
 	}
 
@@ -1028,6 +1036,14 @@ class QuestGraph
 					}
 					index.putIfAbsent(item.name().toLowerCase(), item);
 				}
+				for (Item item : quest.recommendedItems())
+				{
+					if (item.unresolved() || item.grouped() || item.name() == null)
+					{
+						continue;
+					}
+					index.putIfAbsent(item.name().toLowerCase(), item);
+				}
 			}
 			itemsByName = index;
 		}
@@ -1138,9 +1154,9 @@ class QuestGraph
 		{
 			throw new IOException("did not parse as a quest graph");
 		}
-		if (graph.version() != SUPPORTED_VERSION)
+		if (graph.version() != 12 && graph.version() != 13)
 		{
-			throw new IOException(graph.version() > SUPPORTED_VERSION
+			throw new IOException(graph.version() > 13
 				? "is version " + graph.version() + ", which this build (" + SUPPORTED_VERSION
 					+ ") does not understand yet -- update the plugin"
 				: "is version " + graph.version() + ", which is older than this build ("

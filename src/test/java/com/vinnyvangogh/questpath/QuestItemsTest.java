@@ -951,4 +951,60 @@ public class QuestItemsTest
 		assertNotNull(pickaxe);
 		assertTrue("a pickaxe in the bank means no pickaxe to buy", pickaxe.satisfied());
 	}
+
+	@Test
+	public void recommendedLinesDoNotBlockReadiness()
+	{
+		QuestItems.QuestNeeds needs = new QuestItems.QuestNeeds("Merlin's Crystal");
+		// 1 required item held:
+		needs.lines().add(new QuestItems.Line("Excalibur", 100, 1, 1L, false, Collections.emptyList()));
+		// 1 recommended item NOT held:
+		needs.lines().add(new QuestItems.Line("Camelot teleport", 8010, 1, 0L, false, false,
+			Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), "", Collections.emptyList(), true));
+
+		assertEquals("only required items count as needed", 1, needs.needed());
+		assertEquals("only required items count as have", 1, needs.have());
+		assertTrue("an unheld recommended item must not block quest readiness", needs.ready());
+	}
+
+	@Test
+	public void teleportEquivalenceCoversTotal()
+	{
+		QuestItems.Total camelot = new QuestItems.Total("Camelot teleport", 8010, 0L, 0L, false,
+			Collections.emptyList(), Collections.emptyList());
+		QuestItems.Line line = new QuestItems.Line("Camelot teleport", 8010, 2, 0L, false, false,
+			Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), "", Collections.emptyList(), true);
+		camelot.add(line, "Merlin's Crystal");
+
+		assertFalse(camelot.satisfied());
+		assertFalse(camelot.covered());
+		assertEquals(2L, camelot.outstanding());
+
+		// 2 casts worth of equivalent runes
+		camelot.setEquivalentOwned(2L);
+		assertTrue(camelot.satisfied());
+		assertTrue(camelot.covered());
+		assertEquals(0L, camelot.outstanding());
+		assertEquals("2 / 2", camelot.describe());
+	}
+
+	@Test
+	public void totalsToggleSeparatesRequiredAndRecommended()
+	{
+		QuestItems.QuestNeeds needs = new QuestItems.QuestNeeds("Test Quest");
+		needs.lines().add(new QuestItems.Line("Bucket", 100, 1, 0L, false, Collections.emptyList()));
+		needs.lines().add(new QuestItems.Line("Camelot teleport", 8010, 1, 0L, false, false,
+			Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), "", Collections.emptyList(), true));
+
+		QuestGraph.Quest mockQuest = new QuestGraph.Quest();
+		// Test Total accumulation
+		QuestItems.Total reqTotal = new QuestItems.Total("Bucket", 100, 0L, 0L, false, Collections.emptyList(), Collections.emptyList());
+		reqTotal.add(needs.lines().get(0), "Test Quest");
+
+		QuestItems.Total recTotal = new QuestItems.Total("Camelot teleport", 8010, 0L, 0L, false, Collections.emptyList(), Collections.emptyList());
+		recTotal.add(needs.lines().get(1), "Test Quest");
+
+		assertFalse(reqTotal.recommended());
+		assertTrue(recTotal.recommended());
+	}
 }

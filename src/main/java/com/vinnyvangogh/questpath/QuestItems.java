@@ -44,6 +44,8 @@ class QuestItems
 
 	private final List<QuestNeeds> quests = new ArrayList<>();
 	private final List<Total> totals = new ArrayList<>();
+	private final List<Total> allTotals = new ArrayList<>();
+	private final List<Total> recommendedTotals = new ArrayList<>();
 	private final List<Pickup> pickups = new ArrayList<>();
 	private boolean bankSeen;
 	private Freshness freshness = Freshness.CARRIED_ONLY;
@@ -69,13 +71,13 @@ class QuestItems
 			return lines;
 		}
 
-		/** How many required lines are satisfied. Optional ones do not count. */
+		/** How many required lines are satisfied. Optional ones and recommended ones do not count. */
 		int have()
 		{
 			int count = 0;
 			for (Line line : lines)
 			{
-				if (!line.optional() && !line.unresolved() && line.held())
+				if (!line.optional() && !line.unresolved() && !line.recommended() && line.held())
 				{
 					count++;
 				}
@@ -97,7 +99,7 @@ class QuestItems
 			int count = 0;
 			for (Line line : lines)
 			{
-				if (!line.optional() && !line.unresolved())
+				if (!line.optional() && !line.unresolved() && !line.recommended())
 				{
 					count++;
 				}
@@ -111,7 +113,7 @@ class QuestItems
 			int count = 0;
 			for (Line line : lines)
 			{
-				if (line.unresolved())
+				if (!line.recommended() && line.unresolved())
 				{
 					count++;
 				}
@@ -139,7 +141,9 @@ class QuestItems
 		private final List<String> dropSourceNames;
 		private final String groupName;
 		private final List<String> notes;
+		private final boolean recommended;
 		private PlanNote plan = PlanNote.NONE;
+		private long equivalentOwned;
 
 		/**
 		 * Attaches questpath's decision for this line -- see {@link PlanNote}.
@@ -211,6 +215,14 @@ class QuestItems
 			List<String> sources, List<String> shopNames, List<String> dropSourceNames,
 			String groupName, List<String> notes)
 		{
+			this(name, itemId, wanted, owned, optional, unresolved, sources, shopNames,
+				dropSourceNames, groupName, notes, false);
+		}
+
+		Line(String name, int itemId, int wanted, long owned, boolean optional, boolean unresolved,
+			List<String> sources, List<String> shopNames, List<String> dropSourceNames,
+			String groupName, List<String> notes, boolean recommended)
+		{
 			this.groupName = groupName;
 			this.notes = notes;
 			this.name = name;
@@ -222,6 +234,7 @@ class QuestItems
 			this.sources = sources;
 			this.shopNames = shopNames;
 			this.dropSourceNames = dropSourceNames;
+			this.recommended = recommended;
 		}
 
 		/**
@@ -322,6 +335,29 @@ class QuestItems
 			return optional;
 		}
 
+		boolean recommended()
+		{
+			return recommended;
+		}
+
+		long equivalentOwned()
+		{
+			return equivalentOwned;
+		}
+
+		void setEquivalentOwned(long equivalentOwned)
+		{
+			this.equivalentOwned = equivalentOwned;
+		}
+
+		Line withRecommended(boolean recommended)
+		{
+			Line copy = new Line(name, itemId, wanted, owned, optional, unresolved,
+				sources, shopNames, dropSourceNames, groupName, notes, recommended).withPlan(plan);
+			copy.setEquivalentOwned(this.equivalentOwned);
+			return copy;
+		}
+
 		/**
 		 * How many are needed. A line the wiki gave no count for needs one.
 		 *
@@ -338,13 +374,13 @@ class QuestItems
 		/** Whether the account has enough. */
 		boolean held()
 		{
-			return owned >= required();
+			return owned + equivalentOwned >= required();
 		}
 
 		/** What to show on the right of the row. */
 		String describe()
 		{
-			return owned + " / " + required();
+			return (owned + equivalentOwned) + " / " + required();
 		}
 	}
 
@@ -454,6 +490,12 @@ class QuestItems
 	 */
 	static Line planned(QuestGraph graph, QuestGraph.Item item, ItemPlan plan, Map<String, Long> held)
 	{
+		return planned(graph, item, plan, held, false);
+	}
+
+	static Line planned(QuestGraph graph, QuestGraph.Item item, ItemPlan plan, Map<String, Long> held,
+		boolean recommended)
+	{
 		String name = item.name();
 		int itemId = item.itemId();
 		List<String> sources = item.sources();
@@ -488,7 +530,7 @@ class QuestItems
 		}
 		long owned = held.getOrDefault(name.toLowerCase(), 0L);
 		return new Line(name, itemId, item.quantity(), owned, item.optional(), item.unresolved(), sources,
-			shopNames, drops, "", item.notes()).withPlan(note);
+			shopNames, drops, "", item.notes(), recommended).withPlan(note);
 	}
 
 	private QuestItems()
@@ -728,7 +770,9 @@ class QuestItems
 
 		for (QuestGraph.Quest quest : graph.quests())
 		{
-			if (quest.items().isEmpty())
+			boolean hasItems = quest.items() != null && !quest.items().isEmpty();
+			boolean hasRec = quest.recommendedItems() != null && !quest.recommendedItems().isEmpty();
+			if (!hasItems && !hasRec)
 			{
 				continue;
 			}
@@ -748,64 +792,74 @@ class QuestItems
 			}
 
 			QuestNeeds needs = new QuestNeeds(quest.name());
-			for (QuestGraph.Item item : quest.items())
+			if (hasItems)
 			{
-				// A line naming a category rather than an item -- "A light
-				// source", "Any pickaxe" -- carries the set that satisfies it
-				// instead of an id. It becomes one concrete item here, at the
-				// only point where both the account's levels and what it
-				// holds are in scope, so everything downstream (the bank
-				// tick, the shop route, the Grand Exchange search) goes on
-				// working on an ordinary item and needs to know nothing about
-				// groups.
-				//
-				// Named for the chosen member rather than the wiki's phrase
-				// on purpose: "Bronze pickaxe" is something you can search
-				// for, tick against a bank and walk to a shop for, and "Any
-				// pickaxe" is none of those. groupName keeps the wiki's own
-				// words for display.
-				String name = item.name();
-				int itemId = item.itemId();
-				String groupName = "";
-				long owned;
-				if (item.grouped())
+				for (QuestGraph.Item item : quest.items())
 				{
-					groupName = item.groupName();
-					// Counted across the whole set: six of "any nails" is
-					// satisfied by three bronze and four iron, and asking
-					// only about the chosen member would send the player to
-					// buy nails they already have.
-					owned = ItemGroupChoice.heldAcross(item.alternatives(), held);
-					// Wield-only requirements are ignored: you do not wield a
-					// pickaxe to mine with it. See
-					// ItemGroupChoice#wieldOnlySkills.
-					ItemGroupChoice.Choice choice = ItemGroupChoice.choose(
-						item.alternatives(), levelsFor(item.alternatives(), account),
-						ItemGroupChoice.wieldOnlySkills(item.alternatives()), held);
-					if (choice.any())
-					{
-						name = choice.best().name();
-						itemId = choice.best().itemId();
-					}
+					processItem(needs, item, graph, account, held, itemPlan, false);
 				}
-				else
+			}
+			if (hasRec)
+			{
+				for (QuestGraph.Item item : quest.recommendedItems())
 				{
-					// questpath's decision for this line, when it sent one:
-					// the member to target ("Dramen staff or Lunar staff")
-					// and what can be made from what is held. See planned.
-					needs.lines.add(planned(graph, item, itemPlan, held));
-					continue;
+					processItem(needs, item, graph, account, held, itemPlan, true);
 				}
-				needs.lines.add(new Line(name, itemId, item.quantity(), owned,
-					item.optional(), item.unresolved(), item.sources(), item.shopNames(),
-					item.dropSourceNames(), groupName, item.notes()));
 			}
 			out.quests.add(needs);
 		}
 
-		out.totals.addAll(totalsOf(out.quests, held, carried, placeholders));
+		int magicLevel = account == null ? 99 : account.levelIn("magic");
+		out.totals.addAll(totalsOf(out.quests, held, carried, placeholders, magicLevel, false));
+		out.allTotals.addAll(totalsOf(out.quests, held, carried, placeholders, magicLevel, true));
+		for (Total t : out.allTotals)
+		{
+			if (t.recommended())
+			{
+				out.recommendedTotals.add(t);
+			}
+		}
 		out.pickups.addAll(pickupsIn(graph, upcoming, out.totals));
 		return out;
+	}
+
+	private static void processItem(QuestNeeds needs, QuestGraph.Item item, QuestGraph graph,
+		PlayerState account, Map<String, Long> held, ItemPlan itemPlan, boolean recommended)
+	{
+		String name = item.name();
+		int itemId = item.itemId();
+		String groupName = "";
+		long owned;
+		if (item.grouped())
+		{
+			groupName = item.groupName();
+			owned = ItemGroupChoice.heldAcross(item.alternatives(), held);
+			ItemGroupChoice.Choice choice = ItemGroupChoice.choose(
+				item.alternatives(), levelsFor(item.alternatives(), account),
+				ItemGroupChoice.wieldOnlySkills(item.alternatives()), held);
+			if (choice.any())
+			{
+				name = choice.best().name();
+				itemId = choice.best().itemId();
+			}
+			Line line = new Line(name, itemId, item.quantity(), owned,
+				item.optional(), item.unresolved(), item.sources(), item.shopNames(),
+				item.dropSourceNames(), groupName, item.notes(), recommended);
+			needs.lines.add(line);
+		}
+		else
+		{
+			Line plannedLine = planned(graph, item, itemPlan, held, recommended);
+			TeleportEquivalence.Recipe recipe = TeleportEquivalence.findRecipe(plannedLine.itemId(), plannedLine.name());
+			if (recipe != null)
+			{
+				int magicLevel = account == null ? 99 : account.levelIn("magic");
+				long extraTablets = Math.max(0L, TeleportEquivalence.tabletsHeld(recipe, held) - plannedLine.owned());
+				long runeCasts = (magicLevel >= recipe.magicLevel()) ? TeleportEquivalence.runesToCasts(recipe, held) : 0L;
+				plannedLine.setEquivalentOwned(runeCasts + extraTablets);
+			}
+			needs.lines.add(plannedLine);
+		}
 	}
 
 	/**
@@ -971,7 +1025,7 @@ class QuestItems
 	 * them in would inflate every total with things nobody has to bring.
 	 */
 	private static List<Total> totalsOf(List<QuestNeeds> quests, Map<String, Long> held,
-		Map<String, Long> carried, java.util.Set<String> placeholders)
+		Map<String, Long> carried, java.util.Set<String> placeholders, int magicLevel, boolean includeRecommended)
 	{
 		Map<String, Total> merged = new LinkedHashMap<>();
 
@@ -987,6 +1041,10 @@ class QuestItems
 					// the wiki asked for.
 					continue;
 				}
+				if (!includeRecommended && line.recommended())
+				{
+					continue;
+				}
 				Total total = merged.computeIfAbsent(line.name(),
 					name -> new Total(name, line.itemId(),
 						held.getOrDefault(name.toLowerCase(), 0L),
@@ -994,6 +1052,17 @@ class QuestItems
 						placeholders != null && placeholders.contains(name.toLowerCase()),
 						line.sources(), line.shopNames(), line.dropSourceNames()));
 				total.add(line, needs.questName());
+			}
+		}
+
+		for (Total total : merged.values())
+		{
+			TeleportEquivalence.Recipe recipe = TeleportEquivalence.findRecipe(total.itemId(), total.name());
+			if (recipe != null)
+			{
+				long extraTablets = Math.max(0L, TeleportEquivalence.tabletsHeld(recipe, held) - total.owned());
+				long runeCasts = (magicLevel >= recipe.magicLevel()) ? TeleportEquivalence.runesToCasts(recipe, held) : 0L;
+				total.setEquivalentOwned(runeCasts + extraTablets);
 			}
 		}
 
@@ -1087,6 +1156,8 @@ class QuestItems
 		private int quests;
 		private boolean anyUnstated;
 		private PlanNote plan = PlanNote.NONE;
+		private boolean recommended = true;
+		private long equivalentOwned;
 
 		Total(String name, int itemId, long owned, long carried, boolean placeholder,
 			List<String> sources)
@@ -1210,6 +1281,10 @@ class QuestItems
 
 		void add(Line line, String questName)
 		{
+			if (!line.recommended())
+			{
+				this.recommended = false;
+			}
 			// questpath's plan is per item across the whole scope, so every
 			// line of one item carries the same note: the first decided one
 			// stands, never a sum -- adding would make one horn grind twice.
@@ -1253,6 +1328,21 @@ class QuestItems
 			return owned;
 		}
 
+		boolean recommended()
+		{
+			return recommended;
+		}
+
+		long equivalentOwned()
+		{
+			return equivalentOwned;
+		}
+
+		void setEquivalentOwned(long equivalentOwned)
+		{
+			this.equivalentOwned = equivalentOwned;
+		}
+
 		/**
 		 * How many are in your bags or worn right now, bank excluded.
 		 *
@@ -1290,7 +1380,7 @@ class QuestItems
 		 */
 		boolean ranOut()
 		{
-			return placeholder && owned <= 0;
+			return placeholder && (owned + equivalentOwned) <= 0;
 		}
 
 		/**
@@ -1300,7 +1390,7 @@ class QuestItems
 		 */
 		long outstanding()
 		{
-			return Math.max(0L, required() - owned - plan.makeQuantity());
+			return Math.max(0L, required() - (owned + equivalentOwned) - plan.makeQuantity());
 		}
 
 		/** questpath's decision for this item; {@link PlanNote#NONE} when it made none. */
@@ -1317,7 +1407,7 @@ class QuestItems
 		 */
 		boolean covered()
 		{
-			return satisfied() || owned + plan.makeQuantity() >= required();
+			return satisfied() || (owned + equivalentOwned) + plan.makeQuantity() >= required();
 		}
 
 		/**
@@ -1390,12 +1480,12 @@ class QuestItems
 
 		boolean satisfied()
 		{
-			return owned >= required();
+			return (owned + equivalentOwned) >= required();
 		}
 
 		String describe()
 		{
-			return owned + " / " + required();
+			return (owned + equivalentOwned) + " / " + required();
 		}
 
 		/** Whether more than one quest wants this, for the row's tooltip. */
@@ -1428,10 +1518,25 @@ class QuestItems
 		return freshness;
 	}
 
-	/** Every needed item, summed across every doable quest. */
+	/** Every needed item, summed across every doable quest (required items only). */
 	List<Total> totals()
 	{
 		return totals;
+	}
+
+	List<Total> totals(boolean includeRecommended)
+	{
+		return includeRecommended ? allTotals : totals;
+	}
+
+	List<Total> allTotals()
+	{
+		return allTotals;
+	}
+
+	List<Total> recommendedTotals()
+	{
+		return recommendedTotals;
 	}
 
 	/** Things worth grabbing inside a quest already under way. */
@@ -1458,8 +1563,10 @@ class QuestItems
 			{
 				hash = hash * 31 + line.name().hashCode();
 				hash = hash * 31 + Long.hashCode(line.owned());
+				hash = hash * 31 + Long.hashCode(line.equivalentOwned());
 				hash = hash * 31 + Long.hashCode(line.plan().makeQuantity());
 				hash = hash * 31 + (line.plan().decided() ? 1 : 0);
+				hash = hash * 31 + (line.recommended() ? 1 : 0);
 			}
 		}
 		return hash;

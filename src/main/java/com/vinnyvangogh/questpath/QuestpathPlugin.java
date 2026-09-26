@@ -1279,7 +1279,8 @@ public class QuestpathPlugin extends Plugin
 		{
 			return true;
 		}
-		for (ShopRouteStops.Stop stop : ShopRouteStops.tour(items.totals(), shopItemSkips,
+		boolean includeRecommended = config != null && config.recommendedItems();
+		for (ShopRouteStops.Stop stop : ShopRouteStops.tour(items.totals(includeRecommended), shopItemSkips,
 			this::shopLocation, this::dropLocation, playerLocation()))
 		{
 			if (!stop.current())
@@ -2179,7 +2180,8 @@ public class QuestpathPlugin extends Plugin
 		{
 			return null;
 		}
-		return GrandExchangeShoppingList.of(snapshot.items().totals(), geOffers, this::tradeability);
+		boolean includeRecommended = config != null && config.recommendedItems();
+		return GrandExchangeShoppingList.of(snapshot.items().totals(includeRecommended), geOffers, this::tradeability);
 	}
 
 	/**

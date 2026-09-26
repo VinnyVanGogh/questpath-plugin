@@ -1,8 +1,11 @@
 package com.vinnyvangogh.questpath;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import net.runelite.api.coords.WorldPoint;
@@ -160,10 +163,85 @@ final class ShopRouteStops
 		return next(totals, skips, shopLocator, name -> null);
 	}
 
+	/**
+	 * Decomposes uncovered teleport tablets or teleport shortfalls into their constituent
+	 * runes so that rune shops (such as Aubury's Rune Shop in Varrock) can satisfy them.
+	 */
+	public static List<QuestItems.Total> decomposeTeleports(List<QuestItems.Total> totals, boolean enabled)
+	{
+		if (!enabled || totals == null || totals.isEmpty())
+		{
+			return totals == null ? Collections.emptyList() : totals;
+		}
+		List<QuestItems.Total> out = new ArrayList<>();
+		Map<String, QuestItems.Total> runeTotals = new LinkedHashMap<>();
+
+		for (QuestItems.Total total : totals)
+		{
+			TeleportEquivalence.Recipe recipe = TeleportEquivalence.findRecipe(total.itemId(), total.name());
+			if (recipe != null && !recipe.runes().isEmpty() && !total.covered())
+			{
+				int casts = (int) total.outstanding();
+				if (casts > 0)
+				{
+					List<TeleportEquivalence.RuneIngredient> runes = TeleportEquivalence.decomposeToRunes(recipe, casts);
+					for (TeleportEquivalence.RuneIngredient rune : runes)
+					{
+						QuestItems.Total runeTotal = runeTotals.computeIfAbsent(rune.name().toLowerCase(), k ->
+							new QuestItems.Total(rune.name(), rune.itemId(), 0L, 0L, false,
+								List.of("Rune shops"), TeleportEquivalence.runeShopNames(), Collections.emptyList()));
+						for (String q : total.questNames())
+						{
+							QuestItems.Line line = new QuestItems.Line(
+								rune.name(), rune.itemId(), rune.quantity(), 0L, false, false,
+								List.of("Rune shops"), TeleportEquivalence.runeShopNames(), Collections.emptyList(),
+								"", total.notes(), total.recommended());
+							runeTotal.add(line, q);
+						}
+					}
+					continue;
+				}
+			}
+			out.add(total);
+		}
+
+		for (QuestItems.Total runeTotal : runeTotals.values())
+		{
+			boolean merged = false;
+			for (QuestItems.Total existing : out)
+			{
+				if (existing.name().equalsIgnoreCase(runeTotal.name()))
+				{
+					for (String q : runeTotal.questNames())
+					{
+						QuestItems.Line line = new QuestItems.Line(
+							existing.name(), existing.itemId(), runeTotal.required(), existing.owned(),
+							false, false, existing.sources(), existing.shopNames(), existing.dropSourceNames(),
+							"", runeTotal.notes(), runeTotal.recommended());
+						existing.add(line, q);
+					}
+					merged = true;
+					break;
+				}
+			}
+			if (!merged)
+			{
+				out.add(runeTotal);
+			}
+		}
+		return out;
+	}
+
+	public static List<QuestItems.Total> decomposeTeleports(List<QuestItems.Total> totals)
+	{
+		return decomposeTeleports(totals, true);
+	}
+
 	/** The same, counting a monster you can kill for it as somewhere to go. */
 	static List<Stop> next(List<QuestItems.Total> totals, ShopItemSkips skips,
 		Function<String, WorldPoint> shopLocator, Function<String, WorldPoint> dropLocator)
 	{
+		totals = decomposeTeleports(totals, true);
 		List<QuestItems.Total> outstanding = new ArrayList<>();
 		for (QuestItems.Total total : totals)
 		{

@@ -5,6 +5,7 @@ import java.util.List;
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
@@ -505,5 +506,33 @@ public class QuestGraphTest
 		QuestGraph graph = GSON.fromJson("{\"version\":12,\"quests\":[]}", QuestGraph.class);
 
 		assertTrue(graph.diaryTasks().isEmpty());
+	}
+
+	@Test
+	public void parsesVersion13AndRecommendedItems() throws Exception
+	{
+		String json = "{\"version\":13,\"quests\":[{\"id\":1,\"slug\":\"test\",\"name\":\"Test Quest\","
+			+ "\"items\":[{\"name\":\"Spade\",\"item_id\":952}],"
+			+ "\"recommended_items\":[{\"name\":\"Camelot teleport\",\"item_id\":8010,\"quantity\":2}]}],"
+			+ "\"diary_tasks\":[]}";
+
+		QuestGraph graph = QuestGraph.parse(GSON, new java.io.StringReader(json));
+		assertEquals(13, graph.version());
+		QuestGraph.Quest quest = graph.quests().get(0);
+		assertEquals(1, quest.items().size());
+		assertEquals("Spade", quest.items().get(0).name());
+		assertEquals(1, quest.recommendedItems().size());
+		assertEquals("Camelot teleport", quest.recommendedItems().get(0).name());
+		assertEquals(8010, quest.recommendedItems().get(0).itemId());
+		assertEquals(2, quest.recommendedItems().get(0).quantity());
+	}
+
+	@Test
+	public void recommendedItemsAccessorReturnsEmptyListWhenOmitted()
+	{
+		QuestGraph graph = GSON.fromJson("{\"version\":12,\"quests\":[{\"id\":1,\"slug\":\"a\",\"name\":\"A\"}]}",
+			QuestGraph.class);
+		assertNotNull(graph.quests().get(0).recommendedItems());
+		assertTrue(graph.quests().get(0).recommendedItems().isEmpty());
 	}
 }

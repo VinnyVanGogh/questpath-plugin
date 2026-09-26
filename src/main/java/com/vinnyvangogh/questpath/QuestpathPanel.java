@@ -2123,7 +2123,19 @@ class QuestpathPanel extends PluginPanel
 		heading.setForeground(ColorScheme.BRAND_ORANGE);
 		panel.add(heading);
 
-		List<GrandExchangeShoppingList.Line> lines = GrandExchangeShoppingList.of(items.totals());
+		boolean includeRecommended = config != null && config.recommendedItems();
+		JCheckBox recommendedBox = new JCheckBox("Include recommended items", includeRecommended);
+		recommendedBox.setFont(FontManager.getRunescapeSmallFont());
+		recommendedBox.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
+		recommendedBox.setOpaque(false);
+		recommendedBox.addActionListener(e -> {
+			configManager.setConfiguration(QuestpathConfig.GROUP, "recommendedItems", recommendedBox.isSelected());
+			fillItemResults(lastItems);
+		});
+		panel.add(recommendedBox);
+		panel.add(Box.createVerticalStrut(2));
+
+		List<GrandExchangeShoppingList.Line> lines = GrandExchangeShoppingList.of(items.totals(includeRecommended));
 		if (lines.isEmpty())
 		{
 			panel.add(muted("Nothing outstanding is buyable -- the list below covers what is left."));
@@ -2137,14 +2149,39 @@ class QuestpathPanel extends PluginPanel
 		panel.add(hint);
 		panel.add(Box.createVerticalStrut(4));
 
-		JPanel geGrid = grid();
-		for (GrandExchangeShoppingList.Line line : lines)
+		List<GrandExchangeShoppingList.Line> required = GrandExchangeShoppingList.required(lines);
+		List<GrandExchangeShoppingList.Line> recommended = GrandExchangeShoppingList.recommended(lines);
+
+		if (!required.isEmpty())
 		{
-			JLabel left = addRow(geGrid, line.name(), String.valueOf(line.outstanding()),
-				ColorScheme.LIGHT_GRAY_COLOR, null);
-			attachGrandExchangeSearch(left, line.name());
+			JPanel geGrid = grid();
+			for (GrandExchangeShoppingList.Line line : required)
+			{
+				JLabel left = addRow(geGrid, line.name(), String.valueOf(line.outstanding()),
+					ColorScheme.LIGHT_GRAY_COLOR, null);
+				attachGrandExchangeSearch(left, line.name());
+			}
+			panel.add(geGrid);
 		}
-		panel.add(geGrid);
+
+		if (!recommended.isEmpty())
+		{
+			panel.add(Box.createVerticalStrut(6));
+			JLabel recHeading = new JLabel("RECOMMENDED (TELEPORTS)");
+			recHeading.setFont(FontManager.getRunescapeSmallFont().deriveFont(Font.BOLD));
+			recHeading.setForeground(ColorScheme.BRAND_ORANGE);
+			panel.add(recHeading);
+
+			JPanel recGrid = grid();
+			for (GrandExchangeShoppingList.Line line : recommended)
+			{
+				JLabel left = addRow(recGrid, line.name(), String.valueOf(line.outstanding()),
+					ColorScheme.LIGHT_GRAY_COLOR, null);
+				attachGrandExchangeSearch(left, line.name());
+			}
+			panel.add(recGrid);
+		}
+
 		return panel;
 	}
 
@@ -2293,7 +2330,8 @@ class QuestpathPanel extends PluginPanel
 		Set<WorldPoint> destinations = shopDestinations(items);
 		ShopRouteStops.Destination named = null;
 		String stopName = "nothing";
-		for (ShopRouteStops.Stop stop : ShopRouteStops.tour(items.totals(), shopItemSkips, shopLocator,
+		boolean includeRecommended = config != null && config.recommendedItems();
+		for (ShopRouteStops.Stop stop : ShopRouteStops.tour(items.totals(includeRecommended), shopItemSkips, shopLocator,
 			dropLocator, playerLocation.get()))
 		{
 			if (stop.current())
@@ -2428,7 +2466,8 @@ class QuestpathPanel extends PluginPanel
 		// because every following item was unroutable too and the route never
 		// moved off Bones.
 		QuestItems.Total current = null;
-		for (ShopRouteStops.Stop stop : ShopRouteStops.tour(items.totals(), shopItemSkips,
+		boolean includeRecommended = config != null && config.recommendedItems();
+		for (ShopRouteStops.Stop stop : ShopRouteStops.tour(items.totals(includeRecommended), shopItemSkips,
 			shopLocator, dropLocator, playerLocation.get()))
 		{
 			if (stop.current())
@@ -2516,7 +2555,8 @@ class QuestpathPanel extends PluginPanel
 		{
 			return Collections.emptySet();
 		}
-		return ShopRouteStops.destinations(items.totals(), shopItemSkips, shopLocator, dropLocator,
+		boolean includeRecommended = config != null && config.recommendedItems();
+		return ShopRouteStops.destinations(items.totals(includeRecommended), shopItemSkips, shopLocator, dropLocator,
 			playerLocation.get());
 	}
 

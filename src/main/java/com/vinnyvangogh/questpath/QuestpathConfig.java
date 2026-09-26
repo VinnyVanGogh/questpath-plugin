@@ -510,6 +510,18 @@ public interface QuestpathConfig extends Config
 	}
 
 	@ConfigItem(
+		keyName = "recommendedItems",
+		name = "Recommended items",
+		description = "Include recommended items (such as teleport tablets or runes) in shopping lists and routes.",
+		section = overlaySection,
+		position = 40
+	)
+	default boolean recommendedItems()
+	{
+		return false;
+	}
+
+	@ConfigItem(
 		keyName = "overlayCombatXp",
 		name = "Combat XP to next level",
 		description = "What each stat would cost to buy the next combat level, cheapest first.",

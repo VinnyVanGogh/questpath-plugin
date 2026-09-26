@@ -326,6 +326,10 @@ class OverlaySettingsPanel extends JPanel
 					widthCombo(config.overlayGrandExchangeWidth(), "overlayGrandExchangeWidth"));
 				addField(sub, "Length",
 					lengthCombo(config.overlayGrandExchangeLength(), "overlayGrandExchangeLength"));
+				sub.add(toggle(
+					"Recommended items",
+					"Include recommended items (such as teleport tablets or runes) in shopping lists and routes.",
+					config.recommendedItems(), "recommendedItems"));
 			}));
 		body.add(spacer());
 		body.add(toggleGroup(
