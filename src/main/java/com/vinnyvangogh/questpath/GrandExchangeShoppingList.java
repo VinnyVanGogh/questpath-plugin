@@ -41,7 +41,7 @@ final class GrandExchangeShoppingList
 	/**
 	 * Whether an item can be bought at a Grand Exchange counter at all.
 	 *
-	 * <p>Three values rather than two, because "questpath does not know" is a
+	 * <p>More than two values, because "questpath does not know" is a
 	 * different answer from "no" and this project does not let those collapse
 	 * into each other.
 	 */
@@ -57,18 +57,30 @@ final class GrandExchangeShoppingList
 		 */
 		NOT_ON_GE,
 		/**
-		 * questpath holds no item id for this row, so nothing can be asked
-		 * about it.
+		 * questpath holds no item id for this row, because the wiki names a
+		 * kind of thing rather than one item.
 		 *
 		 * <p>Not a rare edge: 275 of the 645 distinct item rows in the
 		 * shipped bundle have no id, and reading them shows why -- they are
-		 * requirements written as prose ("A light source", "A way to enter
-		 * Port Phasmatys", "A pickaxe and 35 Mining to mine coal") rather
-		 * than named items. None of those is something the Grand Exchange
-		 * could sell you under that name, so they are kept off the buy list
-		 * -- but they are kept apart from {@link #NOT_ON_GE}, because
-		 * "cannot look this up" is a statement about questpath and "this is
-		 * not traded" is a statement about the game.
+		 * requirements written as prose ("Seeds", "A light source", "A way to
+		 * enter Port Phasmatys", "A pickaxe and 35 Mining to mine coal")
+		 * rather than named items. None of those is something the Grand
+		 * Exchange could sell you under that name, so they are kept off the
+		 * buy list -- and kept apart from {@link #UNKNOWN} too. Nothing failed
+		 * here: there was never one item to look up, and the answer to "which
+		 * one" is on the wiki page. Labelling these "can't look up" read as a
+		 * questpath fault for what is the data being exactly as specific as
+		 * the quest is.
+		 */
+		GENERIC,
+		/**
+		 * questpath holds an item id, and asking the client about it gave no
+		 * answer.
+		 *
+		 * <p>Kept apart from {@link #NOT_ON_GE}, because "cannot look this
+		 * up" is a statement about questpath and "this is not traded" is a
+		 * statement about the game -- the item may well be on the Grand
+		 * Exchange after all.
 		 */
 		UNKNOWN,
 		/**
@@ -382,7 +394,7 @@ final class GrandExchangeShoppingList
 
 	/**
 	 * Everything outstanding that a Grand Exchange cannot supply to this
-	 * account right now -- see {@link Availability} for the three ways a line
+	 * account right now -- see {@link Availability} for the ways a line
 	 * lands here and why none of them is merged into another.
 	 *
 	 * <p>Listed rather than dropped. These are still things the account

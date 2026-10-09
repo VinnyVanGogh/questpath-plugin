@@ -2209,8 +2209,8 @@ public class QuestpathPlugin extends Plugin
 		{
 			// No id to ask about. Overwhelmingly these are requirements the
 			// wiki states as prose rather than named items -- see
-			// GrandExchangeShoppingList.Availability#UNKNOWN.
-			return GrandExchangeShoppingList.Availability.UNKNOWN;
+			// GrandExchangeShoppingList.Availability#GENERIC.
+			return GrandExchangeShoppingList.Availability.GENERIC;
 		}
 		ItemComposition item = itemManager.getItemComposition(itemId);
 		if (item == null)
