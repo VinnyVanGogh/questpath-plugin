@@ -2341,9 +2341,9 @@ public class QuestpathPlugin extends Plugin
 		{
 			ChatMessageBuilder line = new ChatMessageBuilder()
 				.append(ChatColorType.NORMAL)
-				.append("Quest Path: you now have all ")
+				.append("Quest Path: " + done.leadIn())
 				.append(ChatColorType.HIGHLIGHT)
-				.append(done.required() + " " + done.itemName())
+				.append(done.subject())
 				.append(ChatColorType.NORMAL);
 			String quests = done.quests();
 			if (quests.isEmpty())
