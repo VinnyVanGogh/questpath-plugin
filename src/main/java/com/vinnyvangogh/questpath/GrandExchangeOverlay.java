@@ -284,6 +284,18 @@ class GrandExchangeOverlay extends QuestpathOverlay
 			}
 		}
 
+		// Recommended coins: a balance to bring, never a line to buy -- see
+		// QuestItems#recommendedCoins for why they are kept off the list
+		// above rather than shown as "Coins x100".
+		if (config.recommendedItems() && snapshot != null && snapshot.items() != null
+			&& snapshot.items().recommendedCoins() > 0)
+		{
+			rows.add(OverlayRow.note(
+				"Also bring " + String.format("%,d", snapshot.items().recommendedCoins())
+					+ " coins (recommended).",
+				OverlayTheme.MUTED));
+		}
+
 		return rows;
 	}
 

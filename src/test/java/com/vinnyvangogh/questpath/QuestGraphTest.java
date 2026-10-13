@@ -535,4 +535,31 @@ public class QuestGraphTest
 		assertNotNull(graph.quests().get(0).recommendedItems());
 		assertTrue(graph.quests().get(0).recommendedItems().isEmpty());
 	}
+
+	/**
+	 * 13 is the one version read beyond {@link QuestGraph#SUPPORTED_VERSION},
+	 * and the only one that may be: it adds recommended_items and nothing
+	 * else, and a v12 graph's lack of them is reported as "cannot say"
+	 * through {@code QuestItems#graphCarriesRecommended} rather than read as
+	 * "nothing recommended". A 14 must be refused until this build knows
+	 * what it adds -- see the version doc on SUPPORTED_VERSION for why every
+	 * other bump has been a refusal rather than a tolerance.
+	 */
+	@Test
+	public void maxVersionIsThirteenAndFourteenIsRefused()
+	{
+		assertEquals(13, QuestGraph.MAX_VERSION);
+		try
+		{
+			QuestGraph.parse(GSON, new java.io.StringReader(
+				"{\"version\":14,\"quests\":[{\"id\":1,\"slug\":\"a\",\"name\":\"A\"}],\"diary_tasks\":[]}"));
+			org.junit.Assert.fail("expected an IOException for version 14");
+		}
+		catch (java.io.IOException e)
+		{
+			assertTrue(e.getMessage().contains("14"));
+			assertTrue(e.getMessage().contains("13"));
+			assertTrue(e.getMessage().toLowerCase().contains("update the plugin"));
+		}
+	}
 }

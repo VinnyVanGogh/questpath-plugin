@@ -512,13 +512,32 @@ public interface QuestpathConfig extends Config
 	@ConfigItem(
 		keyName = "recommendedItems",
 		name = "Recommended items",
-		description = "Include recommended items (such as teleport tablets or runes) in shopping lists and routes.",
+		description = "Include each quest's recommended items (teleports, potions, gear) in the"
+			+ " shopping lists and routes, after the required ones. Recommended coins are shown"
+			+ " as a balance to bring, never as something to buy. Needs a quest graph that carries"
+			+ " them (version 13 or later).",
 		section = overlaySection,
 		position = 40
 	)
 	default boolean recommendedItems()
 	{
 		return false;
+	}
+
+	@ConfigItem(
+		keyName = "recommendedTeleportForm",
+		name = "- teleports as",
+		description = "Whether a recommended teleport goes on the Grand Exchange list as the tablet"
+			+ " or as the runes to cast it (Camelot: 5 air, 1 law). Runes are only offered"
+			+ " when your Magic level can cast the spell; otherwise the tablet is listed"
+			+ " whatever this says. The walking shop route always lists runes, because no"
+			+ " shop sells tablets.",
+		section = overlaySection,
+		position = 41
+	)
+	default TeleportForm recommendedTeleportForm()
+	{
+		return TeleportForm.TABLET;
 	}
 
 	@ConfigItem(

@@ -90,6 +90,20 @@ class QuestGraph
 	 */
 	static final int SUPPORTED_VERSION = 12;
 
+	/**
+	 * The newest version this build also reads. 13 adds {@code
+	 * recommended_items} on each quest -- the wiki's "recommended" list,
+	 * resolved to catalogue items -- and nothing else changes shape, so a
+	 * v12 document still parses: every field v12 promised is present, and
+	 * the one field it lacks is optional in the sense that matters, because
+	 * {@link QuestItems#graphCarriesRecommended()} exists to tell a v12
+	 * graph's "cannot say" apart from a v13 graph's "nothing recommended".
+	 * That is the one case where tolerating the older version is honest
+	 * rather than confident-wrong, and it is why {@link #SUPPORTED_VERSION}
+	 * stays at 12 while the bundled copy is still exported at 12.
+	 */
+	static final int MAX_VERSION = 13;
+
 	@SerializedName("version")
 	private int version;
 
@@ -1154,10 +1168,10 @@ class QuestGraph
 		{
 			throw new IOException("did not parse as a quest graph");
 		}
-		if (graph.version() != 12 && graph.version() != 13)
+		if (graph.version() < SUPPORTED_VERSION || graph.version() > MAX_VERSION)
 		{
-			throw new IOException(graph.version() > 13
-				? "is version " + graph.version() + ", which this build (" + SUPPORTED_VERSION
+			throw new IOException(graph.version() > MAX_VERSION
+				? "is version " + graph.version() + ", which this build (" + MAX_VERSION
 					+ ") does not understand yet -- update the plugin"
 				: "is version " + graph.version() + ", which is older than this build ("
 					+ SUPPORTED_VERSION + ") expects -- questpath needs re-exporting or upgrading");

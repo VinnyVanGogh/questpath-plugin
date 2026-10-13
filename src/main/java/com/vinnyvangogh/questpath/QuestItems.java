@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import net.runelite.api.gameval.ItemID;
 
 /**
  * What the next quests need, against what is actually in the bank.
@@ -49,6 +50,9 @@ class QuestItems
 	private final List<Pickup> pickups = new ArrayList<>();
 	private boolean bankSeen;
 	private Freshness freshness = Freshness.CARRIED_ONLY;
+	private boolean graphCarriesRecommended;
+	private long recommendedCoins;
+	private int magicLevel = 99;
 
 	/** One quest's item list, each line ticked against what is held. */
 	static class QuestNeeds
@@ -810,6 +814,36 @@ class QuestItems
 		}
 
 		int magicLevel = account == null ? 99 : account.levelIn("magic");
+		out.magicLevel = magicLevel;
+		// Whether the bundle can answer "what is recommended" at all. A v12
+		// graph has no recommended_items on any quest, and the toggle on
+		// top of it must read as "this graph cannot say", never as "nothing
+		// is recommended" -- the same distinction PanelSections draws
+		// between unbuilt and empty.
+		for (QuestGraph.Quest quest : graph.quests())
+		{
+			if (!quest.recommendedItems().isEmpty())
+			{
+				out.graphCarriesRecommended = true;
+				break;
+			}
+		}
+		// Recommended coins are a balance to bring, not a purchase: nobody
+		// buys coins at a counter, and a "Coins x100" buy line would be the
+		// list asking for something no shop and no Grand Exchange slot can
+		// give. Summed here and kept out of every total below; the required
+		// path's own coin lines are untouched.
+		for (QuestNeeds needs : out.quests)
+		{
+			for (Line line : needs.lines())
+			{
+				if (line.recommended() && !line.optional() && !line.unresolved()
+					&& isCoins(line.itemId(), line.name()))
+				{
+					out.recommendedCoins += line.required();
+				}
+			}
+		}
 		out.totals.addAll(totalsOf(out.quests, held, carried, placeholders, magicLevel, false));
 		out.allTotals.addAll(totalsOf(out.quests, held, carried, placeholders, magicLevel, true));
 		for (Total t : out.allTotals)
@@ -1045,6 +1079,11 @@ class QuestItems
 				{
 					continue;
 				}
+				if (line.recommended() && isCoins(line.itemId(), line.name()))
+				{
+					// A balance, not a buy -- see recommendedCoins().
+					continue;
+				}
 				Total total = merged.computeIfAbsent(line.name(),
 					name -> new Total(name, line.itemId(),
 						held.getOrDefault(name.toLowerCase(), 0L),
@@ -1277,6 +1316,54 @@ class QuestItems
 		void add(Line line)
 		{
 			add(line, null);
+		}
+
+		/**
+		 * A detached duplicate, so a caller can merge into it without
+		 * touching the list every other surface is reading -- see {@link
+		 * TeleportEquivalence#decompose} for the frame-by-frame climb that
+		 * made this necessary.
+		 */
+		Total copy()
+		{
+			Total out = new Total(name, itemId, owned, carried, placeholder, sources, shopNames,
+				dropSourceNames);
+			out.wanted = wanted;
+			out.quests = quests;
+			out.anyUnstated = anyUnstated;
+			out.plan = plan;
+			out.recommended = recommended;
+			out.equivalentOwned = equivalentOwned;
+			out.questNames.addAll(questNames);
+			out.notes.addAll(notes);
+			return out;
+		}
+
+		/**
+		 * Folds another total for the same item into this one: counts add,
+		 * quests and caveats are appended without repeats, and the row is
+		 * only recommended if both were.
+		 */
+		void absorb(Total other)
+		{
+			wanted += other.wanted;
+			quests += other.quests;
+			anyUnstated |= other.anyUnstated;
+			recommended &= other.recommended;
+			for (String q : other.questNames)
+			{
+				if (!questNames.contains(q))
+				{
+					questNames.add(q);
+				}
+			}
+			for (String note : other.notes)
+			{
+				if (!notes.contains(note))
+				{
+					notes.add(note);
+				}
+			}
 		}
 
 		void add(Line line, String questName)
@@ -1527,6 +1614,61 @@ class QuestItems
 	List<Total> totals(boolean includeRecommended)
 	{
 		return includeRecommended ? allTotals : totals;
+	}
+
+	/**
+	 * The totals as the Grand Exchange list wants them: recommended extras
+	 * in or out, and each uncovered recommended teleport either left as its
+	 * tablet or swapped for the runes to cast it, per {@code form}.
+	 *
+	 * <p>Required teleports are never rewritten here, whatever the form --
+	 * the player's choice is about the extras this toggle added, not about
+	 * the list that was there before it. An account whose Magic level
+	 * cannot cast the spell keeps the tablet in either form; see {@link
+	 * TeleportEquivalence#decompose}.
+	 */
+	List<Total> grandExchangeTotals(boolean includeRecommended, TeleportForm form)
+	{
+		List<Total> base = totals(includeRecommended);
+		if (!includeRecommended || form != TeleportForm.RUNES)
+		{
+			return base;
+		}
+		return TeleportEquivalence.decompose(base, true, magicLevel);
+	}
+
+	/**
+	 * Whether the quest graph this was built from carries recommended items
+	 * for any quest at all. False for a version-12 bundle, where "include
+	 * recommended items" can only ever add nothing -- and the panel must
+	 * say that, rather than let an empty section pass for "nothing is
+	 * recommended".
+	 */
+	boolean graphCarriesRecommended()
+	{
+		return graphCarriesRecommended;
+	}
+
+	/**
+	 * Coins the plan's quests recommend bringing, summed. Zero when none
+	 * do. Never on a shopping list: coins are not bought, so this is shown
+	 * as a balance to have rather than a row to buy.
+	 */
+	long recommendedCoins()
+	{
+		return recommendedCoins;
+	}
+
+	/** The account's Magic level the totals were priced at; 99 with no account. */
+	int magicLevel()
+	{
+		return magicLevel;
+	}
+
+	/** Whether an item row is coins -- by id when the bundle has one, by name when it does not. */
+	static boolean isCoins(int itemId, String name)
+	{
+		return itemId == ItemID.COINS || (name != null && name.trim().equalsIgnoreCase("coins"));
 	}
 
 	List<Total> allTotals()

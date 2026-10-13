@@ -2133,12 +2133,48 @@ class QuestpathPanel extends PluginPanel
 			fillItemResults(lastItems);
 		});
 		panel.add(recommendedBox);
+
+		TeleportForm form = config == null ? TeleportForm.TABLET : config.recommendedTeleportForm();
+		if (includeRecommended)
+		{
+			// The tablet-or-runes choice, next to the toggle it qualifies.
+			// A checkbox rather than a two-item combo because the sidebar is
+			// narrow and "runes instead" is the whole question; the Settings
+			// tab carries the same key as a combo for anyone who looks there.
+			JCheckBox runesBox = new JCheckBox("Runes instead of teleport tablets",
+				form == TeleportForm.RUNES);
+			runesBox.setFont(FontManager.getRunescapeSmallFont());
+			runesBox.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
+			runesBox.setOpaque(false);
+			runesBox.setToolTipText("Camelot: 5 air and 1 law per cast. Offered only when your Magic"
+				+ " level can cast the spell; otherwise the tablet stays listed.");
+			runesBox.addActionListener(e -> {
+				configManager.setConfiguration(QuestpathConfig.GROUP, "recommendedTeleportForm",
+					runesBox.isSelected() ? TeleportForm.RUNES : TeleportForm.TABLET);
+				fillItemResults(lastItems);
+			});
+			panel.add(runesBox);
+
+			if (!items.graphCarriesRecommended())
+			{
+				// "This graph cannot say", kept apart from "nothing is
+				// recommended" -- the same line PanelSections draws between
+				// unbuilt and empty. A v12 bundle has no recommended_items
+				// on any quest, so the toggle above can only add nothing to
+				// the list, and an empty section would read as the wiki
+				// recommending nothing for every quest on the route.
+				panel.add(muted("This quest graph carries no recommended items. Re-export it from"
+					+ " questpath (graph version 13 or later) to list them here."));
+			}
+		}
 		panel.add(Box.createVerticalStrut(2));
 
-		List<GrandExchangeShoppingList.Line> lines = GrandExchangeShoppingList.of(items.totals(includeRecommended));
+		List<GrandExchangeShoppingList.Line> lines = GrandExchangeShoppingList.of(
+			items.grandExchangeTotals(includeRecommended, form));
 		if (lines.isEmpty())
 		{
 			panel.add(muted("Nothing outstanding is buyable -- the list below covers what is left."));
+			addRecommendedCoins(panel, items, includeRecommended);
 			return panel;
 		}
 
@@ -2167,7 +2203,7 @@ class QuestpathPanel extends PluginPanel
 		if (!recommended.isEmpty())
 		{
 			panel.add(Box.createVerticalStrut(6));
-			JLabel recHeading = new JLabel("RECOMMENDED (TELEPORTS)");
+			JLabel recHeading = new JLabel("RECOMMENDED");
 			recHeading.setFont(FontManager.getRunescapeSmallFont().deriveFont(Font.BOLD));
 			recHeading.setForeground(ColorScheme.BRAND_ORANGE);
 			panel.add(recHeading);
@@ -2181,8 +2217,26 @@ class QuestpathPanel extends PluginPanel
 			}
 			panel.add(recGrid);
 		}
+		addRecommendedCoins(panel, items, includeRecommended);
 
 		return panel;
+	}
+
+	/**
+	 * The coins the route's quests recommend bringing, as one muted line
+	 * under the Grand Exchange list -- a balance to have, never a row to
+	 * buy, because no counter sells coins. Nothing when the toggle is off or
+	 * no quest recommends any.
+	 */
+	private void addRecommendedCoins(JPanel panel, QuestItems items, boolean includeRecommended)
+	{
+		if (!includeRecommended || items.recommendedCoins() <= 0)
+		{
+			return;
+		}
+		panel.add(Box.createVerticalStrut(4));
+		panel.add(muted("Also bring " + String.format("%,d", items.recommendedCoins())
+			+ " coins -- recommended across the route, not something to buy."));
 	}
 
 	/**

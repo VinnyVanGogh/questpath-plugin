@@ -7,6 +7,7 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 public class TeleportEquivalenceTest
@@ -49,7 +50,9 @@ public class TeleportEquivalenceTest
 		assertEquals(2, ardougne.runes().get(1).quantity());
 
 		TeleportEquivalence.Recipe draynor = TeleportEquivalence.DRAYNOR;
-		assertEquals(8013, draynor.tabletItemId());
+		// TELETAB_DRAYNOR. 8013 is the Teleport to house tablet, which the
+		// first cut of this table had here.
+		assertEquals(19615, draynor.tabletItemId());
 		assertEquals(0, draynor.magicLevel());
 		assertTrue(draynor.runes().isEmpty());
 	}
@@ -65,8 +68,8 @@ public class TeleportEquivalenceTest
 		assertEquals("Lumbridge", TeleportEquivalence.findRecipe(8008, null).name());
 		assertEquals("Falador", TeleportEquivalence.findRecipe(8009, null).name());
 		assertEquals("Ardougne", TeleportEquivalence.findRecipe(8011, null).name());
-		assertEquals("Draynor", TeleportEquivalence.findRecipe(8013, null).name());
 		assertEquals("Draynor", TeleportEquivalence.findRecipe(19615, null).name());
+		assertNull("8013 is Teleport to house, not Draynor", TeleportEquivalence.findRecipe(8013, null));
 		assertEquals("Draynor", TeleportEquivalence.findRecipe(0, "Draynor manor teleport").name());
 		assertEquals("Draynor", TeleportEquivalence.findRecipe(0, "Draynor teleport tablet").name());
 	}
@@ -143,7 +146,112 @@ public class TeleportEquivalenceTest
 		assertEquals(2, runes.get(1).quantity());
 
 		List<TeleportEquivalence.RuneIngredient> draynorRunes =
-			TeleportEquivalence.decomposeToRunes(8013, "Draynor manor teleport", 1);
+			TeleportEquivalence.decomposeToRunes(19615, "Draynor manor teleport", 1);
 		assertTrue(draynorRunes.isEmpty());
+	}
+
+	// decompose() -- the list-level rewrite the walking route and the Grand
+	// Exchange list both go through.
+
+	private static QuestItems.Total teleport(String name, int itemId, int casts, boolean recommended, String quest)
+	{
+		QuestItems.Total total = new QuestItems.Total(name, itemId, 0L, 0L, false,
+			java.util.Collections.emptyList(), java.util.Collections.emptyList());
+		total.add(new QuestItems.Line(name, itemId, casts, 0L, false, false,
+			java.util.Collections.emptyList(), java.util.Collections.emptyList(),
+			java.util.Collections.emptyList(), "", java.util.Collections.emptyList(), recommended), quest);
+		return total;
+	}
+
+	private static QuestItems.Total named(List<QuestItems.Total> totals, String name)
+	{
+		for (QuestItems.Total total : totals)
+		{
+			if (total.name().equalsIgnoreCase(name))
+			{
+				return total;
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * The "runes, not tablets" choice is about the recommended extras only:
+	 * a required Camelot teleport on the same list is left exactly as it
+	 * came, so the choice never rewrites the required path.
+	 */
+	@Test
+	public void recommendedOnlyLeavesRequiredTeleportsAlone()
+	{
+		QuestItems.Total required = teleport("Camelot teleport", 8010, 1, false, "Merlin's Crystal");
+		QuestItems.Total recommended = teleport("Varrock teleport", 8007, 2, true, "Demon Slayer");
+
+		List<QuestItems.Total> out = TeleportEquivalence.decompose(
+			List.of(required, recommended), true, 99);
+
+		assertNotNull("required tablet stays", named(out, "Camelot teleport"));
+		assertNull("recommended tablet is gone", named(out, "Varrock teleport"));
+		assertEquals(6, named(out, "Air rune").required());
+		assertEquals(2, named(out, "Fire rune").required());
+		assertEquals(2, named(out, "Law rune").required());
+		assertTrue(named(out, "Law rune").recommended());
+		assertEquals(List.of("Demon Slayer"), named(out, "Law rune").questNames());
+	}
+
+	/**
+	 * An account that cannot cast the spell is shown the tablet whatever
+	 * form it asked for -- law runes it cannot use are not a way to Camelot.
+	 */
+	@Test
+	public void belowTheMagicLevelTheTabletStays()
+	{
+		QuestItems.Total camelot = teleport("Camelot teleport", 8010, 1, true, "Merlin's Crystal");
+
+		List<QuestItems.Total> low = TeleportEquivalence.decompose(List.of(camelot), true, 44);
+		assertNotNull(named(low, "Camelot teleport"));
+		assertNull(named(low, "Law rune"));
+
+		List<QuestItems.Total> high = TeleportEquivalence.decompose(List.of(camelot), true, 45);
+		assertNull(named(high, "Camelot teleport"));
+		assertEquals(1, named(high, "Law rune").required());
+	}
+
+	/**
+	 * Runes two teleports share become one row for the sum, and a rune the
+	 * list already wanted outright is folded in rather than duplicated. The
+	 * caller's own totals are never touched: this runs every overlay frame,
+	 * and the first cut grew the shared law-rune count by a cast a frame.
+	 */
+	@Test
+	public void sharedRunesMergeWithoutMutatingTheInputs()
+	{
+		QuestItems.Total camelot = teleport("Camelot teleport", 8010, 1, true, "Merlin's Crystal");
+		QuestItems.Total varrock = teleport("Varrock teleport", 8007, 1, true, "Demon Slayer");
+		QuestItems.Total laws = teleport("Law rune", 563, 3, false, "Rune Mysteries");
+		List<QuestItems.Total> in = List.of(camelot, varrock, laws);
+
+		List<QuestItems.Total> once = TeleportEquivalence.decompose(in, false, 99);
+		List<QuestItems.Total> twice = TeleportEquivalence.decompose(in, false, 99);
+
+		assertEquals(8, named(once, "Air rune").required());
+		assertEquals("3 wanted outright + 1 + 1 for the casts", 5, named(once, "Law rune").required());
+		assertFalse("required + recommended is required", named(once, "Law rune").recommended());
+		assertEquals(List.of("Rune Mysteries", "Merlin's Crystal", "Demon Slayer"),
+			named(once, "Law rune").questNames());
+		assertEquals("a second pass gives the same answer", 5, named(twice, "Law rune").required());
+		assertEquals("the caller's total is unchanged", 3, laws.required());
+		assertEquals(List.of("Rune Mysteries"), laws.questNames());
+	}
+
+	/** A teleport already covered -- tablets in the bank, or runes counted as casts -- is not decomposed. */
+	@Test
+	public void coveredTeleportsAreNotDecomposed()
+	{
+		QuestItems.Total camelot = teleport("Camelot teleport", 8010, 1, true, "Merlin's Crystal");
+		camelot.setEquivalentOwned(1L);
+
+		List<QuestItems.Total> out = TeleportEquivalence.decompose(List.of(camelot), true, 99);
+		assertNotNull(named(out, "Camelot teleport"));
+		assertNull(named(out, "Law rune"));
 	}
 }

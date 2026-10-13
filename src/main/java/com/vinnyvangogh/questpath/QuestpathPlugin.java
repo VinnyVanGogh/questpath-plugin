@@ -2181,7 +2181,9 @@ public class QuestpathPlugin extends Plugin
 			return null;
 		}
 		boolean includeRecommended = config != null && config.recommendedItems();
-		return GrandExchangeShoppingList.of(snapshot.items().totals(includeRecommended), geOffers, this::tradeability);
+		TeleportForm form = config == null ? TeleportForm.TABLET : config.recommendedTeleportForm();
+		return GrandExchangeShoppingList.of(snapshot.items().grandExchangeTotals(includeRecommended, form),
+			geOffers, this::tradeability);
 	}
 
 	/**

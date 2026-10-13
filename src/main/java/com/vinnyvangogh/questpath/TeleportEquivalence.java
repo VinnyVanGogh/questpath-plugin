@@ -94,7 +94,7 @@ public final class TeleportEquivalence
 
 	public static final Recipe CAMELOT = new Recipe(
 		"Camelot",
-		8010,
+		ItemID.POH_TABLET_CAMELOTTELEPORT,
 		"Camelot teleport",
 		45,
 		List.of(
@@ -105,7 +105,7 @@ public final class TeleportEquivalence
 
 	public static final Recipe VARROCK = new Recipe(
 		"Varrock",
-		8007,
+		ItemID.POH_TABLET_VARROCKTELEPORT,
 		"Varrock teleport",
 		25,
 		List.of(
@@ -117,7 +117,7 @@ public final class TeleportEquivalence
 
 	public static final Recipe LUMBRIDGE = new Recipe(
 		"Lumbridge",
-		8008,
+		ItemID.POH_TABLET_LUMBRIDGETELEPORT,
 		"Lumbridge teleport",
 		31,
 		List.of(
@@ -129,7 +129,7 @@ public final class TeleportEquivalence
 
 	public static final Recipe FALADOR = new Recipe(
 		"Falador",
-		8009,
+		ItemID.POH_TABLET_FALADORTELEPORT,
 		"Falador teleport",
 		37,
 		List.of(
@@ -141,7 +141,7 @@ public final class TeleportEquivalence
 
 	public static final Recipe ARDOUGNE = new Recipe(
 		"Ardougne",
-		8011,
+		ItemID.POH_TABLET_ARDOUGNETELEPORT,
 		"Ardougne teleport",
 		51,
 		List.of(
@@ -150,9 +150,18 @@ public final class TeleportEquivalence
 		)
 	);
 
+	/**
+	 * Tablet only. There is no standard-spellbook Draynor spell, so the
+	 * rune list is empty and {@link #runesToCasts} always says none.
+	 *
+	 * <p>The id is {@code TELETAB_DRAYNOR} (19615), not 8013 -- 8013 is the
+	 * Teleport to house tablet, and the first cut of this table had it
+	 * listed here, which would have counted a house tablet in the bank as a
+	 * trip to Draynor.
+	 */
 	public static final Recipe DRAYNOR = new Recipe(
 		"Draynor",
-		8013,
+		ItemID.TELETAB_DRAYNOR,
 		"Draynor manor teleport",
 		0,
 		Collections.emptyList()
@@ -182,10 +191,6 @@ public final class TeleportEquivalence
 				{
 					return recipe;
 				}
-			}
-			if (itemId == 19615) // Draynor manor teleport tablet variant
-			{
-				return DRAYNOR;
 			}
 		}
 		if (name != null && !name.isEmpty())
@@ -351,6 +356,108 @@ public final class TeleportEquivalence
 	{
 		Recipe recipe = findRecipe(itemId, name);
 		return recipe == null ? Collections.emptyList() : decomposeToRunes(recipe, quantity);
+	}
+
+	/**
+	 * Replaces each uncovered teleport on a shopping list with the runes to
+	 * cast it, merged across every teleport that wants the same rune.
+	 *
+	 * <p>What is decomposed: a total {@link #findRecipe} knows, whose recipe
+	 * has runes (Draynor has none and always stays a tablet), that is not
+	 * already {@link QuestItems.Total#covered()}, and whose spell the
+	 * account can cast -- {@code magicLevel} at or above the recipe's. An
+	 * account below the level keeps the tablet line, because runes it cannot
+	 * cast are not a way to Camelot; pass 99 to skip that gate, which is
+	 * what the walking shop route does since a rune shop is somewhere to go
+	 * either way.
+	 *
+	 * <p>{@code recommendedOnly} leaves required teleports exactly as they
+	 * came. The Grand Exchange list uses it so a player's "runes, not
+	 * tablets" choice for the recommended extras never rewrites the required
+	 * list that was there before the choice existed.
+	 *
+	 * <p>The rune totals start at zero owned on purpose. Runes already in
+	 * the bank are counted through {@link QuestItems.Total#equivalentOwned()}
+	 * on the teleport total they came from -- that is what decided how many
+	 * casts were still outstanding -- so counting them again here would
+	 * cover the same runes twice. Left-over runes short of a full cast are
+	 * the one thing this loses, and a few spare air runes is a small price
+	 * for never under-buying law runes.
+	 */
+	public static List<QuestItems.Total> decompose(List<QuestItems.Total> totals, boolean recommendedOnly,
+		int magicLevel)
+	{
+		if (totals == null)
+		{
+			return Collections.emptyList();
+		}
+		if (totals.isEmpty())
+		{
+			return totals;
+		}
+		List<QuestItems.Total> out = new ArrayList<>();
+		Map<String, QuestItems.Total> runeTotals = new java.util.LinkedHashMap<>();
+
+		for (QuestItems.Total total : totals)
+		{
+			Recipe recipe = findRecipe(total.itemId(), total.name());
+			boolean eligible = recipe != null
+				&& !recipe.runes().isEmpty()
+				&& !total.covered()
+				&& magicLevel >= recipe.magicLevel()
+				&& (!recommendedOnly || total.recommended());
+			if (eligible)
+			{
+				int casts = (int) total.outstanding();
+				if (casts > 0)
+				{
+					for (RuneIngredient rune : decomposeToRunes(recipe, casts))
+					{
+						QuestItems.Total runeTotal = runeTotals.computeIfAbsent(rune.name().toLowerCase(), k ->
+							new QuestItems.Total(rune.name(), rune.itemId(), 0L, 0L, false,
+								List.of("Rune shops"), runeShopNames(), Collections.emptyList()));
+						for (String q : total.questNames())
+						{
+							QuestItems.Line line = new QuestItems.Line(
+								rune.name(), rune.itemId(), rune.quantity(), 0L, false, false,
+								List.of("Rune shops"), runeShopNames(), Collections.emptyList(),
+								"", total.notes(), total.recommended());
+							runeTotal.add(line, q);
+						}
+					}
+					continue;
+				}
+			}
+			out.add(total);
+		}
+
+		// A rune the list already wanted in its own right -- a quest that
+		// asks for law runes outright, next to a teleport that needs them --
+		// becomes one row for the sum. Merged into a copy, never into the
+		// caller's own Total: this runs on every overlay frame, and the
+		// first cut folded the runes into the shared total each time, so the
+		// count on screen climbed by a cast a frame.
+		for (QuestItems.Total runeTotal : runeTotals.values())
+		{
+			boolean merged = false;
+			for (int i = 0; i < out.size(); i++)
+			{
+				QuestItems.Total existing = out.get(i);
+				if (existing.name().equalsIgnoreCase(runeTotal.name()))
+				{
+					QuestItems.Total copy = existing.copy();
+					copy.absorb(runeTotal);
+					out.set(i, copy);
+					merged = true;
+					break;
+				}
+			}
+			if (!merged)
+			{
+				out.add(runeTotal);
+			}
+		}
+		return out;
 	}
 
 	public static List<String> runeShopNames()
