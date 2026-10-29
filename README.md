@@ -70,7 +70,8 @@ and the "Needed from your bank" overlay sits beside it.
 ![The bank switched to the Quest Path tab, grouped into Ran out, Still needed and Ready to withdraw](docs/screenshots/bank-tab.jpg)
 
 **Ground.** Needed items lying within 15 tiles are outlined with how many you
-still need and which quests want them. *(Left-click Take: in progress.)*
+still need and which quests want them, and left-clicking picks them up before
+the tile's other items.
 
 ![Ashes on the ground outlined, reading 2 of 3 for Shades of Mort'ton and Desert Treasure I](docs/screenshots/ground-items.jpg)
 
@@ -155,15 +156,21 @@ the quest that wanted it.
 - **Stays out of your shop run.** Quest Helper's automatic starts are held back
   while a shop trip is active, so they don't overwrite your path.
 - **Diary route.** The nearest diary tasks you can actually do, sent to Shortest
-  Path like the shop run, with a chat nudge when one is within 12 tiles.
-  *(Diary journal and a Quests/Diaries/All filter: in progress.)*
+  Path like the shop run, with a chat nudge when one is within 12 tiles, a
+  searchable diary journal on the Quests tab, and a Quests / Diaries / All
+  filter that drives both the panel and the route overlays.
 - **Combat maths.** What each stat would cost to buy the next combat level, in
   real XP, cheapest first — on a pure, one Strength level is a week of work and
   one Defence level can end the build.
 - **Locked gear.** Save a loadout and see its melee, ranged and magic max hit at
-  your live levels, with style, prayer and spell per style.
-- **Build rules.** How much room is left before a rule breaks. No-XP and hard
-  caps escalate as you close in; soft caps and goals never do.
+  your live levels, with style, prayer, spell, melee strength potion, the next
+  level that raises each max hit, and what prayer and potion each contribute.
+- **Build rules.** How much room is left before a rule breaks, editable per
+  account in the sidebar and merged over synced rules. No-XP and hard caps
+  escalate as you close in; soft caps and goals never do.
+- **Lamp advisor.** When an experience lamp or tome opens, blocked skills are
+  greyed out, the top three targets are boxed, and hovering any skill explains
+  why.
 
 ---
 
