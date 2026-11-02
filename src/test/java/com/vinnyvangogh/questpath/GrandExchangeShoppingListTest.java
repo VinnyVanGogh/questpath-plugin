@@ -321,12 +321,12 @@ public class GrandExchangeShoppingListTest
 	}
 
 	/**
-	 * "questpath cannot look this up" stays distinct from "the game does not
+	 * "the wiki names a kind of thing" stays distinct from "the game does not
 	 * trade it" -- both are kept off the buy list, and neither is reported as
 	 * the other.
 	 */
 	@Test
-	public void anUnknownItemIsKeptApartFromAnUntradeableOne()
+	public void aGenericItemIsKeptApartFromAnUntradeableOne()
 	{
 		List<QuestItems.Total> totals = Arrays.asList(
 			total("A light source", 0, 1, 0),
@@ -334,14 +334,14 @@ public class GrandExchangeShoppingListTest
 
 		List<GrandExchangeShoppingList.Line> lines = GrandExchangeShoppingList.of(totals, null,
 			(itemId, name) -> itemId <= 0
-				? GrandExchangeShoppingList.Availability.UNKNOWN
+				? GrandExchangeShoppingList.Availability.GENERIC
 				: GrandExchangeShoppingList.Availability.NOT_ON_GE);
 
 		assertNull("nothing here can be bought at a Grand Exchange",
 			GrandExchangeShoppingList.next(lines));
 		List<GrandExchangeShoppingList.Line> elsewhere = GrandExchangeShoppingList.unbuyable(lines);
 		assertEquals(2, elsewhere.size());
-		assertEquals(GrandExchangeShoppingList.Availability.UNKNOWN,
+		assertEquals(GrandExchangeShoppingList.Availability.GENERIC,
 			elsewhere.get(0).availability());
 		assertEquals(GrandExchangeShoppingList.Availability.NOT_ON_GE,
 			elsewhere.get(1).availability());

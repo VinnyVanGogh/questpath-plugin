@@ -260,13 +260,16 @@ class GrandExchangeOverlay extends QuestpathOverlay
 	 * <p>The reasons stay distinct in the words as well as in the enum.
 	 * "not traded" is a fact about the game and the player can stop looking;
 	 * "can't look up" is a fact about questpath's own data, and the item may
-	 * well be on the Grand Exchange after all; "members world" is a fact about
-	 * where the player is standing, and it stops being true the moment they
-	 * hop. Printing any of them as another would be the quiet kind of wrong
-	 * this project keeps ruling out -- and this third one most of all, because
-	 * it is the only one the player can fix in thirty seconds.
+	 * well be on the Grand Exchange after all; "check wiki" is a requirement
+	 * that names a kind of thing ("Seeds", "A light source") rather than one
+	 * item, so nothing failed and the wiki says which ones will do; "members
+	 * world" is a fact about where the player is standing, and it stops being
+	 * true the moment they hop. Printing any of them as another would be the
+	 * quiet kind of wrong this project keeps ruling out -- and "members
+	 * world" most of all, because it is the only one the player can fix in
+	 * thirty seconds.
 	 */
-	private static String reason(GrandExchangeShoppingList.Line line)
+	static String reason(GrandExchangeShoppingList.Line line)
 	{
 		switch (line.availability())
 		{
@@ -274,6 +277,8 @@ class GrandExchangeOverlay extends QuestpathOverlay
 				return "not traded";
 			case MEMBERS_ONLY:
 				return "members world";
+			case GENERIC:
+				return "check wiki";
 			default:
 				return "can't look up";
 		}
