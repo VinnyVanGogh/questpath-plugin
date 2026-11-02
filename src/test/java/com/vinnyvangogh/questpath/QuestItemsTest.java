@@ -951,4 +951,159 @@ public class QuestItemsTest
 		assertNotNull(pickaxe);
 		assertTrue("a pickaxe in the bank means no pickaxe to buy", pickaxe.satisfied());
 	}
+
+	@Test
+	public void recommendedLinesDoNotBlockReadiness()
+	{
+		QuestItems.QuestNeeds needs = new QuestItems.QuestNeeds("Merlin's Crystal");
+		// 1 required item held:
+		needs.lines().add(new QuestItems.Line("Excalibur", 100, 1, 1L, false, Collections.emptyList()));
+		// 1 recommended item NOT held:
+		needs.lines().add(new QuestItems.Line("Camelot teleport", 8010, 1, 0L, false, false,
+			Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), "", Collections.emptyList(), true));
+
+		assertEquals("only required items count as needed", 1, needs.needed());
+		assertEquals("only required items count as have", 1, needs.have());
+		assertTrue("an unheld recommended item must not block quest readiness", needs.ready());
+	}
+
+	@Test
+	public void teleportEquivalenceCoversTotal()
+	{
+		QuestItems.Total camelot = new QuestItems.Total("Camelot teleport", 8010, 0L, 0L, false,
+			Collections.emptyList(), Collections.emptyList());
+		QuestItems.Line line = new QuestItems.Line("Camelot teleport", 8010, 2, 0L, false, false,
+			Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), "", Collections.emptyList(), true);
+		camelot.add(line, "Merlin's Crystal");
+
+		assertFalse(camelot.satisfied());
+		assertFalse(camelot.covered());
+		assertEquals(2L, camelot.outstanding());
+
+		// 2 casts worth of equivalent runes
+		camelot.setEquivalentOwned(2L);
+		assertTrue(camelot.satisfied());
+		assertTrue(camelot.covered());
+		assertEquals(0L, camelot.outstanding());
+		assertEquals("2 / 2", camelot.describe());
+	}
+
+	@Test
+	public void totalsToggleSeparatesRequiredAndRecommended()
+	{
+		QuestItems.QuestNeeds needs = new QuestItems.QuestNeeds("Test Quest");
+		needs.lines().add(new QuestItems.Line("Bucket", 100, 1, 0L, false, Collections.emptyList()));
+		needs.lines().add(new QuestItems.Line("Camelot teleport", 8010, 1, 0L, false, false,
+			Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), "", Collections.emptyList(), true));
+
+		QuestGraph.Quest mockQuest = new QuestGraph.Quest();
+		// Test Total accumulation
+		QuestItems.Total reqTotal = new QuestItems.Total("Bucket", 100, 0L, 0L, false, Collections.emptyList(), Collections.emptyList());
+		reqTotal.add(needs.lines().get(0), "Test Quest");
+
+		QuestItems.Total recTotal = new QuestItems.Total("Camelot teleport", 8010, 0L, 0L, false, Collections.emptyList(), Collections.emptyList());
+		recTotal.add(needs.lines().get(1), "Test Quest");
+
+		assertFalse(reqTotal.recommended());
+		assertTrue(recTotal.recommended());
+	}
+
+	// Recommended items end to end, from a v13 graph. The bundled graph is
+	// still v12 and carries none, so these build their own.
+
+	/** One doable quest with a required spade and the wiki's recommended extras. */
+	private static QuestGraph recommendedGraph()
+	{
+		return GSON.fromJson("{\"version\":13,\"quests\":[{\"id\":1,\"slug\":\"a\",\"name\":\"A\","
+			+ "\"items\":[{\"name\":\"Spade\",\"item_id\":952,\"quantity\":1},"
+			+ "{\"name\":\"Coins\",\"item_id\":995,\"quantity\":60}],"
+			+ "\"recommended_items\":[{\"name\":\"Camelot teleport\",\"item_id\":8010,\"quantity\":2},"
+			+ "{\"name\":\"Antipoison(4)\",\"item_id\":2446,\"quantity\":1},"
+			+ "{\"name\":\"Coins\",\"item_id\":995,\"quantity\":1000}]},"
+			+ "{\"id\":2,\"slug\":\"b\",\"name\":\"B\","
+			+ "\"items\":[],"
+			+ "\"recommended_items\":[{\"name\":\"Coins\",\"item_id\":995,\"quantity\":500}]}],"
+			+ "\"diary_tasks\":[]}", QuestGraph.class);
+	}
+
+	private static QuestItems.Total named(java.util.List<QuestItems.Total> totals, String name)
+	{
+		for (QuestItems.Total total : totals)
+		{
+			if (total.name().equalsIgnoreCase(name))
+			{
+				return total;
+			}
+		}
+		return null;
+	}
+
+	/** Off by default: the required list is exactly what it was before the toggle existed. */
+	@Test
+	public void recommendedItemsStayOffTheRequiredTotals()
+	{
+		QuestItems items = QuestItems.of(recommendedGraph(), freshAccount(), new HashMap<>(), true);
+
+		assertNotNull(named(items.totals(), "Spade"));
+		assertNotNull("required coins are untouched", named(items.totals(), "Coins"));
+		assertEquals(60, named(items.totals(), "Coins").required());
+		assertNull(named(items.totals(), "Camelot teleport"));
+		assertNull(named(items.totals(), "Antipoison(4)"));
+		assertTrue(items.graphCarriesRecommended());
+	}
+
+	/**
+	 * On, the extras join the list flagged as recommended -- and recommended
+	 * coins never do. They are a balance to bring, summed across the route,
+	 * and the required coin line keeps its own count.
+	 */
+	@Test
+	public void recommendedCoinsAreABalanceNotABuyLine()
+	{
+		QuestItems items = QuestItems.of(recommendedGraph(), freshAccount(), new HashMap<>(), true);
+		java.util.List<QuestItems.Total> all = items.totals(true);
+
+		assertTrue(named(all, "Camelot teleport").recommended());
+		assertEquals(2, named(all, "Camelot teleport").required());
+		assertTrue(named(all, "Antipoison(4)").recommended());
+		assertFalse(named(all, "Spade").recommended());
+		assertEquals("recommended coins never inflate the coin row", 60, named(all, "Coins").required());
+		assertFalse(named(all, "Coins").recommended());
+		assertEquals(1500, items.recommendedCoins());
+	}
+
+	/** A v12 graph cannot say what is recommended, and the items say so rather than reading as "nothing". */
+	@Test
+	public void aGraphWithoutRecommendedItemsSaysItCannotSay() throws Exception
+	{
+		QuestItems items = QuestItems.of(graph(), freshAccount(), new HashMap<>(), true);
+		assertFalse(items.graphCarriesRecommended());
+		assertEquals(0, items.recommendedCoins());
+		assertEquals(items.totals().size(), items.totals(true).size());
+	}
+
+	/**
+	 * The Grand Exchange form: tablets by default, runes on request -- but
+	 * only for an account that can cast them. A level-1 account asking for
+	 * runes still sees the tablet.
+	 */
+	@Test
+	public void grandExchangeTotalsHonourTheTeleportFormAndTheMagicLevel()
+	{
+		QuestItems novice = QuestItems.of(recommendedGraph(), freshAccount(), new HashMap<>(), true);
+		assertNotNull(named(novice.grandExchangeTotals(true, TeleportForm.TABLET), "Camelot teleport"));
+		assertNotNull("1 Magic cannot cast Camelot, so the tablet stays",
+			named(novice.grandExchangeTotals(true, TeleportForm.RUNES), "Camelot teleport"));
+		assertNull(named(novice.grandExchangeTotals(true, TeleportForm.RUNES), "Law rune"));
+
+		QuestItems mage = QuestItems.of(recommendedGraph(), accountWith("magic", 45), new HashMap<>(), true);
+		java.util.List<QuestItems.Total> runes = mage.grandExchangeTotals(true, TeleportForm.RUNES);
+		assertNull(named(runes, "Camelot teleport"));
+		assertEquals(10, named(runes, "Air rune").required());
+		assertEquals(2, named(runes, "Law rune").required());
+		assertTrue(named(runes, "Law rune").recommended());
+		assertEquals("the stored totals are not rewritten",
+			2, named(mage.totals(true), "Camelot teleport").required());
+		assertNull(named(mage.grandExchangeTotals(false, TeleportForm.RUNES), "Law rune"));
+	}
 }

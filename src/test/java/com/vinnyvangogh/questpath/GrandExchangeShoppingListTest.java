@@ -521,4 +521,73 @@ public class GrandExchangeShoppingListTest
 		assertEquals(1, GrandExchangeShoppingList.left(lines).size());
 		assertTrue(GrandExchangeShoppingList.unbuyable(lines).isEmpty());
 	}
+
+	@Test
+	public void recommendedFlagPassesThroughAndSegmentsCorrectly()
+	{
+		QuestItems.Total reqTotal = new QuestItems.Total("Bucket", 100, 0L, 0L, false,
+			Collections.emptyList(), Collections.emptyList());
+		reqTotal.add(new QuestItems.Line("Bucket", 100, 1, 0L, false, Collections.emptyList()), "Sheep Herder");
+
+		QuestItems.Total recTotal = new QuestItems.Total("Varrock teleport", 8007, 0L, 0L, false,
+			Collections.emptyList(), Collections.emptyList());
+		QuestItems.Line recLine = new QuestItems.Line("Varrock teleport", 8007, 1, 0L, false, false,
+			Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), "", Collections.emptyList(), true);
+		recTotal.add(recLine, "Demon Slayer");
+
+		assertTrue(recTotal.recommended());
+		assertFalse(reqTotal.recommended());
+
+		List<GrandExchangeShoppingList.Line> lines = GrandExchangeShoppingList.of(Arrays.asList(reqTotal, recTotal));
+		assertEquals(2, lines.size());
+
+		List<GrandExchangeShoppingList.Line> reqLines = GrandExchangeShoppingList.required(lines);
+		List<GrandExchangeShoppingList.Line> recLines = GrandExchangeShoppingList.recommended(lines);
+
+		assertEquals(1, reqLines.size());
+		assertEquals("Bucket", reqLines.get(0).name());
+		assertFalse(reqLines.get(0).recommended());
+
+		assertEquals(1, recLines.size());
+		assertEquals("Varrock teleport", recLines.get(0).name());
+		assertTrue(recLines.get(0).recommended());
+	}
+
+	@Test
+	public void nextPrioritizesRequiredBeforeRecommended()
+	{
+		QuestItems.Total reqTotal = new QuestItems.Total("Zamorak monk top", 1000, 0L, 0L, false,
+			Collections.emptyList(), Collections.emptyList());
+		reqTotal.add(new QuestItems.Line("Zamorak monk top", 1000, 1, 0L, false, Collections.emptyList()), "Priest in Peril");
+
+		QuestItems.Total recTotal = new QuestItems.Total("Camelot teleport", 8010, 0L, 0L, false,
+			Collections.emptyList(), Collections.emptyList());
+		QuestItems.Line recLine = new QuestItems.Line("Camelot teleport", 8010, 1, 0L, false, false,
+			Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), "", Collections.emptyList(), true);
+		recTotal.add(recLine, "Merlin's Crystal");
+
+		// "Camelot teleport" comes alphabetically before "Zamorak monk top",
+		// but required item "Zamorak monk top" must still be chosen as next().
+		List<GrandExchangeShoppingList.Line> lines = GrandExchangeShoppingList.of(Arrays.asList(reqTotal, recTotal));
+		GrandExchangeShoppingList.Line next = GrandExchangeShoppingList.next(lines);
+
+		assertEquals("Zamorak monk top", next.name());
+		assertFalse(next.recommended());
+	}
+
+	@Test
+	public void nextSelectsRecommendedWhenAllRequiredCovered()
+	{
+		QuestItems.Total recTotal = new QuestItems.Total("Camelot teleport", 8010, 0L, 0L, false,
+			Collections.emptyList(), Collections.emptyList());
+		QuestItems.Line recLine = new QuestItems.Line("Camelot teleport", 8010, 1, 0L, false, false,
+			Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), "", Collections.emptyList(), true);
+		recTotal.add(recLine, "Merlin's Crystal");
+
+		List<GrandExchangeShoppingList.Line> lines = GrandExchangeShoppingList.of(Collections.singletonList(recTotal));
+		GrandExchangeShoppingList.Line next = GrandExchangeShoppingList.next(lines);
+
+		assertEquals("Camelot teleport", next.name());
+		assertTrue(next.recommended());
+	}
 }

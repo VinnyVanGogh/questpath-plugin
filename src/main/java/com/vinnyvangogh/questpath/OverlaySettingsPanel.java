@@ -326,6 +326,17 @@ class OverlaySettingsPanel extends JPanel
 					widthCombo(config.overlayGrandExchangeWidth(), "overlayGrandExchangeWidth"));
 				addField(sub, "Length",
 					lengthCombo(config.overlayGrandExchangeLength(), "overlayGrandExchangeLength"));
+				sub.add(toggle(
+					"Recommended items",
+					"Include each quest's recommended items (teleports, potions, gear) in the"
+						+ " shopping lists and routes, after the required ones. Recommended coins"
+						+ " are shown as a balance to bring, never as something to buy.",
+					config.recommendedItems(), "recommendedItems"));
+				addField(sub, "Teleports as",
+					combo(TeleportForm.values(), config.recommendedTeleportForm(),
+						"Tablet, or the runes to cast the spell. Runes are only offered when your"
+							+ " Magic level can cast it.",
+						"recommendedTeleportForm"));
 			}));
 		body.add(spacer());
 		body.add(toggleGroup(

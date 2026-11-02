@@ -94,6 +94,18 @@ nine items sitting in the collection box.
 
 ![The Grand Exchange overlay beside eight running buy offers, listing Next, Queued, Left, and four items not sold here](docs/screenshots/ge-tracker.jpg)
 
+**Recommended items, if you want them.** Every quest page also lists what the
+wiki *recommends* bringing — Camelot teleports, antipoison, a few hundred coins
+— and on a main those are things you buy rather than walk for. One toggle
+(off by default, in the Items tab and in Settings) adds them to the Grand
+Exchange list and the shop route, in their own section after the required
+items so the required list never changes. A recommended teleport can be
+listed as the tablet or as the runes to cast it (Camelot: 5 air, 1 law), your
+choice; runes are only offered when your Magic level can cast the spell.
+Recommended coins are never a buy line — they show as a balance to bring.
+This needs a quest graph that carries recommended items (version 13); on an
+older graph the panel says so rather than showing an empty section.
+
 Collect, and every item the trip has now fully covered says so in chat, naming
 the quest that wanted it.
 

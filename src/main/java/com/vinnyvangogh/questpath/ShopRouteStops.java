@@ -1,6 +1,7 @@
 package com.vinnyvangogh.questpath;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -160,10 +161,37 @@ final class ShopRouteStops
 		return next(totals, skips, shopLocator, name -> null);
 	}
 
+	/**
+	 * Swaps every uncovered teleport on the walking list for the runes to
+	 * cast it, so a rune shop -- Aubury's in Varrock, say -- is somewhere
+	 * the tour can go. No shop sells tablets, so on foot there is no other
+	 * form to offer; the Grand Exchange list, which can buy either, asks
+	 * {@link QuestItems#grandExchangeTotals} instead.
+	 *
+	 * <p>Required and recommended alike, and with no Magic-level gate: a
+	 * rune shop is still a destination for an account that cannot cast yet,
+	 * and the alternative on foot is no destination at all. The rule itself
+	 * lives in {@link TeleportEquivalence#decompose}.
+	 */
+	public static List<QuestItems.Total> decomposeTeleports(List<QuestItems.Total> totals, boolean enabled)
+	{
+		if (!enabled || totals == null || totals.isEmpty())
+		{
+			return totals == null ? Collections.emptyList() : totals;
+		}
+		return TeleportEquivalence.decompose(totals, false, 99);
+	}
+
+	public static List<QuestItems.Total> decomposeTeleports(List<QuestItems.Total> totals)
+	{
+		return decomposeTeleports(totals, true);
+	}
+
 	/** The same, counting a monster you can kill for it as somewhere to go. */
 	static List<Stop> next(List<QuestItems.Total> totals, ShopItemSkips skips,
 		Function<String, WorldPoint> shopLocator, Function<String, WorldPoint> dropLocator)
 	{
+		totals = decomposeTeleports(totals, true);
 		List<QuestItems.Total> outstanding = new ArrayList<>();
 		for (QuestItems.Total total : totals)
 		{

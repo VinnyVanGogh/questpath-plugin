@@ -124,6 +124,7 @@ final class GrandExchangeShoppingList
 		private final GrandExchangeOffers.Order order;
 		private final Availability availability;
 		private final java.util.List<String> notes;
+		private final boolean recommended;
 
 		Line(String name, int itemId, long outstanding)
 		{
@@ -144,12 +145,24 @@ final class GrandExchangeShoppingList
 		Line(String name, int itemId, long outstanding, GrandExchangeOffers.Order order,
 			Availability availability, java.util.List<String> notes)
 		{
+			this(name, itemId, outstanding, order, availability, notes, false);
+		}
+
+		Line(String name, int itemId, long outstanding, GrandExchangeOffers.Order order,
+			Availability availability, java.util.List<String> notes, boolean recommended)
+		{
 			this.notes = notes;
 			this.name = name;
 			this.itemId = itemId;
 			this.outstanding = outstanding;
 			this.order = order;
 			this.availability = availability;
+			this.recommended = recommended;
+		}
+
+		boolean recommended()
+		{
+			return recommended;
 		}
 
 		String name()
@@ -328,7 +341,7 @@ final class GrandExchangeShoppingList
 				? Availability.BUYABLE
 				: tradeability.of(total.itemId(), total.name());
 			out.add(new Line(total.name(), total.itemId(), total.outstanding(), order,
-				availability == null ? Availability.UNKNOWN : availability, total.notes()));
+				availability == null ? Availability.UNKNOWN : availability, total.notes(), total.recommended()));
 		}
 		out.sort(Comparator.comparing(Line::name, String.CASE_INSENSITIVE_ORDER));
 		return out;
@@ -337,6 +350,7 @@ final class GrandExchangeShoppingList
 	/**
 	 * The one item to buy right now: the first line no slot is already
 	 * buying, or null when every outstanding item is already on offer.
+	 * Required items are always prioritized ahead of recommended items.
 	 *
 	 * <p>Null is a real answer and a good one -- "you have asked for
 	 * everything you still need" -- and it is why the caller must not fall
@@ -347,7 +361,54 @@ final class GrandExchangeShoppingList
 	static Line next(List<Line> lines)
 	{
 		List<Line> left = left(lines);
-		return left.isEmpty() ? null : left.get(0);
+		if (left.isEmpty())
+		{
+			return null;
+		}
+		for (Line line : left)
+		{
+			if (!line.recommended())
+			{
+				return line;
+			}
+		}
+		return left.get(0);
+	}
+
+	/** Every line that is a recommended item rather than required. */
+	static List<Line> recommended(List<Line> lines)
+	{
+		if (lines == null)
+		{
+			return Collections.emptyList();
+		}
+		List<Line> out = new ArrayList<>();
+		for (Line line : lines)
+		{
+			if (line.recommended())
+			{
+				out.add(line);
+			}
+		}
+		return out;
+	}
+
+	/** Every line that is required. */
+	static List<Line> required(List<Line> lines)
+	{
+		if (lines == null)
+		{
+			return Collections.emptyList();
+		}
+		List<Line> out = new ArrayList<>();
+		for (Line line : lines)
+		{
+			if (!line.recommended())
+			{
+				out.add(line);
+			}
+		}
+		return out;
 	}
 
 	/** Every line already on offer, in the list's own order. */

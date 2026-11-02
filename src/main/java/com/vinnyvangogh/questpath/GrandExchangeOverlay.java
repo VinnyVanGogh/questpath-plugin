@@ -167,7 +167,7 @@ class GrandExchangeOverlay extends QuestpathOverlay
 		}
 		else
 		{
-			rows.add(OverlayRow.header("Next"));
+			rows.add(OverlayRow.header(next.recommended() ? "Next (Recommended)" : "Next"));
 			// Named in the accent and counted in the warning colour, matching
 			// how "Already started" is drawn on the shopping list: this is
 			// the live row, and the number on the right is the one thing the
@@ -210,23 +210,56 @@ class GrandExchangeOverlay extends QuestpathOverlay
 
 		// Everything after Next. Listing Next again here would make the
 		// count above it wrong by one in the only place it is read.
-		List<GrandExchangeShoppingList.Line> rest = left.isEmpty()
-			? left
-			: left.subList(1, left.size());
-		if (!rest.isEmpty())
+		List<GrandExchangeShoppingList.Line> rest = new ArrayList<>(left);
+		if (next != null)
 		{
-			rows.add(OverlayRow.header("Left (" + rest.size() + ")"));
-			int shown = Math.min(rest.size(), ctx.itemListCap(MAX_LEFT_ROWS));
+			rest.remove(next);
+		}
+		List<GrandExchangeShoppingList.Line> requiredRest = new ArrayList<>();
+		List<GrandExchangeShoppingList.Line> recommendedRest = new ArrayList<>();
+		for (GrandExchangeShoppingList.Line line : rest)
+		{
+			if (line.recommended())
+			{
+				recommendedRest.add(line);
+			}
+			else
+			{
+				requiredRest.add(line);
+			}
+		}
+
+		if (!requiredRest.isEmpty())
+		{
+			rows.add(OverlayRow.header("Left (" + requiredRest.size() + ")"));
+			int shown = Math.min(requiredRest.size(), ctx.itemListCap(MAX_LEFT_ROWS));
 			for (int i = 0; i < shown; i++)
 			{
-				GrandExchangeShoppingList.Line line = rest.get(i);
+				GrandExchangeShoppingList.Line line = requiredRest.get(i);
 				rows.add(OverlayRow.item(line.itemId(), line.name(), "x" + line.outstanding(),
 					false, OverlayTheme.TEXT, OverlayTheme.MUTED));
 			}
-			int remaining = rest.size() - shown;
+			int remaining = requiredRest.size() - shown;
 			if (remaining > 0)
 			{
 				rows.add(OverlayRow.overflow("...and " + remaining + " more to buy."));
+			}
+		}
+
+		if (!recommendedRest.isEmpty())
+		{
+			rows.add(OverlayRow.header("Recommended (" + recommendedRest.size() + ")"));
+			int shown = Math.min(recommendedRest.size(), ctx.itemListCap(MAX_LEFT_ROWS));
+			for (int i = 0; i < shown; i++)
+			{
+				GrandExchangeShoppingList.Line line = recommendedRest.get(i);
+				rows.add(OverlayRow.item(line.itemId(), line.name(), "x" + line.outstanding(),
+					false, OverlayTheme.TEXT, OverlayTheme.MUTED));
+			}
+			int remaining = recommendedRest.size() - shown;
+			if (remaining > 0)
+			{
+				rows.add(OverlayRow.overflow("...and " + remaining + " more recommended."));
 			}
 		}
 
@@ -249,6 +282,18 @@ class GrandExchangeOverlay extends QuestpathOverlay
 			{
 				rows.add(OverlayRow.overflow("...and " + remaining + " more from elsewhere."));
 			}
+		}
+
+		// Recommended coins: a balance to bring, never a line to buy -- see
+		// QuestItems#recommendedCoins for why they are kept off the list
+		// above rather than shown as "Coins x100".
+		if (config.recommendedItems() && snapshot != null && snapshot.items() != null
+			&& snapshot.items().recommendedCoins() > 0)
+		{
+			rows.add(OverlayRow.note(
+				"Also bring " + String.format("%,d", snapshot.items().recommendedCoins())
+					+ " coins (recommended).",
+				OverlayTheme.MUTED));
 		}
 
 		return rows;
