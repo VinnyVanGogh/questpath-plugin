@@ -60,6 +60,22 @@ class ItemCompletionWatcher
 		{
 			return quests;
 		}
+
+		/**
+		 * The words before the highlighted item: "you now have all " when a
+		 * pile was wanted, "you now have the " when a single one was. "All 1
+		 * clay" is the line this method exists to stop.
+		 */
+		String leadIn()
+		{
+			return required == 1 ? "you now have the " : "you now have all ";
+		}
+
+		/** The highlighted part: "3 clay", or just "clay" when one was enough. */
+		String subject()
+		{
+			return required == 1 ? itemName : required + " " + itemName;
+		}
 	}
 
 	/** Forgets everything. Called on logout: the next login may be another account. */

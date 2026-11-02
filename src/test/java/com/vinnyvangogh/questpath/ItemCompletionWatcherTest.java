@@ -129,6 +129,28 @@ public class ItemCompletionWatcherTest
 			only(got, "Clay") == null);
 	}
 
+	/** Issue #2: "you now have all 1 Dramen staff" is not English. */
+	@Test
+	public void aSingleItemIsTheItemNotAllOneOfIt()
+	{
+		ItemCompletionWatcher.Completion done =
+			new ItemCompletionWatcher.Completion("Dramen staff", 1, "Lost City");
+		assertEquals("you now have the ", done.leadIn());
+		assertEquals("Dramen staff", done.subject());
+		assertEquals("you now have the Dramen staff", done.leadIn() + done.subject());
+	}
+
+	/** A pile keeps the count: "all 6 clay" is the right thing to say. */
+	@Test
+	public void aPileKeepsItsCount()
+	{
+		ItemCompletionWatcher.Completion done =
+			new ItemCompletionWatcher.Completion("clay", 6, "Doric's Quest");
+		assertEquals("you now have all ", done.leadIn());
+		assertEquals("6 clay", done.subject());
+		assertEquals("you now have all 6 clay", done.leadIn() + done.subject());
+	}
+
 	/** Logging out drops the baseline: the next login may be another account. */
 	@Test
 	public void resetForgetsTheBaseline() throws Exception
