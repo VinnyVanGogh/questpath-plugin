@@ -4,6 +4,26 @@ Merged bug fixes in reverse chronological order (newest first). Each entry recor
 
 ---
 
+## Developer client failed to connect after game update on RuneLite 1.12.37
+- **What broke:** Launching the developer client against the pinned `runeLiteVersion = '1.12.37'` failed to connect after an Old School RuneScape game update (`error_game_js5connect_outofdate`).
+- **How it was found:** Observed when launching the developer client after the game update.
+- **Fix:** Bumped `runeLiteVersion` in `build.gradle` to `1.13.5` (#7).
+
+## Teleport rune decomposition mutated shared totals every frame and mapped Draynor to house tablets
+- **What broke:** Merging decomposed teleport runes into an existing rune row in `TeleportEquivalence` mutated the caller's shared `QuestItems.Total` in place on every overlay frame, causing the displayed rune count to climb by one cast per frame. In addition, `TeleportEquivalence.DRAYNOR` used item ID `8013` (Teleport to house) instead of `ItemID.TELETAB_DRAYNOR` (`19615`), which would count a house tablet in the bank as a Draynor manor teleport.
+- **How it was found:** Caught while extracting `TeleportEquivalence.decompose` and replacing raw tablet IDs with `gameval` constants during the RUN-9 implementation.
+- **Fix:** Copied the existing `QuestItems.Total` before absorbing decomposed rune totals in `TeleportEquivalence.decompose`, and switched `DRAYNOR` and all other tablet recipes to `ItemID` gameval constants (#4).
+
+## Grand Exchange overlay labelled generic wiki requirements ("Seeds") as "can't look up"
+- **What broke:** `GrandExchangeOverlay.reason()` fell through to its `"can't look up"` default for `quests.json` requirements with no `item_id` (such as `"Seeds"` in Barbarian Training), which describe an open-ended kind of item on the wiki rather than a specific item whose client lookup failed.
+- **How it was found:** Observed in an in-game Grand Exchange screenshot (`docs/screenshots/ge-tracker.jpg`) and filed as issue #1.
+- **Fix:** Added `GrandExchangeShoppingList.Availability.GENERIC` for requirements with `itemId <= 0` and rendered it as `"check wiki"` on `GrandExchangeOverlay`, reserving `UNKNOWN` (`"can't look up"`) for real item IDs that the client gave no answer for (#5).
+
+## Grand Exchange collection chat line said "you now have all 1 X" for single items
+- **What broke:** `QuestpathPlugin.announce()` hardcoded `"Quest Path: you now have all "` + `done.required() + " " + done.itemName()`, producing `"you now have all 1 <item>"` when a quest needed only one of an item.
+- **How it was found:** Observed in an in-game screenshot (`docs/screenshots/ge-collected.jpg`) and filed as issue #2.
+- **Fix:** Added `leadIn()` and `subject()` to `ItemCompletionWatcher.Completion` so a single needed item reads `"you now have the <item>"` while quantities above one keep `"you now have all <N> <item>"` (#3).
+
 ## Members-only items offered on the Grand Exchange in free-to-play worlds
 - **What broke:** `GrandExchangeShoppingList` included members-only items (such as Adamant seeds, Black knife, Caviar, Dragon axe, and Dragon pickaxe) in the clickable GE buy list while logged into a free-to-play world, where the game rejects the offer with `"You can't buy members-only items on this world."`
 - **How it was found:** Reported from in-game play on a free-to-play world.
