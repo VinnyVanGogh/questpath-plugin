@@ -55,7 +55,14 @@ import net.runelite.api.events.VarbitChanged;
 import net.runelite.api.widgets.Widget;
 import net.runelite.client.callback.ClientThread;
 import net.runelite.client.config.ConfigManager;
+import net.runelite.client.events.ConfigChanged;
+import net.runelite.client.events.PartyChanged;
 import net.runelite.client.game.SkillIconManager;
+import net.runelite.client.party.PartyMember;
+import net.runelite.client.party.PartyService;
+import net.runelite.client.party.WSClient;
+import net.runelite.client.party.events.UserJoin;
+import net.runelite.client.party.events.UserPart;
 import net.runelite.client.eventbus.EventBus;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.plugins.Plugin;
@@ -92,6 +99,33 @@ public class QuestpathPlugin extends Plugin
 
 	@Inject
 	private ClientToolbar clientToolbar;
+
+	/**
+	 * RuneLite's own party relay: the only channel the Group tab uses. No
+	 * questpath server and no third party is involved, which is why the
+	 * opt-in carries no third-party warning.
+	 */
+	@Inject
+	private PartyService partyService;
+
+	@Inject
+	private WSClient wsClient;
+
+	/**
+	 * What each other party member last sent, by party member id. Written
+	 * from the party socket's thread, read from the client thread.
+	 */
+	private final Map<Long, GroupMember> partyMembers = new java.util.concurrent.ConcurrentHashMap<>();
+
+	/** Gates every message this client sends to the party; see its class doc. */
+	private GroupBroadcaster groupBroadcaster;
+
+	/**
+	 * Lower-cased names of every item any quest asks for -- the only item
+	 * counts ever shared. Rebuilt when the graph changes identity.
+	 */
+	private Set<String> groupRelevantItems = Collections.emptySet();
+	private QuestGraph groupRelevantItemsFor;
 
 	/**
 	 * Used to find the running Quest Helper or Shortest Path plugin, if
@@ -848,6 +882,13 @@ public class QuestpathPlugin extends Plugin
 			fetchLiveQuestGraph();
 		}
 
+		// Registered whether or not sharing is on: receiving what other
+		// members chose to send is how the Group tab works for a player who
+		// has not opted in themselves.
+		partyMembers.clear();
+		wsClient.registerMessage(QuestpathGroupState.class);
+		groupBroadcaster = new GroupBroadcaster(partyService::send, Instant::now);
+
 		// The plugin can be enabled mid-session, so there may already be a
 		// logged-in account whose StatChanged burst has been and gone.
 		refresh();
@@ -1032,12 +1073,227 @@ public class QuestpathPlugin extends Plugin
 			watchdog = null;
 		}
 
+		// Tell the party to forget this member before going quiet -- a no-op
+		// unless this client was actually sharing. offer(false, ...) never
+		// reads the account; see GroupBroadcaster.
+		if (groupBroadcaster != null)
+		{
+			groupBroadcaster.offer(false, partyService.isInParty(), () -> null, false);
+			groupBroadcaster = null;
+		}
+		wsClient.unregisterMessage(QuestpathGroupState.class);
+		partyMembers.clear();
+
 		clientToolbar.removeNavigation(navButton);
 		navButton = null;
 		panel = null;
 		haveSent = false;
 		owned.clear();
 		log.debug("questpath stopped");
+	}
+
+	// ------------------------------------------------------------------
+	// Group: party members running Quest Path share quest state over
+	// RuneLite's PartyService. See GroupBroadcaster, GroupMember, GroupPlan.
+	// ------------------------------------------------------------------
+
+	/**
+	 * Another member's state. Arrives on the party socket's thread, so it
+	 * only touches the concurrent map and hands the rest to the client
+	 * thread.
+	 */
+	@Subscribe
+	public void onQuestpathGroupState(QuestpathGroupState message)
+	{
+		PartyMember local = partyService.getLocalMember();
+		if (local != null && local.getMemberId() == message.getMemberId())
+		{
+			return;
+		}
+		GroupMember member = GroupMember.decode(message.getMemberId(), memberName(message.getMemberId()), message);
+		if (member == null)
+		{
+			partyMembers.remove(message.getMemberId());
+		}
+		else
+		{
+			partyMembers.put(message.getMemberId(), member);
+		}
+		clientThread.invokeLater(this::refreshGroup);
+	}
+
+	/** A newcomer has heard nothing yet: re-announce, if sharing. */
+	@Subscribe
+	public void onUserJoin(UserJoin event)
+	{
+		clientThread.invokeLater(() ->
+		{
+			offerGroupState(true);
+			refreshGroup();
+		});
+	}
+
+	@Subscribe
+	public void onUserPart(UserPart event)
+	{
+		partyMembers.remove(event.getMemberId());
+		clientThread.invokeLater(this::refreshGroup);
+	}
+
+	/** A different party, or none: nothing anyone sent before applies. */
+	@Subscribe
+	public void onPartyChanged(PartyChanged event)
+	{
+		partyMembers.clear();
+		clientThread.invokeLater(() ->
+		{
+			if (groupBroadcaster != null)
+			{
+				groupBroadcaster.reset();
+			}
+			refreshGroup();
+		});
+	}
+
+	@Subscribe
+	public void onConfigChanged(ConfigChanged event)
+	{
+		if (!QuestpathConfig.GROUP.equals(event.getGroup()) || !"partyShare".equals(event.getKey()))
+		{
+			return;
+		}
+		clientThread.invokeLater(() ->
+		{
+			offerGroupState(false);
+			refreshGroup();
+		});
+	}
+
+	private String memberName(long memberId)
+	{
+		PartyMember member = partyService.getMemberById(memberId);
+		String name = member == null ? null : member.getDisplayName();
+		return name == null || name.isEmpty() ? "Party member" : name;
+	}
+
+	/** Client thread. Sends only when opted in, in a party, and something changed (or forced). */
+	private void offerGroupState(boolean force)
+	{
+		if (groupBroadcaster == null)
+		{
+			return;
+		}
+		groupBroadcaster.offer(config.partyShare(), partyService.isInParty(), this::groupSnapshot, force);
+	}
+
+	/**
+	 * This account as the party message carries it, or null when there is
+	 * nothing honest to say yet: logged out, or quest states not loaded.
+	 * Client thread: quest states are varbits.
+	 */
+	private QuestpathGroupState groupSnapshot()
+	{
+		if (client.getGameState() != GameState.LOGGED_IN)
+		{
+			return null;
+		}
+		Set<String> completed = completedQuestNames();
+		if (completed.isEmpty())
+		{
+			// Indistinguishable from varbits that have not arrived; see
+			// verdicts(). Sending it would tell the party this account has
+			// done nothing.
+			return null;
+		}
+		Map<String, Integer> levels = new java.util.LinkedHashMap<>();
+		Map<String, Integer> experience = new java.util.LinkedHashMap<>();
+		for (Skill skill : Skill.values())
+		{
+			if (skill.getName() == null)
+			{
+				continue;
+			}
+			levels.put(skill.getName(), client.getRealSkillLevel(skill));
+			experience.put(skill.getName(), client.getSkillExperience(skill));
+		}
+		return GroupMember.encode(completed, inProgressQuestNames(), levels, experience, effectiveBuildRules(),
+			owned.isEmpty() ? null : heldIncludingCollected(), owned.bankSeen(), groupRelevantItems());
+	}
+
+	private Set<String> groupRelevantItems()
+	{
+		QuestGraph graph = questGraph;
+		if (graph == null)
+		{
+			return Collections.emptySet();
+		}
+		if (graph != groupRelevantItemsFor)
+		{
+			Set<String> names = new HashSet<>();
+			for (QuestGraph.Quest quest : graph.quests())
+			{
+				for (QuestGraph.Item item : quest.items())
+				{
+					if (!item.unresolved() && !item.grouped() && !item.name().isEmpty())
+					{
+						names.add(item.name().toLowerCase());
+					}
+				}
+			}
+			groupRelevantItems = names;
+			groupRelevantItemsFor = graph;
+		}
+		return groupRelevantItems;
+	}
+
+	/**
+	 * Rebuilds the Group tab. Client thread. The local account is judged
+	 * from the client whether or not sharing is on -- reading your own state
+	 * for your own panel shares nothing.
+	 */
+	private void refreshGroup()
+	{
+		if (panel == null || client.getGameState() != GameState.LOGGED_IN)
+		{
+			return;
+		}
+		boolean sharing = config.partyShare();
+		if (questGraph == null)
+		{
+			panel.updateGroup(GroupView.of(GroupView.State.NO_GRAPH, sharing));
+			return;
+		}
+		if (!partyService.isInParty())
+		{
+			panel.updateGroup(GroupView.of(GroupView.State.NOT_IN_PARTY, sharing));
+			return;
+		}
+		PartyMember local = partyService.getLocalMember();
+		GroupMember self = GroupMember.decode(local == null ? -1L : local.getMemberId(), "You", groupSnapshot());
+		if (self == null)
+		{
+			panel.updateGroup(GroupView.of(GroupView.State.LOADING, sharing));
+			return;
+		}
+
+		List<GroupMember> others = new java.util.ArrayList<>(partyMembers.values());
+		others.sort(java.util.Comparator.comparing(GroupMember::name, String.CASE_INSENSITIVE_ORDER));
+		List<GroupMember> members = new java.util.ArrayList<>();
+		members.add(self);
+		members.addAll(others);
+
+		List<String> notSharing = new java.util.ArrayList<>();
+		for (PartyMember member : partyService.getMembers())
+		{
+			if ((local != null && member.getMemberId() == local.getMemberId())
+				|| partyMembers.containsKey(member.getMemberId()))
+			{
+				continue;
+			}
+			String name = member.getDisplayName();
+			notSharing.add(name == null || name.isEmpty() ? "Party member" : name);
+		}
+		panel.updateGroup(GroupView.ready(sharing, GroupPlan.of(questGraph, members), notSharing));
 	}
 
 	/**
@@ -1935,6 +2191,11 @@ public class QuestpathPlugin extends Plugin
 
 		panel.update(stats, xp, syncStatus(), effectiveBuildRules(), unmatchedQuests,
 			questVerdicts, items, route, routeWork(route), SyncSettings.from(config), report, lockedGear);
+
+		// The party hears about the same account state the panel just drew,
+		// and only when the player opted in; the Group tab is rebuilt from it.
+		offerGroupState(false);
+		refreshGroup();
 
 		// Keeps the Grand Exchange row in step with a shopping list that
 		// changed while the search chatbox happened to already be open --

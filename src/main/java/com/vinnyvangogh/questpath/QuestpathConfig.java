@@ -102,6 +102,32 @@ public interface QuestpathConfig extends Config
 	)
 	String questTabSection = "questTab";
 
+	@ConfigSection(
+		name = "Group (party)",
+		description = "Plan quests with your RuneLite party: Group Ironman, or anyone questing together.",
+		position = 7,
+		closedByDefault = true
+	)
+	String groupSection = "group";
+
+	@ConfigItem(
+		keyName = "partyShare",
+		name = "Share with my party",
+		description = "Send your finished quests, levels, build rules and counts of quest items you hold to"
+			+ " members of your RuneLite party who also run Quest Path, so the sidebar's Group tab can plan"
+			+ " with you. Travels over RuneLite's own party service only, never to questpath or any other"
+			+ " server. Nothing is sent while this is off.",
+		section = groupSection,
+		position = 1
+	)
+	default boolean partyShare()
+	{
+		// Off by default: what an account has done and holds is the player's
+		// to share, and joining a party for some other plugin must not start
+		// broadcasting it.
+		return false;
+	}
+
 	@ConfigItem(
 		keyName = "questJournalFilter",
 		name = "Quests tab shows",

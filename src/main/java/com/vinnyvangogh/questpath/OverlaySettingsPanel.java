@@ -150,6 +150,13 @@ class OverlaySettingsPanel extends JPanel
 				+ " verified by RuneLite developers.\n\nTurn it on anyway?",
 			config.fetchQuestGraph(), "fetchQuestGraph"));
 		panel.add(Box.createRigidArea(new Dimension(0, 6)));
+		panel.add(toggle(
+			"Share with my party",
+			"Send your finished quests, levels, build rules and counts of quest items you hold to"
+				+ " RuneLite party members who also run Quest Path, for the Group tab. RuneLite's own"
+				+ " party service only -- never questpath. Nothing is sent while this is off.",
+			config.partyShare(), "partyShare"));
+		panel.add(Box.createRigidArea(new Dimension(0, 6)));
 		JLabel note = new JLabel(wrap("The address to fetch from and push to, and the pairing token"
 			+ " from questpath -plugin-token, are set in RuneLite's own Configuration panel for this"
 			+ " plugin -- not duplicated here."));

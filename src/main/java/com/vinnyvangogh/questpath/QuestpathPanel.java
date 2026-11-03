@@ -806,6 +806,8 @@ class QuestpathPanel extends PluginPanel
 			tabBodies.get(PanelSections.Tab.SYNC).add(muted("Log in to sync."));
 			tabBodies.get(PanelSections.Tab.QUESTS).add(muted("Log in to judge your quests."));
 			tabBodies.get(PanelSections.Tab.ITEMS).add(muted("Log in to check your bank."));
+			tabBodies.get(PanelSections.Tab.GROUP).add(muted("Log in to plan with your group."));
+			lastGroupView = null;
 			// Cleared with everything else, so put them back before asking
 			// them to redraw. The instances are the same, so whatever was
 			// chosen is still chosen.
@@ -1084,6 +1086,296 @@ class QuestpathPanel extends PluginPanel
 
 		renderPlannedSectionsFor(PanelSections.Tab.QUESTS);
 		showBodies(PanelSections.Tab.QUESTS);
+	}
+
+	// ------------------------------------------------------------------
+	// Group: party members' shared quest states, planned together. See
+	// GroupPlan and ItemSplit for what each answer means.
+	// ------------------------------------------------------------------
+
+	/** The last view rendered, so the quest picker can redraw the split without waiting for a tick. */
+	private GroupView lastGroupView;
+
+	/** The quest the item split is for, by name, kept across rebuilds. */
+	private String groupSplitQuest;
+
+	/** How many quests each Group list shows before it says how many more there are. */
+	private static final int GROUP_LIST_LIMIT = 12;
+
+	/**
+	 * Renders the Group tab. Safe from the client thread: hops to the EDT,
+	 * like {@link #update}.
+	 */
+	void updateGroup(GroupView view)
+	{
+		SwingUtilities.invokeLater(() ->
+		{
+			lastGroupView = view;
+			rebuildGroupTab();
+		});
+	}
+
+	private void rebuildGroupTab()
+	{
+		GroupView view = lastGroupView;
+		clearBodies(PanelSections.Tab.GROUP);
+		JPanel body = tabBodies.get(PanelSections.Tab.GROUP);
+		body.add(heading(PanelSections.GROUP_MEMBERS.title()));
+
+		if (view == null)
+		{
+			body.add(muted("Log in to plan with your group."));
+		}
+		else
+		{
+			body.add(muted(view.sharing()
+				? "Sharing your quests, levels, build rules and quest-item counts with your party."
+				: "Not sharing. Your party sees nothing from you; turn on \"Share with my party\" in the"
+					+ " View tab's Sync section to let them plan with you."));
+			body.add(Box.createVerticalStrut(6));
+			switch (view.state())
+			{
+				case NO_GRAPH:
+					body.add(muted("No quest graph is loaded, so nothing can be planned. The Quests tab says why."));
+					break;
+				case NOT_IN_PARTY:
+					body.add(muted("Not in a party. Join one with RuneLite's Party plugin; party members"
+						+ " running Quest Path with sharing on show up here."));
+					break;
+				case LOADING:
+					body.add(muted("Waiting for the game to load your quest states."));
+					break;
+				case READY:
+				default:
+					groupBody(body, view);
+					break;
+			}
+		}
+		showBodies(PanelSections.Tab.GROUP);
+		body.revalidate();
+		body.repaint();
+	}
+
+	private void groupBody(JPanel body, GroupView view)
+	{
+		GroupPlan plan = view.plan();
+		int total = 0;
+		JPanel members = grid();
+		for (GroupMember member : plan.members())
+		{
+			if (!member.compatible())
+			{
+				addRow(members, member.name(), "other version", ColorScheme.PROGRESS_ERROR_COLOR,
+					"Runs a Quest Path that sends a different message shape (v" + member.version()
+						+ "). Update both clients to the same version to plan together.");
+				continue;
+			}
+			StringBuilder caps = new StringBuilder();
+			for (BuildRule rule : member.rules())
+			{
+				if (!rule.blocking())
+				{
+					continue;
+				}
+				caps.append(caps.length() == 0 ? "" : ", ").append(rule.skillName()).append(' ')
+					.append(rule.describe());
+			}
+			addRow(members, member.name(), plan.doneCount(member) + " quests done",
+				Color.WHITE, caps.length() == 0 ? "No blocking build rules." : "Build: " + caps);
+			total++;
+		}
+		for (String name : view.notSharing())
+		{
+			addRow(members, name, "not sharing", ColorScheme.LIGHT_GRAY_COLOR,
+				"Sends nothing: Quest Path is not running for them, or their sharing is off.");
+		}
+		body.add(members);
+
+		if (total < 2)
+		{
+			body.add(Box.createVerticalStrut(6));
+			body.add(muted("Nobody else in the party is sharing yet, so the lists below are for you alone."));
+		}
+
+		body.add(Box.createVerticalStrut(14));
+		body.add(heading(PanelSections.GROUP_TOGETHER.title()));
+		List<QuestGraph.Quest> together = plan.together();
+		if (together.isEmpty())
+		{
+			body.add(muted("No quest that nobody has done is open to every member right now."));
+		}
+		else
+		{
+			questNameList(body, together);
+		}
+
+		body.add(Box.createVerticalStrut(14));
+		body.add(heading(PanelSections.GROUP_FLAGGED.title()));
+		List<GroupPlan.Flag> flagged = plan.flagged();
+		if (flagged.isEmpty())
+		{
+			body.add(muted("Nothing the group could start now breaks anyone's build rules."));
+		}
+		else
+		{
+			body.add(muted("Open to everyone, but would break a member's build. Plan around these."));
+			int shown = 0;
+			for (GroupPlan.Flag flag : flagged)
+			{
+				if (shown++ >= GROUP_LIST_LIMIT)
+				{
+					body.add(muted("... and " + (flagged.size() - GROUP_LIST_LIMIT) + " more."));
+					break;
+				}
+				JLabel quest = row(flag.quest().name());
+				quest.setForeground(ColorScheme.PROGRESS_ERROR_COLOR);
+				body.add(quest);
+				for (GroupPlan.MemberBreach breach : flag.breaches())
+				{
+					JLabel reason = row("  " + breach.describe());
+					reason.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
+					body.add(reason);
+				}
+			}
+		}
+
+		body.add(Box.createVerticalStrut(14));
+		body.add(heading(PanelSections.GROUP_ITEMS.title()));
+		itemSplitBlock(body, plan, together);
+
+		body.add(Box.createVerticalStrut(14));
+		body.add(heading(PanelSections.GROUP_DONE_BY_SOME.title()));
+		List<GroupPlan.Partial> partial = plan.doneBySome();
+		if (partial.isEmpty())
+		{
+			body.add(muted(total < 2 ? "Needs at least two sharing members."
+				: "No quest is finished by some of you and not others."));
+		}
+		else
+		{
+			int shown = 0;
+			for (GroupPlan.Partial entry : partial)
+			{
+				if (shown++ >= GROUP_LIST_LIMIT)
+				{
+					body.add(muted("... and " + (partial.size() - GROUP_LIST_LIMIT) + " more."));
+					break;
+				}
+				JLabel quest = row(entry.quest().name() + " — needs " + String.join(", ", entry.stillNeed()));
+				quest.setToolTipText("Done by " + String.join(", ", entry.doneBy())
+					+ "; still needed by " + String.join(", ", entry.stillNeed()));
+				body.add(quest);
+			}
+		}
+	}
+
+	private void questNameList(JPanel body, List<QuestGraph.Quest> quests)
+	{
+		int shown = 0;
+		for (QuestGraph.Quest quest : quests)
+		{
+			if (shown++ >= GROUP_LIST_LIMIT)
+			{
+				body.add(muted("... and " + (quests.size() - GROUP_LIST_LIMIT) + " more."));
+				break;
+			}
+			body.add(row(quest.name()));
+		}
+	}
+
+	/** The quest picker and its split. Only quests on the "together" list can be picked. */
+	private void itemSplitBlock(JPanel body, GroupPlan plan, List<QuestGraph.Quest> together)
+	{
+		if (together.isEmpty())
+		{
+			body.add(muted("Pick from \"Do together next\" -- there is nothing there yet."));
+			return;
+		}
+		QuestGraph.Quest selected = together.get(0);
+		JComboBox<String> picker = new JComboBox<>();
+		for (QuestGraph.Quest quest : together)
+		{
+			picker.addItem(quest.name());
+			if (quest.name().equals(groupSplitQuest))
+			{
+				selected = quest;
+			}
+		}
+		picker.setSelectedItem(selected.name());
+		picker.setBackground(ColorScheme.DARKER_GRAY_COLOR);
+		picker.setForeground(Color.WHITE);
+		picker.setFont(FontManager.getRunescapeSmallFont());
+		picker.setMaximumSize(new Dimension(Integer.MAX_VALUE, 22));
+		picker.setAlignmentX(Component.LEFT_ALIGNMENT);
+		picker.setToolTipText("Which group quest to split the item list for");
+		// Attached after setSelectedItem, so restoring the selection never
+		// fires a rebuild of itself.
+		picker.addActionListener(e ->
+		{
+			Object chosen = picker.getSelectedItem();
+			if (chosen != null && !chosen.equals(groupSplitQuest))
+			{
+				groupSplitQuest = (String) chosen;
+				rebuildGroupTab();
+			}
+		});
+		body.add(picker);
+		body.add(Box.createVerticalStrut(6));
+
+		ItemSplit split = plan.split(selected);
+		if (split.lines().isEmpty())
+		{
+			body.add(muted(split.unsplit() == 0
+				? "The wiki lists no items for this quest."
+				: "Nothing on this quest's list can be split; see the Items tab."));
+		}
+		for (ItemSplit.Line line : split.lines())
+		{
+			String each = (line.quantityStated() ? "" : "at least ") + line.perMember() + " each";
+			JLabel title = row(line.name() + " — " + each + (line.obtainable() ? " (found in quest)" : ""));
+			body.add(title);
+			for (ItemSplit.Transfer transfer : line.transfers())
+			{
+				JLabel give = row("  " + transfer.from() + " gives " + transfer.to() + " " + transfer.count());
+				give.setForeground(ColorScheme.PROGRESS_COMPLETE_COLOR);
+				body.add(give);
+			}
+			for (Map.Entry<String, Long> get : line.toGet().entrySet())
+			{
+				JLabel need = row("  " + get.getKey() + " gets " + get.getValue());
+				need.setForeground(ColorScheme.PROGRESS_INPROGRESS_COLOR);
+				body.add(need);
+			}
+			if (!line.unknown().isEmpty())
+			{
+				JLabel unknown = row("  unknown: " + String.join(", ", line.unknown()));
+				unknown.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
+				body.add(unknown);
+			}
+			if (line.transfers().isEmpty() && line.toGet().isEmpty() && line.unknown().isEmpty())
+			{
+				JLabel covered = row("  everyone has theirs");
+				covered.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
+				body.add(covered);
+			}
+		}
+		if (split.unsplit() > 0)
+		{
+			body.add(Box.createVerticalStrut(4));
+			body.add(muted(split.unsplit() + " more line" + (split.unsplit() == 1 ? "" : "s")
+				+ " (optional, a category like \"any pickaxe\", or unmatched) not split -- see the Items tab."));
+		}
+		if (!split.membersWithoutItems().isEmpty())
+		{
+			body.add(muted("Not sharing item counts: " + String.join(", ", split.membersWithoutItems())
+				+ ". They have opened no container yet this session."));
+		}
+		if (!split.membersWithoutBank().isEmpty())
+		{
+			body.add(muted("Bank not opened this session: " + String.join(", ", split.membersWithoutBank())
+				+ " -- their counts are only what they carry."));
+		}
+		body.add(muted("Group storage is not counted."));
 	}
 
 	// ------------------------------------------------------------------

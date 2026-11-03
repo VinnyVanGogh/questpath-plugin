@@ -95,6 +95,25 @@ class PlayerState
 		this.rules = bySkill;
 	}
 
+	private PlayerState(PlayerState source, Map<String, BuildRule> rules)
+	{
+		this.levels = source.levels;
+		this.experience = source.experience;
+		this.completed = source.completed;
+		this.inProgress = source.inProgress;
+		this.rules = rules;
+	}
+
+	/**
+	 * The same account with no build rules: "could they do it, if the build
+	 * allowed". The Group tab asks this to tell a quest that only the build
+	 * forbids apart from one the member could not start anyway.
+	 */
+	PlayerState withoutRules()
+	{
+		return new PlayerState(this, new HashMap<>());
+	}
+
 	private static <T> Map<String, T> lowerKeys(Map<String, T> source)
 	{
 		Map<String, T> out = new HashMap<>();

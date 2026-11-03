@@ -112,6 +112,36 @@ enum PanelSections
 		Tab.VIEW,
 		"Overlays",
 		Status.LIVE,
+		null),
+
+	GROUP_MEMBERS(
+		Tab.GROUP,
+		"Your group",
+		Status.LIVE,
+		null),
+
+	GROUP_TOGETHER(
+		Tab.GROUP,
+		"Do together next",
+		Status.LIVE,
+		null),
+
+	GROUP_FLAGGED(
+		Tab.GROUP,
+		"Breaks someone's build",
+		Status.LIVE,
+		null),
+
+	GROUP_ITEMS(
+		Tab.GROUP,
+		"Who brings what",
+		Status.LIVE,
+		null),
+
+	GROUP_DONE_BY_SOME(
+		Tab.GROUP,
+		"Done by some of you",
+		Status.LIVE,
 		null);
 
 	/**
@@ -168,6 +198,7 @@ enum PanelSections
 		QUESTS("Quests", 776),          // TAB_QUESTS, the quest diary
 		ITEMS("Items", 777),            // RS2_TAB_INVENTORY, the backpack
 		SYNC("Sync", 362),              // SPELL_WIND_SURGE
+		GROUP("Group", 781),            // RS2_TAB_FRIENDS_CHAT, the party/chat-channel tab
 		VIEW("View", 785);              // RS2_TAB_OPTIONS, the wrench
 
 		private final String label;

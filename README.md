@@ -210,6 +210,36 @@ points, and 492 diary tasks with 376 of them placed on the map.
 
 ---
 
+## Questing as a group
+
+For Group Ironman teams, or anyone questing together in a RuneLite party. It
+uses RuneLite's own Party service only: no questpath server, no third party,
+no uploads.
+
+- **Off by default.** Turn on "Share with my party" (View tab → Sync, or the
+  "Group (party)" config section). While it is off this client sends nothing.
+  Turning it off sends one "forget me" message that carries no account data.
+- **What is shared:** finished and started quests, levels, experience, your
+  build rules, and counts of items that some quest asks for. Never the rest of
+  your bank, and never another player's data. You only see what other members
+  chose to send.
+- **The Group tab** lists each member and how many quests they've done, then:
+  - **Do together next:** quests nobody has done that every member can start
+    now.
+  - **Breaks someone's build:** quests everyone could start, except that they
+    would give a capped member XP they don't want, or need a level above that
+    member's cap. For example, "Bob: 18,650 Defence xp (capped at 1)". It uses
+    the same build-rule check as the Quests tab.
+  - **Who brings what:** pick a group quest. Each member needs their own copy
+    of every item, so spares get handed over before anything is bought. Members
+    who shared no item counts show as unknown, not as owning nothing. Group
+    storage is not counted.
+  - **Done by some of you:** who has finished a quest and who still needs it.
+- Party members on a Quest Path version that sends a different message shape
+  are listed as "other version". They are never shown as having done nothing.
+
+---
+
 ## Building
 
 ```bash
