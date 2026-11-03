@@ -122,6 +122,7 @@ the quest that wanted it.
 | **Quests** | Next on your route with progress, your whole route in order, "Still needs work", "Start, never finish", and every quest's verdict, searchable |
 | **Items** | Get while you're here, the shop route buttons, skipped items, and everything you need counted against what you hold |
 | **Sync** | Whether the last push went out, the account it's attributed to, and what was sent |
+| **Group** | Party members and their quest counts, quests you can do together next, quests that break a member's build, per-quest item split with hand-overs, and quests done by only some of the group |
 | **View** | Every setting, grouped and readable, instead of a 225px config column |
 
 <details>
