@@ -1,0 +1,10 @@
+# Full-suite regression gate for the questpath RuneLite plugin.
+# One stack: Java 11 / Gradle, JUnit 4 under src/test/java. See docs/test-suite.md
+# in the StayPoint repo for the schema.
+suite = "required"
+
+[[commands]]
+name      = "gradle"
+runner    = "gradle_test"
+packages  = [":test"]
+timeout_s = 900
