@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- Opt-in recommended quest items (`recommendedItems`) and teleport tablet-or-runes equivalence (`TeleportEquivalence`, `TeleportForm`, `recommendedTeleportForm`) across the Grand Exchange buy list, shop route, and Items tab, with recommended coins summed as a balance to bring (`QuestItems.recommendedCoins`) and quest graph v13 support (#4).
 - Melee max-hit comparison lines under locked gear showing max hit without prayer and without potion (`920689b`).
 - Melee strength potion selection (`StrengthPotion`: Strength, Super strength, Zamorak brew, Black warlock) on locked gear loadouts (`dbefed7`).
 - Grand Exchange workflow screenshots and progress calculation notes in `README.md` (`94fe8a0`).
@@ -45,6 +46,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
+- Bumped `runeLiteVersion` to `1.13.5` so the developer client connects after the game update (#7).
 - Re-exported bundled quest graph and planner vectors after NPC shop-town, item-link, and iron bar ingest updates (`02982e8`, `24014e8`, `e6f72f4`).
 - Replaced initial `README.md` overview with in-game screenshots of the shop run, bank tab, ground markers, and all six sidebar tabs (`6bd6a33`).
 - Merged `Tab.BUILD` into `Tab.COMBAT` and placed non-blocking build rules behind a "Show all rules" toggle (`93aa574`).
@@ -53,6 +55,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Fixed
 
+- Copied existing rune totals before merging in `TeleportEquivalence.decompose` so per-frame overlay rendering does not mutate shared `QuestItems.Total` counts, and replaced item ID `8013` (Teleport to house) with `ItemID.TELETAB_DRAYNOR` on `TeleportEquivalence.DRAYNOR` (#4).
+- Labelled id-less generic wiki item requirements (such as `"Seeds"`) as `"check wiki"` (`Availability.GENERIC`) instead of `"can't look up"` on the Grand Exchange overlay (#5).
+- Changed the Grand Exchange item-completion chat notice (`ItemCompletionWatcher.Completion`) to read `"you now have the <item>"` instead of `"you now have all 1 <item>"` when a quest needs only one (#3).
 - Stopped offering members-only items on the Grand Exchange buy list when logged into a free-to-play world (`ad53e0f`).
 - Made `LampSuggestions` public so RuneLite's JDK dynamic config proxy does not throw `IllegalAccessError` on plugin startup, and added `QuestpathConfigProxyTest` to require public return types on all `@ConfigItem` methods (`e1fcbd5`).
 - Removed duplicate Elite Void 5% subtraction from gear magic damage bonus in `MaxHit.magic` (`8fcf77f`).
