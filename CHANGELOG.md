@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- Group tab for RuneLite parties (Group Ironman): opt-in, off-by-default sharing of quest states, levels, build rules and quest-item counts over RuneLite's `PartyService` (`QuestpathGroupState`, `GroupMember`, `GroupBroadcaster`); group quest planning with build-rule flags for capped members (`GroupPlan`, `BuildBreaches`); per-quest item split with hand-overs (`ItemSplit`).
 - Melee max-hit comparison lines under locked gear showing max hit without prayer and without potion (`920689b`).
 - Melee strength potion selection (`StrengthPotion`: Strength, Super strength, Zamorak brew, Black warlock) on locked gear loadouts (`dbefed7`).
 - Grand Exchange workflow screenshots and progress calculation notes in `README.md` (`94fe8a0`).
