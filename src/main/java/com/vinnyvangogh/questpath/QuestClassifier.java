@@ -174,66 +174,12 @@ class QuestClassifier
 	 *
 	 * Both sides, which is the correction: a reward that would push a capped
 	 * skill past its cap, and a requirement that demands a level above one.
-	 * Boostable is deliberately not consulted on the requirement side — a
-	 * boost is relative to the base level, so a capped skill cannot reach a
-	 * boostable requirement above the cap.
+	 * The rules themselves live in {@link BuildBreaches}, which the Group tab
+	 * also reads for its reasons, so the two cannot disagree.
 	 */
 	private boolean blocksBuild(QuestGraph.Quest quest)
 	{
-		for (QuestGraph.Reward reward : quest.rewards())
-		{
-			BuildRule rule = account.ruleFor(reward.skill());
-			if (rule == null || !rule.blocking())
-			{
-				continue;
-			}
-			if (BuildRule.NO_XP.equals(rule.type()))
-			{
-				// Any experience at all. XP that does not raise the level is
-				// still XP, and a NO_XP account has said no to all of it.
-				return true;
-			}
-			if (BuildRule.HARD_CAP.equals(rule.type()) && rule.hasValue())
-			{
-				long after = account.experienceIn(reward.skill()) + (long) Math.floor(reward.xp());
-				if (XpTable.levelFor(after) > rule.value())
-				{
-					return true;
-				}
-			}
-		}
-
-		for (QuestGraph.Requirement requirement : quest.requirements())
-		{
-			BuildRule rule = account.ruleFor(requirement.skill());
-			if (rule == null || !rule.blocking())
-			{
-				continue;
-			}
-			int cap = BuildRule.NO_XP.equals(rule.type()) ? startLevelFor(requirement.skill()) : rule.value();
-			if (BuildRule.HARD_CAP.equals(rule.type()) && !rule.hasValue())
-			{
-				continue;
-			}
-			if (requirement.level() > cap)
-			{
-				return true;
-			}
-		}
-
-		return false;
-	}
-
-	/**
-	 * The level a NO_XP skill can still legitimately be at.
-	 *
-	 * Hitpoints starts at 10 and every other skill at 1, so a NO_XP Hitpoints
-	 * account still meets a requirement of 10. Treating the floor as 1 would
-	 * block quests that ask for nothing the account has not already got.
-	 */
-	private static int startLevelFor(String skill)
-	{
-		return "hitpoints".equalsIgnoreCase(skill) ? 10 : 1;
+		return !BuildBreaches.of(quest, account).isEmpty();
 	}
 
 	private SkillGaps skillGaps(QuestGraph.Quest quest)
