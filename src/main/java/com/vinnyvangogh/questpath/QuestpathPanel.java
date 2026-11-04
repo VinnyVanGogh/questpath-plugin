@@ -3,6 +3,7 @@ package com.vinnyvangogh.questpath;
 import com.vinnyvangogh.questpath.groupshop.GroupShoppingList;
 import com.vinnyvangogh.questpath.groupshop.GroupStorage;
 import com.vinnyvangogh.questpath.groupshop.ItemSources;
+import com.vinnyvangogh.questpath.groupshop.Transfer;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
@@ -1325,7 +1326,7 @@ class QuestpathPanel extends PluginPanel
 			String each = (line.quantityStated() ? "" : "at least ") + line.perMember() + " each";
 			JLabel title = row(line.name() + " — " + each + (line.obtainable() ? " (found in quest)" : ""));
 			body.add(title);
-			for (ItemSplit.Transfer transfer : line.transfers())
+			for (Transfer transfer : line.transfers())
 			{
 				JLabel give = row("  " + transfer.from() + " gives " + transfer.to() + " " + transfer.count());
 				give.setForeground(ColorScheme.PROGRESS_COMPLETE_COLOR);
@@ -1489,21 +1490,13 @@ class QuestpathPanel extends PluginPanel
 	/** One item: the headline count, then who, who holds what, and where to get it. */
 	private void groupShopLine(JPanel body, GroupView view, GroupShoppingList.Line line)
 	{
-		String floor = line.quantityStated() ? "" : "at least ";
-		JLabel title = row(line.name() + " — " + (line.stillNeeded() > 0
-			? "need " + floor + line.stillNeeded() + " more" : "covered")
-			+ " (" + floor + line.totalNeeded() + " total)" + (line.obtainable() ? " (found in quest)" : ""));
-		title.setForeground(line.stillNeeded() > 0 ? ColorScheme.PROGRESS_INPROGRESS_COLOR
-			: ColorScheme.PROGRESS_COMPLETE_COLOR);
-		title.setToolTipText("For: " + String.join(", ", line.quests())
-			+ (line.tradeable() ? "" : ". Untradeable: only each member's own holding counts."));
-		body.add(title);
+		body.add(groupShopTitle(line));
 		for (GroupShoppingList.Share share : line.shares())
 		{
 			groupShopDetail(body, "  " + share.member() + ": " + describeShare(share)
 				+ (share.stale() ? " (stale)" : ""));
 		}
-		for (GroupShoppingList.Transfer transfer : line.transfers())
+		for (Transfer transfer : line.transfers())
 		{
 			JLabel give = row("  " + transfer.from() + " gives " + transfer.to() + " " + transfer.count());
 			give.setForeground(ColorScheme.PROGRESS_COMPLETE_COLOR);
@@ -1518,6 +1511,19 @@ class QuestpathPanel extends PluginPanel
 		{
 			groupShopDetail(body, "  Get: " + describeSources(view.sources(line.name())));
 		}
+	}
+
+	/** "Bucket — need 28 more (30 total)", coloured by whether anything is left to get. */
+	private static JLabel groupShopTitle(GroupShoppingList.Line line)
+	{
+		String floor = line.quantityStated() ? "" : "at least ";
+		boolean shortOf = line.stillNeeded() > 0;
+		JLabel title = row(line.name() + " — " + (shortOf ? "need " + floor + line.stillNeeded() + " more" : "covered")
+			+ " (" + floor + line.totalNeeded() + " total)" + (line.obtainable() ? " (found in quest)" : ""));
+		title.setForeground(shortOf ? ColorScheme.PROGRESS_INPROGRESS_COLOR : ColorScheme.PROGRESS_COMPLETE_COLOR);
+		title.setToolTipText("For: " + String.join(", ", line.quests())
+			+ (line.tradeable() ? "" : ". Untradeable: only each member's own holding counts."));
+		return title;
 	}
 
 	private void groupShopDetail(JPanel body, String text)

@@ -44,36 +44,6 @@ public final class GroupShoppingList
 		boolean tradeable(int itemId, String name);
 	}
 
-	/** A spare passed from one member to another. */
-	public static final class Transfer
-	{
-		private final String from;
-		private final String to;
-		private final long count;
-
-		Transfer(String from, String to, long count)
-		{
-			this.from = from;
-			this.to = to;
-			this.count = count;
-		}
-
-		public String from()
-		{
-			return from;
-		}
-
-		public String to()
-		{
-			return to;
-		}
-
-		public long count()
-		{
-			return count;
-		}
-	}
-
 	/** One member's part of one line. */
 	public static final class Share
 	{

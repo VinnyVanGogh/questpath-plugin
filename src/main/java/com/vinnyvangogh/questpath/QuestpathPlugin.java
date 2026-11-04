@@ -1275,10 +1275,17 @@ public class QuestpathPlugin extends Plugin
 		{
 			return false;
 		}
-		if (accountKind() != AccountKind.GROUP_IRONMAN)
+		if (accountKind() == AccountKind.GROUP_IRONMAN)
 		{
-			return true;
+			groupStorageSeen = questItemCounts(container);
+			groupStorageAt = System.currentTimeMillis();
 		}
+		return true;
+	}
+
+	/** A container's quest items, lower-cased name to count. Client thread. */
+	private Map<String, Long> questItemCounts(net.runelite.api.ItemContainer container)
+	{
 		Map<String, Long> counts = new HashMap<>();
 		Set<String> relevant = groupRelevantItems();
 		for (net.runelite.api.Item item : container.getItems())
@@ -1294,9 +1301,7 @@ public class QuestpathPlugin extends Plugin
 				counts.merge(key, (long) item.getQuantity(), Long::sum);
 			}
 		}
-		groupStorageSeen = counts;
-		groupStorageAt = System.currentTimeMillis();
-		return true;
+		return counts;
 	}
 
 	private Set<String> groupRelevantItems()
@@ -1375,7 +1380,18 @@ public class QuestpathPlugin extends Plugin
 			notSharing.add(name == null || name.isEmpty() ? "Party member" : name);
 		}
 		GroupPlan plan = GroupPlan.of(questGraph, members);
-		long localId = local == null ? -1L : local.getMemberId();
+		panel.updateGroup(withGroupShopping(GroupView.ready(sharing, plan, notSharing), plan, self.memberId()));
+	}
+
+	/**
+	 * Builds the group shopping list for a ready view, and the near-shop
+	 * candidates the per-tick check reads. Client thread: sources and
+	 * tradeability read client state.
+	 *
+	 * @param localId this client's own member id, which is never stale
+	 */
+	private GroupView withGroupShopping(GroupView view, GroupPlan plan, long localId)
+	{
 		Instant now = Instant.now();
 		GroupShoppingList shopping = GroupShoppingList.of(
 			GroupShoppingNeeds.of(questGraph, plan.planned(),
@@ -1383,8 +1399,7 @@ public class QuestpathPlugin extends Plugin
 			GroupShoppingNeeds.storage(plan.planned()), this::itemTradeable);
 		ItemSources.Lookup lookup = groupSourceLookup();
 		lastGroupShopAt = GroupShopAlert.byShop(shopping.lines(), lookup);
-		panel.updateGroup(GroupView.ready(sharing, plan, notSharing)
-			.withShopping(shopping, groupItemSources(shopping, lookup)));
+		return view.withShopping(shopping, groupItemSources(shopping, lookup));
 	}
 
 	/**

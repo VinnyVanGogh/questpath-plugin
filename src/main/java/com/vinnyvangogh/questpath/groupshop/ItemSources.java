@@ -139,6 +139,20 @@ public final class ItemSources
 		{
 			sources.add(new Source(Kind.GRAND_EXCHANGE, "Grand Exchange"));
 		}
+		int unreachable = addUsableShops(sources, item, lookup);
+		if (!grandExchange)
+		{
+			for (String drop : lookup.drops(item))
+			{
+				sources.add(new Source(Kind.DROP, drop));
+			}
+		}
+		return new Options(sources, unreachable);
+	}
+
+	/** Adds the shops the viewer can use; returns how many it left out. */
+	private static int addUsableShops(List<Source> sources, String item, Lookup lookup)
+	{
 		int unreachable = 0;
 		for (String shop : lookup.shops(item))
 		{
@@ -151,13 +165,6 @@ public final class ItemSources
 				unreachable++;
 			}
 		}
-		if (!grandExchange)
-		{
-			for (String drop : lookup.drops(item))
-			{
-				sources.add(new Source(Kind.DROP, drop));
-			}
-		}
-		return new Options(sources, unreachable);
+		return unreachable;
 	}
 }

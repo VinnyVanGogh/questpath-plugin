@@ -68,17 +68,12 @@ public class GroupShoppingNeedsTest
 
 	private static List<String> questNames(List<QuestGraph.Quest> quests)
 	{
-		List<String> out = new ArrayList<>();
-		for (QuestGraph.Quest quest : quests)
-		{
-			out.add(quest.name());
-		}
-		return out;
+		return GroupPlanTest.names(quests);
 	}
 
 	private static BuildRule oneDefence()
 	{
-		return BuildRule.local("Defence", BuildRule.HARD_CAP, 1, "1 def pure");
+		return GroupPlanTest.oneDefence();
 	}
 
 	/** A quest that breaks the member's build never counts, so nobody shops for it. */

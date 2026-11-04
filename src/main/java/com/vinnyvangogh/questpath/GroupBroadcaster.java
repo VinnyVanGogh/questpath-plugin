@@ -84,10 +84,7 @@ final class GroupBroadcaster
 		int experience = Objects.hashCode(message.experience);
 		Instant now = clock.get();
 
-		boolean send = force || !haveSent || structural != lastStructural || heartbeatDue()
-			|| (experience != lastExperience
-				&& Duration.between(lastSentAt, now).compareTo(EXPERIENCE_INTERVAL) >= 0);
-		if (!send)
+		if (!force && !changed(structural, experience, now))
 		{
 			return;
 		}
@@ -96,6 +93,17 @@ final class GroupBroadcaster
 		lastStructural = structural;
 		lastExperience = experience;
 		lastSentAt = now;
+	}
+
+	/** Whether there is anything the party has not heard: first send, a structural change, a heartbeat, or xp on its timer. */
+	private boolean changed(int structural, int experience, Instant now)
+	{
+		if (!haveSent || structural != lastStructural || heartbeatDue())
+		{
+			return true;
+		}
+		return experience != lastExperience
+			&& Duration.between(lastSentAt, now).compareTo(EXPERIENCE_INTERVAL) >= 0;
 	}
 
 	/**
