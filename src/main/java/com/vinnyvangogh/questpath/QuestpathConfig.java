@@ -113,10 +113,10 @@ public interface QuestpathConfig extends Config
 	@ConfigItem(
 		keyName = "partyShare",
 		name = "Share with my party",
-		description = "Send your finished quests, levels, build rules and counts of quest items you hold to"
-			+ " members of your RuneLite party who also run Quest Path, so the sidebar's Group tab can plan"
-			+ " with you. Travels over RuneLite's own party service only, never to questpath or any other"
-			+ " server. Nothing is sent while this is off.",
+		description = "Send your finished quests, levels, build rules, route, account type and counts of quest"
+			+ " items you hold (and in group storage, for Group Ironman) to members of your RuneLite party who"
+			+ " also run Quest Path, so the sidebar's Group tab can plan with you. Travels over RuneLite's own"
+			+ " party service only, never to questpath or any other server. Nothing is sent while this is off.",
 		section = groupSection,
 		position = 1
 	)
@@ -125,6 +125,20 @@ public interface QuestpathConfig extends Config
 		// Off by default: what an account has done and holds is the player's
 		// to share, and joining a party for some other plugin must not start
 		// broadcasting it.
+		return false;
+	}
+
+	@ConfigItem(
+		keyName = "groupShopAlert",
+		name = "Group needs in shop alerts",
+		description = "When you come up on a shop that sells something your party is still short of, say so in"
+			+ " chat with how many more the group needs. Uses what party members share; once per visit.",
+		section = groupSection,
+		position = 2
+	)
+	default boolean groupShopAlert()
+	{
+		// Off by default: it writes to chat, and chat output is opt-in here.
 		return false;
 	}
 

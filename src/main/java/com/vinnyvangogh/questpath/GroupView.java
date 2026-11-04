@@ -1,7 +1,10 @@
 package com.vinnyvangogh.questpath;
 
+import com.vinnyvangogh.questpath.groupshop.GroupShoppingList;
+import com.vinnyvangogh.questpath.groupshop.ItemSources;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Everything the Group tab renders, read on the client thread in one pass
@@ -30,6 +33,8 @@ final class GroupView
 	private final boolean sharing;
 	private final GroupPlan plan;
 	private final List<String> notSharing;
+	private GroupShoppingList shopping;
+	private Map<String, ItemSources.Options> sources = Collections.emptyMap();
 
 	private GroupView(State state, boolean sharing, GroupPlan plan, List<String> notSharing)
 	{
@@ -47,6 +52,31 @@ final class GroupView
 	static GroupView ready(boolean sharing, GroupPlan plan, List<String> notSharing)
 	{
 		return new GroupView(State.READY, sharing, plan, notSharing);
+	}
+
+	/**
+	 * Adds the group shopping list and, per lower-cased item name, where the
+	 * viewer can get each item. Both are built on the client thread: shop
+	 * reachability and tradeability read client state the panel's thread
+	 * must not touch.
+	 */
+	GroupView withShopping(GroupShoppingList list, Map<String, ItemSources.Options> itemSources)
+	{
+		this.shopping = list;
+		this.sources = itemSources == null ? Collections.emptyMap() : Collections.unmodifiableMap(itemSources);
+		return this;
+	}
+
+	/** Null unless {@link State#READY}. */
+	GroupShoppingList shopping()
+	{
+		return shopping;
+	}
+
+	/** Where the viewer can get an item, or null when nothing was looked up. */
+	ItemSources.Options sources(String itemName)
+	{
+		return itemName == null ? null : sources.get(itemName.toLowerCase());
 	}
 
 	State state()

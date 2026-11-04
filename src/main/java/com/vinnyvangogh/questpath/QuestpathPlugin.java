@@ -9,6 +9,10 @@ import java.util.EnumMap;
 import java.util.Map;
 import com.google.gson.Gson;
 import com.google.inject.Provides;
+import com.vinnyvangogh.questpath.groupshop.AccountKind;
+import com.vinnyvangogh.questpath.groupshop.GroupShopAlert;
+import com.vinnyvangogh.questpath.groupshop.GroupShoppingList;
+import com.vinnyvangogh.questpath.groupshop.ItemSources;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
@@ -116,6 +120,30 @@ public class QuestpathPlugin extends Plugin
 	 * from the party socket's thread, read from the client thread.
 	 */
 	private final Map<Long, GroupMember> partyMembers = new java.util.concurrent.ConcurrentHashMap<>();
+
+	/** When each entry in {@link #partyMembers} last arrived; see {@link GroupBroadcaster#stale}. */
+	private final Map<Long, Instant> partyHeardAt = new java.util.concurrent.ConcurrentHashMap<>();
+
+	/**
+	 * Group storage as this account last saw it open, lower-cased name to
+	 * count, or null when it has not been opened this session. Client
+	 * thread only. Never folded into {@link #owned}: storage is the group's,
+	 * and counting it as this member's own would count it once per member.
+	 */
+	private Map<String, Long> groupStorageSeen;
+	private long groupStorageAt;
+
+	/**
+	 * Shops this account can use that sell something the party is still
+	 * short of, from the last group shopping list. Built with the list, not
+	 * per tick, so the per-tick approach check judges no reachability.
+	 * Client thread.
+	 */
+	private Map<String, List<GroupShoppingList.Line>> lastGroupShopAt = Collections.emptyMap();
+
+	/** Quest item lines by lower-cased name, for the group list's sources. */
+	private Map<String, QuestGraph.Item> questItemsByName = Collections.emptyMap();
+	private QuestGraph questItemsByNameFor;
 
 	/** Gates every message this client sends to the party; see its class doc. */
 	private GroupBroadcaster groupBroadcaster;
@@ -1114,10 +1142,12 @@ public class QuestpathPlugin extends Plugin
 		if (member == null)
 		{
 			partyMembers.remove(message.getMemberId());
+			partyHeardAt.remove(message.getMemberId());
 		}
 		else
 		{
 			partyMembers.put(message.getMemberId(), member);
+			partyHeardAt.put(message.getMemberId(), Instant.now());
 		}
 		clientThread.invokeLater(this::refreshGroup);
 	}
@@ -1137,6 +1167,7 @@ public class QuestpathPlugin extends Plugin
 	public void onUserPart(UserPart event)
 	{
 		partyMembers.remove(event.getMemberId());
+		partyHeardAt.remove(event.getMemberId());
 		clientThread.invokeLater(this::refreshGroup);
 	}
 
@@ -1145,6 +1176,7 @@ public class QuestpathPlugin extends Plugin
 	public void onPartyChanged(PartyChanged event)
 	{
 		partyMembers.clear();
+		partyHeardAt.clear();
 		clientThread.invokeLater(() ->
 		{
 			if (groupBroadcaster != null)
@@ -1216,8 +1248,55 @@ public class QuestpathPlugin extends Plugin
 			levels.put(skill.getName(), client.getRealSkillLevel(skill));
 			experience.put(skill.getName(), client.getSkillExperience(skill));
 		}
-		return GroupMember.encode(completed, inProgressQuestNames(), levels, experience, effectiveBuildRules(),
-			owned.isEmpty() ? null : heldIncludingCollected(), owned.bankSeen(), groupRelevantItems());
+		QuestpathGroupState message = GroupMember.encode(completed, inProgressQuestNames(), levels, experience,
+			effectiveBuildRules(), owned.isEmpty() ? null : heldIncludingCollected(), owned.bankSeen(),
+			groupRelevantItems());
+		return GroupMember.withShopping(message, routeOrder, accountKind(), groupStorageSeen, groupStorageAt,
+			groupRelevantItems());
+	}
+
+	/** The account's trading rules, from the type cached each tick. */
+	private AccountKind accountKind()
+	{
+		return GrandExchangeAccounts.kindOf(accountType);
+	}
+
+	/**
+	 * Keeps the group storage contents when its interface is open. Client
+	 * thread. Returns whether the container was group storage, so the caller
+	 * does not also count it as this account's own.
+	 *
+	 * <p>Only a group ironman has storage, and only quest items are kept --
+	 * the same filter {@link #groupRelevantItems} puts on what is shared.
+	 */
+	private boolean recordGroupStorage(net.runelite.api.ItemContainer container)
+	{
+		if (container == null || container.getId() != net.runelite.api.gameval.InventoryID.INV_GROUP_TEMP)
+		{
+			return false;
+		}
+		if (accountKind() != AccountKind.GROUP_IRONMAN)
+		{
+			return true;
+		}
+		Map<String, Long> counts = new HashMap<>();
+		Set<String> relevant = groupRelevantItems();
+		for (net.runelite.api.Item item : container.getItems())
+		{
+			if (item == null || item.getId() <= 0 || item.getQuantity() <= 0)
+			{
+				continue;
+			}
+			String name = itemManager.getItemComposition(item.getId()).getName();
+			String key = name == null ? "" : name.toLowerCase();
+			if (relevant.contains(key))
+			{
+				counts.merge(key, (long) item.getQuantity(), Long::sum);
+			}
+		}
+		groupStorageSeen = counts;
+		groupStorageAt = System.currentTimeMillis();
+		return true;
 	}
 
 	private Set<String> groupRelevantItems()
@@ -1253,6 +1332,8 @@ public class QuestpathPlugin extends Plugin
 	 */
 	private void refreshGroup()
 	{
+		// Rebuilt below only when there is a party to shop for.
+		lastGroupShopAt = Collections.emptyMap();
 		if (panel == null || client.getGameState() != GameState.LOGGED_IN)
 		{
 			return;
@@ -1293,7 +1374,118 @@ public class QuestpathPlugin extends Plugin
 			String name = member.getDisplayName();
 			notSharing.add(name == null || name.isEmpty() ? "Party member" : name);
 		}
-		panel.updateGroup(GroupView.ready(sharing, GroupPlan.of(questGraph, members), notSharing));
+		GroupPlan plan = GroupPlan.of(questGraph, members);
+		long localId = local == null ? -1L : local.getMemberId();
+		Instant now = Instant.now();
+		GroupShoppingList shopping = GroupShoppingList.of(
+			GroupShoppingNeeds.of(questGraph, plan.planned(),
+				m -> m.memberId() != localId && GroupBroadcaster.stale(partyHeardAt.get(m.memberId()), now)),
+			GroupShoppingNeeds.storage(plan.planned()), this::itemTradeable);
+		ItemSources.Lookup lookup = groupSourceLookup();
+		lastGroupShopAt = GroupShopAlert.byShop(shopping.lines(), lookup);
+		panel.updateGroup(GroupView.ready(sharing, plan, notSharing)
+			.withShopping(shopping, groupItemSources(shopping, lookup)));
+	}
+
+	/**
+	 * Whether the game lets an item change hands at all -- not the Grand
+	 * Exchange question, which {@link #tradeability} answers. An item with no
+	 * id, or no answer, is untradeable: pooling it would hand a member
+	 * something nobody can give them. Client thread.
+	 */
+	private boolean itemTradeable(int itemId, String name)
+	{
+		if (itemId <= 0)
+		{
+			return false;
+		}
+		ItemComposition item = itemManager.getItemComposition(itemId);
+		return item != null && item.isTradeable();
+	}
+
+	/** Where this account can get each line's item, keyed by lower-cased name. Client thread. */
+	private Map<String, ItemSources.Options> groupItemSources(GroupShoppingList shopping, ItemSources.Lookup lookup)
+	{
+		Map<String, ItemSources.Options> out = new HashMap<>();
+		AccountKind viewer = accountKind();
+		for (GroupShoppingList.Line line : shopping.lines())
+		{
+			out.put(line.name().toLowerCase(), ItemSources.forViewer(viewer, line.name(), line.itemId(), lookup));
+		}
+		return out;
+	}
+
+	/**
+	 * The quest graph's shops and drops, judged for this account through the
+	 * same {@link #shopLocation} and {@link #dropLocation} every route and
+	 * label uses, so the group list cannot name a shop the rest of the
+	 * plugin would refuse to send you to. Client thread.
+	 */
+	private ItemSources.Lookup groupSourceLookup()
+	{
+		return new ItemSources.Lookup()
+		{
+			@Override
+			public List<String> shops(String item)
+			{
+				QuestGraph.Item known = questItemNamed(item);
+				return known == null ? Collections.emptyList() : known.shopNames();
+			}
+
+			@Override
+			public boolean shopUsable(String shop)
+			{
+				return shopLocation(shop) != null;
+			}
+
+			@Override
+			public List<String> drops(String item)
+			{
+				QuestGraph.Item known = questItemNamed(item);
+				List<String> out = new java.util.ArrayList<>();
+				for (String source : known == null ? Collections.<String>emptyList() : known.dropSourceNames())
+				{
+					if (dropLocation(source) != null)
+					{
+						out.add(source);
+					}
+				}
+				return out;
+			}
+
+			@Override
+			public boolean onGrandExchange(int itemId, String item)
+			{
+				return tradeability(itemId, item) == GrandExchangeShoppingList.Availability.BUYABLE;
+			}
+		};
+	}
+
+	/** The first quest item line with this name, any case, or null. Rebuilt when the graph changes. */
+	private QuestGraph.Item questItemNamed(String name)
+	{
+		QuestGraph graph = questGraph;
+		if (graph == null || name == null)
+		{
+			return null;
+		}
+		if (graph != questItemsByNameFor)
+		{
+			Map<String, QuestGraph.Item> index = new HashMap<>();
+			for (QuestGraph.Quest quest : graph.quests())
+			{
+				for (QuestGraph.Item item : quest.items())
+				{
+					if (!item.name().isEmpty())
+					{
+						index.putIfAbsent(item.name().toLowerCase(), item);
+					}
+				}
+			}
+			questItemsByName = index;
+			questItemsByNameFor = graph;
+		}
+		return questItemsByName.get(name.toLowerCase());
 	}
 
 	/**
@@ -1322,6 +1514,16 @@ public class QuestpathPlugin extends Plugin
 		// -- see lastKnownPlayerLocation's own doc for why a Swing caller
 		// (the panel's Items tab) must never read Client state directly.
 		accountType = client.getAccountType();
+
+		// Re-announce an unchanged state now and then, so the party can tell
+		// a quiet member from a gone one; heartbeatDue reads no account
+		// state, so asking every tick costs nothing. The Group tab is redrawn
+		// with it, which is also when a silent member turns stale on screen.
+		if (groupBroadcaster != null && groupBroadcaster.heartbeatDue())
+		{
+			offerGroupState(false);
+			refreshGroup();
+		}
 
 		// Unconditional, unlike the refresh below: this is about whether a
 		// shop interface is open right now, which has nothing to do with
@@ -1958,6 +2160,12 @@ public class QuestpathPlugin extends Plugin
 	@Subscribe
 	public void onItemContainerChanged(ItemContainerChanged event)
 	{
+		if (recordGroupStorage(event.getItemContainer()))
+		{
+			offerGroupState(false);
+			refreshGroup();
+			return;
+		}
 		if (!owned.record(client, event.getItemContainer()))
 		{
 			return;
@@ -2086,6 +2294,9 @@ public class QuestpathPlugin extends Plugin
 			// nothing for another account's, and could even hide a genuine
 			// shortfall on it by coincidence of a shared item name.
 			shopItemSkips.clear();
+			// Another account's group, if it has one at all.
+			groupStorageSeen = null;
+			groupStorageAt = 0L;
 			// The next login may be a different account of a different type
 			// entirely -- an ironman logging out and a main logging in on
 			// the same client session must not keep seeing the previous
@@ -2954,18 +3165,16 @@ public class QuestpathPlugin extends Plugin
 	 */
 	private void checkShopApproach(QuestItems items)
 	{
-		if (items == null || questGraph == null)
+		if (questGraph == null)
 		{
 			return;
 		}
 		// Its own toggle rather than the item-done one. They are different
 		// events -- "you finished something" against "there is one for sale
 		// right there" -- and the second is the one worth walking on.
-		boolean wantChat = config != null && config.shopNearbyPrompt();
-		boolean wantNote = config != null && config.shopNearbyPrompt()
-			&& config.floatingNotes()
-			&& config.floatingNotePlacement() != NotePlacement.ABOVE_YOU;
-		if (!wantChat && !wantNote)
+		boolean wantOwn = config != null && config.shopNearbyPrompt();
+		boolean wantGroup = config != null && config.groupShopAlert();
+		if (!wantOwn && !wantGroup)
 		{
 			// Still not observed while both are off: the watcher's baseline
 			// would go stale and switching one on mid-session would announce
@@ -2974,7 +3183,78 @@ public class QuestpathPlugin extends Plugin
 			return;
 		}
 
+		// The party's shops ride the same watcher as this account's own, so a
+		// shop that stocks something for you and something for the group
+		// says it once, and "once per visit" means the same thing for both.
 		Map<String, WorldPoint> nearby = new HashMap<>();
+		Map<String, QuestItems.Total> wantedAt = wantOwn && items != null
+			? ownShopCandidates(items, nearby) : Collections.emptyMap();
+		Map<String, List<GroupShoppingList.Line>> groupAt = wantGroup
+			? groupShopCandidates(nearby) : Collections.emptyMap();
+
+		for (String shopName : shopApproach.observe(nearby, playerLocation()))
+		{
+			announceShopApproach(shopName, nearby.get(shopName), wantedAt.get(shopName),
+				GroupShopAlert.describe(groupAt.get(shopName)));
+		}
+	}
+
+	/**
+	 * Says one shop just come into range: this account's own item if it has
+	 * one there, the group's still-needed count if the party has one, both
+	 * on one line when both.
+	 */
+	private void announceShopApproach(String shopName, WorldPoint at, QuestItems.Total total, String group)
+	{
+		if (total == null)
+		{
+			if (!group.isEmpty())
+			{
+				shopChat(shopName, group);
+			}
+			return;
+		}
+		String offer = FloatingNotes.offerFor(total.name(), total.outstanding());
+		shopChat(shopName, group.isEmpty() ? offer : offer + "; " + group);
+		if (config.floatingNotes() && config.floatingNotePlacement() != NotePlacement.ABOVE_YOU)
+		{
+			// Over the shop, which is where the shopkeeper stands. At
+			// this distance there is no NPC to read off the player's
+			// interaction, and the tile is the honest answer rather than
+			// a guess at which of the figures ahead is the one selling.
+			// Held far longer than a completion note. That one confirms
+			// something already done and can fade; this one is asking you
+			// to change where you are walking, and four seconds is not
+			// long enough to read a name, find the NPC and decide.
+			floatingNotes.add(offer, at, Instant.now(), FloatingNotes.OFFER_LIFETIME, total.name());
+		}
+	}
+
+	/**
+	 * The party's near-shop candidates from the last group list: adds each
+	 * shop's tile to {@code nearby} (this account's own entry wins) and
+	 * returns what the group is short of there.
+	 */
+	private Map<String, List<GroupShoppingList.Line>> groupShopCandidates(Map<String, WorldPoint> nearby)
+	{
+		for (String shopName : lastGroupShopAt.keySet())
+		{
+			WorldPoint at = shopLocation(shopName);
+			if (at != null)
+			{
+				nearby.putIfAbsent(shopName, at);
+			}
+		}
+		return lastGroupShopAt;
+	}
+
+	/**
+	 * This account's own near-shop candidates: shops it can use that sell an
+	 * item still short and not skipped. Fills {@code nearby} with their tiles
+	 * and returns the item each shop is announced for.
+	 */
+	private Map<String, QuestItems.Total> ownShopCandidates(QuestItems items, Map<String, WorldPoint> nearby)
+	{
 		Map<String, QuestItems.Total> wantedAt = new HashMap<>();
 		for (QuestItems.Total total : items.totals())
 		{
@@ -2992,47 +3272,27 @@ public class QuestpathPlugin extends Plugin
 				}
 			}
 		}
+		return wantedAt;
+	}
 
-		for (String shopName : shopApproach.observe(nearby, playerLocation()))
-		{
-			QuestItems.Total total = wantedAt.get(shopName);
-			if (total == null)
-			{
-				continue;
-			}
-			String offer = FloatingNotes.offerFor(total.name(), total.outstanding());
-			if (wantChat)
-			{
-				// Highlighted rather than flat, and the shop's name is the
-				// highlighted half: the offer text says what it wants, the
-				// name says where to walk, and only one of those is worth
-				// finding again after the line has scrolled.
-				chatMessageManager.queue(QueuedMessage.builder()
-					.type(ChatMessageType.GAMEMESSAGE)
-					.runeLiteFormattedMessage(new ChatMessageBuilder()
-						.append(ChatColorType.NORMAL)
-						.append("Quest Path: ")
-						.append(ChatColorType.HIGHLIGHT)
-						.append(shopName)
-						.append(ChatColorType.NORMAL)
-						.append(" -- " + offer)
-						.build())
-					.build());
-			}
-			if (wantNote)
-			{
-				// Over the shop, which is where the shopkeeper stands. At
-				// this distance there is no NPC to read off the player's
-				// interaction, and the tile is the honest answer rather than
-				// a guess at which of the figures ahead is the one selling.
-				// Held far longer than a completion note. That one confirms
-				// something already done and can fade; this one is asking you
-				// to change where you are walking, and four seconds is not
-				// long enough to read a name, find the NPC and decide.
-				floatingNotes.add(offer, nearby.get(shopName), Instant.now(),
-					FloatingNotes.OFFER_LIFETIME, total.name());
-			}
-		}
+	/** One near-shop chat line: "Quest Path: <shop> -- <what>". */
+	private void shopChat(String shopName, String what)
+	{
+		// Highlighted rather than flat, and the shop's name is the
+		// highlighted half: the offer text says what it wants, the
+		// name says where to walk, and only one of those is worth
+		// finding again after the line has scrolled.
+		chatMessageManager.queue(QueuedMessage.builder()
+			.type(ChatMessageType.GAMEMESSAGE)
+			.runeLiteFormattedMessage(new ChatMessageBuilder()
+				.append(ChatColorType.NORMAL)
+				.append("Quest Path: ")
+				.append(ChatColorType.HIGHLIGHT)
+				.append(shopName)
+				.append(ChatColorType.NORMAL)
+				.append(" -- " + what)
+				.build())
+			.build());
 	}
 
 

@@ -1,5 +1,6 @@
 package com.vinnyvangogh.questpath;
 
+import com.vinnyvangogh.questpath.groupshop.AccountKind;
 import net.runelite.api.vars.AccountType;
 
 /**
@@ -51,5 +52,22 @@ final class GrandExchangeAccounts
 	static boolean canUseGrandExchange(AccountType type)
 	{
 		return type != null && !type.isIronman() && !type.isGroupIronman();
+	}
+
+	/**
+	 * The same type as the group shopping package's trading rules. Both
+	 * ironman checks again, for the reason the class doc gives.
+	 */
+	static AccountKind kindOf(AccountType type)
+	{
+		if (type == null)
+		{
+			return AccountKind.UNKNOWN;
+		}
+		if (type.isGroupIronman())
+		{
+			return AccountKind.GROUP_IRONMAN;
+		}
+		return type.isIronman() ? AccountKind.IRONMAN : AccountKind.NORMAL;
 	}
 }

@@ -138,6 +138,12 @@ enum PanelSections
 		Status.LIVE,
 		null),
 
+	GROUP_SHOPPING(
+		Tab.GROUP,
+		"Group shopping",
+		Status.LIVE,
+		null),
+
 	GROUP_DONE_BY_SOME(
 		Tab.GROUP,
 		"Done by some of you",

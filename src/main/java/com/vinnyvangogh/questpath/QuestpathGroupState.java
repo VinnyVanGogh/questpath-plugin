@@ -60,4 +60,27 @@ public class QuestpathGroupState extends PartyMemberMessage
 
 	/** Whether {@link #held} includes the bank, or only what is carried. */
 	boolean bankSeen;
+
+	/**
+	 * Quest names on the sender's active route, in order. Null when no route
+	 * is saved -- the group shopping list then counts every quest the
+	 * sender's build allows. Optional: older builds omit it.
+	 */
+	List<String> route;
+
+	/**
+	 * {@code NORMAL}, {@code IRONMAN} or {@code GROUP_IRONMAN}; null when the
+	 * client has not said. Decides who can pass items to whom. Optional.
+	 */
+	String accountType;
+
+	/**
+	 * Group storage counts by lower-cased item name, for quest items only, as
+	 * the sender last saw it open. Null when they have not opened it this
+	 * session. Optional.
+	 */
+	Map<String, Long> groupStorage;
+
+	/** When {@link #groupStorage} was seen, epoch milliseconds; 0 with no snapshot. */
+	long groupStorageAt;
 }
