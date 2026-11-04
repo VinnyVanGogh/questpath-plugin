@@ -295,13 +295,80 @@ public class QuestHelperBridgeTest
 		FakePlugin plugin = new FakePlugin();
 		FakeManager manager = new FakeManager();
 		plugin.questManager = manager;
-		select(plugin, "RFD - Dwarf");
+		select(plugin, "RFD - Mountain Dwarf");
 		FakeLookup.KNOWN.add("RFD - Start");
 
 		QuestHelperBridge bridge = bridge(() -> List.of(plugin), p -> true);
 		assertEquals(QuestHelperBridge.Availability.AVAILABLE, bridge.availability("Recipe for Disaster"));
 		assertEquals(QuestHelperBridge.StartOutcome.CONFIRMED, outcomeOf(bridge, "Recipe for Disaster"));
 		assertEquals(List.of("RFD - Start"), manager.started);
+	}
+
+	/**
+	 * Every {@code QuestHelperQuest} display name the split-quest map can
+	 * request, copied from Quest Helper at {@code 02315c94} ("Release
+	 * v4.18.1", the commit the Plugin Hub pins). Only the Shield of Arrav and
+	 * Recipe for Disaster constants, not the whole enum: those are the only
+	 * names this plugin asks for that are not questpath's own quest name.
+	 * When the Hub pin moves, re-read the enum at the new commit and update
+	 * this list and the map together.
+	 */
+	private static final Set<String> QUEST_HELPER_SPLIT_NAMES_AT_02315C94 = Set.of(
+		"Shield of Arrav - Phoenix Gang",
+		"Shield of Arrav - Black Arm Gang",
+		"RFD - Start",
+		"RFD - Mountain Dwarf",
+		"RFD - Wartface & Bentnoze",
+		"RFD - Pirate Pete",
+		"RFD - Lumbridge Guide",
+		"RFD - Evil Dave",
+		"RFD - King Awowogei",
+		"RFD - Sir Amik Varze",
+		"RFD - Skrach Uglogwee",
+		"RFD - Finale");
+
+	/**
+	 * A stale name here is not a crash, it is "Not supported by Quest
+	 * Helper" on a quest Quest Helper supports -- which is what v4.18.1's
+	 * renames did to two chapters before this test existed.
+	 */
+	@Test
+	public void everySplitQuestHelperNameExistsInThePinnedQuestHelper()
+	{
+		for (String helperName : QuestHelperBridge.SPLIT_QUEST_DEFAULT_HELPER.values())
+		{
+			assertTrue("not a QuestHelperQuest name at 02315c94: " + helperName,
+				QUEST_HELPER_SPLIT_NAMES_AT_02315C94.contains(helperName));
+		}
+	}
+
+	/** Renamed in Quest Helper v4.18.1 from "RFD - Dwarf". */
+	@Test
+	public void freeingTheMountainDwarfRequestsQuestHelpersRenamedChapter()
+	{
+		assertRfdChapterStarts("Recipe for Disaster/Freeing the Mountain Dwarf", "RFD - Mountain Dwarf");
+	}
+
+	/** Renamed in Quest Helper v4.18.1 from "RFD - Monkey Ambassador". */
+	@Test
+	public void freeingKingAwowogeiRequestsQuestHelpersRenamedChapter()
+	{
+		assertRfdChapterStarts("Recipe for Disaster/Freeing King Awowogei", "RFD - King Awowogei");
+	}
+
+	/** Lookup knows only Quest Helper's current name, so the old one would come back unsupported. */
+	private static void assertRfdChapterStarts(String questpathName, String helperName)
+	{
+		FakePlugin plugin = new FakePlugin();
+		FakeManager manager = new FakeManager();
+		plugin.questManager = manager;
+		select(plugin, helperName);
+		FakeLookup.KNOWN.add(helperName);
+
+		QuestHelperBridge bridge = bridge(() -> List.of(plugin), p -> true);
+		assertEquals(QuestHelperBridge.Availability.AVAILABLE, bridge.availability(questpathName));
+		assertEquals(QuestHelperBridge.StartOutcome.CONFIRMED, outcomeOf(bridge, questpathName));
+		assertEquals(List.of(helperName), manager.started);
 	}
 
 	/** Logged in, called, but Quest Helper's own selection never became the quest asked for. */

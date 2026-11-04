@@ -111,6 +111,52 @@ more work at build time and strictly less to maintain.
 - Does it hook Quest Helper's own start flow? `QuestHelperBridge` exists and
   uses reflection, which is an automatic rejection — so the answer is that any
   Quest Helper integration must go through `PluginMessage` or not happen.
+  Status and scope below.
+
+**Upstream dependency: Quest Helper's `PluginMessage` API (checked
+2026-11-03: not shipped).** `QuestHelperBridge` reflects across plugin class
+loaders into `QuestHelperPlugin`, `QuestManager` and `QuestHelperQuest`. That
+blocks Plugin Hub submission on its own, whatever the rest of the plugin does.
+The sanctioned channel needs Quest Helper to listen and answer, and neither
+half is in a release yet:
+
+- Zoinkwiz/quest-helper#2756 — `PluginMessage("questhelper", "start")` with
+  `{quest, source}`. Open, not approved.
+- Zoinkwiz/quest-helper#2846 (ours) — `PluginMessage("questhelper",
+  "selected")` with `{quest}`, the reply that confirms what Quest Helper
+  actually selected. Open, no review.
+
+The Plugin Hub pins quest-helper at `02315c94` ("Release v4.18.1"), which
+carries neither. The rewrite waits until **both** are merged and in a Hub pin;
+shipping only `start` would mean handing off blind, with no read-back, which is
+the failure `StartOutcome` exists to name.
+
+v4.18.1 also showed the cost of keying on display names: #2843 renamed
+"RFD - Dwarf" to "RFD - Mountain Dwarf" and "RFD - Monkey Ambassador" to
+"RFD - King Awowogei", and those two chapters reported "Not supported by Quest
+Helper" until `SPLIT_QUEST_DEFAULT_HELPER` followed. The `PluginMessage` payload
+is still a display name, so the pinning test
+(`everySplitQuestHelperNameExistsInThePinnedQuestHelper`) stays after the
+rewrite and has to be re-checked every time the Hub pin moves.
+
+Rewrite scope, once both PRs are in a Hub pin:
+
+1. `start` posts `PluginMessage("questhelper", "start")` with
+   `{quest: <helper name>, source: "questpath"}` through `EventBus`.
+2. Subscribe to `PluginMessage` in an `onPluginMessage` handler, filter on
+   namespace `"questhelper"` and name `"selected"`, and resolve the pending
+   start from its `{quest}`.
+3. Delete the reflection: the class/method-name constructor, `lookupHelper`,
+   the selected-quest read-back chain and the `UNAVAILABLE` "reflection did not
+   resolve" path. Availability narrows to installed / enabled.
+4. Tests, failure cases first:
+   - no reply within the timeout → reported as failed, never as confirmed;
+   - reply with an empty data map → ignored, start still pending;
+   - reply whose `quest` is not a `String` → ignored, no exception;
+   - reply naming a different quest than the one asked for → not a
+     confirmation of this start (Recipe for Disaster's "RFD" chapter tolerance
+     carries over);
+   - then the golden path: matching reply → confirmed.
 
 **Facts to verify.** None from the wiki; the quest graph already carries the
 requirements and rewards.

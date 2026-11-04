@@ -56,6 +56,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Fixed
 
+- Followed Quest Helper v4.18.1's Recipe for Disaster renames (Zoinkwiz/quest-helper#2843, the Plugin Hub pin `02315c94`) in `QuestHelperBridge.SPLIT_QUEST_DEFAULT_HELPER`: "Freeing the Mountain Dwarf" now requests `"RFD - Mountain Dwarf"` (was `"RFD - Dwarf"`) and "Freeing King Awowogei" requests `"RFD - King Awowogei"` (was `"RFD - Monkey Ambassador"`), so neither reports "Not supported by Quest Helper" any more. `QuestHelperBridgeTest` now pins every name in that map to Quest Helper's names at the pinned commit.
 - Copied existing rune totals before merging in `TeleportEquivalence.decompose` so per-frame overlay rendering does not mutate shared `QuestItems.Total` counts, and replaced item ID `8013` (Teleport to house) with `ItemID.TELETAB_DRAYNOR` on `TeleportEquivalence.DRAYNOR` (#4).
 - Labelled id-less generic wiki item requirements (such as `"Seeds"`) as `"check wiki"` (`Availability.GENERIC`) instead of `"can't look up"` on the Grand Exchange overlay (#5).
 - Changed the Grand Exchange item-completion chat notice (`ItemCompletionWatcher.Completion`) to read `"you now have the <item>"` instead of `"you now have all 1 <item>"` when a quest needs only one (#3).
@@ -90,3 +91,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Matched completed quests by name instead of comparing RuneLite enum IDs against database row IDs (`83268e7`).
 - Repainted the sidebar when the first push response arrives (`4e5bb8c`).
 - Reopened `java.desktop/com.apple.eawt` in the Gradle `run` task on macOS so the developer client starts on Java 11+ (`a9a77b9`).
+
+### Known issues
+
+- `QuestHelperBridge` reaches Quest Helper by reflection across plugin class loaders, which blocks Plugin Hub submission. Its replacement is `PluginMessage`, and that waits on two open upstream PRs reaching a Plugin Hub pin: Zoinkwiz/quest-helper#2756 (`"questhelper"`/`"start"` with `{quest, source}`) and Zoinkwiz/quest-helper#2846 (ours, `"questhelper"`/`"selected"` with `{quest}`). Neither is in v4.18.1, the current pin. Scope and status in `docs/TODO-build-guard.md`.

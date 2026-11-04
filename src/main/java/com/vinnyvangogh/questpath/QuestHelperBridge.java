@@ -169,19 +169,28 @@ class QuestHelperBridge
 	 * "Defeating the Culinaromancer"). Anything derived from questpath's own
 	 * name by string surgery would have got at least three of these wrong.
 	 *
+	 * <p><b>The display names are not stable.</b> Quest Helper v4.18.1
+	 * (Zoinkwiz/quest-helper#2843, the release the Plugin Hub pins at
+	 * {@code 02315c94}) renamed "RFD - Dwarf" to "RFD - Mountain Dwarf" and
+	 * "RFD - Monkey Ambassador" to "RFD - King Awowogei" without renaming the
+	 * enum constants. Until this map followed, those two chapters reported
+	 * "Not supported by Quest Helper" again. {@code QuestHelperBridgeTest}
+	 * pins every right-hand side to the names at that commit; when the Hub
+	 * pin moves, re-read the enum and update both together.
+	 *
 	 * <p>Map.ofEntries rather than Map.of: there are eleven pairs and Map.of
-	 * stops at ten.
+	 * stops at ten. Package-private so the test can check every value.
 	 */
-	private static final Map<String, String> SPLIT_QUEST_DEFAULT_HELPER = Map.ofEntries(
+	static final Map<String, String> SPLIT_QUEST_DEFAULT_HELPER = Map.ofEntries(
 		Map.entry("Shield of Arrav", "Shield of Arrav - Black Arm Gang"),
 		Map.entry("Recipe for Disaster", "RFD - Start"),
 		Map.entry("Recipe for Disaster/Another Cook's Quest", "RFD - Start"),
-		Map.entry("Recipe for Disaster/Freeing the Mountain Dwarf", "RFD - Dwarf"),
+		Map.entry("Recipe for Disaster/Freeing the Mountain Dwarf", "RFD - Mountain Dwarf"),
 		Map.entry("Recipe for Disaster/Freeing the Goblin generals", "RFD - Wartface & Bentnoze"),
 		Map.entry("Recipe for Disaster/Freeing Pirate Pete", "RFD - Pirate Pete"),
 		Map.entry("Recipe for Disaster/Freeing the Lumbridge Guide", "RFD - Lumbridge Guide"),
 		Map.entry("Recipe for Disaster/Freeing Evil Dave", "RFD - Evil Dave"),
-		Map.entry("Recipe for Disaster/Freeing King Awowogei", "RFD - Monkey Ambassador"),
+		Map.entry("Recipe for Disaster/Freeing King Awowogei", "RFD - King Awowogei"),
 		Map.entry("Recipe for Disaster/Freeing Sir Amik Varze", "RFD - Sir Amik Varze"),
 		Map.entry("Recipe for Disaster/Freeing Skrach Uglogwee", "RFD - Skrach Uglogwee"),
 		Map.entry("Recipe for Disaster/Defeating the Culinaromancer", "RFD - Finale"));
