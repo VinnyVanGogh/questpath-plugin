@@ -6,7 +6,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Changed
+
+- Renamed to **Quest Route** for the Plugin Hub: `displayName`, `@PluginDescriptor(name)` and every in-game string. The Hub name `questpath` belongs to another author's live plugin. The config group is now `questroute`; `ConfigGroupMigration` copies a pre-rename `questpath` profile (plain and per-account keys) once, never overwriting, from the config provider before RuneLite writes defaults. The Java package stays `com.vinnyvangogh.questpath`.
+- Clicking an item in the sidebar's Grand Exchange list now shows that one item through the buy-list button's sentinel search (`GrandExchangeButton#showOne`) instead of typing its name into the search box, which the Hub's no-autotyping rule forbids.
+- `BuildRuleCodec` reads and writes `BuildRule[]` instead of a Gson `TypeToken`, so `src/main` has no reflection types at all.
+
+### Removed
+
+- Quest Helper integration, for the first Hub submission: `QuestHelperBridge` (reflection, an automatic Hub rejection), the "Start in Quest Helper" menus and left-click starts, auto-start of the next route quest, open-on-arrival, `AutoAdvancePlanner`, `QuestStartArrivalWatcher`, `QuestStartArrivalGate`, `QuestStartCandidates`, and the `autoAdvanceQuestHelper`, `questHelperArrivalPrompt` and `questStartArrivalDepth` config keys. It returns over `PluginMessage` once Quest Helper has a receiver (Zoinkwiz/quest-helper#2756).
+
 ### Added
+
+- `icon.png` for the Plugin Hub listing.
+- `NoReflectionTest`, `ConfigGroupMigrationTest` and `QuestHelperAbsentTest`.
 
 - Group shopping in the Group tab: what the whole party still has to get across each member's route (or every quest their build allows), with per-member breakdown, hand-overs, who holds what, Group Ironman storage, and GE-or-shop/drop sources filtered for the viewer; quest/member/still-needed filters and a Shortest Path button to the group's shops. Portable `groupshop` package (`GroupShoppingList`, `ItemSources`, `GroupShopAlert`), `GroupShoppingNeeds` adapter, party wire adds optional `route`, `accountType`, `groupStorage`, and a 5-minute heartbeat with stale marking. Opt-in `groupShopAlert` adds the group's needs to the near-shop chat line, once per visit.
 - Group tab for RuneLite parties (Group Ironman): opt-in, off-by-default sharing of quest states, levels, build rules and quest-item counts over RuneLite's `PartyService` (`QuestpathGroupState`, `GroupMember`, `GroupBroadcaster`); group quest planning with build-rule flags for capped members (`GroupPlan`, `BuildBreaches`); per-quest item split with hand-overs (`ItemSplit`) (#9).

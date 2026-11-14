@@ -108,9 +108,10 @@ more work at build time and strictly less to maintain.
 - The quest list has 200+ entries. Colouring every blocked one at once may be
   more useful than a warning, or may be visual noise — this probably wants the
   same "suggest / warn / off" three-way the lamp advisor has.
-- Does it hook Quest Helper's own start flow? `QuestHelperBridge` exists and
-  uses reflection, which is an automatic rejection — so the answer is that any
-  Quest Helper integration must go through `PluginMessage` or not happen.
+- Does it hook Quest Helper's own start flow? Not by reflection: the old
+  `QuestHelperBridge` did, which is an automatic rejection, and it was removed
+  for the first Hub submission. Any Quest Helper integration goes through
+  `PluginMessage` or does not happen.
 
 **Facts to verify.** None from the wiki; the quest graph already carries the
 requirements and rewards.
