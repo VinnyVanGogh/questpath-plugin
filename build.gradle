@@ -13,7 +13,16 @@ repositories {
 	mavenCentral()
 }
 
-def runeLiteVersion = '1.13.5'
+// Dev builds track the newest RuneLite release, re-checked on every build, so
+// the developer client (and the Plugin Hub plugins it loads, which follow the
+// client version) is always the current one. 'latest.release' is the form
+// RuneLite's own example-plugin template uses. This only affects dev: the Plugin
+// Hub replaces build.gradle at submission.
+//
+// Trade-off: a RuneLite release can break this build on a day nothing here
+// changed. To compare against a known version, pin it for one invocation:
+//   ./gradlew build -PruneLiteVersion=1.13.6
+def runeLiteVersion = project.findProperty('runeLiteVersion') ?: 'latest.release'
 def pluginMainClass = 'com.vinnyvangogh.questpath.QuestpathPluginTest'
 
 dependencies {
@@ -27,7 +36,34 @@ dependencies {
 	testImplementation group: 'net.runelite', name:'jshell', version: runeLiteVersion
 }
 
+// Gradle caches a dynamic version for 24 hours by default, which would hold the
+// client back for a day after a release. The RuneLite artifacts are the only
+// dynamic versions here, so this re-checks repo.runelite.net on every build
+// without touching anything else. --offline still resolves from the cache.
+configurations.all {
+	resolutionStrategy.cacheDynamicVersionsFor 0, 'seconds'
+}
+
 group = 'com.vinnyvangogh.questpath'
+
+// Names the RuneLite client this build actually resolved, so a failure on a
+// day nothing here changed says which release it was.
+def printRuneLiteVersion = tasks.register('printRuneLiteVersion') {
+	group = 'help'
+	description = 'Prints the RuneLite client version this build resolved.'
+	def classpath = configurations.testRuntimeClasspath
+	def requested = runeLiteVersion
+	doLast {
+		def client = classpath.incoming.resolutionResult.allComponents.find {
+			it.moduleVersion?.group == 'net.runelite' && it.moduleVersion?.name == 'client'
+		}
+		logger.lifecycle("RuneLite client: ${client?.moduleVersion?.version ?: 'not resolved'} (requested ${requested})")
+	}
+}
+
+tasks.named('test') {
+	dependsOn printRuneLiteVersion
+}
 
 tasks.withType(JavaCompile).configureEach {
 	options.encoding = 'UTF-8'
@@ -37,6 +73,7 @@ tasks.withType(JavaCompile).configureEach {
 tasks.register('run', JavaExec) {
 	classpath = sourceSets.test.runtimeClasspath
 	mainClass = pluginMainClass
+	dependsOn printRuneLiteVersion
 
 	jvmArgs "-ea"
 

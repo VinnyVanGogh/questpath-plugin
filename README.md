@@ -248,6 +248,21 @@ no uploads.
 ./gradlew run            # launch a developer client with the plugin loaded
 ```
 
+Dev builds compile and run against the newest RuneLite release
+(`latest.release`), re-checked against repo.runelite.net on every build, so the
+developer client and the Plugin Hub plugins it loads are always current. The
+build prints which client it resolved (`RuneLite client: <version>`) before
+`test` and `run`. A RuneLite release can therefore break the build on a day
+nothing here changed; to compare against a known version, pin it for one
+invocation:
+
+```bash
+./gradlew build -PruneLiteVersion=1.13.6
+```
+
+`--offline` still works from Gradle's cache. None of this reaches users: the
+Plugin Hub replaces `build.gradle` at submission.
+
 The build targets Java 11 bytecode. To log in to the development client, follow
 [Using Jagex Accounts](https://github.com/runelite/runelite/wiki/Using-Jagex-Accounts).
 
