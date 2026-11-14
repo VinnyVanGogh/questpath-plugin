@@ -48,6 +48,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
+- Dev builds now resolve `runeLiteVersion` to `latest.release`, re-checked on every build (`cacheDynamicVersionsFor 0`), and print the resolved client before `test` and `run`; pin with `-PruneLiteVersion=<x>`. Dev only: the Plugin Hub replaces `build.gradle` at submission.
 - Bumped `runeLiteVersion` to `1.13.5` so the developer client connects after the game update (#7).
 - Re-exported bundled quest graph and planner vectors after NPC shop-town, item-link, and iron bar ingest updates (`02982e8`, `24014e8`, `e6f72f4`).
 - Replaced initial `README.md` overview with in-game screenshots of the shop run, bank tab, ground markers, and all six sidebar tabs (`6bd6a33`).
