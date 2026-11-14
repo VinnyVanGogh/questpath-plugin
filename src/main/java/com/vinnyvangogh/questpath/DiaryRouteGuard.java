@@ -48,9 +48,8 @@ final class DiaryRouteGuard
 	 * matching {@link DiaryRouteStops}.
 	 *
 	 * <p>A chosen value, not a measured one -- there is no existing report to
-	 * calibrate against the way {@link
-	 * QuestStartArrivalWatcher#ARRIVAL_RADIUS_TILES} had Aris's start tile to
-	 * check against. Wider than that arrival radius (8) and narrower than
+	 * calibrate against. Wider than an arrival radius (8 tiles, what the
+	 * removed quest-start arrival watcher used) and narrower than
 	 * {@link ShopApproachWatcher#APPROACH_RADIUS_TILES} (16) deliberately: a
 	 * diary task is something to notice in passing while doing something
 	 * else, not something to walk out of your way for the way a quest start

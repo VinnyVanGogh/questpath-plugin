@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.function.Predicate;
 
 /**
- * Turns party members, as Quest Path decodes them, into the plain inputs the
+ * Turns party members, as Quest Route decodes them, into the plain inputs the
  * {@code groupshop} package plans with.
  *
  * <p>Which quests count for a member, as the Board decided it:

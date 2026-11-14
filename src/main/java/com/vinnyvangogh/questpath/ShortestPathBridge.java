@@ -13,8 +13,8 @@ import net.runelite.client.events.PluginMessage;
 /**
  * Hands a set of world points to the Shortest Path plugin's own pathfinder.
  *
- * <p>Unlike {@link QuestHelperBridge}, this class touches nothing private in
- * the plugin it talks to. Shortest Path (`Skretzo/shortest-path`) listens for
+ * <p>This class touches nothing in the plugin it talks to -- no reflection,
+ * no member access, no classloading. Shortest Path (`Skretzo/shortest-path`) listens for
  * RuneLite's own {@code PluginMessage} event -- {@code
  * net.runelite.client.events.PluginMessage}, a public class shipped inside
  * {@code runelite-client} itself, not inside Shortest Path -- and reacts by
@@ -22,8 +22,7 @@ import net.runelite.client.events.PluginMessage;
  * Posting one is therefore two calls against RuneLite's own verified public
  * API ({@code new PluginMessage(namespace, name, data)} and {@code
  * EventBus#post(Object)}), never a reflective call into
- * {@code shortestpath.*}. Both were confirmed the same way {@link
- * QuestHelperBridge}'s public surface was confirmed -- {@code javap} against
+ * {@code shortestpath.*}. Both were confirmed with {@code javap} against
  * the actually-installed dependency, here
  * {@code ~/.gradle/caches/modules-2/files-2.1/net.runelite/client/1.12.37/*&#47;client-1.12.37.jar}
  * -- rather than trusted from source alone:
@@ -45,8 +44,7 @@ import net.runelite.client.events.PluginMessage;
  * first written, and the four constants above came only from reading its
  * GitHub source (`src/main/java/shortestpath/ShortestPathPlugin.java`,
  * quoted in `docs/shop-routing-research.md` &#167;6 in the `osrs` repo).
- * {@link QuestHelperBridge}'s whole cautionary tale is that GitHub source
- * can be incomplete, and the only real fix is {@code javap} against the
+ * GitHub source can be incomplete, and the only real fix is {@code javap} against the
  * compiled artifact actually being run. Shortest Path is now installed --
  * {@code ~/.runelite/plugins/shortest-path_j65TV2lGDTkVcJlwg4jIvqU_Z2mHP1lUWx9t9lfkfRY.jar}
  * -- and that fix has since been applied: {@code javap -c -p} against that
@@ -76,34 +74,27 @@ import net.runelite.client.events.PluginMessage;
  * plugin's handler reads, key for key and type for type. It does not
  * confirm a route visibly appears in the client -- {@code EventBus#post} is
  * fire-and-forget by design, the decompiled handler fires no event and
- * returns nothing on success, so there was never going to be a public
- * read-back the way {@link QuestHelperBridge#start} has one, and seeing an
+ * returns nothing on success, so there is no public read-back, and seeing an
  * actual line drawn on screen still needs a human at a running client.
  * {@link #route}'s only failure mode it can detect is {@code
  * EventBus#post} itself throwing. Treat {@link RouteOutcome#SENT} as "the
  * event went out, built exactly as the installed plugin expects it", never
  * as "a route is now visibly drawn" -- see that constant's own doc.
  *
- * <p><b>Why {@link #availability()} still degrades the same way {@link
- * QuestHelperBridge} does.</b> Even though nothing here reflects into
- * Shortest Path, {@link #findPlugin} still has to find the running instance
- * to know whether posting is worth attempting at all, using the identical
- * {@code Supplier<Collection<?>>}/{@code Predicate<Object>} shape
- * {@link QuestHelperBridge} takes -- reused rather than reinvented, because
- * it is already the house pattern for "is this other plugin here and
- * switched on". A missing or disabled Shortest Path must be visible and
- * distinct from a Shortest Path that is present but declined the event, for
- * the same reason {@link QuestHelperBridge}'s three-way split matters: a
- * silent no-op reads as "nothing needed" to a player, whichever feature it
- * is attached to.
+ * <p><b>Why {@link #availability()} degrades three ways.</b> {@link
+ * #findPlugin} still has to find the running instance to know whether
+ * posting is worth attempting at all, through a {@code
+ * Supplier<Collection<?>>} of loaded plugins (production: {@code
+ * PluginManager#getPlugins}) matched by class name -- a {@code
+ * String#equals} on {@code getClass().getName()}, the same "is this plugin
+ * loaded" check RuneLite's own {@code PluginManager} makes, with no
+ * reflective member access. A missing or disabled Shortest Path must
+ * be visible and distinct from one that is present but declined the event: a
+ * silent no-op reads as "nothing needed" to a player.
  *
  * <p><b>{@link #eventPoster} must land the actual {@code EventBus#post} call
- * on the client thread -- this class does not do that for you.</b> This is
- * the opposite convention from {@link QuestHelperBridge}: {@code
- * QuestManager.startUpQuest} checks {@code client.isClientThread()} itself
- * and defers internally, so {@link QuestHelperBridge#start} is safe to call
- * from any thread, including the panel button's own Swing EDT. Shortest
- * Path's {@code onPluginMessage} does no such check -- disassembling it
+ * on the client thread -- this class does not do that for you.</b> Shortest
+ * Path's {@code onPluginMessage} does no thread check -- disassembling it
  * shows an unconditional assertion that it is already running on the client
  * thread, with nothing to get itself there if it is not, and {@code
  * EventBus#post} invokes every subscriber synchronously on whatever thread
@@ -287,9 +278,8 @@ class ShortestPathBridge
 		/**
 		 * The event was built and handed to {@link #eventPoster} without
 		 * throwing. <b>Not</b> confirmation that Shortest Path received or
-		 * acted on it -- there is no public read-back for that, unlike
-		 * {@link QuestHelperBridge#start}, which can ask Quest Helper what
-		 * it actually selected. Off the client thread (see {@link
+		 * acted on it -- there is no public read-back for that. Off the
+		 * client thread (see {@link
 		 * #CALL_FAILED}'s own doc for why that is the normal case for this
 		 * button), {@code SENT} means only "handed off for posting on the
 		 * client thread", weaker even than "reached {@code EventBus#post}" --
@@ -367,9 +357,7 @@ class ShortestPathBridge
 	 * what happened here without it.
 	 *
 	 * <p>Takes the hand-off itself as a plain {@code Consumer<Runnable>}
-	 * rather than the concrete {@code ClientThread}, the same reason {@link
-	 * QuestHelperBridge}'s own {@code postVerification} seam does: it lets a
-	 * test stand in for "the client thread" with a small fixture instead of
+	 * rather than the concrete {@code ClientThread}: it lets a test stand in for "the client thread" with a small fixture instead of
 	 * a real, Guice-injected {@code ClientThread} instance, which cannot be
 	 * constructed usably outside RuneLite's own container. Production
 	 * wiring passes {@code clientThread::invoke}, whose signature already
@@ -390,9 +378,8 @@ class ShortestPathBridge
 	 * Test seam: the plugin class name is overridable so a test can point
 	 * {@link #findPlugin} at a small fixture instead of a real Shortest
 	 * Path, which is not on this project's classpath. Nothing else needs a
-	 * seam -- unlike {@link QuestHelperBridge}, this class never resolves a
-	 * method by name on the found plugin, so there is no reflective step
-	 * left to fake.
+	 * seam -- this class never resolves a method on the found plugin, so
+	 * there is no reflective step to fake.
 	 */
 	ShortestPathBridge(Supplier<Collection<?>> plugins, Predicate<Object> pluginEnabled, String pluginClassName,
 		Consumer<Object> eventPoster)
@@ -427,8 +414,7 @@ class ShortestPathBridge
 	 *     as-is; picking the nearest is Shortest Path's own job, not this
 	 *     class's.
 	 * @param onOutcome called exactly once, before this method returns --
-	 *     this method itself never defers, unlike {@link
-	 *     QuestHelperBridge#start}. That is narrower than "everything here is
+	 *     this method itself never defers. That is narrower than "everything here is
 	 *     synchronous", though: a correctly-wired {@link #eventPoster} hands
 	 *     the actual {@code EventBus#post} call off to the client thread, so
 	 *     when this is called off that thread (the normal case for the panel

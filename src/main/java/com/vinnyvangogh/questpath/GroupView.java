@@ -96,7 +96,7 @@ final class GroupView
 		return plan;
 	}
 
-	/** Party members who have sent nothing: Quest Path not running, or sharing off. */
+	/** Party members who have sent nothing: Quest Route not running, or sharing off. */
 	List<String> notSharing()
 	{
 		return notSharing;

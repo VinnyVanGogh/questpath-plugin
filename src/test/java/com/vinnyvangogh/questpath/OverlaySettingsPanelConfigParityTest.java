@@ -17,13 +17,12 @@ import static org.junit.Assert.assertTrue;
  * Pins a promise this project has already broken once: every option in
  * {@link QuestpathConfig} must be reachable from questpath's own sidebar
  * Settings tab ({@link OverlaySettingsPanel}), not only from RuneLite's own
- * config panel behind a different icon. Three additions --
- * {@code autoAdvanceQuestHelper}, {@code questHelperArrivalPrompt}, and
- * {@code shopArrivalPrompt} -- went only to the first, invisibly to a player
- * who only ever opens the second, and a fourth ({@code pickupsLookahead})
- * had been missing since the pickups overlay itself was added. This test
- * exists so a fifth cannot do the same without failing loudly, here, by
- * name.
+ * config panel behind a different icon. Three additions -- two since
+ * removed with the Quest Helper integration, and {@code shopArrivalPrompt}
+ * -- went only to the first, invisibly to a player who only ever opens the
+ * second, and a fourth ({@code pickupsLookahead}) had been missing since the
+ * pickups overlay itself was added. This test exists so a fifth cannot do
+ * the same without failing loudly, here, by name.
  *
  * <p><b>What this proves, and what it does not.</b> It confirms every
  * non-exempt {@code @ConfigItem} keyName declared on {@link QuestpathConfig}

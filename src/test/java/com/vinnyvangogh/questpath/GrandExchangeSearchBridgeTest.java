@@ -14,25 +14,18 @@ import static org.junit.Assert.assertTrue;
  * {@link GrandExchangeSearchBridge.Outcome#NOT_OPEN} rather than acting when
  * it is not, a thrown check or action is reported as {@link
  * GrandExchangeSearchBridge.Outcome#CALL_FAILED} rather than left to
- * propagate, and every one of those three seams is only ever invoked from
- * inside the client-thread hand-off -- never before it, never without it.
- *
- * <p>What this class does not prove: that {@code
- * client.getWidget(InterfaceID.GeOffers.UNIVERSE)}, {@code
- * client.setVarcStrValue}, and {@code client.runScript(ScriptID
- * .GE_ITEM_SEARCH)} are the real, verified members this bridge is built on.
- * That was confirmed separately with {@code javap} against the actually
- * installed {@code runelite-api-1.12.37.jar} and {@code
- * client-1.12.37.jar} -- see {@link GrandExchangeSearchBridge}'s own class
- * doc for exactly what that confirmed and why a decompile is not something
- * worth re-running inside a unit test.
+ * propagate, every one of those seams is only ever invoked from inside the
+ * client-thread hand-off, and what reaches the action is an item id -- never
+ * a name, which is the Hub's autotyping rule. See the class doc.
  */
 public class GrandExchangeSearchBridgeTest
 {
-	private static GrandExchangeSearchBridge.Outcome searchOf(GrandExchangeSearchBridge bridge, String itemName)
+	private static final int POT = 1931;
+
+	private static GrandExchangeSearchBridge.Outcome searchOf(GrandExchangeSearchBridge bridge, int itemId)
 	{
 		AtomicReference<GrandExchangeSearchBridge.Outcome> result = new AtomicReference<>();
-		bridge.search(itemName, result::set);
+		bridge.search(itemId, result::set);
 		return result.get();
 	}
 
@@ -45,21 +38,21 @@ public class GrandExchangeSearchBridgeTest
 	@Test
 	public void notOpenWhenTheGrandExchangeInterfaceIsClosed()
 	{
-		List<String> searched = new ArrayList<>();
+		List<Integer> searched = new ArrayList<>();
 		GrandExchangeSearchBridge bridge = new GrandExchangeSearchBridge(() -> false, searched::add, inline());
 
-		assertEquals(GrandExchangeSearchBridge.Outcome.NOT_OPEN, searchOf(bridge, "Pot"));
+		assertEquals(GrandExchangeSearchBridge.Outcome.NOT_OPEN, searchOf(bridge, POT));
 		assertTrue("nothing should be searched for while the interface is reported closed", searched.isEmpty());
 	}
 
 	@Test
-	public void sentSetsTheSearchTextAndRunsTheScriptWhenOpen()
+	public void sentHandsTheItemIdToTheActionWhenOpen()
 	{
-		List<String> searched = new ArrayList<>();
+		List<Integer> searched = new ArrayList<>();
 		GrandExchangeSearchBridge bridge = new GrandExchangeSearchBridge(() -> true, searched::add, inline());
 
-		assertEquals(GrandExchangeSearchBridge.Outcome.SENT, searchOf(bridge, "Ball of wool"));
-		assertEquals(List.of("Ball of wool"), searched);
+		assertEquals(GrandExchangeSearchBridge.Outcome.SENT, searchOf(bridge, POT));
+		assertEquals(List.of(POT), searched);
 	}
 
 	@Test
@@ -68,28 +61,26 @@ public class GrandExchangeSearchBridgeTest
 		GrandExchangeSearchBridge bridge = new GrandExchangeSearchBridge(() ->
 		{
 			throw new RuntimeException("widget tree not ready");
-		}, name ->
+		}, id ->
 		{
 		}, inline());
 
-		assertEquals(GrandExchangeSearchBridge.Outcome.CALL_FAILED, searchOf(bridge, "Pot"));
+		assertEquals(GrandExchangeSearchBridge.Outcome.CALL_FAILED, searchOf(bridge, POT));
 	}
 
 	@Test
 	public void callFailedWhenTheActionThrows()
 	{
-		GrandExchangeSearchBridge bridge = new GrandExchangeSearchBridge(() -> true, name ->
+		GrandExchangeSearchBridge bridge = new GrandExchangeSearchBridge(() -> true, id ->
 		{
 			throw new RuntimeException("client rejected the call");
 		}, inline());
 
-		assertEquals(GrandExchangeSearchBridge.Outcome.CALL_FAILED, searchOf(bridge, "Pot"));
+		assertEquals(GrandExchangeSearchBridge.Outcome.CALL_FAILED, searchOf(bridge, POT));
 	}
 
 	/**
-	 * The exact hazard this project has already hit twice: {@code
-	 * setVarcStrValue}/{@code runScript} assert they are on the client
-	 * thread, and that assertion is an {@code AssertionError} -- an {@code
+	 * The client-thread assertion is an {@code AssertionError} -- an {@code
 	 * Error}, not an {@code Exception}. A catch narrowed to {@code
 	 * RuntimeException} would let it straight through; this pins that it is
 	 * caught and reported instead.
@@ -97,34 +88,12 @@ public class GrandExchangeSearchBridgeTest
 	@Test
 	public void callFailedWhenTheActionThrowsAnAssertionError()
 	{
-		GrandExchangeSearchBridge bridge = new GrandExchangeSearchBridge(() -> true, name ->
+		GrandExchangeSearchBridge bridge = new GrandExchangeSearchBridge(() -> true, id ->
 		{
 			throw new AssertionError("must be called on client thread");
 		}, inline());
 
-		assertEquals(GrandExchangeSearchBridge.Outcome.CALL_FAILED, searchOf(bridge, "Pot"));
-	}
-
-	/**
-	 * The search text goes in lower case, and that is not a style choice.
-	 *
-	 * <p>RuneLite's own bundled Grand Exchange plugin filters with {@code
-	 * item.getName().toLowerCase().contains(search)} and never lower-cases
-	 * {@code search}, which it reads straight out of varcstr 359. A capital
-	 * letter therefore matches nothing, that filter returns zero results, and
-	 * the plugin falls back to a fuzzy search -- which draws every result
-	 * with its matching prefix underlined, and reads to a player as the game
-	 * telling them they have misspelled it. questpath's names are the wiki's,
-	 * which are title case, so every search it sent hit this. See {@link
-	 * GrandExchangeSearchBridge#searchText} for the disassembly it was traced
-	 * with.
-	 */
-	@Test
-	public void searchTextIsLowerCasedSoTheNativeFilterCanMatchIt()
-	{
-		assertEquals("air talisman", GrandExchangeSearchBridge.searchText("Air talisman"));
-		assertEquals("karamjan rum", GrandExchangeSearchBridge.searchText("  Karamjan rum  "));
-		assertEquals("", GrandExchangeSearchBridge.searchText(null));
+		assertEquals(GrandExchangeSearchBridge.Outcome.CALL_FAILED, searchOf(bridge, POT));
 	}
 
 	/**
@@ -137,12 +106,12 @@ public class GrandExchangeSearchBridgeTest
 	public void nothingRunsUntilTheHandoffActuallyRunsItsTask()
 	{
 		List<Runnable> capturedTasks = new ArrayList<>();
-		List<String> searched = new ArrayList<>();
+		List<Integer> searched = new ArrayList<>();
 		GrandExchangeSearchBridge bridge = new GrandExchangeSearchBridge(() -> true, searched::add,
 			capturedTasks::add);
 
 		AtomicReference<GrandExchangeSearchBridge.Outcome> result = new AtomicReference<>();
-		bridge.search("Pot", result::set);
+		bridge.search(POT, result::set);
 
 		assertEquals("exactly one task must be handed to the client-thread stand-in", 1, capturedTasks.size());
 		assertTrue("nothing should be searched for until the hand-off actually runs its task", searched.isEmpty());
@@ -150,7 +119,7 @@ public class GrandExchangeSearchBridgeTest
 			null, result.get());
 
 		capturedTasks.get(0).run();
-		assertEquals(List.of("Pot"), searched);
+		assertEquals(List.of(POT), searched);
 		assertEquals(GrandExchangeSearchBridge.Outcome.SENT, result.get());
 	}
 }
