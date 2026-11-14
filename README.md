@@ -122,7 +122,7 @@ the quest that wanted it.
 | **Quests** | Next on your route with progress, your whole route in order, "Still needs work", "Start, never finish", and every quest's verdict, searchable |
 | **Items** | Get while you're here, the shop route buttons, skipped items, and everything you need counted against what you hold |
 | **Sync** | Whether the last push went out, the account it's attributed to, and what was sent |
-| **Group** | Party members and their quest counts, quests you can do together next, quests that break a member's build, per-quest item split with hand-overs, and quests done by only some of the group |
+| **Group** | Party members and their quest counts, quests you can do together next, quests that break a member's build, per-quest item split with hand-overs, party-wide group shopping, and quests done by only some of the group |
 | **View** | Every setting, grouped and readable, instead of a 225px config column |
 
 <details>
@@ -221,9 +221,11 @@ no uploads.
   "Group (party)" config section). While it is off this client sends nothing.
   Turning it off sends one "forget me" message that carries no account data.
 - **What is shared:** finished and started quests, levels, experience, your
-  build rules, and counts of items that some quest asks for. Never the rest of
-  your bank, and never another player's data. You only see what other members
-  chose to send.
+  build rules, your active route, your account type, counts of items that some
+  quest asks for, and (for Group Ironmen, once opened) quest items in Group
+  Ironman storage, refreshed on a 5-minute heartbeat. Never the rest of your
+  bank, and never another player's data. You only see what other members chose
+  to send.
 - **The Group tab** lists each member and how many quests they've done, then:
   - **Do together next:** quests nobody has done that every member can start
     now.
@@ -234,7 +236,17 @@ no uploads.
   - **Who brings what:** pick a group quest. Each member needs their own copy
     of every item, so spares get handed over before anything is bought. Members
     who shared no item counts show as unknown, not as owning nothing. Group
-    storage is not counted.
+    storage is not counted here; Group shopping below counts it.
+  - **Group shopping:** what the whole party still has to get across each
+    member's active route (or every unfinished quest their build allows when
+    they have none), spending each member's own holding first, then tradeable
+    spares between members who can trade, then Group Ironman storage once from
+    the freshest snapshot. Lists where you can get each remaining item (Grand
+    Exchange for normal accounts, reachable shops and monster drops for
+    ironmen), filters by quest, member, or still-needed items, and sends the
+    group's reachable shops to Shortest Path. An optional "Group needs in shop
+    alerts" toggle (off by default) adds the party's remaining needs to the
+    near-shop chat call-out once per visit.
   - **Done by some of you:** who has finished a quest and who still needs it.
 - Party members on a Quest Path version that sends a different message shape
   are listed as "other version". They are never shown as having done nothing.
