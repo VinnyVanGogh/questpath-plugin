@@ -18,7 +18,8 @@ still names the Go web app it can sync with, and the Java package
 Hub forbidden language feature. Another plugin is reached over
 `PluginMessage` or not at all. The Quest Helper integration was removed for
 the first submission for exactly this reason; it comes back over
-`PluginMessage` once Quest Helper has a receiver — see `BRIEF.md`.
+`PluginMessage` once Quest Helper has a receiver — see
+`docs/hub-submission.md` §4.
 
 `AGENTS.md` above is RuneLite's own rules for hub plugins. It is authoritative
 on logging, threading, HTTP, config naming, packaging, and the list of features
