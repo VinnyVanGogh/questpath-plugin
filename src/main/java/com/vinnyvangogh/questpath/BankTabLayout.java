@@ -192,7 +192,7 @@ class BankTabLayout
 		Widget title = client.getWidget(InterfaceID.Bankmain.TITLE);
 		if (title != null)
 		{
-			title.setText("Tab <col=ff9040>Quest Path</col>");
+			title.setText("Tab <col=ff9040>Quest Route</col>");
 		}
 
 		Widget container = client.getWidget(InterfaceID.Bankmain.ITEMS);

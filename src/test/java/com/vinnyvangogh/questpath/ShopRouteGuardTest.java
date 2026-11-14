@@ -6,13 +6,9 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 /**
- * Pins {@link ShopRouteGuard#blocksQuestRouting}: the second arrival-vs-shop
- * bug this closes -- a shop route the player deliberately sent to Shortest
- * Path getting silently taken over by this plugin's own automatic Quest
- * Helper starts. See the class doc for the confirmed root cause (Quest
- * Helper's own, optional "send to Shortest Path" setting) and why this
- * plugin's only lever is not calling {@code QuestHelperBridge#start} while a
- * sent route is still active.
+ * Pins {@link ShopRouteGuard#blocksQuestRouting}: a shop route the player
+ * deliberately sent to Shortest Path holds route-adjacent chat back for its
+ * window, and no longer. See the class doc.
  *
  * <p>Pure function, no client and no real clock -- every {@link Instant} is
  * a fixed test value, so {@link ShopRouteGuard#ACTIVE_WINDOW}'s boundary is

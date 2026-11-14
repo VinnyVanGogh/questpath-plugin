@@ -27,7 +27,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 /**
- * Quest Path's side of the group shopping list: which quests count for each
+ * Quest Route's side of the group shopping list: which quests count for each
  * member, what crosses the party wire for it, and when a member is stale.
  */
 public class GroupShoppingNeedsTest

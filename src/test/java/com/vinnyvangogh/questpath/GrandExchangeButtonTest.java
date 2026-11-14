@@ -121,4 +121,41 @@ public class GrandExchangeButtonTest
 		assertEquals(GrandExchangeButton.MAX_RESULTS,
 			buttonOver(GrandExchangeShoppingList.of(totals)).resultIds().length);
 	}
+
+	/**
+	 * A sidebar row click answers with that one id, through the sentinel --
+	 * the narrow form of the single-item search. What is written into the
+	 * chatbox input is the sentinel and nothing else: never the item's name,
+	 * which is the Hub's autotyping rule.
+	 */
+	@Test
+	public void showOneAnswersWithThatIdThroughTheSentinelOnly()
+	{
+		List<GrandExchangeShoppingList.Line> lines = GrandExchangeShoppingList.of(Arrays.asList(
+			total("Rope", 954, 1, 0),
+			total("Bucket", 1925, 1, 0)));
+		List<String> written = new java.util.ArrayList<>();
+		GrandExchangeButton button = new GrandExchangeButton(recordingClient(written), Runnable::run, () -> lines);
+
+		button.showOne(954);
+
+		assertArrayEquals(new short[]{954}, button.resultIds());
+		assertEquals(List.of(GrandExchangeButton.SEARCH_SENTINEL), written);
+	}
+
+	/** A test-only Client that records varc string writes and answers null to everything else. */
+	private static net.runelite.api.Client recordingClient(List<String> written)
+	{
+		return (net.runelite.api.Client) java.lang.reflect.Proxy.newProxyInstance(
+			GrandExchangeButtonTest.class.getClassLoader(),
+			new Class<?>[]{net.runelite.api.Client.class},
+			(proxy, method, args) ->
+			{
+				if (method.getName().equals("setVarcStrValue"))
+				{
+					written.add((String) args[1]);
+				}
+				return null;
+			});
+	}
 }

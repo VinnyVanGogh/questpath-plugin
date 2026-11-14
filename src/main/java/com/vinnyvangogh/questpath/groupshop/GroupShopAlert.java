@@ -10,7 +10,7 @@ import java.util.Map;
  * the group is still short of, and the words for it.
  *
  * <p>Only the "which" and the "what". <em>When</em> -- once per visit, as you
- * come up on the shop -- is the host's visit gate's job (Quest Path's {@code
+ * come up on the shop -- is the host's visit gate's job (Quest Route's {@code
  * ShopApproachWatcher}), so the group's shops and the player's own share one
  * memory of where you have already been told.
  */

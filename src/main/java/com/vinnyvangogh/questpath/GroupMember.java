@@ -20,7 +20,7 @@ import java.util.TreeSet;
  * A message in a shape this build cannot read becomes an <em>incompatible</em>
  * member -- listed, named, and excluded from planning -- rather than a member
  * who has apparently done nothing, because "Bob has finished no quests" is a
- * confident wrong answer and "Bob runs a Quest Path this build can't read" is
+ * confident wrong answer and "Bob runs a Quest Route this build can't read" is
  * the truth.
  */
 final class GroupMember

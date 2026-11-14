@@ -2,9 +2,8 @@ package com.vinnyvangogh.questpath;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
-import com.google.gson.reflect.TypeToken;
-import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -30,10 +29,6 @@ import java.util.Map;
  */
 final class BuildRuleCodec
 {
-	private static final Type RULE_LIST = new TypeToken<List<BuildRule>>()
-	{
-	}.getType();
-
 	private BuildRuleCodec()
 	{
 	}
@@ -54,19 +49,23 @@ final class BuildRuleCodec
 		{
 			return Collections.emptyList();
 		}
-		List<BuildRule> parsed;
+		// An array class rather than a Gson type token for List<BuildRule>:
+		// the token is a reflection type, and this plugin keeps reflection out
+		// of src/main entirely -- see NoReflectionTest.
+		BuildRule[] array;
 		try
 		{
-			parsed = gson.fromJson(json, RULE_LIST);
+			array = gson.fromJson(json, BuildRule[].class);
 		}
 		catch (JsonSyntaxException e)
 		{
 			return Collections.emptyList();
 		}
-		if (parsed == null)
+		if (array == null)
 		{
 			return Collections.emptyList();
 		}
+		List<BuildRule> parsed = Arrays.asList(array);
 
 		// Collapse duplicates and drop the unusable, keeping insertion order
 		// so the editor's list does not reshuffle itself on every save.
@@ -93,7 +92,10 @@ final class BuildRuleCodec
 	/** Serialises rules for storage. */
 	static String encode(Gson gson, List<BuildRule> rules)
 	{
-		return gson.toJson(rules == null ? Collections.emptyList() : rules, RULE_LIST);
+		// An array, the same shape decode reads: a JSON array of rules, with
+		// no type token needed on either side.
+		BuildRule[] array = rules == null ? new BuildRule[0] : rules.toArray(new BuildRule[0]);
+		return gson.toJson(array, BuildRule[].class);
 	}
 
 	/**

@@ -26,7 +26,7 @@ import java.util.TreeSet;
  * deduplicated snapshot ({@link GroupStorage#freshest}).</li>
  * </ol>
  *
- * <p>Two honesty rules, the same ones {@code ItemSplit} keeps in Quest Path:
+ * <p>Two honesty rules, the same ones {@code ItemSplit} keeps in Quest Route:
  * a member who shared no item counts is <em>unknown</em>, and their need is
  * reported in {@link Line#unknownNeed()} rather than folded into {@link
  * Line#stillNeeded()} -- telling the group to buy what may be in that
@@ -34,7 +34,7 @@ import java.util.TreeSet;
  * counted, but named on every line they touch, so the reader knows which
  * numbers may have moved.
  *
- * <p>Pure: no client, no UI, no Quest Path types. Copy the package.
+ * <p>Pure: no client, no UI, no Quest Route types. Copy the package.
  */
 public final class GroupShoppingList
 {

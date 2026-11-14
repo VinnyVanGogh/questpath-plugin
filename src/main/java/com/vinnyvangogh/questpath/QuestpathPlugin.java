@@ -92,7 +92,7 @@ import net.runelite.client.util.Text;
  */
 @Slf4j
 @PluginDescriptor(
-	name = "Quest Path",
+	name = "Quest Route",
 	description = "What the next combat level costs, and which quests your build can legally do",
 	tags = {"quest", "combat", "pure", "ironman", "planner", "build"}
 )
@@ -156,9 +156,8 @@ public class QuestpathPlugin extends Plugin
 	private QuestGraph groupRelevantItemsFor;
 
 	/**
-	 * Used to find the running Quest Helper or Shortest Path plugin, if
-	 * either is present -- see {@link QuestHelperBridge} and {@link
-	 * ShortestPathBridge}.
+	 * Used to find the running Shortest Path plugin, if present -- see
+	 * {@link ShortestPathBridge}.
 	 */
 	@Inject
 	private PluginManager pluginManager;
@@ -429,15 +428,8 @@ public class QuestpathPlugin extends Plugin
 
 	/**
 	 * Built once in {@link #startUp}, not injected: it needs
-	 * {@code pluginManager} wired into two lambdas, not a RuneLite instance
-	 * of its own. See its class doc for why it exists at all.
-	 */
-	private QuestHelperBridge questHelperBridge;
-
-	/**
-	 * Built once in {@link #startUp}, same reason {@link #questHelperBridge}
-	 * is: it needs {@code pluginManager} and {@code eventBus} wired into
-	 * lambdas, not a RuneLite instance of its own. See its class doc.
+	 * {@code pluginManager} and {@code eventBus} wired into lambdas, not a
+	 * RuneLite instance of its own. See its class doc.
 	 */
 	private ShortestPathBridge shortestPathBridge;
 
@@ -446,8 +438,8 @@ public class QuestpathPlugin extends Plugin
 	 * #shortestPathBridge}: it needs {@code client} and {@code clientThread}
 	 * wired into lambdas rather than a RuneLite instance of its own, so a
 	 * test can stand in for both without constructing a real {@code Client}.
-	 * Unlike {@link #shortestPathBridge} and {@link #questHelperBridge} it
-	 * talks to no other plugin -- see its class doc.
+	 * Unlike {@link #shortestPathBridge} it talks to no other plugin -- see
+	 * its class doc.
 	 */
 	private GrandExchangeSearchBridge geSearchBridge;
 
@@ -460,66 +452,15 @@ public class QuestpathPlugin extends Plugin
 	private net.runelite.api.vars.AccountType accountType;
 
 	/**
-	 * Notices when the route's current step finishes, for {@link
-	 * QuestpathConfig#autoAdvanceQuestHelper}.
-	 *
-	 * Reset in {@link #startUp} and on logout, same as every other piece of
-	 * per-session route state -- see its class doc for why an unreset
-	 * planner would misfire on the very sweep it exists to ignore.
-	 */
-	private final AutoAdvancePlanner autoAdvance = new AutoAdvancePlanner();
-
-	/**
-	 * Notices when the player arrives at the next route quest's start point,
-	 * for {@link QuestpathConfig#questHelperArrivalPrompt}.
-	 *
-	 * Reset in {@link #startUp} and on logout, same triggers and same reason
-	 * as {@link #autoAdvance} -- see that field's doc and {@link
-	 * QuestStartArrivalWatcher}'s class doc for why an unreset watcher would
-	 * misfire on the very sweep it exists to ignore.
-	 */
-	private final QuestStartArrivalWatcher questStartArrival = new QuestStartArrivalWatcher();
-
-	/**
-	 * The quests worth checking the player's distance to this tick, name to
-	 * start point -- rebuilt once per {@link #refresh}, never per tick, by
-	 * {@link QuestStartCandidates#of}.
-	 *
-	 * <p>Every remaining step of the saved route, capped to {@link
-	 * QuestpathConfig#questStartArrivalDepth} route positions when that is
-	 * non-zero, plus every quest {@link QuestVerdicts} currently calls {@link
-	 * QuestStatus#ELIGIBLE} or {@link QuestStatus#BOOSTABLE} -- startable
-	 * right now, boost genuinely covering any shortfall included -- and,
-	 * either way, not already begun. The depth setting only narrows the
-	 * route half; off-route ELIGIBLE/BOOSTABLE candidates are unaffected at
-	 * any depth, see {@link QuestStartCandidates}'s own class doc. See that
-	 * same doc for the bug this double filter closes: an earlier version
-	 * added every route step with no eligibility check at all, which is how
-	 * Shadow of the Storm started on an account well short of its levels. No
-	 * arbitrary size limit on top of either filter, because neither half
-	 * scales with the 218-quest graph on a real account -- a route is a few
-	 * dozen quests at most and startable quests are bounded by how much of
-	 * the prerequisite tree is actually open, typically far fewer than that.
-	 * {@link #checkQuestStartArrival} spends one {@code WorldPoint#distanceTo}
-	 * per entry here, per tick, and nothing else -- no classification, no
-	 * graph lookup, no per-tick allocation beyond the watcher's own arrival
-	 * list. Cleared to empty, never null, so {@link QuestStartArrivalWatcher}
-	 * never has to special-case "not computed yet" versus "nothing to track".
-	 */
-	private Map<String, WorldPoint> questStartCandidates = Collections.emptyMap();
-
-	/**
 	 * Whether any quest on the account's saved route is currently {@code
-	 * IN_PROGRESS}, per the client's own quest state -- the second signal
-	 * {@link QuestStartArrivalGate} now checks alongside Quest Helper's own
-	 * selection. See that class's doc for why the route, not the whole
-	 * account, is what {@link #inProgressQuestNames()} is intersected
-	 * against, and why that scoping is the point.
+	 * IN_PROGRESS}, per the client's own quest state -- one of the signals
+	 * {@link DiaryRouteGuard#shouldNudge} holds a diary nudge back on. The
+	 * route, not the whole account, is what {@link #inProgressQuestNames()}
+	 * is intersected against: a quest half-done years ago says nothing about
+	 * what the player is working on now.
 	 *
-	 * <p>Recomputed once per {@link #refresh}, the same cadence as {@link
-	 * #questStartCandidates}, and read every tick from {@link
-	 * #checkQuestStartArrival} without redoing any of that work -- {@link
-	 * QuestStartArrivalGate#allow} is a plain boolean check, not a scan.
+	 * <p>Recomputed once per {@link #refresh} and read every tick from
+	 * {@link #checkDiaryApproach} without redoing any of that work.
 	 */
 	private boolean routeQuestInProgress;
 
@@ -548,9 +489,9 @@ public class QuestpathPlugin extends Plugin
 	 * overlay stood down mid-trip, and because {@code ShopRouteAdvance} was
 	 * gated on the same expired clock, nothing could bring it back.
 	 *
-	 * <p>So the timer stays where it was justified -- suppressing automatic
-	 * Quest Helper starts, where expiring is the safe direction because the
-	 * cost of being wrong is one prompt held back too long. This one has no
+	 * <p>So the timer stays where it was justified -- holding back the diary
+	 * nudge, where expiring is the safe direction because the cost of being
+	 * wrong is one chat line held back too long. This one has no
 	 * timer: a trip ends when it ends. Cancelled, finished, arrived at a shop
 	 * stop, or logged out; nothing else, and never merely because time passed
 	 * while the player was doing the thing the trip told them to do.
@@ -708,8 +649,7 @@ public class QuestpathPlugin extends Plugin
 	 * Session state, not cleared on a rejected push -- a cooldown is about
 	 * not repeating a chat line too often, not about which account is
 	 * confirmed, so a push rejection has no bearing on it. Cleared on logout
-	 * in {@link #onGameStateChanged} for the same reason {@link
-	 * #questStartCandidates} is: the next login may be a different account
+	 * in {@link #onGameStateChanged}: the next login may be a different account
 	 * standing anywhere at all, and its first nearby task must not be read
 	 * as "already nudged."
 	 */
@@ -733,37 +673,14 @@ public class QuestpathPlugin extends Plugin
 		migrateDiaryRouteToggle();
 		watchdog = new EdtWatchdog(scheduler);
 		watchdog.start();
-		// The plugin can be toggled off and on again within the same
-		// session without a logout in between, and RuneLite reuses this
-		// same instance across that toggle -- so without this, a quest
-		// finished while the plugin was off would look like a completion
-		// observed live the moment it comes back on. See AutoAdvancePlanner's
-		// class doc.
-		autoAdvance.reset();
-		// Same reasoning, same class shape: toggling the plugin off and back
-		// on must not read wherever the player is already standing as a
-		// fresh arrival. See QuestStartArrivalWatcher's class doc.
-		questStartArrival.reset();
-		questHelperBridge = new QuestHelperBridge(pluginManager::getPlugins,
-			plugin -> pluginManager.isPluginEnabled((Plugin) plugin),
-			// Quest Helper's own startUpQuest defers through this same queue
-			// when not already called from it, so a read-back posted here
-			// runs after Quest Helper's own deferred write -- see
-			// QuestHelperBridge's class doc.
-			clientThread::invokeLater,
-			// Answered by this plugin's own Client, not read reflectively out
-			// of Quest Helper -- net.runelite.api.Client is RuneLite's shared
-			// game state, not something private to Quest Helper.
-			() -> client.getGameState() == GameState.LOGGED_IN);
 		shortestPathBridge = new ShortestPathBridge(pluginManager::getPlugins,
 			plugin -> pluginManager.isPluginEnabled((Plugin) plugin),
 			// PluginMessage/EventBus#post is RuneLite's own public API, not
 			// Shortest Path's, so no reflection is needed here -- but a
 			// thread hand-off still is: Shortest Path's own onPluginMessage
 			// handler asserts it is running on the client thread and does
-			// nothing to get itself there if it is not, the opposite
-			// convention from Quest Helper's startUpQuest, which defers
-			// internally. This button is Swing, so route() is called from
+			// nothing to get itself there if it is not. This button is
+			// Swing, so route() is called from
 			// the EDT, and a bare eventBus::post reference here used to run
 			// Shortest Path's assertion on the EDT and throw AssertionError
 			// on every click -- see ShortestPathBridge's own class doc and
@@ -796,38 +713,17 @@ public class QuestpathPlugin extends Plugin
 				Widget search = client.getWidget(InterfaceID.Chatbox.MES_LAYER);
 				return search != null && !search.isHidden();
 			},
-			itemName ->
-			{
-				// searchText, not the name as questpath holds it: the wiki's
-				// title case makes RuneLite's own case-sensitive filter miss
-				// every time and fall back to a fuzzy search, which draws the
-				// results underlined as though the spelling were wrong. See
-				// GrandExchangeSearchBridge#searchText for the disassembly.
-				client.setVarcStrValue(VarClientStr.INPUT_TEXT,
-					GrandExchangeSearchBridge.searchText(itemName));
-				// GE_ITEM_SEARCH (752) takes three int arguments and this
-				// class has no verified call site for them -- see
-				// GrandExchangeSearchBridge's own class doc for the
-				// AssertionError that produced, and
-				// GrandExchangeButton's for the fix applied here:
-				// replay the search box's own key listener, already built
-				// with whatever arguments it actually needs, rather than
-				// guess a second time.
-				Widget input = client.getWidget(InterfaceID.Chatbox.MES_TEXT2);
-				if (input != null)
-				{
-					Object[] listener = input.getOnKeyListener();
-					if (listener != null)
-					{
-						client.runScript(listener);
-					}
-				}
-			},
+			// The sentinel path, never the item's name: writing a real
+			// search term into the chatbox input is the autotyping the Hub
+			// rejects. GrandExchangeButton#showOne writes the button's own
+			// sentinel, which onGrandExchangeSearched answers with this one
+			// id -- see GrandExchangeSearchBridge's class doc.
+			itemId -> geButton.showOne(itemId),
 			clientThread::invoke);
 		geButton = new GrandExchangeButton(client, clientThread::invokeLater, this::grandExchangeList);
 		panel = new QuestpathPanel(sprites, config, configManager,
 			new OverlaySettingsPanel(config, configManager),
-			this::skillPlan, questHelperBridge, shortestPathBridge, geSearchBridge,
+			this::skillPlan, shortestPathBridge, geSearchBridge,
 			this::grandExchangeAvailable, this::shopLocation,
 			this::dropLocation, this::lastKnownPlayerLocation, this::onShopRouteSent,
 			this::cancelShopRoute,
@@ -835,7 +731,7 @@ public class QuestpathPlugin extends Plugin
 			shopItemSkips, this::diaryGraphTasks, this::diaryPush, lockedGearActions(),
 			localBuildRules, this::onLocalRulesEdited);
 		navButton = NavigationButton.builder()
-			.tooltip("Quest Path")
+			.tooltip("Quest Route")
 			.icon(icon())
 			.priority(7)
 			.panel(panel)
@@ -997,7 +893,7 @@ public class QuestpathPlugin extends Plugin
 			if (outcome.succeeded())
 			{
 				questGraph = outcome.graph();
-				String message = "Quest Path: using the live quest graph from questpath ("
+				String message = "Quest Route: using the live quest graph from questpath ("
 					+ questGraph.quests().size() + " quests).";
 				log.info("questpath: {}", message);
 				announceGraphSource(message);
@@ -1008,7 +904,7 @@ public class QuestpathPlugin extends Plugin
 			String stillOn = questGraph == null
 				? "no quest graph at all -- the Quests tab will say so"
 				: questGraph.quests().size() + " quests bundled with this build";
-			String message = "Quest Path: could not fetch the quest graph from questpath (" + outcome.reason()
+			String message = "Quest Route: could not fetch the quest graph from questpath (" + outcome.reason()
 				+ "); staying on " + stillOn + ".";
 			log.info("questpath: {}", message);
 			announceGraphSource(message);
@@ -1121,7 +1017,7 @@ public class QuestpathPlugin extends Plugin
 	}
 
 	// ------------------------------------------------------------------
-	// Group: party members running Quest Path share quest state over
+	// Group: party members running Quest Route share quest state over
 	// RuneLite's PartyService. See GroupBroadcaster, GroupMember, GroupPlan.
 	// ------------------------------------------------------------------
 
@@ -1551,11 +1447,11 @@ public class QuestpathPlugin extends Plugin
 		// happened to open next.
 		checkLampInterfaceClosed();
 
-		// Same reasoning: the player's position moves every tick regardless
-		// of whether the account's own state changed, and questStartArrival
-		// has to keep tracking it continuously -- see its class doc for why
-		// this is safe to call unconditionally, unlike AutoAdvancePlanner.
-		checkQuestStartArrival();
+		// Refreshes the cached position the panel reads -- see
+		// lastKnownPlayerLocation for why the panel cannot ask for itself.
+		// Every tick, unconditionally: the player moves whether or not the
+		// account's own state changed.
+		playerLocation();
 
 		// And the same reasoning again, which the shop approach was written
 		// without. It lived inside refresh(), which runs only when the
@@ -1614,8 +1510,8 @@ public class QuestpathPlugin extends Plugin
 			// that class's doc. Whichever shop it is: reaching any shop
 			// interface at all is as much confirmation as this plugin can
 			// read that the player is no longer walking a Shortest Path
-			// route they sent, so automatic Quest Helper starts no longer
-			// need to be held back for it.
+			// route they sent, so the diary nudge no longer needs to be
+			// held back for it.
 			shopRouteSentAt = null;
 			// The trip itself is a narrower question, and "any shop at all"
 			// is the wrong test for it. A stop that is a monster is not
@@ -1638,80 +1534,14 @@ public class QuestpathPlugin extends Plugin
 	}
 
 	/**
-	 * Hands the player's current position and the precomputed {@link
-	 * #questStartCandidates} to {@link #questStartArrival} -- see that
-	 * class's doc for why this is safe and cheap every tick even though it
-	 * now checks more than one quest.
-	 *
-	 * <p>Cost: one field read for the candidate map (already computed by the
-	 * last {@link #refresh}) and one distance comparison per candidate.
-	 * Nothing here classifies a quest or scans the graph -- that happened
-	 * once, in {@link QuestStartCandidates#of}, the last time an
-	 * account-state change ran {@link #refresh}. {@link
-	 * QuestHelperBridge#hasSelectedQuest()} only runs when {@code arrived} is
-	 * non-empty -- almost never -- so the reflective read it costs is not a
-	 * per-tick expense either.
-	 */
-	private void checkQuestStartArrival()
-	{
-		// Through playerLocation() rather than the client directly, so the
-		// cached copy the panel reads is refreshed every tick -- see
-		// lastKnownPlayerLocation for why the panel cannot ask for itself.
-		WorldPoint player = playerLocation();
-
-		// Always observed, whatever the toggle says -- same discipline as
-		// autoAdvance in refresh(): the watcher has to keep tracking the
-		// player's real position even while this feature is off, or turning
-		// it on mid-session would see a stale baseline and could fire the
-		// moment it is switched on for wherever the player already happens
-		// to be standing.
-		List<String> arrived = questStartArrival.observe(questStartCandidates, player);
-		if (!config.questHelperArrivalPrompt() || arrived.isEmpty())
-		{
-			return;
-		}
-		// Never hijack a quest already in progress on Quest Helper's own
-		// screen, nor one the account is already working on the route --
-		// see QuestStartArrivalGate's class doc for why both signals are
-		// checked, and why neither one alone is the account-level
-		// IN_PROGRESS check that was rejected outright.
-		for (String questName : QuestStartArrivalGate.allow(
-			arrived, questHelperBridge.hasSelectedQuest(), routeQuestInProgress))
-		{
-			handleQuestStartArrival(questName);
-		}
-	}
-
-	/**
-	 * Every quest worth checking the player's distance to this tick -- see
-	 * {@link #questStartCandidates}'s own doc and {@link
-	 * QuestStartCandidates}'s class doc for what is and is not included, and
-	 * why that is the whole cap.
-	 *
-	 * @param route the account's saved route, or null when none is saved or
-	 *     the client has not loaded quest states yet
-	 * @param verdicts this refresh's judgement of every quest in the graph,
-	 *     or null when the account is not known yet (no rules received, no
-	 *     snapshot read)
-	 */
-	private Map<String, WorldPoint> questStartCandidates(NextQuestStatus route, QuestVerdicts verdicts)
-	{
-		return QuestStartCandidates.of(questGraph, route, verdicts, inProgressQuestNames(),
-			config.questStartArrivalDepth());
-	}
-
-	/**
 	 * Whether any quest on route is currently {@code IN_PROGRESS}, per the
 	 * client's own quest state -- see {@link #routeQuestInProgress}'s own
-	 * field doc and {@link QuestStartArrivalGate}'s class doc for why the
-	 * route, not the whole account, is what {@link #inProgressQuestNames()}
-	 * is intersected against.
+	 * field doc for why the route, not the whole account, is what {@link
+	 * #inProgressQuestNames()} is intersected against.
 	 *
 	 * <p>Checked against every outstanding route step, not only the head:
 	 * the account may have started a quest further down the route than
-	 * {@code route.questName()} names, the same reason {@link
-	 * QuestStartCandidates} itself walks {@code route.upcoming()} rather
-	 * than stopping at the first entry.
+	 * {@code route.questName()} names.
 	 *
 	 * @param route the account's saved route, or null when none is saved or
 	 *     the client has not loaded quest states yet -- answers false, the
@@ -1787,7 +1617,7 @@ public class QuestpathPlugin extends Plugin
 	 * <p>There was no way to stop one once started. It expired on its own
 	 * after ShopRouteGuard's window or when a shop interface opened, neither
 	 * of which is "I have changed my mind", and in the meantime it went on
-	 * holding back automatic Quest Helper starts.
+	 * holding back the diary nudge.
 	 */
 	private void cancelShopRoute()
 	{
@@ -1801,9 +1631,8 @@ public class QuestpathPlugin extends Plugin
 
 	/**
 	 * Whether a shop route sent to Shortest Path is still active enough that
-	 * an automatic Quest Helper start should hold off -- see {@link
-	 * ShopRouteGuard}'s class doc for the report this closes and why holding
-	 * off, rather than starting anyway, is the chosen side of that trade.
+	 * the diary nudge should hold off -- see {@link ShopRouteGuard}'s class
+	 * doc.
 	 */
 	private boolean shopRouteBlocksQuestRouting()
 	{
@@ -2102,53 +1931,6 @@ public class QuestpathPlugin extends Plugin
 	}
 
 	/**
-	 * Starts questName in Quest Helper on arrival, reusing {@link
-	 * QuestHelperBridge}'s own availability check rather than calling {@link
-	 * QuestHelperBridge#start} blind -- the same rule {@link
-	 * #startNextOnAutoAdvance} and the panel's right-click menu both follow,
-	 * so this can never attempt a handoff either of those would have refused.
-	 */
-	private void handleQuestStartArrival(String questName)
-	{
-		if (shopRouteBlocksQuestRouting())
-		{
-			// Said, not silently skipped -- see ShopRouteGuard's class doc:
-			// a shop route the player deliberately sent must not be
-			// silently abandoned, but the arrival itself must not vanish
-			// with no trace either.
-			chat("Quest Path: you're at the start of \"" + questName
-				+ "\", but a shop route sent to Shortest Path is still active -- "
-				+ "start it yourself in Quest Helper if you want it now.");
-			return;
-		}
-		QuestHelperBridge.Availability availability = questHelperBridge.availability(questName);
-		if (availability != QuestHelperBridge.Availability.AVAILABLE)
-		{
-			chat("Quest Path: you're at the start of \"" + questName
-				+ "\", but it could not be opened in Quest Helper -- " + availability.menuLabel() + ".");
-			return;
-		}
-		questHelperBridge.start(questName, outcome -> reportQuestStartArrivalOutcome(questName, outcome));
-	}
-
-	/**
-	 * The one line the player sees for an arrival attempt. Silent automation
-	 * is worse than none, so both a confirmed start and a failed one get
-	 * said -- never only the good news. Mirrors {@link
-	 * #reportAutoAdvanceOutcome}.
-	 */
-	private void reportQuestStartArrivalOutcome(String questName, QuestHelperBridge.StartOutcome outcome)
-	{
-		if (outcome == QuestHelperBridge.StartOutcome.CONFIRMED)
-		{
-			chat("Quest Path: you're at the start of \"" + questName + "\" -- opened it in Quest Helper.");
-			return;
-		}
-		chat("Quest Path: you're at the start of \"" + questName
-			+ "\", but it did not open in Quest Helper (" + outcome + "). Check the client log.");
-	}
-
-	/**
 	 * Quest completion moves varbits, so this is where a finished quest is
 	 * noticed. There is no "quest completed" event to subscribe to.
 	 *
@@ -2283,21 +2065,9 @@ public class QuestpathPlugin extends Plugin
 			// The next login may stand in front of a different shop, or none
 			// at all -- the previous account's "just opened" state must not
 			// carry over and suppress a genuine new opening.
-			// The next login may be a different account on a different
-			// route entirely; its first sighting of that route must not be
-			// read as a completion of whatever this account's route last
-			// pointed at.
-			autoAdvance.reset();
-			// Same reasoning: the next login may stand anywhere at all, on a
-			// different account's route, and that first sighting must not be
-			// read as an arrival.
-			questStartArrival.reset();
-			// The next login may be a different account entirely; this
-			// account's route and eligible quests are not candidates for it.
-			questStartCandidates = Collections.emptyMap();
-			// Same reasoning: the next login's route, if any, has not been
-			// read yet, so there is nothing to call "in progress" until the
-			// first post-login refresh says otherwise.
+			// The next login's route, if any, has not been read yet, so
+			// there is nothing to call "in progress" until the first
+			// post-login refresh says otherwise.
 			routeQuestInProgress = false;
 			// The next login may stand at a different shop, or none, mid-way
 			// through no trip of its own -- a route sent for this account
@@ -2336,12 +2106,6 @@ public class QuestpathPlugin extends Plugin
 			// shortfalls the first time anything changed.
 			completions.reset();
 			accountSnapshot = null;
-			// No account logged in to stand near anything as. Left non-empty
-			// here, checkQuestStartArrival would keep comparing the previous
-			// account's candidates against a player position that also reads
-			// null -- harmless, but a stale set is still the wrong thing to
-			// be holding onto.
-			questStartCandidates = Collections.emptyMap();
 			// No route has been read this pass, so nothing on it can be
 			// called in progress.
 			routeQuestInProgress = false;
@@ -2379,35 +2143,15 @@ public class QuestpathPlugin extends Plugin
 		overlaySnapshot = new OverlaySnapshot(stats, xp, route, items, effectiveBuildRules(),
 			characterName(), questPoints());
 
-		// Rebuilt here, once per account-state change, so the per-tick check
-		// in checkQuestStartArrival never has to reclassify anything -- see
-		// questStartCandidates' own doc.
-		questStartCandidates = questStartCandidates(route, questVerdicts);
-		// Same cadence, for the same reason -- see routeQuestInProgress's
-		// own field doc and QuestStartArrivalGate's class doc for what this
-		// gates.
+		// Rebuilt here, once per account-state change, so the per-tick diary
+		// check never has to rescan the route -- see routeQuestInProgress's
+		// own field doc for what this gates.
 		routeQuestInProgress = routeQuestInProgress(route);
 
 		java.util.List<ItemCompletionWatcher.Completion> justCompleted = completions.observe(items);
 		announce(justCompleted);
 		advanceShopRoute(justCompleted, items);
 		floatCompletions(justCompleted);
-
-		if (route != null)
-		{
-			// Always observed, whether or not the toggle is on: the planner
-			// has to keep tracking the route's real head even while this
-			// feature is switched off, or turning it on mid-session would
-			// see a stale head and misreport whatever finished while it was
-			// off as a live completion. route == null (client not loaded
-			// yet) is the one pass this must not see at all -- see
-			// AutoAdvancePlanner#observe's doc.
-			AutoAdvancePlanner.Decision decision = autoAdvance.observe(route);
-			if (config.autoAdvanceQuestHelper())
-			{
-				handleAutoAdvance(decision);
-			}
-		}
 
 		// Built here, on the client thread, exactly like every other read
 		// this pass makes: LockedGear.resolve reads item stats through
@@ -2432,75 +2176,6 @@ public class QuestpathPlugin extends Plugin
 		{
 			geButton.attach();
 		}
-	}
-
-	/**
-	 * Acts on what {@link AutoAdvancePlanner} decided: starts the next route
-	 * step in Quest Helper, or says why it could not, in one chat line
-	 * either way. Never called more than once per transition -- {@link
-	 * AutoAdvancePlanner#observe} already moved its own head forward before
-	 * this runs, so there is nothing left here that could turn into a retry
-	 * loop.
-	 */
-	private void handleAutoAdvance(AutoAdvancePlanner.Decision decision)
-	{
-		switch (decision.action())
-		{
-			case ADVANCE:
-				startNextOnAutoAdvance(decision.finished(), decision.next());
-				return;
-			case ROUTE_FINISHED:
-				chat("Quest Path: \"" + decision.finished()
-					+ "\" finished -- that was the last quest on your route.");
-				return;
-			case NONE:
-			default:
-				// Nothing happened worth a line in the chat.
-		}
-	}
-
-	/**
-	 * Starts next in Quest Helper, reusing {@link QuestHelperBridge}'s own
-	 * availability check rather than calling {@link QuestHelperBridge#start}
-	 * blind -- the same rule the panel's right-click menu follows, so
-	 * auto-advance can never attempt a handoff the manual path would have
-	 * refused.
-	 */
-	private void startNextOnAutoAdvance(String finished, String next)
-	{
-		if (shopRouteBlocksQuestRouting())
-		{
-			// Same reasoning as handleQuestStartArrival's own guard -- see
-			// ShopRouteGuard's class doc.
-			chat("Quest Path: \"" + finished + "\" finished, and \"" + next
-				+ "\" is next, but a shop route sent to Shortest Path is still active -- "
-				+ "start it yourself in Quest Helper when you're done shopping.");
-			return;
-		}
-		QuestHelperBridge.Availability availability = questHelperBridge.availability(next);
-		if (availability != QuestHelperBridge.Availability.AVAILABLE)
-		{
-			chat("Quest Path: \"" + finished + "\" finished, but \"" + next
-				+ "\" could not be started in Quest Helper -- " + availability.menuLabel() + ".");
-			return;
-		}
-		questHelperBridge.start(next, outcome -> reportAutoAdvanceOutcome(finished, next, outcome));
-	}
-
-	/**
-	 * The one line the player sees for an auto-advance attempt. Silent
-	 * automation is worse than none, so both a confirmed start and a failed
-	 * one get said -- never only the good news.
-	 */
-	private void reportAutoAdvanceOutcome(String finished, String next, QuestHelperBridge.StartOutcome outcome)
-	{
-		if (outcome == QuestHelperBridge.StartOutcome.CONFIRMED)
-		{
-			chat("Quest Path: \"" + finished + "\" finished -- started \"" + next + "\" in Quest Helper.");
-			return;
-		}
-		chat("Quest Path: \"" + finished + "\" finished, but \"" + next
-			+ "\" did not start in Quest Helper (" + outcome + "). Check the client log.");
 	}
 
 	/** One plain line in the game chat, questpath's own message colour. */
@@ -2776,7 +2451,7 @@ public class QuestpathPlugin extends Plugin
 			// see ShopRouteOverlay#isShowing.
 			shopRouteSentAt = null;
 			shopTripActive = false;
-			shopTripChat("Quest Path: shopping done -- nothing left on this trip.");
+			shopTripChat("Quest Route: shopping done -- nothing left on this trip.");
 			return;
 		}
 
@@ -2793,12 +2468,12 @@ public class QuestpathPlugin extends Plugin
 				// advancing looks exactly like one that finished, and the
 				// player is standing in a shop either way with no way to
 				// tell the difference.
-				shopTripChat("Quest Path: could not move on to the next stop.");
+				shopTripChat("Quest Route: could not move on to the next stop.");
 				return;
 			}
 			shopRouteSentAt = Instant.now();
 			shopTripActive = true;
-			StringBuilder line = new StringBuilder("Quest Path: next up ")
+			StringBuilder line = new StringBuilder("Quest Route: next up ")
 				.append(decision.nextItem());
 			if (!decision.nextShop().isEmpty())
 			{
@@ -2832,7 +2507,7 @@ public class QuestpathPlugin extends Plugin
 		{
 			ChatMessageBuilder line = new ChatMessageBuilder()
 				.append(ChatColorType.NORMAL)
-				.append("Quest Path: " + done.leadIn())
+				.append("Quest Route: " + done.leadIn())
 				.append(ChatColorType.HIGHLIGHT)
 				.append(done.subject())
 				.append(ChatColorType.NORMAL);
@@ -3083,7 +2758,7 @@ public class QuestpathPlugin extends Plugin
 			return;
 		}
 		String target = event.getMenuTarget();
-		if (target != null && target.contains("Quest Path"))
+		if (target != null && target.contains("Quest Route"))
 		{
 			// Our own button. It carries a "View tab" option so it reads like
 			// the bank's tabs, which means without this it would match the
@@ -3290,7 +2965,7 @@ public class QuestpathPlugin extends Plugin
 		return wantedAt;
 	}
 
-	/** One near-shop chat line: "Quest Path: <shop> -- <what>". */
+	/** One near-shop chat line: "Quest Route: <shop> -- <what>". */
 	private void shopChat(String shopName, String what)
 	{
 		// Highlighted rather than flat, and the shop's name is the
@@ -3301,7 +2976,7 @@ public class QuestpathPlugin extends Plugin
 			.type(ChatMessageType.GAMEMESSAGE)
 			.runeLiteFormattedMessage(new ChatMessageBuilder()
 				.append(ChatColorType.NORMAL)
-				.append("Quest Path: ")
+				.append("Quest Route: ")
 				.append(ChatColorType.HIGHLIGHT)
 				.append(shopName)
 				.append(ChatColorType.NORMAL)
@@ -3356,7 +3031,7 @@ public class QuestpathPlugin extends Plugin
 		}
 
 		diaryNudgedAt.put(key, now);
-		chat("Quest Path: " + nearest.task().diary() + " " + nearest.task().tier()
+		chat("Quest Route: " + nearest.task().diary() + " " + nearest.task().tier()
 			+ " nearby -- " + nearest.task().text());
 	}
 
@@ -4444,9 +4119,16 @@ public class QuestpathPlugin extends Plugin
 		return merged;
 	}
 
+	/**
+	 * Also where the pre-rename settings are carried over: this runs before
+	 * RuneLite writes the group's defaults, which is the only moment "the new
+	 * group has no value for this key" still means the player never set it.
+	 * See {@link ConfigGroupMigration}'s class doc.
+	 */
 	@Provides
 	QuestpathConfig provideConfig(ConfigManager configManager)
 	{
+		ConfigGroupMigration.run(configManager);
 		return configManager.getConfig(QuestpathConfig.class);
 	}
 

@@ -259,16 +259,6 @@ class QuestpathPanel extends PluginPanel
 	private QuestItems lastItems;
 
 	/**
-	 * Answers whether a quest can be handed to Quest Helper, and does the
-	 * handing-off. Queried lazily, on the right-click that needs it, never at
-	 * render time -- the quest browser lists all 218 quests and rebuilds on
-	 * every quest completion, and none of them should pay for a plugin scan
-	 * and two reflective calls when the popup for the other 217 will never
-	 * open. See {@link QuestHelperBridge}.
-	 */
-	private final QuestHelperBridge questHelperBridge;
-
-	/**
 	 * Answers whether the current shop route can be handed to Shortest
 	 * Path, and does the handing-off. See {@link ShortestPathBridge}'s class
 	 * doc for exactly how strong a claim {@link
@@ -277,7 +267,7 @@ class QuestpathPanel extends PluginPanel
 	private final ShortestPathBridge shortestPathBridge;
 
 	/**
-	 * Puts a clicked item's name into the Grand Exchange's own search box.
+	 * Shows a clicked item in the Grand Exchange's own search results.
 	 * Only ever reachable for an account {@link #geAvailable} reports true
 	 * for -- see {@link GrandExchangeAccounts}'s own doc.
 	 */
@@ -379,7 +369,7 @@ class QuestpathPanel extends PluginPanel
 	QuestpathPanel(SpriteManager sprites, QuestpathConfig config, ConfigManager configManager,
 		OverlaySettingsPanel overlaySettings,
 		java.util.function.BiFunction<String, Integer, SkillPlan> planner,
-		QuestHelperBridge questHelperBridge, ShortestPathBridge shortestPathBridge,
+		ShortestPathBridge shortestPathBridge,
 		GrandExchangeSearchBridge geSearchBridge, java.util.function.BooleanSupplier geAvailable,
 		java.util.function.Function<String, WorldPoint> shopLocator,
 		java.util.function.Function<String, WorldPoint> dropLocator,
@@ -400,7 +390,6 @@ class QuestpathPanel extends PluginPanel
 		this.configManager = configManager;
 		this.overlaySettings = overlaySettings;
 		this.planner = planner;
-		this.questHelperBridge = questHelperBridge;
 		this.shortestPathBridge = shortestPathBridge;
 		this.geSearchBridge = geSearchBridge;
 		this.geAvailable = geAvailable;
@@ -1145,7 +1134,7 @@ class QuestpathPanel extends PluginPanel
 					break;
 				case NOT_IN_PARTY:
 					body.add(muted("Not in a party. Join one with RuneLite's Party plugin; party members"
-						+ " running Quest Path with sharing on show up here."));
+						+ " running Quest Route with sharing on show up here."));
 					break;
 				case LOADING:
 					body.add(muted("Waiting for the game to load your quest states."));
@@ -1171,7 +1160,7 @@ class QuestpathPanel extends PluginPanel
 			if (!member.compatible())
 			{
 				addRow(members, member.name(), "other version", ColorScheme.PROGRESS_ERROR_COLOR,
-					"Runs a Quest Path that sends a different message shape (v" + member.version()
+					"Runs a Quest Route that sends a different message shape (v" + member.version()
 						+ "). Update both clients to the same version to plan together.");
 				continue;
 			}
@@ -1192,7 +1181,7 @@ class QuestpathPanel extends PluginPanel
 		for (String name : view.notSharing())
 		{
 			addRow(members, name, "not sharing", ColorScheme.LIGHT_GRAY_COLOR,
-				"Sends nothing: Quest Path is not running for them, or their sharing is off.");
+				"Sends nothing: Quest Route is not running for them, or their sharing is off.");
 		}
 		body.add(members);
 
@@ -1824,7 +1813,7 @@ class QuestpathPanel extends PluginPanel
 			String trimmed = name.trim();
 			if (trimmed.isEmpty())
 			{
-				JOptionPane.showMessageDialog(this, "Loadout name must not be blank.", "Quest Path",
+				JOptionPane.showMessageDialog(this, "Loadout name must not be blank.", "Quest Route",
 					JOptionPane.WARNING_MESSAGE);
 				return;
 			}
@@ -1832,7 +1821,7 @@ class QuestpathPanel extends PluginPanel
 			{
 				int choice = JOptionPane.showConfirmDialog(this,
 					"A loadout named \"" + trimmed + "\" already exists. Overwrite it?",
-					"Quest Path", JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE);
+					"Quest Route", JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE);
 				if (choice != JOptionPane.OK_OPTION)
 				{
 					return;
@@ -1878,7 +1867,7 @@ class QuestpathPanel extends PluginPanel
 			String current = gear.selectedLoadout().name();
 			int choice = JOptionPane.showConfirmDialog(this,
 				"Delete loadout \"" + current + "\"? This cannot be undone.",
-				"Quest Path", JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE);
+				"Quest Route", JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE);
 			if (choice != JOptionPane.OK_OPTION)
 			{
 				return;
@@ -2645,10 +2634,9 @@ class QuestpathPanel extends PluginPanel
 	 * One button: hand the shops selling what the plan still needs to
 	 * Shortest Path as a target set.
 	 *
-	 * <p>Its label carries the reason whenever it is disabled, same as
-	 * {@link #questHelperMenu}'s items -- a disabled Swing component
-	 * receives no mouse events, so a tooltip on a disabled button would
-	 * never show either.
+	 * <p>Its label carries the reason whenever it is disabled -- a disabled
+	 * Swing component receives no mouse events, so a tooltip on a disabled
+	 * button would never show.
 	 *
 	 * <p>Destinations are drawn from every unsatisfied {@link
 	 * QuestItems.Total} on the current shopping list, resolved through
@@ -2748,7 +2736,7 @@ class QuestpathPanel extends PluginPanel
 			{
 				JLabel left = addRow(geGrid, line.name(), String.valueOf(line.outstanding()),
 					ColorScheme.LIGHT_GRAY_COLOR, null);
-				attachGrandExchangeSearch(left, line.name());
+				attachGrandExchangeSearch(left, line.itemId(), line.name());
 			}
 			panel.add(geGrid);
 		}
@@ -2766,7 +2754,7 @@ class QuestpathPanel extends PluginPanel
 			{
 				JLabel left = addRow(recGrid, line.name(), String.valueOf(line.outstanding()),
 					ColorScheme.LIGHT_GRAY_COLOR, null);
-				attachGrandExchangeSearch(left, line.name());
+				attachGrandExchangeSearch(left, line.itemId(), line.name());
 			}
 			panel.add(recGrid);
 		}
@@ -2802,10 +2790,16 @@ class QuestpathPanel extends PluginPanel
 	 * itself failed, must say so rather than read as "nothing needed" -- the
 	 * rule this whole feature was built under.
 	 */
-	private void attachGrandExchangeSearch(JComponent row, String itemName)
+	private void attachGrandExchangeSearch(JComponent row, int itemId, String itemName)
 	{
+		if (itemId <= 0)
+		{
+			// Nothing to show without an id: the search answers with ids,
+			// never with a typed name -- see GrandExchangeSearchBridge.
+			return;
+		}
 		row.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-		row.setToolTipText("Click to search the Grand Exchange for \"" + itemName + "\".");
+		row.setToolTipText("Click to show \"" + itemName + "\" in the Grand Exchange search.");
 		row.addMouseListener(new java.awt.event.MouseAdapter()
 		{
 			@Override
@@ -2815,7 +2809,7 @@ class QuestpathPanel extends PluginPanel
 				{
 					return;
 				}
-				geSearchBridge.search(itemName, outcome ->
+				geSearchBridge.search(itemId, outcome ->
 					SwingUtilities.invokeLater(() -> reportGrandExchangeOutcome(outcome, itemName)));
 			}
 		});
@@ -2833,7 +2827,7 @@ class QuestpathPanel extends PluginPanel
 		switch (outcome)
 		{
 			case SENT:
-				showToast("Searched the Grand Exchange for \"" + itemName + "\".");
+				showToast("Showing \"" + itemName + "\" in the Grand Exchange search.");
 				return;
 			case NOT_OPEN:
 				warn("Open the Grand Exchange first -- \"" + itemName + "\" was not searched for.");
@@ -3171,8 +3165,7 @@ class QuestpathPanel extends PluginPanel
 	 * Turns a {@link ShortestPathBridge.RouteOutcome} into what the player
 	 * sees. {@link ShortestPathBridge.RouteOutcome#SENT} is not confirmation
 	 * that Shortest Path acted on the route -- see that constant's own doc
-	 * -- so the toast says "sent", never "started" the way Quest Helper's
-	 * confirmed start does.
+	 * -- so the toast says "sent", never "started".
 	 *
 	 * <p>The count rides along on every branch that has one to give, not just
 	 * SENT: "0 destinations, so nothing was sent" and "sent 4 destinations"
@@ -3248,14 +3241,9 @@ class QuestpathPanel extends PluginPanel
 				panel.add(routeList(next));
 				return panel;
 			case NEXT:
-				// The headline quest, left-clickable the same way its own row
-				// further down the list is -- see attachQuestHelperInteractions.
-				// It is the one name most players actually look at, which is
-				// exactly the row Defect 2 reported as dead.
 				JLabel value = new JLabel(wrap(next.questName()));
 				value.setFont(FontManager.getRunescapeBoldFont());
 				value.setForeground(Color.WHITE);
-				attachQuestHelperInteractions(value, next.questName());
 				panel.add(value);
 				panel.add(Box.createVerticalStrut(6));
 				panel.add(routeProgress(next));
@@ -3307,10 +3295,6 @@ class QuestpathPanel extends PluginPanel
 	 *
 	 * The next quest is marked in the list as well as named above it, because
 	 * the list is what gets scrolled and the headline scrolls away.
-	 *
-	 * Every row is left- and right-clickable the same way the headline is --
-	 * see attachQuestHelperInteractions -- including finished ones, which
-	 * Quest Helper is content to be asked to start again.
 	 */
 	private JPanel routeList(NextQuestStatus next)
 	{
@@ -3353,7 +3337,6 @@ class QuestpathPanel extends PluginPanel
 			JLabel row = row(prefix + step.questName());
 			row.setFont(FontManager.getRunescapeSmallFont());
 			row.setForeground(color);
-			attachQuestHelperInteractions(row, step.questName());
 			panel.add(row);
 		}
 
@@ -3400,7 +3383,6 @@ class QuestpathPanel extends PluginPanel
 			// Null when there is nothing to say, so a row never trails an
 			// empty tooltip around -- see blockerTooltip.
 			row.setToolTipText(blockerTooltip(entry.questName(), entry.blockers()));
-			attachQuestHelperInteractions(row, entry.questName());
 			panel.add(row);
 		}
 
@@ -3462,7 +3444,6 @@ class QuestpathPanel extends PluginPanel
 			row.setFont(FontManager.getRunescapeSmallFont());
 			row.setForeground(Color.WHITE);
 			row.setToolTipText(partialTooltip(run));
-			attachQuestHelperInteractions(row, run.name());
 			panel.add(row);
 
 			// The "for" line sits on the row rather than only in the tooltip.
@@ -3916,7 +3897,6 @@ class QuestpathPanel extends PluginPanel
 				JLabel row = row(quest.name());
 				row.setFont(FontManager.getRunescapeSmallFont());
 				row.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
-				attachQuestHelperMenu(row, quest.name());
 				panel.add(row);
 			}
 		}
@@ -3930,217 +3910,19 @@ class QuestpathPanel extends PluginPanel
 		return panel;
 	}
 
-	/**
-	 * Right-click a quest row to send it to Quest Helper, when Quest Helper
-	 * can be reached at all.
-	 *
-	 * <p>The popup is built in {@link #questHelperMenu}, on the click --
-	 * never here, and never once per row at render time. See
-	 * {@link #questHelperBridge}'s own doc for why that matters at 218 rows.
-	 */
-	private void attachQuestHelperMenu(JLabel row, String questName)
-	{
-		row.addMouseListener(new java.awt.event.MouseAdapter()
-		{
-			@Override
-			public void mousePressed(java.awt.event.MouseEvent event)
-			{
-				maybeShow(event);
-			}
-
-			@Override
-			public void mouseReleased(java.awt.event.MouseEvent event)
-			{
-				maybeShow(event);
-			}
-
-			private void maybeShow(java.awt.event.MouseEvent event)
-			{
-				// The popup trigger is mousePressed on macOS and
-				// mouseReleased on Windows/Linux; checking both is the
-				// portable way to catch either.
-				if (!event.isPopupTrigger())
-				{
-					return;
-				}
-				questHelperMenu(questName).show(event.getComponent(), event.getX(), event.getY());
-			}
-		});
-	}
-
-	/**
-	 * Left-click a route row to send it straight to Quest Helper; right-click
-	 * for the same menu the quest browser gets. This is what "Next on your
-	 * route" was missing entirely -- the right-click handler only ever
-	 * reached the quest-browser rows, so the one place most players actually
-	 * look had no affordance at all.
-	 *
-	 * <p>Availability, and the reason behind it, is computed on hover for the
-	 * tooltip and again on click -- never at render time, for the same
-	 * reason {@link #attachQuestHelperMenu} builds its popup lazily. The
-	 * route is short, but the rule guarding it is the same rule.
-	 */
-	private void attachQuestHelperInteractions(JComponent row, String questName)
-	{
-		row.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-		// A cheap placeholder so ToolTipManager registers this component --
-		// registration happens the first time setToolTipText is called with
-		// non-null text -- before the real, reflection-backed text below
-		// ever has to run. quickenTooltips(), called once on the whole
-		// panel, still governs how fast that text appears from here.
-		row.setToolTipText(questName);
-		row.addMouseListener(new java.awt.event.MouseAdapter()
-		{
-			@Override
-			public void mouseEntered(java.awt.event.MouseEvent event)
-			{
-				row.setToolTipText(questHelperBridge.availability(questName).menuLabel());
-			}
-
-			@Override
-			public void mousePressed(java.awt.event.MouseEvent event)
-			{
-				maybeShowPopup(event);
-			}
-
-			@Override
-			public void mouseReleased(java.awt.event.MouseEvent event)
-			{
-				maybeShowPopup(event);
-			}
-
-			@Override
-			public void mouseClicked(java.awt.event.MouseEvent event)
-			{
-				if (event.getButton() == java.awt.event.MouseEvent.BUTTON1 && !event.isPopupTrigger())
-				{
-					startFromRoute(questName);
-				}
-			}
-
-			private void maybeShowPopup(java.awt.event.MouseEvent event)
-			{
-				// The popup trigger is mousePressed on macOS and
-				// mouseReleased on Windows/Linux; checking both is the
-				// portable way to catch either.
-				if (!event.isPopupTrigger())
-				{
-					return;
-				}
-				questHelperMenu(questName).show(event.getComponent(), event.getX(), event.getY());
-			}
-		});
-	}
-
-	/**
-	 * One menu item, its label doubling as the reason when it is disabled.
-	 *
-	 * <p>A disabled Swing component receives no mouse events, so a tooltip on
-	 * a disabled {@code JMenuItem} never shows -- which is why the reason
-	 * lives in the label itself rather than behind a hover that would never
-	 * fire.
-	 */
-	private JPopupMenu questHelperMenu(String questName)
-	{
-		JPopupMenu menu = new JPopupMenu();
-		QuestHelperBridge.Availability availability = questHelperBridge.availability(questName);
-		JMenuItem item = new JMenuItem(availability.menuLabel());
-		item.setEnabled(availability == QuestHelperBridge.Availability.AVAILABLE);
-		item.addActionListener(event -> startFromRoute(questName));
-		menu.add(item);
-		return menu;
-	}
-
-	/**
-	 * Hands questName to {@link #questHelperBridge} and reports what
-	 * actually happened. See {@link QuestHelperBridge}'s class doc for why
-	 * the reflective call not throwing was never proof of anything -- this
-	 * is the fix for that: the outcome reported here is always the verified
-	 * one, never the fact that a method returned.
-	 *
-	 * <p>The callback can land on Quest Helper's own client thread rather
-	 * than the EDT -- see {@link QuestHelperBridge#start}'s doc -- so it is
-	 * always marshalled back before touching Swing, even for the two
-	 * outcomes that in practice arrive synchronously.
-	 */
-	private void startFromRoute(String questName)
-	{
-		questHelperBridge.start(questName,
-			outcome -> SwingUtilities.invokeLater(() -> reportStartOutcome(questName, outcome)));
-	}
-
-	/**
-	 * Turns a {@link QuestHelperBridge.StartOutcome} into what the player
-	 * sees. A confirmed start gets a brief, non-modal toast: silence on
-	 * success was the entire bug this exists to fix, and good news does not
-	 * need a decision dismissed before the player can keep going. Every
-	 * other outcome gets a plain warning, naming the reason where one is
-	 * actually known rather than guessed at.
-	 */
-	private void reportStartOutcome(String questName, QuestHelperBridge.StartOutcome outcome)
-	{
-		switch (outcome)
-		{
-			case CONFIRMED:
-				showStartConfirmation(questName);
-				return;
-			case UNAVAILABLE:
-				warn("Quest Helper could not start \"" + questName
-					+ "\" -- it was no longer available by the time the click landed.");
-				return;
-			case CALL_FAILED:
-				// Availability said AVAILABLE a moment ago; if the actual
-				// handoff still failed, that is Quest Helper's integration
-				// breaking between the click and the call, not a state this
-				// menu item can pre-empt. Said plainly rather than swallowed.
-				warn("Quest Helper could not start \"" + questName + "\". Check the client log.");
-				return;
-			case NOT_LOGGED_IN:
-				warn("Quest Helper did not start \"" + questName + "\" -- you are not logged in.");
-				return;
-			case NOT_SELECTED:
-				// The two known silent-return paths that land here --
-				// Quest Helper's own account for "already effectively
-				// complete" and any other reason it declined -- are not
-				// distinguishable from outside QuestManager. Said honestly
-				// rather than picking one to guess at.
-				warn("Quest Helper did not start \"" + questName
-					+ "\". It may already be effectively complete, or something else stopped it"
-					+ " -- check the client log.");
-				return;
-			case UNVERIFIABLE:
-				warn("Sent \"" + questName + "\" to Quest Helper, but questpath could not confirm"
-					+ " whether it actually started -- the integration may be out of date."
-					+ " Check the client log.");
-				return;
-			default:
-				// Exhaustive over a closed enum; nothing else to report.
-		}
-	}
-
 	private void warn(String message)
 	{
-		JOptionPane.showMessageDialog(this, message, "Quest Path", JOptionPane.WARNING_MESSAGE);
+		JOptionPane.showMessageDialog(this, message, "Quest Route", JOptionPane.WARNING_MESSAGE);
 	}
 
 	/** How long a toast stays up before it dismisses itself. */
 	private static final int START_TOAST_MILLIS = 2500;
 
 	/**
-	 * A brief, non-modal confirmation that Quest Helper actually selected
-	 * the quest. Non-modal on purpose: this is good news, not a decision the
-	 * player has to dismiss before doing anything else -- unlike the warning
-	 * dialogs above, which really are asking for that.
-	 */
-	private void showStartConfirmation(String questName)
-	{
-		showToast("Started \"" + questName + "\" in Quest Helper.");
-	}
-
-	/**
-	 * The same brief, non-modal toast {@link #showStartConfirmation} shows,
-	 * generalised for any other "this went fine, no decision to make" line
-	 * -- currently also used by {@link #reportRouteOutcome}.
+	 * A brief, non-modal toast for a "this went fine, no decision to make"
+	 * line. Non-modal on purpose: good news is not a decision the player has
+	 * to dismiss before doing anything else -- unlike {@link #warn}'s
+	 * dialogs, which really are asking for that.
 	 */
 	private void showToast(String message)
 	{
@@ -4463,12 +4245,6 @@ class QuestpathPanel extends PluginPanel
 	 * else can produce is what is left after the quests this account can
 	 * actually still do have paid out.
 	 */
-	/**
-	 * Not static, unlike the rest of this method's history -- {@link #band}
-	 * below needs {@link #attachQuestHelperInteractions} to wire its rows up
-	 * to Quest Helper, the same reason {@link #itemsBlock} stopped being
-	 * static.
-	 */
 	private JPanel skillPlanBlock(SkillPlan plan)
 	{
 		JPanel panel = column();
@@ -4545,16 +4321,9 @@ class QuestpathPanel extends PluginPanel
 			panel.add(lost);
 		}
 
-		// Only READY NOW is wired to Quest Helper. SkillPlan has already done
-		// the split that matters: ready() holds only ELIGIBLE/BOOSTABLE
-		// entries, and every later() or lost() entry exists precisely because
-		// it is not startable right now, for reasons this tab already states
-		// as the blocker chain or the build-break warning above. Wiring
-		// those to Quest Helper would only ever open a popup whose one item
-		// is disabled, saying nothing this tab has not already said better.
-		band(panel, "READY NOW", plan.ready(), ColorScheme.PROGRESS_COMPLETE_COLOR, true);
-		band(panel, "AFTER MORE WORK", plan.later(), ColorScheme.BRAND_ORANGE, false);
-		band(panel, "OFF THE TABLE", plan.lost(), ColorScheme.PROGRESS_ERROR_COLOR, false);
+		band(panel, "READY NOW", plan.ready(), ColorScheme.PROGRESS_COMPLETE_COLOR);
+		band(panel, "AFTER MORE WORK", plan.later(), ColorScheme.BRAND_ORANGE);
+		band(panel, "OFF THE TABLE", plan.lost(), ColorScheme.PROGRESS_ERROR_COLOR);
 
 		return panel;
 	}
@@ -4562,19 +4331,7 @@ class QuestpathPanel extends PluginPanel
 	/** How many quests one band lists before it says how many more there are. */
 	private static final int MAX_PLAN_ROWS = 8;
 
-	/**
-	 * Not static, unlike the rest of this method's history -- a {@code
-	 * questHelperLinked} band needs {@link #attachQuestHelperInteractions}
-	 * to wire its rows up, the same left-click-to-start, right-click-for-a-
-	 * reason handoff the route panel already gets.
-	 *
-	 * @param questHelperLinked whether this band's rows should be wired to
-	 *     Quest Helper. True only for {@code entries} that are actually
-	 *     startable -- see the call site in {@link #skillPlanBlock} for why
-	 *     that is READY NOW alone.
-	 */
-	private void band(JPanel panel, String title, List<SkillPlan.Entry> entries,
-		Color colour, boolean questHelperLinked)
+	private void band(JPanel panel, String title, List<SkillPlan.Entry> entries, Color colour)
 	{
 		if (entries.isEmpty())
 		{
@@ -4591,12 +4348,8 @@ class QuestpathPanel extends PluginPanel
 		for (int i = 0; i < shown; i++)
 		{
 			SkillPlan.Entry entry = entries.get(i);
-			JLabel nameLabel = addRow(rows, entry.questName(), XpTable.format(Math.round(entry.xp())),
+			addRow(rows, entry.questName(), XpTable.format(Math.round(entry.xp())),
 				ColorScheme.LIGHT_GRAY_COLOR, blockerTooltip(entry));
-			if (questHelperLinked)
-			{
-				attachQuestHelperInteractions(nameLabel, entry.questName());
-			}
 		}
 		panel.add(rows);
 
@@ -5221,10 +4974,8 @@ class QuestpathPanel extends PluginPanel
 
 	/**
 	 * @return the label cell, so a caller that needs to wire it up further --
-	 *     {@link #band} attaches {@link #attachQuestHelperInteractions} to
-	 *     it -- does not have to rebuild the row itself. Every other caller
-	 *     ignores the return value, which is why every one of them still
-	 *     compiles as a bare statement unchanged.
+	 *     the Grand Exchange list attaches its search click to it -- does not
+	 *     have to rebuild the row itself.
 	 */
 	private static JLabel addRow(JPanel grid, String label, String detail, Color detailColor, String tooltip)
 	{

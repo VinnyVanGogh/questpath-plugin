@@ -11,7 +11,7 @@ import java.util.Map;
  * what they hold, and how far to trust it.
  *
  * <p>Built by the host plugin from whatever it knows about the member --
- * Quest Path from its party message and quest graph, a Group Ironman plugin
+ * Quest Route from its party message and quest graph, a Group Ironman plugin
  * from its own sync. Nothing in here knows where the numbers came from.
  */
 public final class MemberNeeds

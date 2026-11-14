@@ -153,7 +153,7 @@ class OverlaySettingsPanel extends JPanel
 		panel.add(toggle(
 			"Share with my party",
 			"Send your finished quests, levels, build rules and counts of quest items you hold to"
-				+ " RuneLite party members who also run Quest Path, for the Group tab. RuneLite's own"
+				+ " RuneLite party members who also run Quest Route, for the Group tab. RuneLite's own"
 				+ " party service only -- never questpath. Nothing is sent while this is off.",
 			config.partyShare(), "partyShare"));
 		panel.add(Box.createRigidArea(new Dimension(0, 6)));
@@ -407,8 +407,8 @@ class OverlaySettingsPanel extends JPanel
 
 	/**
 	 * The EXTRAS top-level section: the marker groups -- Shops, Ground items,
-	 * Bank -- plus the flat Quest Helper automation toggles and the item-done
-	 * chat line, nested under one shared heading.
+	 * Bank, Lamps -- plus the item-done chat line, nested under one shared
+	 * heading.
 	 */
 	private CollapsibleGroup extrasSection(QuestpathConfig config)
 	{
@@ -420,37 +420,6 @@ class OverlaySettingsPanel extends JPanel
 		body.add(bankGroup(config));
 		body.add(spacer());
 		body.add(lampsGroup(config));
-		body.add(spacer());
-		// Flat: nothing gates autoAdvanceQuestHelper, it is just one
-		// independent yes/no automation around Quest Helper's own
-		// start-quest flow, previously only reachable from RuneLite's own
-		// config panel, which is exactly the gap this file exists to close
-		// (see this file's own class doc).
-		body.add(toggle(
-			"Auto-start the next quest",
-			"When the quest you just finished was the current step on your saved route,"
-				+ " automatically start the next one in Quest Helper -- only if Quest Helper"
-				+ " reports it available. Always says what it did (or why it could not) in the"
-				+ " chat, and never retries on its own.",
-			config.autoAdvanceQuestHelper(), "autoAdvanceQuestHelper"));
-		body.add(spacer());
-		// A toggleGroup, not a flat toggle, because questStartArrivalDepth
-		// only means anything while this is on -- the same dependent-setting
-		// shape as Shops/Ground items/Bank above, just with a spinner instead
-		// of a colour.
-		body.add(toggleGroup(
-			"Open Quest Helper on arrival",
-			"When you walk within a few tiles of the start of a quest you could begin, open it"
-				+ " in Quest Helper automatically -- only if Quest Helper reports it available."
-				+ " Says what it did in the chat, once per arrival, never on login or a resync.",
-			config.questHelperArrivalPrompt(), "questHelperArrivalPrompt",
-			sub -> addField(sub, "How far down the route",
-				intField(config.questStartArrivalDepth(), 0, 218,
-					"Only the next N outstanding quests on your saved route can ever prompt --"
-						+ " 1 is just the next one, 3 is the next few. 0 means no limit, every"
-						+ " outstanding route quest. Quests that are startable but not on your"
-						+ " saved route are never affected by this number, at any depth.",
-					"questStartArrivalDepth"))));
 		body.add(spacer());
 		// Flat rather than a group of its own: one checkbox behind a
 		// collapsible header is a header that costs more rows than it hides.
@@ -542,7 +511,7 @@ class OverlaySettingsPanel extends JPanel
 			"Bank",
 			"Mark what you need in the bank: while the bank is open, outline the items your"
 				+ " plan still needs and show how many more to find. Toggled per trip from"
-				+ " the Quest Path button in the bank's title bar.",
+				+ " the Quest Route button in the bank's title bar.",
 			config.bankHighlight(), "bankHighlight",
 			sub ->
 			{
@@ -671,10 +640,9 @@ class OverlaySettingsPanel extends JPanel
 	/**
 	 * A spinner wired straight to a bounded {@code int} config key.
 	 *
-	 * <p>Shared by the two numeric settings in this panel -- {@code
-	 * pickupsLookahead} and {@code questStartArrivalDepth} -- so this exists
-	 * as its own method rather than folded into {@link #toggle}/{@link
-	 * #combo} the way those two are shared by a dozen keys each.
+	 * <p>Used by the panel's numeric setting, {@code pickupsLookahead}; its
+	 * own method rather than folded into {@link #toggle}/{@link #combo} so the
+	 * next numeric key reuses it.
 	 */
 	private JSpinner intField(int initial, int min, int max, String tooltip, String keyName)
 	{
@@ -777,7 +745,7 @@ class OverlaySettingsPanel extends JPanel
 			}
 			if (box.isSelected())
 			{
-				int choice = JOptionPane.showConfirmDialog(this, warning, "Quest Path",
+				int choice = JOptionPane.showConfirmDialog(this, warning, "Quest Route",
 					JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE);
 				if (choice != JOptionPane.OK_OPTION)
 				{

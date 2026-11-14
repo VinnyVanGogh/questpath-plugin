@@ -37,9 +37,9 @@ import net.runelite.api.widgets.WidgetType;
  * hand it the item ids.</b>
  *
  * <p><b>Everything below is disassembled from the installed {@code
- * quest-helper} jar, not inferred.</b> {@code javap -c -p} against {@code
- * com.questhelper.bank.banktab.QuestGrandExchangeInterface} and {@code
- * QuestBankTab}:
+ * quest-helper} jar, not inferred.</b> {@code javap -c -p} against Quest
+ * Helper's {@code bank/banktab/QuestGrandExchangeInterface} and {@code
+ * QuestBankTab} -- read as precedent for the sentinel pattern, never called:
  *
  * <ul>
  * <li>{@code QuestGrandExchangeInterface.init()} takes {@code
@@ -154,6 +154,14 @@ class GrandExchangeButton
 	private final Supplier<List<GrandExchangeShoppingList.Line>> list;
 
 	private boolean active;
+
+	/**
+	 * The one item {@link #showOne} asked for, or 0 when the button is showing
+	 * the whole buy list. Cleared whenever the button itself is toggled, so a
+	 * click on the button always means "the list".
+	 */
+	private int single;
+
 	private Widget background;
 	private Widget icon;
 	private Widget title;
@@ -236,7 +244,7 @@ class GrandExchangeButton
 			background.setOriginalY(Y);
 			background.setHasListener(true);
 			background.setAction(1, "View what to buy");
-			background.setName("Quest Path");
+			background.setName("Quest Route");
 			background.setOnOpListener((JavaScriptCallback) event -> toggle());
 			background.setSpriteId(active ? SPRITE_PRESSED : SPRITE_UNPRESSED);
 			background.revalidate();
@@ -313,7 +321,7 @@ class GrandExchangeButton
 		line.setYTextAlignment(1);
 		line.setFontId(FONT_ID);
 		line.setTextColor(net.runelite.client.ui.JagexColors.CHAT_GAME_EXAMINE_TEXT_OPAQUE_BACKGROUND.getRGB());
-		line.setText("<col=" + BRAND_ORANGE + ">Quest Path</col> buy list");
+		line.setText("<col=" + BRAND_ORANGE + ">Quest Route</col> buy list");
 		line.setHidden(!active);
 		line.revalidate();
 		return line;
@@ -343,6 +351,10 @@ class GrandExchangeButton
 	 */
 	short[] resultIds()
 	{
+		if (single > 0)
+		{
+			return new short[]{(short) single};
+		}
 		List<GrandExchangeShoppingList.Line> lines = list.get();
 		List<Integer> ids = new ArrayList<>();
 		for (GrandExchangeShoppingList.Line line : GrandExchangeShoppingList.left(lines))
@@ -375,6 +387,7 @@ class GrandExchangeButton
 			}
 			else
 			{
+				single = 0;
 				activate();
 			}
 			client.playSoundEffect(CLICK_SOUND);
@@ -383,6 +396,26 @@ class GrandExchangeButton
 		{
 			log.warn("Toggling questpath's Grand Exchange button failed", e);
 		}
+	}
+
+	/**
+	 * Shows exactly one item in the client's own result list -- the sidebar's
+	 * click-a-row search. The same sentinel path as the button, never the
+	 * item's name typed into the box: see {@link GrandExchangeSearchBridge}'s
+	 * class doc for why that distinction is the whole design. Must run on the
+	 * client thread.
+	 */
+	void showOne(int itemId)
+	{
+		single = itemId;
+		if (active)
+		{
+			// Already showing a list: re-run the sentinel search so the
+			// result ids are re-read with the new single item.
+			later.accept(() -> updateSearchInterface(true));
+			return;
+		}
+		activate();
 	}
 
 	private void activate()
@@ -418,6 +451,7 @@ class GrandExchangeButton
 	private void close()
 	{
 		active = false;
+		single = 0;
 		if (background != null)
 		{
 			background.setSpriteId(SPRITE_UNPRESSED);

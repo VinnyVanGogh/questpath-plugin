@@ -72,7 +72,7 @@ class BankButton
 	 * twice: two copies of a string that must match is a bug waiting for
 	 * whoever edits one of them.
 	 */
-	static final String TARGET = "Quest Path";
+	static final String TARGET = "Quest Route";
 
 	private final Client client;
 	private final BooleanSupplier shown;

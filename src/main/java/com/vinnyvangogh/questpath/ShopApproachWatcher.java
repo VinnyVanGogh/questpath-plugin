@@ -15,8 +15,7 @@ import net.runelite.api.coords.WorldPoint;
  * arrived" -- and it fired off a widget appearing, which in play produced the
  * same line five times in two minutes while the player was fishing.
  *
- * <p>Edge-triggered on distance, the same shape {@link
- * QuestStartArrivalWatcher} already uses for quest starts: a shop announces
+ * <p>Edge-triggered on distance: a shop announces
  * once when you cross into range and stays quiet until you have left and come
  * back. Standing in the shop, or running past it twice, says it once.
  *
@@ -29,10 +28,9 @@ class ShopApproachWatcher
 	/**
 	 * How close counts as "coming up on it", in tiles.
 	 *
-	 * <p>Deliberately wider than {@link
-	 * QuestStartArrivalWatcher#ARRIVAL_RADIUS_TILES}, which answers a
-	 * different question. That one fires when you have arrived somewhere and
-	 * is meant to be precise. This one is a nudge to look up before you walk
+	 * <p>Deliberately wider than an arrival radius, which answers a different
+	 * question: that fires when you have arrived somewhere and is meant to be
+	 * precise. This one is a nudge to look up before you walk
 	 * past, so it wants to land while the shop is still ahead of you --
 	 * roughly a screen's width rather than arm's length.
 	 */

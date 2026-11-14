@@ -1,8 +1,13 @@
-# questpath for RuneLite
+# Quest Route for RuneLite
 
 **The plan, inside the game.** One shop run for every quest item, shopkeepers
-calling out when you pass something you need, the next quest opening in Quest
-Helper as you arrive, and a warning before a build rule ends the account.
+calling out when you pass something you need, your route and what it costs at a
+glance, and a warning before a build rule ends the account.
+
+> **Name.** This plugin was called *questpath* during development. That name is
+> taken on the Plugin Hub by another author's plugin, so it ships as **Quest
+> Route**. The optional server it can sync with is still the
+> [questpath](https://github.com/VinnyVanGogh) web app.
 
 > **Early development.** Most overlays are opt-in, and features marked
 > *(in progress)* are partly built or next up.
@@ -63,11 +68,11 @@ each slot. Hover to see which quest wants it.
 
 ![A shop with a needed item outlined and a tooltip naming the quest it is for](docs/screenshots/shop-open.jpg)
 
-**Bank.** A Quest Path button in the bank title bar turns the bank into a quest
+**Bank.** A Quest Route button in the bank title bar turns the bank into a quest
 tab: Ran out, Still needed, Ready to withdraw. Everything stays withdrawable,
 and the "Needed from your bank" overlay sits beside it.
 
-![The bank switched to the Quest Path tab, grouped into Ran out, Still needed and Ready to withdraw](docs/screenshots/bank-tab.jpg)
+![The bank switched to the plugin's own tab, grouped into Ran out, Still needed and Ready to withdraw (captured under the plugin's development name)](docs/screenshots/bank-tab.jpg)
 
 **Ground.** Needed items lying within 15 tiles are outlined with how many you
 still need and which quests want them, and left-clicking picks them up before
@@ -82,9 +87,10 @@ note can float up over the shopkeeper.
 **Grand Exchange.** For mains, and hidden automatically on every ironman
 account. The GE item search grows a buy-list button, and the list opens in place
 of the search results, so the next thing to buy is one click rather than a name
-you have to remember.
+you have to remember. Clicking an item in the sidebar's Grand Exchange list
+shows just that item the same way. Nothing is ever typed into the search box.
 
-![The Quest Path buy list open inside the Grand Exchange item search, listing Steel full helm, Steel platebody and Steel platelegs, with a tooltip over the one about to be selected](docs/screenshots/ge-buy-list.jpg)
+![The buy list open inside the Grand Exchange item search, listing Steel full helm, Steel platebody and Steel platelegs, with a tooltip over the one about to be selected (captured under the plugin's development name)](docs/screenshots/ge-buy-list.jpg)
 
 An overlay follows the whole trip while the offers run: what's next, what's
 queued, what's still left, and what the GE can't sell you at all. Progress counts
@@ -109,7 +115,7 @@ older graph the panel says so rather than showing an empty section.
 Collect, and every item the trip has now fully covered says so in chat, naming
 the quest that wanted it.
 
-![Eight chat lines reading "Quest Path: you now have all 1 Adamant seeds -- for Song of the Elves" and similar, one per collected item](docs/screenshots/ge-collected.jpg)
+![Eight chat lines reading "you now have all 1 Adamant seeds -- for Song of the Elves" and similar, one per collected item (captured under the plugin's development name)](docs/screenshots/ge-collected.jpg)
 
 ---
 
@@ -160,14 +166,10 @@ the quest that wanted it.
 
 - **Next on your route.** An overlay you can leave on: the next quest, a
   progress bar, and a preview of what's after it.
-- **Start in Quest Helper.** Right-click any quest to start it there. If Quest
-  Helper isn't installed, isn't on, or doesn't know the quest, the menu entry
-  says why instead of doing nothing.
-- **Opens as you arrive.** Walk within 8 tiles of a route quest's start point
-  (205 of 218 quests have one) and Quest Helper opens for it. Finish a route
-  quest and the next can start by itself.
-- **Stays out of your shop run.** Quest Helper's automatic starts are held back
-  while a shop trip is active, so they don't overwrite your path.
+- **Quest Helper.** Not in this version. Starting quests in Quest Helper comes
+  back once Quest Helper accepts a start request from other plugins
+  ([quest-helper#2756](https://github.com/Zoinkwiz/quest-helper/pull/2756)).
+  Quest Route works the same with or without Quest Helper installed.
 - **Diary route.** The nearest diary tasks you can actually do, sent to Shortest
   Path like the shop run, with a chat nudge when one is within 12 tiles, a
   searchable diary journal on the Quests tab, and a Quests / Diaries / All
@@ -189,7 +191,9 @@ the quest that wanted it.
 
 ## Syncing with questpath
 
-Off by default. With sync on, the plugin pushes your quests, levels, XP, bank,
+Off by default, and both settings that reach the server carry RuneLite's
+warning: **this feature submits your IP address to a 3rd-party server not
+controlled or verified by RuneLite developers.** With sync on, the plugin pushes your quests, levels, XP, bank,
 inventory and equipment to a [questpath](https://github.com/VinnyVanGogh)
 instance you host, so it stops polling third-party services for data your own
 client already has.
@@ -248,7 +252,7 @@ no uploads.
     alerts" toggle (off by default) adds the party's remaining needs to the
     near-shop chat call-out once per visit.
   - **Done by some of you:** who has finished a quest and who still needs it.
-- Party members on a Quest Path version that sends a different message shape
+- Party members on a Quest Route version that sends a different message shape
   are listed as "other version". They are never shown as having done nothing.
 
 ---

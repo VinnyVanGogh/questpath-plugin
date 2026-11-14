@@ -53,8 +53,8 @@ import net.runelite.api.GrandExchangeOfferState;
  * for, and those lines are exactly as worth ticking as the rest. Names are
  * compared case-insensitively and trimmed because the two sides come from
  * different places -- the wiki's name for a thing and the game's own item
- * definition -- and casing has already caused one bug in this feature (see
- * {@link GrandExchangeSearchBridge#searchText}).
+ * definition -- and casing has already caused one bug in this feature: the
+ * wiki's title case against the game's own lower-cased search filter.
  *
  * <p>Pure state with no client calls of its own: the caller resolves the
  * item's name, which needs the client thread, and hands the result in.

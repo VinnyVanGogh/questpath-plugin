@@ -17,7 +17,7 @@ import static org.junit.Assert.assertTrue;
 
 /**
  * The party message's wire shape: what one member's client encodes, and what
- * another member's client -- possibly on a different Quest Path build -- makes
+ * another member's client -- possibly on a different Quest Route build -- makes
  * of it.
  *
  * <p>Round-tripped through a plain {@link Gson}, because that is what
@@ -91,7 +91,7 @@ public class GroupMemberTest
 	}
 
 	/**
-	 * A newer Quest Path that adds a field must still be readable here, as
+	 * A newer Quest Route that adds a field must still be readable here, as
 	 * long as it kept the version number: unknown keys are ignored.
 	 */
 	@Test

@@ -15,19 +15,27 @@ import net.runelite.client.config.Range;
  * deliberate — a plugin whose entire functionality is "talk to a server you
  * type in" is a much harder thing to justify than one where that is an extra.
  *
- * <p>The group name is {@code questpath} and must never be renamed without a
- * migration: renaming a config group silently resets everyone's saved
- * settings.
+ * <p>The group name is {@code questroute} and must never be renamed without a
+ * migration once published: renaming a config group silently resets
+ * everyone's saved settings. It was {@code questpath} before the first Hub
+ * submission -- that name belongs to another author's live plugin -- and
+ * {@link ConfigGroupMigration} carries a pre-rename profile over once.
  */
 @ConfigGroup(QuestpathConfig.GROUP)
 public interface QuestpathConfig extends Config
 {
-	String GROUP = "questpath";
+	String GROUP = "questroute";
+
+	/**
+	 * The group this plugin used before it was renamed to Quest Route.
+	 * Read once, by {@link ConfigGroupMigration}, and never written.
+	 */
+	String LEGACY_GROUP = "questpath";
 
 	@ConfigSection(
 		name = "In-game overlays",
-		description = "Which Quest Path panels to draw over the game, and how."
-			+ " These are easier to read on the Quest Path sidebar's View tab, which groups"
+		description = "Which Quest Route panels to draw over the game, and how."
+			+ " These are easier to read on the Quest Route sidebar's View tab, which groups"
 			+ " them and does not truncate the labels.",
 		position = 1,
 		// Closed. There are more than twenty items in here and they are laid
@@ -63,7 +71,7 @@ public interface QuestpathConfig extends Config
 
 	@ConfigSection(
 		name = "Chat",
-		description = "What Quest Path says in the game chat",
+		description = "What Quest Route says in the game chat",
 		position = 4,
 		closedByDefault = true
 	)
@@ -84,14 +92,6 @@ public interface QuestpathConfig extends Config
 		closedByDefault = true
 	)
 	String syncSection = "sync";
-
-	@ConfigSection(
-		name = "Quest Helper",
-		description = "Automation around Quest Helper's own start-quest flow.",
-		position = 6,
-		closedByDefault = true
-	)
-	String questHelperSection = "questHelper";
 
 	@ConfigSection(
 		name = "Quests tab",
@@ -115,7 +115,7 @@ public interface QuestpathConfig extends Config
 		name = "Share with my party",
 		description = "Send your finished quests, levels, build rules, route, account type and counts of quest"
 			+ " items you hold (and in group storage, for Group Ironman) to members of your RuneLite party who"
-			+ " also run Quest Path, so the sidebar's Group tab can plan with you. Travels over RuneLite's own"
+			+ " also run Quest Route, so the sidebar's Group tab can plan with you. Travels over RuneLite's own"
 			+ " party service only, never to questpath or any other server. Nothing is sent while this is off.",
 		section = groupSection,
 		position = 1
@@ -818,7 +818,7 @@ public interface QuestpathConfig extends Config
 	default boolean shopArrivalPrompt()
 	{
 		// Off by default, like every notification-shaped toggle in this
-		// plugin -- see chatOnItemComplete and autoAdvanceQuestHelper.
+		// plugin -- see chatOnItemComplete.
 		return false;
 	}
 
@@ -905,7 +905,7 @@ public interface QuestpathConfig extends Config
 		keyName = "bankHighlight",
 		name = "Mark what you need in the bank",
 		description = "Outline the items your plan needs while the bank is open. Toggle it"
-			+ " from the Quest Path button in the bank's title bar.",
+			+ " from the Quest Route button in the bank's title bar.",
 		section = bankSection,
 		position = 1
 	)
@@ -977,74 +977,6 @@ public interface QuestpathConfig extends Config
 	default boolean bankList()
 	{
 		return true;
-	}
-
-	@ConfigItem(
-		keyName = "autoAdvanceQuestHelper",
-		name = "Auto-start the next quest",
-		description = "When the quest you just finished was the current step on your saved route,"
-			+ " automatically start the next one in Quest Helper -- only if Quest Helper reports it"
-			+ " available. Always says what it did (or why it could not) in the chat, and never"
-			+ " retries on its own.",
-		section = questHelperSection,
-		position = 1
-	)
-	default boolean autoAdvanceQuestHelper()
-	{
-		// Off by default. Starting something in another plugin unasked is
-		// intrusive, however welcome it usually is a moment after finishing
-		// the quest before it.
-		return false;
-	}
-
-	@ConfigItem(
-		keyName = "questHelperArrivalPrompt",
-		name = "Open Quest Helper on arrival",
-		description = "When you walk within a few tiles of the start of a quest you could begin"
-			+ " -- the next one on your saved route, or anything else currently doable -- open it"
-			+ " in Quest Helper automatically, only if Quest Helper reports it available. Says"
-			+ " what it did in the chat, once per arrival, never on login or a resync. This gets"
-			+ " you to the door; Quest Helper's own arrow does the rest, because questpath has no"
-			+ " per-step locations to guide you with.",
-		section = questHelperSection,
-		position = 2
-	)
-	default boolean questHelperArrivalPrompt()
-	{
-		// Off by default, same reason autoAdvanceQuestHelper is: opening
-		// another plugin's UI unasked is intrusive, however welcome it
-		// usually is the moment you actually arrive.
-		return false;
-	}
-
-	@Range(min = 0, max = 218)
-	@ConfigItem(
-		keyName = "questStartArrivalDepth",
-		name = "- how far down the route",
-		description = "Limits the prompt above to the next N outstanding quests on your saved"
-			+ " route, counted by position -- 1 means only the very next route quest can ever"
-			+ " prompt, 3 means the next three, and so on. 0 means no limit, which is every"
-			+ " outstanding route quest and questpath's previous behaviour. This only narrows the"
-			+ " route: a quest that is startable but not on your saved route -- an off-route"
-			+ " ELIGIBLE or BOOSTABLE quest -- is never affected by this number, at any depth,"
-			+ " because \"how far down the route\" has no meaning for a quest that is not on it."
-			+ " A quest a depth would otherwise include but that is not actually startable right"
-			+ " now (blocked on a skill, a quest, or your build rules) still never prompts --"
-			+ " this setting only narrows which route positions are checked at all, it never"
-			+ " overrides that filter.",
-		section = questHelperSection,
-		position = 3
-	)
-	default int questStartArrivalDepth()
-	{
-		// 0 (no limit) rather than a small default: this is a narrowing of an
-		// already-off-by-default feature, and anyone who already had
-		// questHelperArrivalPrompt turned on before this setting existed must
-		// not see their prompts quietly shrink to "next few" the moment they
-		// update. Zero reproduces exactly what shipped before this existed;
-		// picking it narrower is now one spinner click away for anyone who
-		// wants "just the next one or two".
-		return 0;
 	}
 
 	@ConfigItem(

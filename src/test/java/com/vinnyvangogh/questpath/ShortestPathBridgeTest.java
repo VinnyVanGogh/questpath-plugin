@@ -161,7 +161,7 @@ public class ShortestPathBridgeTest
 		assertEquals(ShortestPathBridge.RouteOutcome.CALL_FAILED, routeOf(bridge, oneDestination()));
 	}
 
-	/** Availability is re-checked at call time, same discipline as QuestHelperBridge -- not cached from an earlier read. */
+	/** Availability is re-checked at call time -- not cached from an earlier read. */
 	@Test
 	public void unavailableAtCallTimeIsNotPosted()
 	{

@@ -1,10 +1,25 @@
 @AGENTS.md
 
-# questpath plugin — project instructions
+# Quest Route plugin — project instructions
 
 A RuneLite plugin for accounts deliberately capping a skill: not "do I meet
 this quest's requirements" but "would this quest, or anything it depends on,
 push a skill past a cap I am holding on purpose".
+
+**Names.** The plugin is **Quest Route** on the Hub and in the client: Hub
+manifest `quest-route`, `displayName` and `@PluginDescriptor(name)` "Quest
+Route", config group `questroute`. It was `questpath` until the first Hub
+submission; that Hub name belongs to another author's plugin. "questpath"
+still names the Go web app it can sync with, and the Java package
+`com.vinnyvangogh.questpath` (not user-visible, never renamed).
+`ConfigGroupMigration` copies an old `questpath` config group once.
+
+**No reflection, ever.** `NoReflectionTest` scans `src/main` for every Plugin
+Hub forbidden language feature. Another plugin is reached over
+`PluginMessage` or not at all. The Quest Helper integration was removed for
+the first submission for exactly this reason; it comes back over
+`PluginMessage` once Quest Helper has a receiver — see
+`docs/hub-submission.md` §4.
 
 `AGENTS.md` above is RuneLite's own rules for hub plugins. It is authoritative
 on logging, threading, HTTP, config naming, packaging, and the list of features
@@ -67,8 +82,9 @@ is silent — both sides render confidently.
   experience gets a two-minute timer. Folding xp into the structural
   fingerprint means a request every few seconds while training; leaving it out
   means questpath's stored xp only moves on level-up.
-- The nav-button icon is drawn in code, not loaded from a resource. It is a
-  placeholder; a real `icon.png` (root, max 48x72) replaces it.
+- The nav-button icon is drawn in code, not loaded from a resource.
+  `icon.png` at the repo root (48x48) is the Plugin Hub listing icon only;
+  it is not packaged into the jar.
 
 ## Two numbers that have to stay in step
 
