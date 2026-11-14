@@ -1,5 +1,6 @@
 package com.vinnyvangogh.questpath;
 
+import com.vinnyvangogh.questpath.groupshop.Transfer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.IdentityHashMap;
@@ -29,42 +30,13 @@ import java.util.Map;
  * passes itself off as everything the quest needs.</li>
  * </ul>
  *
- * <p>Group storage is not counted. RuneLite does not expose it unless the
- * member has it open, and a count that is right only sometimes would be read
- * as right always.
+ * <p>Group storage is not counted here. RuneLite only exposes it while a
+ * member has it open; the group shopping list ({@code
+ * groupshop.GroupShoppingList}) counts the last snapshot and says whose and
+ * how old it is, which a per-quest split has no room to say.
  */
 final class ItemSplit
 {
-	/** A spare handed from one member to another. */
-	static final class Transfer
-	{
-		private final String from;
-		private final String to;
-		private final long count;
-
-		Transfer(String from, String to, long count)
-		{
-			this.from = from;
-			this.to = to;
-			this.count = count;
-		}
-
-		String from()
-		{
-			return from;
-		}
-
-		String to()
-		{
-			return to;
-		}
-
-		long count()
-		{
-			return count;
-		}
-	}
-
 	/** One item line, split. */
 	static final class Line
 	{

@@ -1,6 +1,7 @@
 package com.vinnyvangogh.questpath;
 
 import com.google.gson.Gson;
+import com.vinnyvangogh.questpath.groupshop.Transfer;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -77,7 +78,7 @@ public class GroupPlanTest
 		return out;
 	}
 
-	private static List<String> names(List<QuestGraph.Quest> quests)
+	static List<String> names(List<QuestGraph.Quest> quests)
 	{
 		List<String> out = new ArrayList<>();
 		for (QuestGraph.Quest quest : quests)
@@ -87,7 +88,7 @@ public class GroupPlanTest
 		return out;
 	}
 
-	private static BuildRule oneDefence()
+	static BuildRule oneDefence()
 	{
 		return BuildRule.local("Defence", BuildRule.HARD_CAP, 1, "1 def pure");
 	}
@@ -250,7 +251,7 @@ public class GroupPlanTest
 		assertNotNull(eye);
 		assertEquals(2, eye.totalNeeded());
 		assertEquals(1, eye.transfers().size());
-		ItemSplit.Transfer transfer = eye.transfers().get(0);
+		Transfer transfer = eye.transfers().get(0);
 		assertEquals("Alice", transfer.from());
 		assertEquals("Bob", transfer.to());
 		assertEquals(1L, transfer.count());

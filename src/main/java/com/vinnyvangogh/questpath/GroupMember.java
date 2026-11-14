@@ -1,5 +1,7 @@
 package com.vinnyvangogh.questpath;
 
+import com.vinnyvangogh.questpath.groupshop.AccountKind;
+import com.vinnyvangogh.questpath.groupshop.GroupStorage;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -38,6 +40,10 @@ final class GroupMember
 	private final List<BuildRule> rules;
 	private final Map<String, Long> held;
 	private final boolean bankSeen;
+	// Set once by decode, after construction; see withShopping.
+	private List<String> route = Collections.emptyList();
+	private AccountKind kind = AccountKind.UNKNOWN;
+	private GroupStorage groupStorage;
 
 	private GroupMember(long memberId, String name, int version, boolean compatible, Set<String> completed,
 		PlayerState state, List<BuildRule> rules, Map<String, Long> held, boolean bankSeen)
@@ -74,19 +80,50 @@ final class GroupMember
 		message.rules = new ArrayList<>(rules == null ? Collections.emptyList() : rules);
 		if (held != null)
 		{
-			Map<String, Long> relevant = new LinkedHashMap<>();
-			for (Map.Entry<String, Long> entry : held.entrySet())
-			{
-				String key = entry.getKey() == null ? null : entry.getKey().toLowerCase();
-				if (key != null && relevantItems.contains(key) && entry.getValue() != null && entry.getValue() > 0)
-				{
-					relevant.merge(key, entry.getValue(), Long::sum);
-				}
-			}
-			message.held = relevant;
+			message.held = relevantCounts(held, relevantItems);
 			message.bankSeen = bankSeen;
 		}
 		return message;
+	}
+
+	/**
+	 * Adds what the group shopping list needs to a message from {@link
+	 * #encode}: the route, the account's trading rules, and group storage.
+	 * All optional on the wire, so older builds read the message unchanged.
+	 *
+	 * @param route quest names on the active route, or empty for none
+	 * @param storage group storage counts, or null when not seen this session
+	 */
+	static QuestpathGroupState withShopping(QuestpathGroupState message, List<String> route, AccountKind kind,
+		Map<String, Long> storage, long storageAt, Set<String> relevantItems)
+	{
+		if (message == null)
+		{
+			return null;
+		}
+		message.route = route == null || route.isEmpty() ? null : new ArrayList<>(route);
+		message.accountType = kind == null || kind == AccountKind.UNKNOWN ? null : kind.name();
+		if (storage != null && kind == AccountKind.GROUP_IRONMAN)
+		{
+			message.groupStorage = relevantCounts(storage, relevantItems);
+			message.groupStorageAt = storageAt;
+		}
+		return message;
+	}
+
+	/** Only items some quest asks for, never the whole bank; lower-cased, positive counts only. */
+	private static Map<String, Long> relevantCounts(Map<String, Long> counts, Set<String> relevantItems)
+	{
+		Map<String, Long> relevant = new LinkedHashMap<>();
+		for (Map.Entry<String, Long> entry : counts.entrySet())
+		{
+			String key = entry.getKey() == null ? null : entry.getKey().toLowerCase();
+			if (key != null && relevantItems.contains(key) && entry.getValue() != null && entry.getValue() > 0)
+			{
+				relevant.merge(key, entry.getValue(), Long::sum);
+			}
+		}
+		return relevant;
 	}
 
 	/** "Forget me": sent once when a member turns sharing off. No account data. */
@@ -148,21 +185,34 @@ final class GroupMember
 				}
 			}
 		}
-		Map<String, Long> held = null;
-		if (message.held != null)
+		PlayerState state = new PlayerState(levels, experience, completed, names(message.started), rules);
+		GroupMember member = new GroupMember(memberId, name, message.version, true, completed, state,
+			Collections.unmodifiableList(rules), counts(message.held), message.bankSeen);
+		member.route = message.route == null ? Collections.emptyList()
+			: Collections.unmodifiableList(new ArrayList<>(message.route));
+		member.kind = AccountKind.parse(message.accountType);
+		Map<String, Long> storage = counts(message.groupStorage);
+		member.groupStorage = storage == null || member.kind != AccountKind.GROUP_IRONMAN ? null
+			: new GroupStorage(storage, message.groupStorageAt, name);
+		return member;
+	}
+
+	/** Lower-cased counts, or null for null -- "not shared", never "holds nothing". */
+	private static Map<String, Long> counts(Map<String, Long> raw)
+	{
+		if (raw == null)
 		{
-			held = new HashMap<>();
-			for (Map.Entry<String, Long> entry : message.held.entrySet())
+			return null;
+		}
+		Map<String, Long> out = new HashMap<>();
+		for (Map.Entry<String, Long> entry : raw.entrySet())
+		{
+			if (entry.getKey() != null && entry.getValue() != null)
 			{
-				if (entry.getKey() != null && entry.getValue() != null)
-				{
-					held.merge(entry.getKey().toLowerCase(), entry.getValue(), Long::sum);
-				}
+				out.merge(entry.getKey().toLowerCase(), entry.getValue(), Long::sum);
 			}
 		}
-		PlayerState state = new PlayerState(levels, experience, completed, names(message.started), rules);
-		return new GroupMember(memberId, name, message.version, true, completed, state,
-			Collections.unmodifiableList(rules), held, message.bankSeen);
+		return out;
 	}
 
 	private static Set<String> names(Collection<String> raw)
@@ -246,5 +296,29 @@ final class GroupMember
 		}
 		Long count = held.get(itemName.toLowerCase());
 		return count == null ? 0L : count;
+	}
+
+	/** Every shared count, lower-cased, or null when none were shared. */
+	Map<String, Long> heldCounts()
+	{
+		return held == null ? null : Collections.unmodifiableMap(held);
+	}
+
+	/** Quest names on the member's active route; empty when they have none or did not say. */
+	List<String> route()
+	{
+		return route;
+	}
+
+	/** The member's trading rules; {@link AccountKind#UNKNOWN} from a build that does not say. */
+	AccountKind kind()
+	{
+		return kind;
+	}
+
+	/** The group storage this member last saw, or null. Only ever set for a group ironman. */
+	GroupStorage groupStorage()
+	{
+		return groupStorage;
 	}
 }

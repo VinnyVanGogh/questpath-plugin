@@ -26,6 +26,16 @@ final class GroupBroadcaster
 {
 	static final Duration EXPERIENCE_INTERVAL = Duration.ofMinutes(2);
 
+	/**
+	 * An unchanged state is re-sent this often, so a member idling in a bank
+	 * still reads as live. Without it, silence from someone with nothing new
+	 * to say and silence from someone whose client died look the same.
+	 */
+	static final Duration HEARTBEAT = Duration.ofMinutes(5);
+
+	/** A member not heard from for this long is marked stale; see {@link #stale}. */
+	static final Duration STALE_AFTER = HEARTBEAT.multipliedBy(2).plusMinutes(1);
+
 	private final Consumer<QuestpathGroupState> transport;
 	private final Supplier<Instant> clock;
 
@@ -70,14 +80,11 @@ final class GroupBroadcaster
 			return;
 		}
 		int structural = Objects.hash(message.completed, message.started, message.levels, rulesKey(message),
-			message.held, message.bankSeen);
+			message.held, message.bankSeen, message.route, message.accountType, message.groupStorage);
 		int experience = Objects.hashCode(message.experience);
 		Instant now = clock.get();
 
-		boolean send = force || !haveSent || structural != lastStructural
-			|| (experience != lastExperience
-				&& Duration.between(lastSentAt, now).compareTo(EXPERIENCE_INTERVAL) >= 0);
-		if (!send)
+		if (!force && !changed(structural, experience, now))
 		{
 			return;
 		}
@@ -86,6 +93,37 @@ final class GroupBroadcaster
 		lastStructural = structural;
 		lastExperience = experience;
 		lastSentAt = now;
+	}
+
+	/** Whether there is anything the party has not heard: first send, a structural change, a heartbeat, or xp on its timer. */
+	private boolean changed(int structural, int experience, Instant now)
+	{
+		if (!haveSent || structural != lastStructural || heartbeatDue())
+		{
+			return true;
+		}
+		return experience != lastExperience
+			&& Duration.between(lastSentAt, now).compareTo(EXPERIENCE_INTERVAL) >= 0;
+	}
+
+	/**
+	 * Whether a member who has sent before has been quiet for a whole {@link
+	 * #HEARTBEAT}. Cheap -- no account read -- so the plugin can ask every
+	 * tick and only build a snapshot when it is true.
+	 */
+	boolean heartbeatDue()
+	{
+		return haveSent && Duration.between(lastSentAt, clock.get()).compareTo(HEARTBEAT) >= 0;
+	}
+
+	/**
+	 * Whether a member last heard at {@code heardAt} has missed two
+	 * heartbeats. Two, not one, so a single dropped message does not mark a
+	 * live member stale.
+	 */
+	static boolean stale(Instant heardAt, Instant now)
+	{
+		return heardAt == null || Duration.between(heardAt, now).compareTo(STALE_AFTER) > 0;
 	}
 
 	/** Forget what was sent, so the next party hears the state from scratch. */

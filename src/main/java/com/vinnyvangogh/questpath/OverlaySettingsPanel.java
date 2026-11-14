@@ -157,6 +157,12 @@ class OverlaySettingsPanel extends JPanel
 				+ " party service only -- never questpath. Nothing is sent while this is off.",
 			config.partyShare(), "partyShare"));
 		panel.add(Box.createRigidArea(new Dimension(0, 6)));
+		panel.add(toggle(
+			"Group needs in shop alerts",
+			"When you come up on a shop that sells something your party is still short of, say so in"
+				+ " chat with how many more the group needs. Uses what party members share; once per visit.",
+			config.groupShopAlert(), "groupShopAlert"));
+		panel.add(Box.createRigidArea(new Dimension(0, 6)));
 		JLabel note = new JLabel(wrap("The address to fetch from and push to, and the pairing token"
 			+ " from questpath -plugin-token, are set in RuneLite's own Configuration panel for this"
 			+ " plugin -- not duplicated here."));

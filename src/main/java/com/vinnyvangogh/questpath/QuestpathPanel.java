@@ -1,5 +1,9 @@
 package com.vinnyvangogh.questpath;
 
+import com.vinnyvangogh.questpath.groupshop.GroupShoppingList;
+import com.vinnyvangogh.questpath.groupshop.GroupStorage;
+import com.vinnyvangogh.questpath.groupshop.ItemSources;
+import com.vinnyvangogh.questpath.groupshop.Transfer;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
@@ -1129,7 +1133,8 @@ class QuestpathPanel extends PluginPanel
 		else
 		{
 			body.add(muted(view.sharing()
-				? "Sharing your quests, levels, build rules and quest-item counts with your party."
+				? "Sharing your quests, levels, build rules, route, account type and quest-item counts with"
+					+ " your party."
 				: "Not sharing. Your party sees nothing from you; turn on \"Share with my party\" in the"
 					+ " View tab's Sync section to let them plan with you."));
 			body.add(Box.createVerticalStrut(6));
@@ -1244,6 +1249,10 @@ class QuestpathPanel extends PluginPanel
 		itemSplitBlock(body, plan, together);
 
 		body.add(Box.createVerticalStrut(14));
+		body.add(heading(PanelSections.GROUP_SHOPPING.title()));
+		groupShoppingBlock(body, view);
+
+		body.add(Box.createVerticalStrut(14));
 		body.add(heading(PanelSections.GROUP_DONE_BY_SOME.title()));
 		List<GroupPlan.Partial> partial = plan.doneBySome();
 		if (partial.isEmpty())
@@ -1292,34 +1301,17 @@ class QuestpathPanel extends PluginPanel
 			return;
 		}
 		QuestGraph.Quest selected = together.get(0);
-		JComboBox<String> picker = new JComboBox<>();
+		List<String> names = new ArrayList<>();
 		for (QuestGraph.Quest quest : together)
 		{
-			picker.addItem(quest.name());
+			names.add(quest.name());
 			if (quest.name().equals(groupSplitQuest))
 			{
 				selected = quest;
 			}
 		}
-		picker.setSelectedItem(selected.name());
-		picker.setBackground(ColorScheme.DARKER_GRAY_COLOR);
-		picker.setForeground(Color.WHITE);
-		picker.setFont(FontManager.getRunescapeSmallFont());
-		picker.setMaximumSize(new Dimension(Integer.MAX_VALUE, 22));
-		picker.setAlignmentX(Component.LEFT_ALIGNMENT);
-		picker.setToolTipText("Which group quest to split the item list for");
-		// Attached after setSelectedItem, so restoring the selection never
-		// fires a rebuild of itself.
-		picker.addActionListener(e ->
-		{
-			Object chosen = picker.getSelectedItem();
-			if (chosen != null && !chosen.equals(groupSplitQuest))
-			{
-				groupSplitQuest = (String) chosen;
-				rebuildGroupTab();
-			}
-		});
-		body.add(picker);
+		body.add(groupPicker(names, selected.name(), "Which group quest to split the item list for", chosen ->
+			groupSplitQuest = chosen));
 		body.add(Box.createVerticalStrut(6));
 
 		ItemSplit split = plan.split(selected);
@@ -1334,7 +1326,7 @@ class QuestpathPanel extends PluginPanel
 			String each = (line.quantityStated() ? "" : "at least ") + line.perMember() + " each";
 			JLabel title = row(line.name() + " — " + each + (line.obtainable() ? " (found in quest)" : ""));
 			body.add(title);
-			for (ItemSplit.Transfer transfer : line.transfers())
+			for (Transfer transfer : line.transfers())
 			{
 				JLabel give = row("  " + transfer.from() + " gives " + transfer.to() + " " + transfer.count());
 				give.setForeground(ColorScheme.PROGRESS_COMPLETE_COLOR);
@@ -1375,7 +1367,276 @@ class QuestpathPanel extends PluginPanel
 			body.add(muted("Bank not opened this session: " + String.join(", ", split.membersWithoutBank())
 				+ " -- their counts are only what they carry."));
 		}
-		body.add(muted("Group storage is not counted."));
+		body.add(muted("Group storage is not counted here; Group shopping below counts it."));
+	}
+
+	/**
+	 * A Group tab drop-down. Picking a different entry stores it through
+	 * {@code onPick} and rebuilds the tab; restoring the selection on a
+	 * rebuild does not, because the listener is attached after it.
+	 */
+	private JComboBox<String> groupPicker(List<String> options, String selected, String tooltip,
+		java.util.function.Consumer<String> onPick)
+	{
+		JComboBox<String> picker = new JComboBox<>();
+		for (String option : options)
+		{
+			picker.addItem(option);
+		}
+		picker.setSelectedItem(selected);
+		picker.setBackground(ColorScheme.DARKER_GRAY_COLOR);
+		picker.setForeground(Color.WHITE);
+		picker.setFont(FontManager.getRunescapeSmallFont());
+		picker.setMaximumSize(new Dimension(Integer.MAX_VALUE, 22));
+		picker.setAlignmentX(Component.LEFT_ALIGNMENT);
+		picker.setToolTipText(tooltip);
+		picker.addActionListener(e ->
+		{
+			Object chosen = picker.getSelectedItem();
+			if (chosen != null && !chosen.equals(selected))
+			{
+				onPick.accept((String) chosen);
+				rebuildGroupTab();
+			}
+		});
+		return picker;
+	}
+
+	// ------------------------------------------------------------------
+	// Group shopping: what the whole party still has to get, across every
+	// quest each member counts. See GroupShoppingList for the math and
+	// GroupShoppingNeeds for which quests count.
+	// ------------------------------------------------------------------
+
+	private static final String ALL_QUESTS = "All quests";
+	private static final String EVERYONE = "Everyone";
+	private static final int GROUP_SHOP_LIMIT = 25;
+
+	/** The Group shopping filters, kept across rebuilds. Null means "all". */
+	private String groupShopQuest;
+	private String groupShopMember;
+	private boolean groupShopStillNeeded = true;
+
+	private void groupShoppingBlock(JPanel body, GroupView view)
+	{
+		GroupShoppingList list = view.shopping();
+		if (list == null || list.lines().isEmpty())
+		{
+			body.add(muted("No quest anyone counts asks for an item this list can shop for."));
+			return;
+		}
+		body.add(muted("Counts each member's route, or every quest their build allows when they have none."
+			+ " Build-blocked quests never count."));
+		groupShopFilters(body, list);
+
+		List<GroupShoppingList.Line> lines = list.filtered(groupShopQuest, groupShopMember, groupShopStillNeeded);
+		if (lines.isEmpty())
+		{
+			body.add(muted(groupShopStillNeeded ? "Nothing left to get for this filter." : "Nothing for this filter."));
+		}
+		int shown = 0;
+		for (GroupShoppingList.Line line : lines)
+		{
+			if (shown++ >= GROUP_SHOP_LIMIT)
+			{
+				body.add(muted("... and " + (lines.size() - GROUP_SHOP_LIMIT) + " more. Filter by quest to see them."));
+				break;
+			}
+			groupShopLine(body, view, line);
+		}
+		body.add(Box.createVerticalStrut(6));
+		body.add(groupShopRouteButton(view, lines));
+		groupShopFootnotes(body, list);
+	}
+
+	private void groupShopFilters(JPanel body, GroupShoppingList list)
+	{
+		List<String> quests = new ArrayList<>();
+		quests.add(ALL_QUESTS);
+		quests.addAll(list.quests());
+		if (groupShopQuest != null && !quests.contains(groupShopQuest))
+		{
+			groupShopQuest = null;
+		}
+		body.add(groupPicker(quests, groupShopQuest == null ? ALL_QUESTS : groupShopQuest,
+			"Show what the group needs for one quest, with every holding spent on that quest alone",
+			chosen -> groupShopQuest = ALL_QUESTS.equals(chosen) ? null : chosen));
+
+		List<String> members = new ArrayList<>();
+		members.add(EVERYONE);
+		members.addAll(list.memberNames());
+		if (groupShopMember != null && !members.contains(groupShopMember))
+		{
+			groupShopMember = null;
+		}
+		body.add(groupPicker(members, groupShopMember == null ? EVERYONE : groupShopMember,
+			"Only items this member needs; totals stay the group's",
+			chosen -> groupShopMember = EVERYONE.equals(chosen) ? null : chosen));
+
+		JCheckBox stillNeeded = new JCheckBox("Still needed only", groupShopStillNeeded);
+		stillNeeded.setFont(FontManager.getRunescapeSmallFont());
+		stillNeeded.setForeground(Color.WHITE);
+		stillNeeded.setBackground(ColorScheme.DARK_GRAY_COLOR);
+		stillNeeded.setAlignmentX(Component.LEFT_ALIGNMENT);
+		stillNeeded.addActionListener(e ->
+		{
+			groupShopStillNeeded = stillNeeded.isSelected();
+			rebuildGroupTab();
+		});
+		body.add(stillNeeded);
+		body.add(Box.createVerticalStrut(4));
+	}
+
+	/** One item: the headline count, then who, who holds what, and where to get it. */
+	private void groupShopLine(JPanel body, GroupView view, GroupShoppingList.Line line)
+	{
+		body.add(groupShopTitle(line));
+		for (GroupShoppingList.Share share : line.shares())
+		{
+			groupShopDetail(body, "  " + share.member() + ": " + describeShare(share)
+				+ (share.stale() ? " (stale)" : ""));
+		}
+		for (Transfer transfer : line.transfers())
+		{
+			JLabel give = row("  " + transfer.from() + " gives " + transfer.to() + " " + transfer.count());
+			give.setForeground(ColorScheme.PROGRESS_COMPLETE_COLOR);
+			body.add(give);
+		}
+		String held = describeHolders(line);
+		if (!held.isEmpty())
+		{
+			groupShopDetail(body, "  Held: " + held);
+		}
+		if (line.stillNeeded() > 0)
+		{
+			groupShopDetail(body, "  Get: " + describeSources(view.sources(line.name())));
+		}
+	}
+
+	/** "Bucket — need 28 more (30 total)", coloured by whether anything is left to get. */
+	private static JLabel groupShopTitle(GroupShoppingList.Line line)
+	{
+		String floor = line.quantityStated() ? "" : "at least ";
+		boolean shortOf = line.stillNeeded() > 0;
+		JLabel title = row(line.name() + " — " + (shortOf ? "need " + floor + line.stillNeeded() + " more" : "covered")
+			+ " (" + floor + line.totalNeeded() + " total)" + (line.obtainable() ? " (found in quest)" : ""));
+		title.setForeground(shortOf ? ColorScheme.PROGRESS_INPROGRESS_COLOR : ColorScheme.PROGRESS_COMPLETE_COLOR);
+		title.setToolTipText("For: " + String.join(", ", line.quests())
+			+ (line.tradeable() ? "" : ". Untradeable: only each member's own holding counts."));
+		return title;
+	}
+
+	private void groupShopDetail(JPanel body, String text)
+	{
+		JLabel label = row(text);
+		label.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
+		body.add(label);
+	}
+
+	private static String describeShare(GroupShoppingList.Share share)
+	{
+		if (share.unknown())
+		{
+			return "needs " + share.need() + ", items not shared";
+		}
+		if (share.shortBy() == 0)
+		{
+			return "covered (needs " + share.need() + ")";
+		}
+		return share.shortBy() + " more (needs " + share.need() + ")";
+	}
+
+	private static String describeHolders(GroupShoppingList.Line line)
+	{
+		List<String> parts = new ArrayList<>();
+		for (Map.Entry<String, Long> holder : line.holders().entrySet())
+		{
+			parts.add(holder.getKey() + " " + holder.getValue());
+		}
+		if (line.storageHeld() > 0)
+		{
+			parts.add("group storage " + line.storageHeld()
+				+ (line.storageUsed() > 0 ? " (" + line.storageUsed() + " used)" : ""));
+		}
+		return String.join(", ", parts);
+	}
+
+	private static String describeSources(ItemSources.Options options)
+	{
+		if (options == null)
+		{
+			return "not looked up";
+		}
+		List<String> parts = new ArrayList<>();
+		for (ItemSources.Source source : options.sources())
+		{
+			parts.add(source.describe());
+		}
+		String hidden = options.unreachableShops() == 0 ? ""
+			: " (" + options.unreachableShops() + " shop" + (options.unreachableShops() == 1 ? "" : "s")
+				+ " you can't use yet)";
+		return (parts.isEmpty() ? "nowhere you can use" : String.join(", ", parts)) + hidden;
+	}
+
+	/** Sends every usable shop on the shown, still-short lines to Shortest Path. */
+	private JButton groupShopRouteButton(GroupView view, List<GroupShoppingList.Line> lines)
+	{
+		Set<WorldPoint> destinations = new java.util.LinkedHashSet<>();
+		for (GroupShoppingList.Line line : lines)
+		{
+			ItemSources.Options options = view.sources(line.name());
+			if (line.stillNeeded() == 0 || options == null)
+			{
+				continue;
+			}
+			for (String shop : options.shops())
+			{
+				WorldPoint at = shopLocator.apply(shop);
+				if (at != null)
+				{
+					destinations.add(at);
+				}
+			}
+		}
+		JButton button = new JButton();
+		button.setAlignmentX(Component.LEFT_ALIGNMENT);
+		if (destinations.isEmpty() || shortestPathBridge == null)
+		{
+			button.setText("No shop you can use sells what the group needs");
+			button.setEnabled(false);
+			return button;
+		}
+		ShortestPathBridge.Availability availability = shortestPathBridge.availability();
+		button.setText(availability.menuLabel() + " (group shops)");
+		button.setEnabled(availability == ShortestPathBridge.Availability.AVAILABLE);
+		int count = destinations.size();
+		button.addActionListener(event -> shortestPathBridge.route(destinations, outcome ->
+			SwingUtilities.invokeLater(() -> reportRouteOutcome(outcome, count))));
+		return button;
+	}
+
+	private void groupShopFootnotes(JPanel body, GroupShoppingList list)
+	{
+		if (!list.membersWithoutItems().isEmpty())
+		{
+			body.add(muted("Not sharing item counts: " + String.join(", ", list.membersWithoutItems())
+				+ ". Their need is shown but not counted as still to get."));
+		}
+		if (!list.membersWithoutBank().isEmpty())
+		{
+			body.add(muted("Bank not opened this session: " + String.join(", ", list.membersWithoutBank())
+				+ " -- their counts are only what they carry."));
+		}
+		GroupStorage storage = list.storage();
+		body.add(muted(storage == null
+			? "Group storage: not seen this session. A group ironman opening it shares what is there."
+			: "Group storage as " + storage.seenBy() + " last saw it, " + minutesAgo(storage.seenAtMillis()) + "."));
+	}
+
+	private static String minutesAgo(long epochMillis)
+	{
+		long minutes = Math.max(0, (System.currentTimeMillis() - epochMillis) / 60_000L);
+		return minutes == 0 ? "just now" : minutes + " min ago";
 	}
 
 	// ------------------------------------------------------------------
