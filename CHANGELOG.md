@@ -22,6 +22,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - `NoReflectionTest`, `ConfigGroupMigrationTest` and `QuestHelperAbsentTest`.
 
 - Group shopping in the Group tab: what the whole party still has to get across each member's route (or every quest their build allows), with per-member breakdown, hand-overs, who holds what, Group Ironman storage, and GE-or-shop/drop sources filtered for the viewer; quest/member/still-needed filters and a Shortest Path button to the group's shops. Portable `groupshop` package (`GroupShoppingList`, `ItemSources`, `GroupShopAlert`), `GroupShoppingNeeds` adapter, party wire adds optional `route`, `accountType`, `groupStorage`, and a 5-minute heartbeat with stale marking. Opt-in `groupShopAlert` adds the group's needs to the near-shop chat line, once per visit.
+- Group shopping in the Group tab: what the whole party still has to get across each member's route (or every quest their build allows), with per-member breakdown, hand-overs, who holds what, Group Ironman storage, and GE-or-shop/drop sources filtered for the viewer; quest/member/still-needed filters and a Shortest Path button to the group's shops. Portable `groupshop` package (`GroupShoppingList`, `ItemSources`, `GroupShopAlert`), `GroupShoppingNeeds` adapter, party wire adds optional `route`, `accountType`, `groupStorage`, and a 5-minute heartbeat with stale marking. Opt-in `groupShopAlert` adds the group's needs to the near-shop chat line, once per visit (#11).
 - Group tab for RuneLite parties (Group Ironman): opt-in, off-by-default sharing of quest states, levels, build rules and quest-item counts over RuneLite's `PartyService` (`QuestpathGroupState`, `GroupMember`, `GroupBroadcaster`); group quest planning with build-rule flags for capped members (`GroupPlan`, `BuildBreaches`); per-quest item split with hand-overs (`ItemSplit`) (#9).
 - Opt-in recommended quest items (`recommendedItems`) and teleport tablet-or-runes equivalence (`TeleportEquivalence`, `TeleportForm`, `recommendedTeleportForm`) across the Grand Exchange buy list, shop route, and Items tab, with recommended coins summed as a balance to bring (`QuestItems.recommendedCoins`) and quest graph v13 support (#4).
 - Melee max-hit comparison lines under locked gear showing max hit without prayer and without potion (`920689b`).
@@ -61,6 +62,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
+- Dev builds now resolve `runeLiteVersion` to `latest.release`, re-checked on every build (`cacheDynamicVersionsFor 0`), and print the resolved client before `test` and `run`; pin with `-PruneLiteVersion=<x>`. Dev only: the Plugin Hub replaces `build.gradle` at submission.
 - Bumped `runeLiteVersion` to `1.13.5` so the developer client connects after the game update (#7).
 - Re-exported bundled quest graph and planner vectors after NPC shop-town, item-link, and iron bar ingest updates (`02982e8`, `24014e8`, `e6f72f4`).
 - Replaced initial `README.md` overview with in-game screenshots of the shop run, bank tab, ground markers, and all six sidebar tabs (`6bd6a33`).
