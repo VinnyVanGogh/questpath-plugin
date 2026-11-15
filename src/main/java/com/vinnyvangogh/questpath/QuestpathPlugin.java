@@ -2902,7 +2902,7 @@ public class QuestpathPlugin extends Plugin
 		// right there" -- and the second is the one worth walking on.
 		boolean wantOwn = config != null && config.shopNearbyPrompt();
 		boolean wantGroup = config != null && config.groupShopAlert();
-		boolean wantVoice = config != null && config.voiceEnabled() && config.voiceShops();
+		boolean wantVoice = voiceShopsOn();
 		if (!wantOwn && !wantGroup && !wantVoice)
 		{
 			// Still not observed while all are off: the watcher's baseline
@@ -2923,16 +2923,27 @@ public class QuestpathPlugin extends Plugin
 
 		for (String shopName : shopApproach.observe(nearby, playerLocation()))
 		{
-			List<QuestItems.Total> wanted = wantedAt.get(shopName);
-			announceShopApproach(shopName, nearby.get(shopName),
-				wantOwn && wanted != null ? wanted.get(0) : null,
-				GroupShopAlert.describe(groupAt.get(shopName)));
-			if (wantVoice && wanted != null)
-			{
-				// The chat line above is the text half whenever it ran; a
-				// missing clip then only needs the ping.
-				sayShop(shopName, wanted, !wantOwn);
-			}
+			shopApproached(shopName, nearby.get(shopName), wantedAt.get(shopName), groupAt.get(shopName),
+				wantOwn, wantVoice);
+		}
+	}
+
+	private boolean voiceShopsOn()
+	{
+		return config != null && config.voiceEnabled() && config.voiceShops();
+	}
+
+	/** One shop just come into range: its chat line, then its spoken line. */
+	private void shopApproached(String shopName, WorldPoint at, List<QuestItems.Total> wanted,
+		List<GroupShoppingList.Line> group, boolean wantOwn, boolean wantVoice)
+	{
+		QuestItems.Total first = wantOwn && wanted != null ? wanted.get(0) : null;
+		announceShopApproach(shopName, at, first, GroupShopAlert.describe(group));
+		if (wantVoice && wanted != null)
+		{
+			// The chat line above is the text half whenever it ran; a
+			// missing clip then only needs the ping.
+			sayShop(shopName, wanted, !wantOwn);
 		}
 	}
 
