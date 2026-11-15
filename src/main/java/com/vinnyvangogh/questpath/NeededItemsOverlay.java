@@ -100,7 +100,6 @@ class NeededItemsOverlay extends QuestpathOverlay
 		return config.overlayItemsLength();
 	}
 
-	@Override
 	/** Group storage's part in the counts, for a group ironman only; see {@link GroupStorageView#note}. */
 	private static void addGroupStorageNote(List<OverlayRow> rows, QuestItems items)
 	{
@@ -111,6 +110,7 @@ class NeededItemsOverlay extends QuestpathOverlay
 		}
 	}
 
+	@Override
 	List<OverlayRow> rows(OverlaySnapshot snapshot, OverlayContext ctx)
 	{
 		QuestItems items = snapshot.items();
