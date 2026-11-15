@@ -3028,6 +3028,16 @@ public class QuestpathPlugin extends Plugin
 		{
 			return;
 		}
+		String name = floorAnnouncer.observe(floorSightings(items, player), System.currentTimeMillis());
+		if (name != null)
+		{
+			speak(voiceLines.floorLine(name, VoiceLines::bundled), true);
+		}
+	}
+
+	/** Needed, not-yet-covered items lying within the floor-item range, by spawn. */
+	private List<FloorItemAnnouncer.Sighting> floorSightings(QuestItems items, WorldPoint player)
+	{
 		Map<Integer, QuestItems.Total> needed = new HashMap<>();
 		for (QuestItems.Total total : items.totals())
 		{
@@ -3047,11 +3057,7 @@ public class QuestpathPlugin extends Plugin
 				inRange.add(new FloorItemAnnouncer.Sighting(spawn, total.name(), distance));
 			}
 		}
-		String name = floorAnnouncer.observe(inRange, System.currentTimeMillis());
-		if (name != null)
-		{
-			speak(voiceLines.floorLine(name, VoiceLines::bundled), true);
-		}
+		return inRange;
 	}
 
 	@Subscribe
