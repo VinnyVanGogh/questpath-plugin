@@ -16,6 +16,7 @@ import com.vinnyvangogh.questpath.groupshop.ItemSources;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -45,6 +46,8 @@ import net.runelite.client.chat.ChatColorType;
 import net.runelite.client.chat.ChatMessageBuilder;
 import net.runelite.client.chat.QueuedMessage;
 import net.runelite.api.events.GameTick;
+import net.runelite.api.events.ItemDespawned;
+import net.runelite.api.events.ItemSpawned;
 import net.runelite.api.ScriptID;
 import net.runelite.api.VarClientStr;
 import net.runelite.api.events.MenuOptionClicked;
@@ -325,6 +328,20 @@ public class QuestpathPlugin extends Plugin
 	private volatile WorldPoint lastPlayerLocation;
 	private Map<String, String> dropRegionsByName;
 	private final ShopApproachWatcher shopApproach = new ShopApproachWatcher();
+
+	/** The voice's word list and player; built in startUp, the player shut down in shutDown. */
+	private VoiceLines voiceLines = new VoiceLines();
+	private VoicePlayer voicePlayer;
+
+	/** When to say "Bucket nearby" -- see {@link FloorItemAnnouncer}. */
+	private final FloorItemAnnouncer floorAnnouncer = new FloorItemAnnouncer();
+
+	/**
+	 * Every ground item in the scene by tile and id, with how many lie there,
+	 * from ItemSpawned/ItemDespawned: walked once a tick for the floor-item
+	 * voice instead of sweeping scene tiles. Client thread only.
+	 */
+	private final Map<FloorSpawn, Integer> floorSpawns = new HashMap<>();
 
 	/**
 	 * Watches for a shop opening that sells something outstanding -- see its
@@ -730,6 +747,7 @@ public class QuestpathPlugin extends Plugin
 			this::shopRouteActive, this::syncNow,
 			shopItemSkips, this::diaryGraphTasks, this::diaryPush, lockedGearActions(),
 			localBuildRules, this::onLocalRulesEdited);
+		panel.setSayShopAgain(this::sayShopAgain);
 		navButton = NavigationButton.builder()
 			.tooltip("Quest Route")
 			.icon(icon())
@@ -783,6 +801,9 @@ public class QuestpathPlugin extends Plugin
 
 		lampOverlay = new LampOverlay(this, config, client, tooltipManager);
 		overlayManager.add(lampOverlay);
+
+		voiceLines = VoiceLines.load();
+		voicePlayer = new VoicePlayer();
 
 		bankTab = new BankTabLayout(client, clientThread, this);
 		bankButton = new BankButton(client, this::bankNeedsShown, this::toggleBankNeeds);
@@ -951,6 +972,13 @@ public class QuestpathPlugin extends Plugin
 		floatingNotes.clear();
 		shopkeeper.forget();
 		shopApproach.clear();
+		if (voicePlayer != null)
+		{
+			voicePlayer.shutDown();
+			voicePlayer = null;
+		}
+		floorSpawns.clear();
+		floorAnnouncer.clear();
 		if (groundOverlay != null)
 		{
 			overlayManager.remove(groundOverlay);
@@ -1461,6 +1489,7 @@ public class QuestpathPlugin extends Plugin
 		// which in practice meant opening the shop. The reminder to go
 		// somewhere arrived once they were already standing there.
 		checkShopApproach(overlaySnapshot == null ? null : overlaySnapshot.items());
+		checkFloorItems(overlaySnapshot == null ? null : overlaySnapshot.items());
 
 		// Same reasoning as checkShopApproach: proximity to a diary task
 		// changes every tick as the player walks, whether or not the
@@ -2029,8 +2058,17 @@ public class QuestpathPlugin extends Plugin
 			}
 			return;
 		}
+		if (event.getGameState() == GameState.LOADING)
+		{
+			// The new scene re-fires ItemSpawned for every item in it, so the
+			// tracked set starts over; the announcer keeps what it has said,
+			// keyed by tile, so crossing a region edge does not repeat it.
+			floorSpawns.clear();
+		}
 		if (event.getGameState() == GameState.LOGIN_SCREEN)
 		{
+			floorSpawns.clear();
+			floorAnnouncer.clear();
 			// A logged-out client reports every skill as level 1, which would
 			// render as a confident "combat 3" for an account that is nothing
 			// of the sort.
@@ -2864,9 +2902,10 @@ public class QuestpathPlugin extends Plugin
 		// right there" -- and the second is the one worth walking on.
 		boolean wantOwn = config != null && config.shopNearbyPrompt();
 		boolean wantGroup = config != null && config.groupShopAlert();
-		if (!wantOwn && !wantGroup)
+		boolean wantVoice = config != null && config.voiceEnabled() && config.voiceShops();
+		if (!wantOwn && !wantGroup && !wantVoice)
 		{
-			// Still not observed while both are off: the watcher's baseline
+			// Still not observed while all are off: the watcher's baseline
 			// would go stale and switching one on mid-session would announce
 			// every shop already in range at once.
 			shopApproach.clear();
@@ -2877,15 +2916,160 @@ public class QuestpathPlugin extends Plugin
 		// shop that stocks something for you and something for the group
 		// says it once, and "once per visit" means the same thing for both.
 		Map<String, WorldPoint> nearby = new HashMap<>();
-		Map<String, QuestItems.Total> wantedAt = wantOwn && items != null
+		Map<String, List<QuestItems.Total>> wantedAt = (wantOwn || wantVoice) && items != null
 			? ownShopCandidates(items, nearby) : Collections.emptyMap();
 		Map<String, List<GroupShoppingList.Line>> groupAt = wantGroup
 			? groupShopCandidates(nearby) : Collections.emptyMap();
 
 		for (String shopName : shopApproach.observe(nearby, playerLocation()))
 		{
-			announceShopApproach(shopName, nearby.get(shopName), wantedAt.get(shopName),
+			List<QuestItems.Total> wanted = wantedAt.get(shopName);
+			announceShopApproach(shopName, nearby.get(shopName),
+				wantOwn && wanted != null ? wanted.get(0) : null,
 				GroupShopAlert.describe(groupAt.get(shopName)));
+			if (wantVoice && wanted != null)
+			{
+				// The chat line above is the text half whenever it ran; a
+				// missing clip then only needs the ping.
+				sayShop(shopName, wanted, !wantOwn);
+			}
+		}
+	}
+
+	/**
+	 * Says "Looking for 30 air runes and an air talisman at Aubury's Rune
+	 * Shop": every still-needed item this shop stocks, how many from the
+	 * plan.
+	 *
+	 * @param chatOnFallback put the line in chat when a clip is missing,
+	 *     because nothing else has said it in text
+	 */
+	private void sayShop(String shopName, List<QuestItems.Total> wanted, boolean chatOnFallback)
+	{
+		List<VoiceLines.Want> wants = ShopVoice.wants(wanted);
+		if (!wants.isEmpty())
+		{
+			speak(voiceLines.shopLine(wants, shopName, VoiceLines::bundled), chatOnFallback);
+		}
+	}
+
+	/**
+	 * Plays one line, or a ping when a clip is missing -- never silence --
+	 * and on a fallback puts the words in chat if asked to.
+	 */
+	private void speak(Utterance line, boolean chatOnFallback)
+	{
+		VoicePlayer player = voicePlayer;
+		if (player == null || config == null)
+		{
+			return;
+		}
+		Speaker.speak(config.voiceEnabled(), config.voiceVolume(), line, chatOnFallback, new Speaker.Out()
+		{
+			@Override
+			public void play(Utterance utterance, int volume)
+			{
+				player.say(utterance, volume);
+			}
+
+			@Override
+			public void chat(String text)
+			{
+				QuestpathPlugin.this.chat(text);
+			}
+		});
+	}
+
+	/**
+	 * "Say again" on the panel's shop stop: the same line as the approach,
+	 * for this shop, now. Called from Swing, so the work hops to the client
+	 * thread, where the plan and the voice are read.
+	 */
+	void sayShopAgain(String shopName)
+	{
+		clientThread.invokeLater(() ->
+		{
+			QuestItems items = overlaySnapshot == null ? null : overlaySnapshot.items();
+			List<QuestItems.Total> wanted = items == null ? null
+				: ownShopCandidates(items, new HashMap<>()).get(shopName);
+			List<VoiceLines.Want> wants = wanted == null ? Collections.emptyList() : ShopVoice.wants(wanted);
+			if (wants.isEmpty())
+			{
+				chat("Quest Route: nothing on your list is sold at " + shopName + ".");
+				return;
+			}
+			Utterance line = voiceLines.shopLine(wants, shopName, VoiceLines::bundled);
+			if (config.voiceEnabled())
+			{
+				speak(line, true);
+			}
+			else
+			{
+				// Voice off: the button still answers, in text.
+				chat("Quest Route: " + line.text);
+			}
+		});
+	}
+
+	/**
+	 * Says "Bucket nearby" once per needed item spawn within range -- see
+	 * {@link FloorItemAnnouncer}. Walks the spawns ItemSpawned recorded, not
+	 * the scene's tiles.
+	 */
+	private void checkFloorItems(QuestItems items)
+	{
+		if (items == null || config == null || !config.voiceEnabled() || !config.voiceFloorItems()
+			|| floorSpawns.isEmpty())
+		{
+			return;
+		}
+		WorldPoint player = playerLocation();
+		if (player == null)
+		{
+			return;
+		}
+		Map<Integer, QuestItems.Total> needed = new HashMap<>();
+		for (QuestItems.Total total : items.totals())
+		{
+			if (total.itemId() > 0 && !total.covered())
+			{
+				needed.putIfAbsent(total.itemId(), total);
+			}
+		}
+		int radius = config.floorItemRadius();
+		List<FloorItemAnnouncer.Sighting> inRange = new ArrayList<>();
+		for (FloorSpawn spawn : floorSpawns.keySet())
+		{
+			QuestItems.Total total = needed.get(spawn.itemId);
+			int distance = spawn.at.distanceTo(player);
+			if (total != null && distance <= radius)
+			{
+				inRange.add(new FloorItemAnnouncer.Sighting(spawn, total.name(), distance));
+			}
+		}
+		String name = floorAnnouncer.observe(inRange, System.currentTimeMillis());
+		if (name != null)
+		{
+			speak(voiceLines.floorLine(name, VoiceLines::bundled), true);
+		}
+	}
+
+	@Subscribe
+	public void onItemSpawned(ItemSpawned event)
+	{
+		FloorSpawn spawn = new FloorSpawn(event.getTile().getWorldLocation(), event.getItem().getId());
+		floorSpawns.merge(spawn, 1, Integer::sum);
+	}
+
+	@Subscribe
+	public void onItemDespawned(ItemDespawned event)
+	{
+		FloorSpawn spawn = new FloorSpawn(event.getTile().getWorldLocation(), event.getItem().getId());
+		Integer left = floorSpawns.computeIfPresent(spawn, (key, count) -> count > 1 ? count - 1 : null);
+		if (left == null)
+		{
+			// The last one there is gone: one dropped in its place is news.
+			floorAnnouncer.forget(spawn);
 		}
 	}
 
@@ -2941,11 +3125,12 @@ public class QuestpathPlugin extends Plugin
 	/**
 	 * This account's own near-shop candidates: shops it can use that sell an
 	 * item still short and not skipped. Fills {@code nearby} with their tiles
-	 * and returns the item each shop is announced for.
+	 * and returns every such item each shop sells, in plan order: the chat
+	 * line names the first, the voice names them all.
 	 */
-	private Map<String, QuestItems.Total> ownShopCandidates(QuestItems items, Map<String, WorldPoint> nearby)
+	private Map<String, List<QuestItems.Total>> ownShopCandidates(QuestItems items, Map<String, WorldPoint> nearby)
 	{
-		Map<String, QuestItems.Total> wantedAt = new HashMap<>();
+		Map<String, List<QuestItems.Total>> wantedAt = new HashMap<>();
 		for (QuestItems.Total total : items.totals())
 		{
 			if (total.covered() || shopItemSkips.isSkipped(total.name()))
@@ -2958,7 +3143,7 @@ public class QuestpathPlugin extends Plugin
 				if (at != null)
 				{
 					nearby.put(shopName, at);
-					wantedAt.putIfAbsent(shopName, total);
+					wantedAt.computeIfAbsent(shopName, name -> new ArrayList<>()).add(total);
 				}
 			}
 		}

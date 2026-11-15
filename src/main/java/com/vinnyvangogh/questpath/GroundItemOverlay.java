@@ -17,6 +17,7 @@ import net.runelite.api.Tile;
 import net.runelite.api.TileItem;
 import net.runelite.api.WorldView;
 import net.runelite.api.coords.LocalPoint;
+import net.runelite.api.coords.WorldPoint;
 import net.runelite.client.ui.overlay.Overlay;
 import net.runelite.client.ui.overlay.OverlayLayer;
 import net.runelite.client.ui.overlay.OverlayPosition;
@@ -200,6 +201,12 @@ class GroundItemOverlay extends Overlay
 
 		OverlayTheme.prepare(g);
 
+		// The arrow's range: the same radius the voice says "nearby" within,
+		// so an arrow and a spoken line never disagree about what is close.
+		WorldPoint playerWorld = config.floorItemArrow() ? localPlayer.getWorldLocation() : null;
+		int arrowRadius = config.floorItemRadius();
+		long now = System.currentTimeMillis();
+
 		Tile[][] planeTiles = tiles[plane];
 		for (int x = minX; x <= maxX; x++)
 		{
@@ -215,7 +222,10 @@ class GroundItemOverlay extends Overlay
 				{
 					continue;
 				}
-				paintTile(g, tile, needed, markColor);
+				boolean arrow = playerWorld != null
+					&& tile.getWorldLocation() != null
+					&& tile.getWorldLocation().distanceTo(playerWorld) <= arrowRadius;
+				paintTile(g, tile, needed, markColor, arrow ? now : -1);
 			}
 		}
 	}
@@ -227,8 +237,11 @@ class GroundItemOverlay extends Overlay
 	 * Only what {@link Tile#getGroundItems()} actually reports is ever a
 	 * candidate -- see the class doc for why trees, rocks and the like are
 	 * never considered here.
+	 *
+	 * @param arrowAt the clock for the bouncing arrow over the label, or -1 for no arrow
 	 */
-	private void paintTile(Graphics2D g, Tile tile, Map<Integer, QuestItems.Total> needed, Color markColor)
+	private void paintTile(Graphics2D g, Tile tile, Map<Integer, QuestItems.Total> needed, Color markColor,
+		long arrowAt)
 	{
 		List<TileItem> groundItems = tile.getGroundItems();
 		if (groundItems == null || groundItems.isEmpty())
@@ -297,6 +310,13 @@ class GroundItemOverlay extends Overlay
 		if (textLocation != null)
 		{
 			OverlayTheme.shadowed(g, label, textLocation.getX(), textLocation.getY(), markColor);
+			if (arrowAt >= 0)
+			{
+				// Centred over the label, its tip just clear of the text.
+				int centre = textLocation.getX() + g.getFontMetrics().stringWidth(label) / 2;
+				int tip = textLocation.getY() - g.getFontMetrics().getAscent() - 3;
+				BouncingArrow.draw(g, centre, tip, arrowAt, markColor);
+			}
 		}
 	}
 
