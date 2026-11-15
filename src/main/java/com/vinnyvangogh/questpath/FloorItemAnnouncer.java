@@ -49,18 +49,7 @@ final class FloorItemAnnouncer
 	 */
 	String observe(Collection<Sighting> inRange, long now)
 	{
-		Sighting nearest = null;
-		for (Sighting sighting : inRange)
-		{
-			if (said.contains(sighting.spawn))
-			{
-				continue;
-			}
-			if (nearest == null || sighting.distance < nearest.distance)
-			{
-				nearest = sighting;
-			}
-		}
+		final Sighting nearest = nearestUnsaid(inRange);
 		if (nearest == null || (lastSpokenAt != Long.MIN_VALUE && now - lastSpokenAt < MIN_GAP_MILLIS))
 		{
 			return null;
@@ -74,6 +63,19 @@ final class FloorItemAnnouncer
 		}
 		lastSpokenAt = now;
 		return nearest.name;
+	}
+
+	private Sighting nearestUnsaid(Collection<Sighting> inRange)
+	{
+		Sighting nearest = null;
+		for (Sighting sighting : inRange)
+		{
+			if (!said.contains(sighting.spawn) && (nearest == null || sighting.distance < nearest.distance))
+			{
+				nearest = sighting;
+			}
+		}
+		return nearest;
 	}
 
 	/** The spawn is gone; one landing in its place later is said again. */

@@ -127,9 +127,8 @@ def bundle_names(bundle):
     return items, sold, shops
 
 
-def main():
-    bundle = json.loads(BUNDLE.read_text(encoding="utf-8"))
-    items, sold, shops = bundle_names(bundle)
+def build_rows(items, sold, shops):
+    """(rows, clip id -> words): every list row, and each clip once."""
     rows = []
     used = {}
 
@@ -157,7 +156,13 @@ def main():
     for name in sorted(shops, key=str.lower):
         words = spoken_shop(name)
         rows.append(("shop", name.lower(), clip_for("shop", name, words), words))
+    return rows, used
 
+
+def main():
+    bundle = json.loads(BUNDLE.read_text(encoding="utf-8"))
+    items, sold, shops = bundle_names(bundle)
+    rows, used = build_rows(items, sold, shops)
     for row in rows:
         if any("\t" in cell or "\n" in cell for cell in row):
             raise SystemExit(f"tab or newline in {row!r}")

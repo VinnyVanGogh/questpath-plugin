@@ -222,10 +222,7 @@ class GroundItemOverlay extends Overlay
 				{
 					continue;
 				}
-				boolean arrow = playerWorld != null
-					&& tile.getWorldLocation() != null
-					&& tile.getWorldLocation().distanceTo(playerWorld) <= arrowRadius;
-				paintTile(g, tile, needed, markColor, arrow ? now : -1);
+				paintTile(g, tile, needed, markColor, arrowAt(tile, playerWorld, arrowRadius, now));
 			}
 		}
 	}
@@ -318,6 +315,13 @@ class GroundItemOverlay extends Overlay
 				BouncingArrow.draw(g, centre, tip, arrowAt, markColor);
 			}
 		}
+	}
+
+	/** The arrow's clock for a tile within the floor-item range, or -1 for no arrow. */
+	private static long arrowAt(Tile tile, WorldPoint player, int radius, long now)
+	{
+		WorldPoint at = player == null ? null : tile.getWorldLocation();
+		return at != null && at.distanceTo(player) <= radius ? now : -1;
 	}
 
 	/**
