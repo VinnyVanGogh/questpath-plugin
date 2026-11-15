@@ -2428,6 +2428,20 @@ class QuestpathPanel extends PluginPanel
 	 * {@link #shortestPathBridge} and {@link #reportRouteOutcome} to draw and
 	 * wire the route button below.
 	 */
+	/**
+	 * For a group ironman: whose storage snapshot the counts include and how
+	 * old it is, or that storage has not been seen yet. Nothing otherwise.
+	 */
+	private void addGroupStorageNote(JPanel panel, QuestItems items)
+	{
+		String note = items.groupStorage().note(System.currentTimeMillis());
+		if (note != null)
+		{
+			panel.add(muted(note));
+			panel.add(Box.createVerticalStrut(6));
+		}
+	}
+
 	private JPanel itemsBlock(QuestItems items, String filter)
 	{
 		JPanel panel = column();
@@ -2453,6 +2467,7 @@ class QuestpathPanel extends PluginPanel
 			panel.add(warning);
 			panel.add(Box.createVerticalStrut(6));
 		}
+		addGroupStorageNote(panel, items);
 
 		if (items.isEmpty())
 		{

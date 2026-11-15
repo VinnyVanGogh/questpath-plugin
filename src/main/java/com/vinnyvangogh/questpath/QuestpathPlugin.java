@@ -12,6 +12,7 @@ import com.google.inject.Provides;
 import com.vinnyvangogh.questpath.groupshop.AccountKind;
 import com.vinnyvangogh.questpath.groupshop.GroupShopAlert;
 import com.vinnyvangogh.questpath.groupshop.GroupShoppingList;
+import com.vinnyvangogh.questpath.groupshop.GroupStorage;
 import com.vinnyvangogh.questpath.groupshop.ItemSources;
 import java.io.IOException;
 import java.time.Duration;
@@ -132,6 +133,13 @@ public class QuestpathPlugin extends Plugin
 	 */
 	private Map<String, Long> groupStorageSeen;
 	private long groupStorageAt;
+
+	/**
+	 * Whether {@link #groupStorageSeen} has been read back from this RS
+	 * profile since login. The profile is not known until logged in, so the
+	 * read is lazy; see {@link #loadGroupStorage}.
+	 */
+	private boolean groupStorageLoaded;
 
 	/**
 	 * Shops this account can use that sell something the party is still
@@ -1147,6 +1155,9 @@ public class QuestpathPlugin extends Plugin
 		QuestpathGroupState message = GroupMember.encode(completed, inProgressQuestNames(), levels, experience,
 			effectiveBuildRules(), owned.isEmpty() ? null : heldIncludingCollected(), owned.bankSeen(),
 			groupRelevantItems());
+		// A snapshot from an earlier session is still worth sharing: a member
+		// with none of their own counts it, and freshest() lets a newer one win.
+		loadGroupStorage();
 		return GroupMember.withShopping(message, routeOrder, accountKind(), groupStorageSeen, groupStorageAt,
 			groupRelevantItems());
 	}
@@ -1175,8 +1186,46 @@ public class QuestpathPlugin extends Plugin
 		{
 			groupStorageSeen = questItemCounts(container);
 			groupStorageAt = System.currentTimeMillis();
+			groupStorageLoaded = true;
+			configManager.setRSProfileConfiguration(QuestpathConfig.GROUP, GroupStorageStore.KEY,
+				GroupStorageStore.encode(gson, groupStorageSeen, groupStorageAt));
+			refreshPending = true;
 		}
 		return true;
+	}
+
+	/**
+	 * Reads this account's last storage snapshot back from its RS profile,
+	 * once per login. Client thread. A profile is one account, so another
+	 * account logging in reads its own snapshot or none -- never this one's.
+	 */
+	private void loadGroupStorage()
+	{
+		if (groupStorageLoaded || client.getGameState() != GameState.LOGGED_IN
+			|| configManager.getRSProfileKey() == null)
+		{
+			return;
+		}
+		groupStorageLoaded = true;
+		GroupStorageStore.Snapshot stored = GroupStorageStore.decode(gson,
+			configManager.getRSProfileConfiguration(QuestpathConfig.GROUP, GroupStorageStore.KEY));
+		if (stored != null && groupStorageSeen == null)
+		{
+			groupStorageSeen = stored.counts;
+			groupStorageAt = stored.at;
+		}
+	}
+
+	/**
+	 * Group storage as this account's item lists count it: the freshest of
+	 * its own snapshot and every party member's, for a group ironman only.
+	 */
+	private GroupStorageView groupStorageView()
+	{
+		loadGroupStorage();
+		GroupStorage own = groupStorageSeen == null ? null
+			: new GroupStorage(groupStorageSeen, groupStorageAt, "you");
+		return GroupStorageView.of(accountKind(), GroupStorageView.snapshots(own, partyMembers.values()));
 	}
 
 	/** A container's quest items, lower-cased name to count. Client thread. */
@@ -2080,8 +2129,11 @@ public class QuestpathPlugin extends Plugin
 			// shortfall on it by coincidence of a shared item name.
 			shopItemSkips.clear();
 			// Another account's group, if it has one at all.
+			// Only the in-memory copy: the stored one belongs to this
+			// account's RS profile and is read back when it logs in again.
 			groupStorageSeen = null;
 			groupStorageAt = 0L;
+			groupStorageLoaded = false;
 			// The next login may be a different account of a different type
 			// entirely -- an ironman logging out and a main logging in on
 			// the same client session must not keep seeing the previous
@@ -4082,7 +4134,7 @@ public class QuestpathPlugin extends Plugin
 			new PlayerState(levels, experience, completed, inProgressQuestNames(), effectiveBuildRules()),
 			heldIncludingCollected(), owned.bankSeen(), pickupScope(),
 			new HashSet<>(routeOrder), knownItems, owned.carriedByName(),
-			owned.bankPlaceholders(), itemPlan);
+			owned.bankPlaceholders(), itemPlan, groupStorageView());
 	}
 
 	/**
