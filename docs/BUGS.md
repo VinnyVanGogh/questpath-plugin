@@ -4,6 +4,11 @@ Merged bug fixes in reverse chronological order (newest first). Each entry recor
 
 ---
 
+## Sidebar Grand Exchange single-item click wrote item names into `VarClientStr.INPUT_TEXT` and `src/main` retained reflection types
+- **What broke:** Clicking a row in the sidebar's Grand Exchange list (`GrandExchangeSearchBridge`) wrote `searchText(itemName)` directly into `VarClientStr.INPUT_TEXT` (varcstr 359, the chatbox message-layer input) and replayed the search box's key listener, violating the Plugin Hub's no-autotyping rule. Separately, `QuestHelperBridge` used `java.lang.reflect` and `BuildRuleCodec` used `com.google.gson.reflect.TypeToken` (`java.lang.reflect.Type`), violating the Plugin Hub's ban on reflection.
+- **How it was found:** Caught during the Plugin Hub compliance audit and bridge re-check before first submission.
+- **Fix:** Routed single-item Grand Exchange clicks by item ID through the buy-list button's sentinel search (`GrandExchangeButton#showOne`) so no search term is written into the chatbox input, disabled clicks on id-less rows, switched `BuildRuleCodec` to `BuildRule[].class`, removed `QuestHelperBridge` until Quest Helper exposes a `PluginMessage` receiver (`Zoinkwiz/quest-helper#2756`), and added `NoReflectionTest` and `QuestHelperAbsentTest` (#14).
+
 ## Developer client failed to connect after game update on RuneLite 1.12.37
 - **What broke:** Launching the developer client against the pinned `runeLiteVersion = '1.12.37'` failed to connect after an Old School RuneScape game update (`error_game_js5connect_outofdate`).
 - **How it was found:** Observed when launching the developer client after the game update.

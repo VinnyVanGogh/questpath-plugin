@@ -6,22 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
-### Changed
-
-- Renamed to **Quest Route** for the Plugin Hub: `displayName`, `@PluginDescriptor(name)` and every in-game string. The Hub name `questpath` belongs to another author's live plugin. The config group is now `questroute`; `ConfigGroupMigration` copies a pre-rename `questpath` profile (plain and per-account keys) once, never overwriting, from the config provider before RuneLite writes defaults. The Java package stays `com.vinnyvangogh.questpath`.
-- Clicking an item in the sidebar's Grand Exchange list now shows that one item through the buy-list button's sentinel search (`GrandExchangeButton#showOne`) instead of typing its name into the search box, which the Hub's no-autotyping rule forbids.
-- `BuildRuleCodec` reads and writes `BuildRule[]` instead of a Gson `TypeToken`, so `src/main` has no reflection types at all.
-
-### Removed
-
-- Quest Helper integration, for the first Hub submission: `QuestHelperBridge` (reflection, an automatic Hub rejection), the "Start in Quest Helper" menus and left-click starts, auto-start of the next route quest, open-on-arrival, `AutoAdvancePlanner`, `QuestStartArrivalWatcher`, `QuestStartArrivalGate`, `QuestStartCandidates`, and the `autoAdvanceQuestHelper`, `questHelperArrivalPrompt` and `questStartArrivalDepth` config keys. It returns over `PluginMessage` once Quest Helper has a receiver (Zoinkwiz/quest-helper#2756).
-
 ### Added
 
-- `icon.png` for the Plugin Hub listing.
-- `NoReflectionTest`, `ConfigGroupMigrationTest` and `QuestHelperAbsentTest`.
-
-- Group shopping in the Group tab: what the whole party still has to get across each member's route (or every quest their build allows), with per-member breakdown, hand-overs, who holds what, Group Ironman storage, and GE-or-shop/drop sources filtered for the viewer; quest/member/still-needed filters and a Shortest Path button to the group's shops. Portable `groupshop` package (`GroupShoppingList`, `ItemSources`, `GroupShopAlert`), `GroupShoppingNeeds` adapter, party wire adds optional `route`, `accountType`, `groupStorage`, and a 5-minute heartbeat with stale marking. Opt-in `groupShopAlert` adds the group's needs to the near-shop chat line, once per visit.
+- `icon.png` for the Plugin Hub listing and `docs/hub-submission.md` manifest, pre-submission checklist, and draft PR body (#14).
+- `NoReflectionTest`, `ConfigGroupMigrationTest` and `QuestHelperAbsentTest` (#14).
 - Group shopping in the Group tab: what the whole party still has to get across each member's route (or every quest their build allows), with per-member breakdown, hand-overs, who holds what, Group Ironman storage, and GE-or-shop/drop sources filtered for the viewer; quest/member/still-needed filters and a Shortest Path button to the group's shops. Portable `groupshop` package (`GroupShoppingList`, `ItemSources`, `GroupShopAlert`), `GroupShoppingNeeds` adapter, party wire adds optional `route`, `accountType`, `groupStorage`, and a 5-minute heartbeat with stale marking. Opt-in `groupShopAlert` adds the group's needs to the near-shop chat line, once per visit (#11).
 - Group tab for RuneLite parties (Group Ironman): opt-in, off-by-default sharing of quest states, levels, build rules and quest-item counts over RuneLite's `PartyService` (`QuestpathGroupState`, `GroupMember`, `GroupBroadcaster`); group quest planning with build-rule flags for capped members (`GroupPlan`, `BuildBreaches`); per-quest item split with hand-overs (`ItemSplit`) (#9).
 - Opt-in recommended quest items (`recommendedItems`) and teleport tablet-or-runes equivalence (`TeleportEquivalence`, `TeleportForm`, `recommendedTeleportForm`) across the Grand Exchange buy list, shop route, and Items tab, with recommended coins summed as a balance to bring (`QuestItems.recommendedCoins`) and quest graph v13 support (#4).
@@ -62,13 +50,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
-- Dev builds now resolve `runeLiteVersion` to `latest.release`, re-checked on every build (`cacheDynamicVersionsFor 0`), and print the resolved client before `test` and `run`; pin with `-PruneLiteVersion=<x>`. Dev only: the Plugin Hub replaces `build.gradle` at submission.
+- Renamed to **Quest Route** for the Plugin Hub: `displayName`, `@PluginDescriptor(name)` and every in-game string. The Hub name `questpath` belongs to another author's live plugin. The config group is now `questroute`; `ConfigGroupMigration` copies a pre-rename `questpath` profile (plain and per-account keys) once, never overwriting, from the config provider before RuneLite writes defaults. The Java package stays `com.vinnyvangogh.questpath` (#14).
+- Clicking an item in the sidebar's Grand Exchange list now shows that one item through the buy-list button's sentinel search (`GrandExchangeButton#showOne`) instead of typing its name into the search box, which the Hub's no-autotyping rule forbids (#14).
+- `BuildRuleCodec` reads and writes `BuildRule[]` instead of a Gson `TypeToken`, so `src/main` has no reflection types at all (#14).
+- Dev builds now resolve `runeLiteVersion` to `latest.release`, re-checked on every build (`cacheDynamicVersionsFor 0`), and print the resolved client before `test` and `run`; pin with `-PruneLiteVersion=<x>`. Dev only: the Plugin Hub replaces `build.gradle` at submission (#15).
 - Bumped `runeLiteVersion` to `1.13.5` so the developer client connects after the game update (#7).
 - Re-exported bundled quest graph and planner vectors after NPC shop-town, item-link, and iron bar ingest updates (`02982e8`, `24014e8`, `e6f72f4`).
 - Replaced initial `README.md` overview with in-game screenshots of the shop run, bank tab, ground markers, and all six sidebar tabs (`6bd6a33`).
 - Merged `Tab.BUILD` into `Tab.COMBAT` and placed non-blocking build rules behind a "Show all rules" toggle (`93aa574`).
 - Ordered shop trips as a nearest-neighbour tour from the player's current position, advancing one stop at a time (`460b597`, `92603a5`).
 - Switched sidebar tab icons to native client sprites via `SpriteManager` (`f2b1999`, `e84b2b5`, `f0a76f5`).
+
+### Removed
+
+- Quest Helper integration, for the first Hub submission: `QuestHelperBridge` (reflection, an automatic Hub rejection), the "Start in Quest Helper" menus and left-click starts, auto-start of the next route quest, open-on-arrival, `AutoAdvancePlanner`, `QuestStartArrivalWatcher`, `QuestStartArrivalGate`, `QuestStartCandidates`, and the `autoAdvanceQuestHelper`, `questHelperArrivalPrompt` and `questStartArrivalDepth` config keys. It returns over `PluginMessage` once Quest Helper has a receiver (Zoinkwiz/quest-helper#2756) (#14).
 
 ### Fixed
 

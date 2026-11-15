@@ -13,6 +13,8 @@
 ./gradlew run            # launch a RuneLite developer client with the plugin loaded
 ```
 
+Dev builds resolve `runeLiteVersion` to `latest.release` (re-checked against `repo.runelite.net` on every build) and print the resolved client version before `test` and `run`. To pin a specific RuneLite version for one invocation, pass `-PruneLiteVersion=<version>` (for example, `./gradlew build -PruneLiteVersion=1.13.6`).
+
 To log in to the development client with a Jagex Account, follow the RuneLite wiki guide: [Using Jagex Accounts](https://github.com/runelite/runelite/wiki/Using-Jagex-Accounts).
 
 ## Architecture and invariants
@@ -32,7 +34,7 @@ RuneLite implements `@ConfigGroup` interfaces at runtime using a JDK dynamic pro
 
 - **Public return types:** Every enum or class returned by a `@ConfigItem` method in `QuestpathConfig` must be `public`. A package-private return type compiles cleanly but throws `IllegalAccessError` on startup. `QuestpathConfigProxyTest` enforces this structurally.
 - **Sidebar parity:** Every user-facing `@ConfigItem` must also be wired into `OverlaySettingsPanel` unless explicitly exempted in `OverlaySettingsPanelConfigParityTest`.
-- **Frozen keys:** Do not rename the config group (`"questpath"`) or existing `keyName` values without a migration, as doing so silently resets saved user settings and per-account build rules.
+- **Frozen keys:** Do not rename the config group (`"questroute"`, migrated once from pre-rename `"questpath"` by `ConfigGroupMigration` in `provideConfig`) or existing `keyName` values without a migration, as doing so silently resets saved user settings and per-account build rules.
 
 ### Threading and performance
 
