@@ -101,8 +101,15 @@ class QuestGraph
 	 * That is the one case where tolerating the older version is honest
 	 * rather than confident-wrong, and it is why {@link #SUPPORTED_VERSION}
 	 * stays at 12 while the bundled copy is still exported at 12.
+	 *
+	 * <p>14 adds three optional top-level tables: {@code recipes} (how an
+	 * item is made, from what, at which facility, at which levels), {@code
+	 * facilities} (where those facilities stand) and {@code drop_sources}
+	 * (what gates a monster: boss, Slayer level, combat level). Additive in
+	 * the same way 13 was: absent means "this export predates making and
+	 * drop gating", and the route then behaves exactly as it did on 13.
 	 */
-	static final int MAX_VERSION = 13;
+	static final int MAX_VERSION = 14;
 
 	@SerializedName("version")
 	private int version;
@@ -130,6 +137,224 @@ class QuestGraph
 	 */
 	@SerializedName("diary_tasks")
 	private List<DiaryTask> diaryTasks;
+
+	/** How items are made -- see {@link Recipe}. Absent before version 14. */
+	@SerializedName("recipes")
+	private List<Recipe> recipes;
+
+	/**
+	 * Where furnaces, anvils and ranges stand, by the name a {@link
+	 * Recipe#facility()} uses. The same name-and-tile shape as a {@link Shop}
+	 * (only name, x, y and plane are sent), so it is read as one rather than
+	 * as a copy of it.
+	 */
+	@SerializedName("facilities")
+	private List<Shop> facilities;
+
+	/** What gates each monster that drops something -- see {@link DropSource}. */
+	@SerializedName("drop_sources")
+	private List<DropSource> dropSources;
+
+	/**
+	 * One way to make an item: what goes in, where, and at what levels.
+	 *
+	 * <p>Molten glass is a Bucket of sand and a Soda ash at a Furnace, at 1
+	 * Crafting. A material can itself be the product of another recipe;
+	 * nesting is expressed by name, never by embedding, so one ingredient is
+	 * described once however many recipes use it.
+	 */
+	static class Recipe
+	{
+		@SerializedName("product")
+		private String product;
+
+		@SerializedName("product_item_id")
+		private int productItemId;
+
+		@SerializedName("output_quantity")
+		private int outputQuantity;
+
+		@SerializedName("facility")
+		private String facility;
+
+		@SerializedName("members")
+		private boolean members;
+
+		@SerializedName("skills")
+		private List<Requirement> skills;
+
+		@SerializedName("materials")
+		private List<Material> materials;
+
+		Recipe()
+		{
+		}
+
+		Recipe(String product, String facility, List<Requirement> skills, List<Material> materials)
+		{
+			this.product = product;
+			this.facility = facility;
+			this.skills = skills;
+			this.materials = materials;
+			this.outputQuantity = 1;
+		}
+
+		String product()
+		{
+			return product == null ? "" : product;
+		}
+
+		int productItemId()
+		{
+			return productItemId;
+		}
+
+		/** How many one make produces; never below one. */
+		int outputQuantity()
+		{
+			return Math.max(1, outputQuantity);
+		}
+
+		/** "Furnace", "Anvil", "Range" -- or empty for an item made anywhere. */
+		String facility()
+		{
+			return facility == null ? "" : facility;
+		}
+
+		boolean members()
+		{
+			return members;
+		}
+
+		List<Requirement> skills()
+		{
+			return skills == null ? Collections.emptyList() : skills;
+		}
+
+		List<Material> materials()
+		{
+			return materials == null ? Collections.emptyList() : materials;
+		}
+	}
+
+	/**
+	 * One input to a recipe, with where it comes from.
+	 *
+	 * <p>Carries its own shops and droppers because an ingredient is usually
+	 * not a quest item itself, so no quest line would otherwise say where a
+	 * Bucket of sand is sold.
+	 */
+	static class Material
+	{
+		@SerializedName("name")
+		private String name;
+
+		@SerializedName("item_id")
+		private int itemId;
+
+		@SerializedName("quantity")
+		private int quantity;
+
+		@SerializedName("shop_names")
+		private List<String> shopNames;
+
+		@SerializedName("drop_source_names")
+		private List<String> dropSourceNames;
+
+		Material()
+		{
+		}
+
+		Material(String name, int quantity, List<String> shopNames, List<String> dropSourceNames)
+		{
+			this.name = name;
+			this.quantity = quantity;
+			this.shopNames = shopNames;
+			this.dropSourceNames = dropSourceNames;
+		}
+
+		String name()
+		{
+			return name == null ? "" : name;
+		}
+
+		int itemId()
+		{
+			return itemId;
+		}
+
+		/** How many one make consumes; never below one. */
+		int quantity()
+		{
+			return Math.max(1, quantity);
+		}
+
+		List<String> shopNames()
+		{
+			return shopNames == null ? Collections.emptyList() : shopNames;
+		}
+
+		List<String> dropSourceNames()
+		{
+			return dropSourceNames == null ? Collections.emptyList() : dropSourceNames;
+		}
+	}
+
+	/**
+	 * What it takes to kill a monster for its drop.
+	 *
+	 * <p>The answer to a route that sent a low-level Group Ironman to the
+	 * Thermonuclear smoke devil for Molten glass: a boss behind 93 Slayer is
+	 * where that item drops, and nowhere a route should go.
+	 */
+	static class DropSource
+	{
+		@SerializedName("name")
+		private String name;
+
+		@SerializedName("slayer_level")
+		private int slayerLevel;
+
+		@SerializedName("combat_level")
+		private int combatLevel;
+
+		@SerializedName("boss")
+		private boolean boss;
+
+		DropSource()
+		{
+		}
+
+		DropSource(String name, int slayerLevel, int combatLevel, boolean boss)
+		{
+			this.name = name;
+			this.slayerLevel = slayerLevel;
+			this.combatLevel = combatLevel;
+			this.boss = boss;
+		}
+
+		String name()
+		{
+			return name == null ? "" : name;
+		}
+
+		/** The Slayer level needed to damage it; 0 when there is none. */
+		int slayerLevel()
+		{
+			return slayerLevel;
+		}
+
+		/** A combat level the account needs to reach it; 0 when there is none. */
+		int combatLevel()
+		{
+			return combatLevel;
+		}
+
+		boolean boss()
+		{
+			return boss;
+		}
+	}
 
 	/**
 	 * One place to buy something, as the verdict engine's caller needs it: a
@@ -919,6 +1144,16 @@ class QuestGraph
 		@SerializedName("boostable")
 		private boolean boostable;
 
+		Requirement()
+		{
+		}
+
+		Requirement(String skill, int level)
+		{
+			this.skill = skill;
+			this.level = level;
+		}
+
 		String skill()
 		{
 			return skill == null ? "" : skill;
@@ -1114,6 +1349,24 @@ class QuestGraph
 	List<DropLocation> dropLocations()
 	{
 		return dropLocations == null ? List.of() : dropLocations;
+	}
+
+	/** Every recipe the export carries. Empty in a bundle older than 14. */
+	List<Recipe> recipes()
+	{
+		return recipes == null ? List.of() : recipes;
+	}
+
+	/** Every placed facility. Empty in a bundle older than 14. */
+	List<Shop> facilities()
+	{
+		return facilities == null ? List.of() : facilities;
+	}
+
+	/** What gates each dropper. Empty in a bundle older than 14. */
+	List<DropSource> dropSources()
+	{
+		return dropSources == null ? List.of() : dropSources;
 	}
 
 	static QuestGraph load(Gson gson) throws IOException

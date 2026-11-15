@@ -317,6 +317,62 @@ public class QuestpathPlugin extends Plugin
 	private final ShopkeeperMemory shopkeeper = new ShopkeeperMemory();
 	private Boosts cachedShopBoosts;
 	private Map<String, WorldPoint> dropsByName;
+
+	/**
+	 * The graph's recipe, facility and drop-gate tables, and the graph they
+	 * were built from, so a live fetch that replaces {@link #questGraph}
+	 * rebuilds them rather than routing off the old one.
+	 */
+	private volatile RouteSources.Index routeIndex = RouteSources.Index.EMPTY;
+	private volatile QuestGraph routeIndexFor;
+
+	/**
+	 * What every shop-route surface resolves droppers, recipes and
+	 * facilities through -- handed out where {@code this::dropLocation} used
+	 * to be, so a boss or a Slayer-locked monster is refused in the one place
+	 * the route, the labels and the group list all read. See {@link
+	 * RouteSources}.
+	 */
+	private final RouteSources routeSources = new RouteSources(this::currentRouteIndex,
+		this::dropLocation, new RouteSources.Account()
+		{
+			@Override
+			public int level(String skill)
+			{
+				PlayerState account = accountSnapshot;
+				// Before the first refresh nothing is known; start levels
+				// under-claim, so a Slayer-locked monster stays refused.
+				return account == null ? RouteSources.NO_ACCOUNT.level(skill) : account.levelIn(skill);
+			}
+
+			@Override
+			public int combatLevel()
+			{
+				return cachedCombatLevel;
+			}
+
+			@Override
+			public long held(String item)
+			{
+				return heldCount(item);
+			}
+
+			@Override
+			public List<String> groupHolders(String item)
+			{
+				return groupHoldersOf(item);
+			}
+		});
+
+	/**
+	 * Every held count by lower-cased name, bank included, as of the last
+	 * refresh -- what a make chain checks its ingredients against. Replaced
+	 * wholesale on the client thread; read from Swing too.
+	 */
+	private volatile Map<String, Long> heldForRoute = Collections.emptyMap();
+
+	/** The local player's combat level at the last tick; 3 until one is read. */
+	private volatile int cachedCombatLevel = 3;
 	/**
 	 * Where the player was at the last client-thread read. Volatile
 	 * because the panel reads it from Swing -- see
@@ -725,7 +781,7 @@ public class QuestpathPlugin extends Plugin
 			new OverlaySettingsPanel(config, configManager),
 			this::skillPlan, shortestPathBridge, geSearchBridge,
 			this::grandExchangeAvailable, this::shopLocation,
-			this::dropLocation, this::lastKnownPlayerLocation, this::onShopRouteSent,
+			routeSources, this::lastKnownPlayerLocation, this::onShopRouteSent,
 			this::cancelShopRoute,
 			this::shopRouteActive, this::syncNow,
 			shopItemSkips, this::diaryGraphTasks, this::diaryPush, lockedGearActions(),
@@ -742,7 +798,7 @@ public class QuestpathPlugin extends Plugin
 		overlays.add(new PickupsOverlay(this, config, overlayIcons));
 		overlays.add(new NeededItemsOverlay(this, config, overlayIcons, client));
 		overlays.add(new ShopRouteOverlay(this, config, overlayIcons, this::shopLocation,
-			this::dropLocation, this::playerLocation, shopItemSkips));
+			routeSources, this::playerLocation, shopItemSkips));
 		overlays.add(new DiaryRouteOverlay(this, config, overlayIcons, this::diaryGraphTasks,
 			this::diaryPush, this::playerLocation));
 		overlays.add(new GrandExchangeOverlay(this, config, overlayIcons, client, this::grandExchangeList));
@@ -1356,7 +1412,7 @@ public class QuestpathPlugin extends Plugin
 				List<String> out = new java.util.ArrayList<>();
 				for (String source : known == null ? Collections.<String>emptyList() : known.dropSourceNames())
 				{
-					if (dropLocation(source) != null)
+					if (routeSources.apply(source) != null)
 					{
 						out.add(source);
 					}
@@ -1584,14 +1640,14 @@ public class QuestpathPlugin extends Plugin
 		}
 		boolean includeRecommended = config != null && config.recommendedItems();
 		for (ShopRouteStops.Stop stop : ShopRouteStops.tour(items.totals(includeRecommended), shopItemSkips,
-			this::shopLocation, this::dropLocation, playerLocation()))
+			this::shopLocation, routeSources, playerLocation()))
 		{
 			if (!stop.current())
 			{
 				continue;
 			}
 			ShopRouteStops.Destination destination = ShopRouteStops.destinationOf(
-				stop.total(), this::shopLocation, this::dropLocation, playerLocation());
+				stop.total(), this::shopLocation, routeSources, playerLocation());
 			return destination == null || !destination.monster();
 		}
 		return true;
@@ -2142,6 +2198,7 @@ public class QuestpathPlugin extends Plugin
 		// that is impossible to reproduce later.
 		overlaySnapshot = new OverlaySnapshot(stats, xp, route, items, effectiveBuildRules(),
 			characterName(), questPoints());
+		heldForRoute = lowerCaseCounts(heldIncludingCollected());
 
 		// Rebuilt here, once per account-state change, so the per-tick diary
 		// check never has to rescan the route -- see routeQuestInProgress's
@@ -2270,6 +2327,12 @@ public class QuestpathPlugin extends Plugin
 			? null
 			: client.getLocalPlayer().getWorldLocation();
 		lastPlayerLocation = here;
+		if (client.getLocalPlayer() != null)
+		{
+			// Read alongside the position, on the same client-thread calls,
+			// so the panel's Swing-side drop gating has a recent value.
+			cachedCombatLevel = client.getLocalPlayer().getCombatLevel();
+		}
 		return here;
 	}
 
@@ -2441,7 +2504,7 @@ public class QuestpathPlugin extends Plugin
 		}
 
 		ShopRouteAdvance.Decision decision = ShopRouteAdvance.observe(shopTripActive(), completed,
-			items.totals(), shopItemSkips, this::shopLocation, this::dropLocation, playerLocation());
+			items.totals(), shopItemSkips, this::shopLocation, routeSources, playerLocation());
 
 		if (decision.action() == ShopRouteAdvance.Action.FINISHED)
 		{
@@ -3067,6 +3130,68 @@ public class QuestpathPlugin extends Plugin
 	String dropRegionNote(String sourceName)
 	{
 		return DropRegionPolicy.noteFor(dropRegion(sourceName), constraints);
+	}
+
+	/** The route tables for whichever graph is live, rebuilt when it changes. */
+	private RouteSources.Index currentRouteIndex()
+	{
+		QuestGraph graph = questGraph;
+		if (graph != routeIndexFor)
+		{
+			routeIndex = RouteSources.Index.of(graph);
+			routeIndexFor = graph;
+		}
+		return routeIndex;
+	}
+
+	private long heldCount(String item)
+	{
+		if (item == null)
+		{
+			return 0L;
+		}
+		Long count = heldForRoute.get(item.toLowerCase());
+		return count == null ? 0L : count;
+	}
+
+	private static Map<String, Long> lowerCaseCounts(Map<String, Long> counts)
+	{
+		Map<String, Long> out = new HashMap<>();
+		for (Map.Entry<String, Long> entry : counts.entrySet())
+		{
+			if (entry.getKey() != null && entry.getValue() != null)
+			{
+				out.merge(entry.getKey().toLowerCase(), entry.getValue(), Long::sum);
+			}
+		}
+		return out;
+	}
+
+	/**
+	 * "Alice (3)" for each party member whose shared bank holds this --
+	 * the answer to "nothing practical drops it" on a Group Ironman.
+	 */
+	private List<String> groupHoldersOf(String item)
+	{
+		List<String> out = new java.util.ArrayList<>();
+		for (GroupMember member : partyMembers.values())
+		{
+			long count = member.held(item);
+			if (count > 0)
+			{
+				out.add(member.name() + " (" + count + ")");
+			}
+		}
+		Map<String, Long> storage = groupStorageSeen;
+		if (storage != null && item != null)
+		{
+			long stored = lowerCaseCounts(storage).getOrDefault(item.toLowerCase(), 0L);
+			if (stored > 0)
+			{
+				out.add("group storage (" + stored + ")");
+			}
+		}
+		return out;
 	}
 
 	private WorldPoint dropLocation(String sourceName)
