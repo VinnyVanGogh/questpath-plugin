@@ -3105,19 +3105,9 @@ class QuestpathPanel extends PluginPanel
 			});
 			panel.add(skip);
 
-			// "Say again": the approach line for the shop this stop walks to,
-			// for a player who missed it or wants to check the list.
-			ShopRouteStops.Destination dest = ShopRouteStops.destinationOf(current, shopLocator, dropLocator,
-				playerLocation.get());
-			if (dest != null && !dest.monster() && sayShopAgain != null)
+			JButton again = sayAgainButton(current);
+			if (again != null)
 			{
-				String shopName = dest.shopName();
-				JButton again = new JButton("Say again: " + shopName);
-				again.setFont(FontManager.getRunescapeSmallFont());
-				again.setAlignmentX(Component.LEFT_ALIGNMENT);
-				again.setToolTipText("Say every item still needed from " + shopName + ", out loud if the"
-					+ " voice is on, in chat if not.");
-				again.addActionListener(event -> sayShopAgain.accept(shopName));
 				panel.add(again);
 			}
 		}
@@ -3157,6 +3147,30 @@ class QuestpathPanel extends PluginPanel
 		}
 
 		return panel;
+	}
+
+	/**
+	 * "Say again": the approach line for the shop this stop walks to, for a
+	 * player who missed it or wants to check the list. Null when the stop is
+	 * a monster, not a shop, or the plugin has not wired the voice.
+	 */
+	private JButton sayAgainButton(QuestItems.Total current)
+	{
+		java.util.function.Consumer<String> say = sayShopAgain;
+		ShopRouteStops.Destination dest = ShopRouteStops.destinationOf(current, shopLocator, dropLocator,
+			playerLocation.get());
+		if (say == null || dest == null || dest.monster())
+		{
+			return null;
+		}
+		String shopName = dest.shopName();
+		JButton again = new JButton("Say again: " + shopName);
+		again.setFont(FontManager.getRunescapeSmallFont());
+		again.setAlignmentX(Component.LEFT_ALIGNMENT);
+		again.setToolTipText("Say every item still needed from " + shopName + ", out loud if the"
+			+ " voice is on, in chat if not.");
+		again.addActionListener(event -> say.accept(shopName));
+		return again;
 	}
 
 	/**
