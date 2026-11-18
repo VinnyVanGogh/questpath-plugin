@@ -27,6 +27,10 @@ class PlayerState
 	private final Set<String> completed;
 	private final Set<String> inProgress;
 	private final Map<String, BuildRule> rules;
+	private int questPoints = UNKNOWN_QUEST_POINTS;
+
+	/** Quest points not read from the client yet; never satisfies a gate. */
+	static final int UNKNOWN_QUEST_POINTS = -1;
 
 	/**
 	 * Without in-progress information.
@@ -102,6 +106,21 @@ class PlayerState
 		this.completed = source.completed;
 		this.inProgress = source.inProgress;
 		this.rules = rules;
+		this.questPoints = source.questPoints;
+	}
+
+	/** This account with its quest point total attached (for guild entry). */
+	PlayerState withQuestPoints(int points)
+	{
+		PlayerState copy = new PlayerState(this, rules);
+		copy.questPoints = points;
+		return copy;
+	}
+
+	/** Quest points, or {@link #UNKNOWN_QUEST_POINTS} when not read yet. */
+	int questPoints()
+	{
+		return questPoints;
 	}
 
 	/**

@@ -99,10 +99,23 @@ final class ShopReachability
 		{
 			return OPEN;
 		}
+		Result guild = GuildEntryRules.judge(shop.name(), player);
+		if (guild != null)
+		{
+			return guild;
+		}
 		QuestGraph.Reachability gates = shop.reachability();
 		if (gates == null)
 		{
 			return OPEN;
+		}
+		if (gates.unknown() && gates.requiredSkills().isEmpty()
+			&& gates.requiredQuestIds().isEmpty())
+		{
+			// The export could not say what gates this shop. Unknown is not
+			// open: the Warriors' Guild armoury sat here and a bronze med
+			// helm sent an account that cannot enter straight to it.
+			return new Result(Verdict.BLOCKED, "access requirements unknown");
 		}
 
 		List<String> blocked = new ArrayList<>();
