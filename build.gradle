@@ -64,10 +64,9 @@ def printRuneLiteVersion = tasks.register('printRuneLiteVersion') {
 tasks.named('test') {
 	dependsOn printRuneLiteVersion
 
-	// The overlay tests touch java.awt (fonts, colours, image buffers). On
-	// macOS a non-headless AWT connects to the window server, and in a
-	// sandboxed run (no GUI session) that connection aborts the test JVM with
-	// SIGABRT before any report is written. No test needs a real display.
+	// Tests draw with fonts and Swing but never open a window. Without this,
+	// macOS AWT tries to reach the WindowServer on first font use and the test
+	// JVM aborts (exit 134) wherever that is denied, e.g. a sandboxed runner.
 	systemProperty 'java.awt.headless', 'true'
 }
 

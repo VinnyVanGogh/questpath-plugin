@@ -417,6 +417,8 @@ class OverlaySettingsPanel extends JPanel
 		body.add(spacer());
 		body.add(groundItemsGroup(config));
 		body.add(spacer());
+		body.add(voiceGroup(config));
+		body.add(spacer());
 		body.add(bankGroup(config));
 		body.add(spacer());
 		body.add(lampsGroup(config));
@@ -611,6 +613,42 @@ class OverlaySettingsPanel extends JPanel
 						+ " so picking it up in passing does not need a right click. Never hides or"
 						+ " reorders anything for an item you do not need.",
 					config.groundTakeLeftClick(), "groundTakeLeftClick"));
+				sub.add(toggle(
+					"Bouncing arrow over needed items",
+					"Draw a bouncing arrow above a needed item lying within the floor-item range,"
+						+ " on top of the outline.",
+					config.floorItemArrow(), "floorItemArrow"));
+				addField(sub, "Floor-item range (tiles)",
+					intField(config.floorItemRadius(), 1, 15,
+						"How close a needed item on the floor must be for the arrow and for"
+							+ " \"<item> nearby\" to be said.",
+						"floorItemRadius"));
+			});
+	}
+
+	/**
+	 * Voice: the master switch in the header, the volume and the two spoken
+	 * alerts under it.
+	 */
+	private CollapsibleGroup voiceGroup(QuestpathConfig config)
+	{
+		return toggleGroup(
+			"Voice",
+			"Speak Quest Route's reminders out loud. Off silences every spoken line below.",
+			config.voiceEnabled(), "voiceEnabled",
+			sub ->
+			{
+				addField(sub, "Volume",
+					intField(config.voiceVolume(), 0, 100, "How loud the voice is, 0 to 100.", "voiceVolume"));
+				sub.add(toggle(
+					"Say what to buy near a shop",
+					"As you come up on a shop, say every item your plan still needs from it.",
+					config.voiceShops(), "voiceShops"));
+				sub.add(toggle(
+					"Say needed items on the floor",
+					"Say \"Bucket nearby\" once when an item your plan still needs is lying within"
+						+ " the floor-item range.",
+					config.voiceFloorItems(), "voiceFloorItems"));
 			});
 	}
 
