@@ -366,6 +366,15 @@ class QuestpathPanel extends PluginPanel
 	/** Whether the Locked gear section's item list is expanded. Not persisted -- a per-session UI convenience, like the search boxes' text. */
 	private boolean lockedGearItemsExpanded;
 
+	/** "Say again" on the current shop stop; null until the plugin sets it. */
+	private volatile java.util.function.Consumer<String> sayShopAgain;
+
+	/** Wires the shop stop's "Say again" button to the plugin's voice. */
+	void setSayShopAgain(java.util.function.Consumer<String> sayShopAgain)
+	{
+		this.sayShopAgain = sayShopAgain;
+	}
+
 	QuestpathPanel(SpriteManager sprites, QuestpathConfig config, ConfigManager configManager,
 		OverlaySettingsPanel overlaySettings,
 		java.util.function.BiFunction<String, Integer, SkillPlan> planner,
@@ -3110,6 +3119,12 @@ class QuestpathPanel extends PluginPanel
 				}
 			});
 			panel.add(skip);
+
+			JButton again = sayAgainButton(current);
+			if (again != null)
+			{
+				panel.add(again);
+			}
 		}
 
 		List<String> skipped = shopItemSkips.names();
@@ -3147,6 +3162,30 @@ class QuestpathPanel extends PluginPanel
 		}
 
 		return panel;
+	}
+
+	/**
+	 * "Say again": the approach line for the shop this stop walks to, for a
+	 * player who missed it or wants to check the list. Null when the stop is
+	 * a monster, not a shop, or the plugin has not wired the voice.
+	 */
+	private JButton sayAgainButton(QuestItems.Total current)
+	{
+		java.util.function.Consumer<String> say = sayShopAgain;
+		ShopRouteStops.Destination dest = ShopRouteStops.destinationOf(current, shopLocator, dropLocator,
+			playerLocation.get());
+		if (say == null || dest == null || dest.monster())
+		{
+			return null;
+		}
+		String shopName = dest.shopName();
+		JButton again = new JButton("Say again: " + shopName);
+		again.setFont(FontManager.getRunescapeSmallFont());
+		again.setAlignmentX(Component.LEFT_ALIGNMENT);
+		again.setToolTipText("Say every item still needed from " + shopName + ", out loud if the"
+			+ " voice is on, in chat if not.");
+		again.addActionListener(event -> say.accept(shopName));
+		return again;
 	}
 
 	/**
