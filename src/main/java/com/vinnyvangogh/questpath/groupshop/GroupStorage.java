@@ -58,6 +58,12 @@ public final class GroupStorage
 		return item == null ? 0L : counts.getOrDefault(item.toLowerCase(), 0L);
 	}
 
+	/** Every count in the snapshot, by lower-cased name. Read-only. */
+	public Map<String, Long> counts()
+	{
+		return java.util.Collections.unmodifiableMap(counts);
+	}
+
 	/** When the snapshot was taken, epoch milliseconds, by the member's own clock. */
 	public long seenAtMillis()
 	{

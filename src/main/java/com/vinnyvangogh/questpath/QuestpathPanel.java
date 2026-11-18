@@ -2433,6 +2433,20 @@ class QuestpathPanel extends PluginPanel
 	private static final int MAX_QUEST_SECTIONS = 8;
 
 	/**
+	 * For a group ironman: whose storage snapshot the counts include and how
+	 * old it is, or that storage has not been seen yet. Nothing otherwise.
+	 */
+	private void addGroupStorageNote(JPanel panel, QuestItems items)
+	{
+		String note = items.groupStorage().note(System.currentTimeMillis());
+		if (note != null)
+		{
+			panel.add(muted(note));
+			panel.add(Box.createVerticalStrut(6));
+		}
+	}
+
+	/**
 	 * Not static, unlike the rest of this method's history -- it needs
 	 * {@link #shortestPathBridge} and {@link #reportRouteOutcome} to draw and
 	 * wire the route button below.
@@ -2462,6 +2476,7 @@ class QuestpathPanel extends PluginPanel
 			panel.add(warning);
 			panel.add(Box.createVerticalStrut(6));
 		}
+		addGroupStorageNote(panel, items);
 
 		if (items.isEmpty())
 		{
