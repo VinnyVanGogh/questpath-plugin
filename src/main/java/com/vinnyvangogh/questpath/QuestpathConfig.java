@@ -110,6 +110,70 @@ public interface QuestpathConfig extends Config
 	)
 	String groupSection = "group";
 
+	@ConfigSection(
+		name = "Voice",
+		description = "Quest Route saying what to buy as you near a shop, and naming needed items"
+			+ " on the floor. Bundled recordings, played on your computer; nothing is sent anywhere.",
+		position = 8,
+		closedByDefault = true
+	)
+	String voiceSection = "voice";
+
+	// ------------------------------------------------------------------
+	// Voice. Keys freeze at the first published version: never rename.
+	// ------------------------------------------------------------------
+
+	@ConfigItem(
+		keyName = "voiceEnabled",
+		name = "Voice",
+		description = "Speak Quest Route's reminders out loud. Off silences every spoken line below.",
+		section = voiceSection,
+		position = 1
+	)
+	default boolean voiceEnabled()
+	{
+		return true;
+	}
+
+	@Range(min = 0, max = 100)
+	@ConfigItem(
+		keyName = "voiceVolume",
+		name = "Volume",
+		description = "How loud the voice is, 0 to 100.",
+		section = voiceSection,
+		position = 2
+	)
+	default int voiceVolume()
+	{
+		return 70;
+	}
+
+	@ConfigItem(
+		keyName = "voiceShops",
+		name = "Say what to buy near a shop",
+		description = "As you come up on a shop, say every item your plan still needs from it:"
+			+ " \"Looking for 30 air runes and an air talisman at Aubury's Rune Shop\".",
+		section = voiceSection,
+		position = 3
+	)
+	default boolean voiceShops()
+	{
+		return true;
+	}
+
+	@ConfigItem(
+		keyName = "voiceFloorItems",
+		name = "Say needed items on the floor",
+		description = "Say \"Bucket nearby\" once when an item your plan still needs is lying"
+			+ " within the floor-item range (Ground items section).",
+		section = voiceSection,
+		position = 4
+	)
+	default boolean voiceFloorItems()
+	{
+		return true;
+	}
+
 	@ConfigItem(
 		keyName = "partyShare",
 		name = "Share with my party",
@@ -882,6 +946,33 @@ public interface QuestpathConfig extends Config
 	default boolean groundTakeLeftClick()
 	{
 		return true;
+	}
+
+	@ConfigItem(
+		keyName = "floorItemArrow",
+		name = "Bouncing arrow over needed items",
+		description = "Draw a bouncing arrow above a needed item lying within the floor-item range,"
+			+ " on top of the outline.",
+		section = groundSection,
+		position = 5
+	)
+	default boolean floorItemArrow()
+	{
+		return true;
+	}
+
+	@Range(min = 1, max = 15)
+	@ConfigItem(
+		keyName = "floorItemRadius",
+		name = "Floor-item range (tiles)",
+		description = "How close a needed item on the floor must be for the arrow and for"
+			+ " \"<item> nearby\" to be said.",
+		section = groundSection,
+		position = 6
+	)
+	default int floorItemRadius()
+	{
+		return 10;
 	}
 
 	// ------------------------------------------------------------------

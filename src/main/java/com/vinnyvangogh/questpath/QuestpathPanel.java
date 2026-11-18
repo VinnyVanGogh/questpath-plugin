@@ -366,6 +366,15 @@ class QuestpathPanel extends PluginPanel
 	/** Whether the Locked gear section's item list is expanded. Not persisted -- a per-session UI convenience, like the search boxes' text. */
 	private boolean lockedGearItemsExpanded;
 
+	/** "Say again" on the current shop stop; null until the plugin sets it. */
+	private volatile java.util.function.Consumer<String> sayShopAgain;
+
+	/** Wires the shop stop's "Say again" button to the plugin's voice. */
+	void setSayShopAgain(java.util.function.Consumer<String> sayShopAgain)
+	{
+		this.sayShopAgain = sayShopAgain;
+	}
+
 	QuestpathPanel(SpriteManager sprites, QuestpathConfig config, ConfigManager configManager,
 		OverlaySettingsPanel overlaySettings,
 		java.util.function.BiFunction<String, Integer, SkillPlan> planner,
@@ -2424,6 +2433,20 @@ class QuestpathPanel extends PluginPanel
 	private static final int MAX_QUEST_SECTIONS = 8;
 
 	/**
+	 * For a group ironman: whose storage snapshot the counts include and how
+	 * old it is, or that storage has not been seen yet. Nothing otherwise.
+	 */
+	private void addGroupStorageNote(JPanel panel, QuestItems items)
+	{
+		String note = items.groupStorage().note(System.currentTimeMillis());
+		if (note != null)
+		{
+			panel.add(muted(note));
+			panel.add(Box.createVerticalStrut(6));
+		}
+	}
+
+	/**
 	 * Not static, unlike the rest of this method's history -- it needs
 	 * {@link #shortestPathBridge} and {@link #reportRouteOutcome} to draw and
 	 * wire the route button below.
@@ -2453,6 +2476,7 @@ class QuestpathPanel extends PluginPanel
 			panel.add(warning);
 			panel.add(Box.createVerticalStrut(6));
 		}
+		addGroupStorageNote(panel, items);
 
 		if (items.isEmpty())
 		{
@@ -2611,7 +2635,8 @@ class QuestpathPanel extends PluginPanel
 				String label = line.optional() ? line.name() + " (optional)" : line.name();
 				addRow(grid, label, line.describe(), line.held()
 					? ColorScheme.PROGRESS_COMPLETE_COLOR
-					: ColorScheme.LIGHT_GRAY_COLOR, itemTooltip(null, line.sources()));
+					: ColorScheme.LIGHT_GRAY_COLOR,
+					itemTooltip(null, RouteSources.dropsOnly(dropLocator).annotate(line.sources())));
 			}
 			panel.add(grid);
 			questsShown++;
@@ -3025,7 +3050,7 @@ class QuestpathPanel extends PluginPanel
 					: ColorScheme.LIGHT_GRAY_COLOR;
 		String label = skipped ? total.name() + "  (skipped)" : total.displayName();
 		addRow(totalsGrid, label, total.describe(), totalColour,
-			itemTooltip(sharedNote, total.sources()));
+			itemTooltip(sharedNote, RouteSources.dropsOnly(dropLocator).annotate(total.sources())));
 	}
 
 	/**
@@ -3095,6 +3120,12 @@ class QuestpathPanel extends PluginPanel
 				}
 			});
 			panel.add(skip);
+
+			JButton again = sayAgainButton(current);
+			if (again != null)
+			{
+				panel.add(again);
+			}
 		}
 
 		List<String> skipped = shopItemSkips.names();
@@ -3132,6 +3163,30 @@ class QuestpathPanel extends PluginPanel
 		}
 
 		return panel;
+	}
+
+	/**
+	 * "Say again": the approach line for the shop this stop walks to, for a
+	 * player who missed it or wants to check the list. Null when the stop is
+	 * a monster, not a shop, or the plugin has not wired the voice.
+	 */
+	private JButton sayAgainButton(QuestItems.Total current)
+	{
+		java.util.function.Consumer<String> say = sayShopAgain;
+		ShopRouteStops.Destination dest = ShopRouteStops.destinationOf(current, shopLocator, dropLocator,
+			playerLocation.get());
+		if (say == null || dest == null || dest.monster())
+		{
+			return null;
+		}
+		String shopName = dest.shopName();
+		JButton again = new JButton("Say again: " + shopName);
+		again.setFont(FontManager.getRunescapeSmallFont());
+		again.setAlignmentX(Component.LEFT_ALIGNMENT);
+		again.setToolTipText("Say every item still needed from " + shopName + ", out loud if the"
+			+ " voice is on, in chat if not.");
+		again.addActionListener(event -> say.accept(shopName));
+		return again;
 	}
 
 	/**

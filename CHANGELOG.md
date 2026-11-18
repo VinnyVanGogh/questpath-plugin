@@ -18,6 +18,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- The shop route treats an item it can make as a chain: get each missing ingredient from its own best source (shop, a nested recipe, or a drop you can actually do), then go to the nearest facility ("-> Furnace: use Bucket of sand + Soda ash"). The order is shop, then recipe, then drop. A recipe you lack the level for says which level ("can't make it yet: needs 30 Crafting") and the route falls back to other sources. Reads quest graph v14's optional `recipes`, `facilities` and `drop_sources` tables (`MakeChain`, `RouteSources`).
+- Bosses, and monsters that need a Slayer or combat level the account lacks, are never route stops (`DropPracticality`). Your `DropRegionPolicy` declarations still apply first. These droppers stay in the item's sources with a marker ("boss, needs 93 Slayer"). When no practical source remains, the row reads "No practical source: make it or ask the group" and lists which group members, or the group's storage, hold the item. Reported 2026-11-14: Molten glass was routed to the Thermonuclear smoke devil on a low-level Group Ironman.
 - `icon.png` for the Plugin Hub listing.
 - `NoReflectionTest`, `ConfigGroupMigrationTest` and `QuestHelperAbsentTest`.
 

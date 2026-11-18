@@ -49,6 +49,7 @@ class QuestItems
 	private final List<Total> recommendedTotals = new ArrayList<>();
 	private final List<Pickup> pickups = new ArrayList<>();
 	private boolean bankSeen;
+	private GroupStorageView storage = GroupStorageView.NONE;
 	private Freshness freshness = Freshness.CARRIED_ONLY;
 	private boolean graphCarriesRecommended;
 	private long recommendedCoins;
@@ -148,6 +149,7 @@ class QuestItems
 		private final boolean recommended;
 		private PlanNote plan = PlanNote.NONE;
 		private long equivalentOwned;
+		private long inGroupStorage;
 
 		/**
 		 * Attaches questpath's decision for this line -- see {@link PlanNote}.
@@ -359,7 +361,23 @@ class QuestItems
 			Line copy = new Line(name, itemId, wanted, owned, optional, unresolved,
 				sources, shopNames, dropSourceNames, groupName, notes, recommended).withPlan(plan);
 			copy.setEquivalentOwned(this.equivalentOwned);
+			copy.inGroupStorage = this.inGroupStorage;
 			return copy;
+		}
+
+		/**
+		 * How much of {@link #owned()} is in group storage rather than on the
+		 * account. Zero for anyone who is not a group ironman.
+		 */
+		long inGroupStorage()
+		{
+			return inGroupStorage;
+		}
+
+		/** Whether the account needs to fetch from group storage to have enough. */
+		boolean needsGroupStorage()
+		{
+			return storageNeeded(inGroupStorage, owned, equivalentOwned, required());
 		}
 
 		/**
@@ -384,8 +402,22 @@ class QuestItems
 		/** What to show on the right of the row. */
 		String describe()
 		{
-			return (owned + equivalentOwned) + " / " + required();
+			return (owned + equivalentOwned) + " / " + required()
+				+ (needsGroupStorage() ? STORAGE_SUFFIX : "");
 		}
+	}
+
+	/** Appended to a count that leans on group storage. */
+	static final String STORAGE_SUFFIX = ", in group storage";
+
+	/**
+	 * Whether what is on the account (bank, bags, worn) falls short of
+	 * required and storage is what makes up the difference -- the only case
+	 * worth sending the player to the storage chest for.
+	 */
+	private static boolean storageNeeded(long inStorage, long owned, long equivalent, long required)
+	{
+		return inStorage > 0 && (owned - inStorage) + equivalent < required;
 	}
 
 	/**
@@ -734,6 +766,68 @@ class QuestItems
 		java.util.Set<String> upcoming, java.util.Set<String> plan, Map<String, Long> knownItems,
 		Map<String, Long> carried, java.util.Set<String> placeholders, ItemPlan itemPlan)
 	{
+		return of(graph, account, held, bankSeen, upcoming, plan, knownItems, carried, placeholders, itemPlan,
+			GroupStorageView.NONE);
+	}
+
+	/**
+	 * @param storage group storage as this account counts it -- {@link
+	 *     GroupStorageView#NONE} for anyone who is not a group ironman. Added
+	 *     to what is held after the account's own counts are settled, so a
+	 *     stale questpath record can never swallow it; see {@link
+	 *     GroupStorageView#addTo}
+	 */
+	static QuestItems of(QuestGraph graph, PlayerState account, Map<String, Long> held, boolean bankSeen,
+		java.util.Set<String> upcoming, java.util.Set<String> plan, Map<String, Long> knownItems,
+		Map<String, Long> carried, java.util.Set<String> placeholders, ItemPlan itemPlan,
+		GroupStorageView storage)
+	{
+		GroupStorageView view = storage == null ? GroupStorageView.NONE : storage;
+		QuestItems out = build(graph, account, view.addTo(effectiveHeld(held, bankSeen, knownItems)), bankSeen,
+			upcoming, plan, knownItems, carried, placeholders, itemPlan);
+		out.storage = view;
+		out.tagGroupStorage();
+		return out;
+	}
+
+	/** Marks every line and total with what of it is in group storage. */
+	private void tagGroupStorage()
+	{
+		if (storage.snapshot() == null)
+		{
+			return;
+		}
+		for (QuestNeeds needs : quests)
+		{
+			for (Line line : needs.lines())
+			{
+				line.inGroupStorage = storage.count(line.name());
+			}
+		}
+		for (List<Total> list : java.util.Arrays.asList(totals, allTotals))
+		{
+			for (Total total : list)
+			{
+				total.inGroupStorage = storage.count(total.name());
+			}
+		}
+	}
+
+	/** Group storage as these counts include it. */
+	GroupStorageView groupStorage()
+	{
+		return storage;
+	}
+
+	/**
+	 * @param held already widened by {@link #effectiveHeld} and group storage
+	 * @param knownItems only to decide {@link Freshness}; already folded into held
+	 */
+	private static QuestItems build(QuestGraph graph, PlayerState account, Map<String, Long> held,
+		boolean bankSeen, java.util.Set<String> upcoming, java.util.Set<String> plan,
+		Map<String, Long> knownItems, Map<String, Long> carried, java.util.Set<String> placeholders,
+		ItemPlan itemPlan)
+	{
 		QuestItems out = new QuestItems();
 		out.bankSeen = bankSeen;
 		if (bankSeen)
@@ -748,7 +842,6 @@ class QuestItems
 		{
 			out.freshness = Freshness.CARRIED_ONLY;
 		}
-		held = effectiveHeld(held, bankSeen, knownItems);
 		QuestClassifier classifier = new QuestClassifier(graph, account);
 
 		// The plan, not what is doable today.
@@ -1197,6 +1290,7 @@ class QuestItems
 		private PlanNote plan = PlanNote.NONE;
 		private boolean recommended = true;
 		private long equivalentOwned;
+		private long inGroupStorage;
 
 		Total(String name, int itemId, long owned, long carried, boolean placeholder,
 			List<String> sources)
@@ -1334,6 +1428,7 @@ class QuestItems
 			out.plan = plan;
 			out.recommended = recommended;
 			out.equivalentOwned = equivalentOwned;
+			out.inGroupStorage = inGroupStorage;
 			out.questNames.addAll(questNames);
 			out.notes.addAll(notes);
 			return out;
@@ -1572,7 +1667,20 @@ class QuestItems
 
 		String describe()
 		{
-			return (owned + equivalentOwned) + " / " + required();
+			return (owned + equivalentOwned) + " / " + required()
+				+ (needsGroupStorage() ? STORAGE_SUFFIX : "");
+		}
+
+		/** How much of {@link #owned()} is in group storage; see {@link Line#inGroupStorage}. */
+		long inGroupStorage()
+		{
+			return inGroupStorage;
+		}
+
+		/** Whether the account needs to fetch from group storage to have enough. */
+		boolean needsGroupStorage()
+		{
+			return storageNeeded(inGroupStorage, owned, equivalentOwned, required());
 		}
 
 		/** Whether more than one quest wants this, for the row's tooltip. */
@@ -1698,6 +1806,8 @@ class QuestItems
 	int signature()
 	{
 		int hash = (bankSeen ? 1 : 0) * 31 + pickups.size();
+		hash = hash * 31 + storage.state().ordinal();
+		hash = hash * 31 + (storage.snapshot() == null ? 0 : Long.hashCode(storage.snapshot().seenAtMillis()));
 		for (QuestNeeds needs : quests)
 		{
 			hash = hash * 31 + needs.questName().hashCode();

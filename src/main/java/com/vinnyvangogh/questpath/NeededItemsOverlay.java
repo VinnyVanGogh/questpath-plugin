@@ -100,6 +100,16 @@ class NeededItemsOverlay extends QuestpathOverlay
 		return config.overlayItemsLength();
 	}
 
+	/** Group storage's part in the counts, for a group ironman only; see {@link GroupStorageView#note}. */
+	private static void addGroupStorageNote(List<OverlayRow> rows, QuestItems items)
+	{
+		String note = items.groupStorage().note(System.currentTimeMillis());
+		if (note != null)
+		{
+			rows.add(OverlayRow.note(note, OverlayTheme.MUTED));
+		}
+	}
+
 	@Override
 	List<OverlayRow> rows(OverlaySnapshot snapshot, OverlayContext ctx)
 	{
@@ -195,6 +205,7 @@ class NeededItemsOverlay extends QuestpathOverlay
 					+ "are carrying and wearing only.",
 				OverlayTheme.WARN));
 		}
+		addGroupStorageNote(rows, items);
 
 		if (!started.isEmpty())
 		{
