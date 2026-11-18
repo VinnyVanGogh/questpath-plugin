@@ -2635,7 +2635,8 @@ class QuestpathPanel extends PluginPanel
 				String label = line.optional() ? line.name() + " (optional)" : line.name();
 				addRow(grid, label, line.describe(), line.held()
 					? ColorScheme.PROGRESS_COMPLETE_COLOR
-					: ColorScheme.LIGHT_GRAY_COLOR, itemTooltip(null, line.sources()));
+					: ColorScheme.LIGHT_GRAY_COLOR,
+					itemTooltip(null, RouteSources.dropsOnly(dropLocator).annotate(line.sources())));
 			}
 			panel.add(grid);
 			questsShown++;
@@ -3049,7 +3050,7 @@ class QuestpathPanel extends PluginPanel
 					: ColorScheme.LIGHT_GRAY_COLOR;
 		String label = skipped ? total.name() + "  (skipped)" : total.displayName();
 		addRow(totalsGrid, label, total.describe(), totalColour,
-			itemTooltip(sharedNote, total.sources()));
+			itemTooltip(sharedNote, RouteSources.dropsOnly(dropLocator).annotate(total.sources())));
 	}
 
 	/**

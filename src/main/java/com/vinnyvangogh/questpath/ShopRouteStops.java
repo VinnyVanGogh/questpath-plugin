@@ -77,10 +77,22 @@ final class ShopRouteStops
 	 */
 	static final class Destination
 	{
+		/** What happens on arrival. */
+		enum Kind
+		{
+			SHOP,
+			MONSTER,
+			/** A furnace, anvil or range: use the ingredients there. */
+			FACILITY
+		}
+
 		private final String shopName;
 		private final WorldPoint point;
 		private final int alternatives;
-		private final boolean monster;
+		private final Kind kind;
+		private final List<WorldPoint> candidates;
+		private final String ingredient;
+		private final String makeText;
 
 		Destination(String shopName, WorldPoint point, int alternatives)
 		{
@@ -89,10 +101,60 @@ final class ShopRouteStops
 
 		Destination(String shopName, WorldPoint point, int alternatives, boolean monster)
 		{
+			this(shopName, point, alternatives, monster ? Kind.MONSTER : Kind.SHOP,
+				Collections.singletonList(point), "", "");
+		}
+
+		Destination(String shopName, WorldPoint point, int alternatives, Kind kind,
+			List<WorldPoint> candidates, String ingredient, String makeText)
+		{
 			this.shopName = shopName;
 			this.point = point;
 			this.alternatives = alternatives;
-			this.monster = monster;
+			this.kind = kind;
+			this.candidates = candidates;
+			this.ingredient = ingredient == null ? "" : ingredient;
+			this.makeText = makeText == null ? "" : makeText;
+		}
+
+		/** The same place, now named as the stop for one ingredient of a make. */
+		Destination forIngredient(String name)
+		{
+			// The innermost ingredient wins: for a nested make, the thing to
+			// pick up here is the deepest one, not the item it ends up in.
+			return ingredient.isEmpty()
+				? new Destination(shopName, point, alternatives, kind, candidates, name, makeText)
+				: this;
+		}
+
+		Kind kind()
+		{
+			return kind;
+		}
+
+		/**
+		 * Every placeable tile for this leg -- the chosen one and its
+		 * alternatives -- which is what Shortest Path is handed.
+		 */
+		List<WorldPoint> candidates()
+		{
+			return candidates;
+		}
+
+		/**
+		 * The ingredient this stop is for when the item itself is made -- the
+		 * Bucket of sand on the way to Molten glass -- or empty when the stop
+		 * is for the item itself.
+		 */
+		String ingredient()
+		{
+			return ingredient;
+		}
+
+		/** "use Bucket of sand + Soda ash" at a facility; empty elsewhere. */
+		String makeText()
+		{
+			return makeText;
 		}
 
 		/**
@@ -107,7 +169,7 @@ final class ShopRouteStops
 		 */
 		boolean monster()
 		{
-			return monster;
+			return kind == Kind.MONSTER;
 		}
 
 		/** The shop's name, as the wiki spells it. */
@@ -391,18 +453,17 @@ final class ShopRouteStops
 			{
 				continue;
 			}
-			for (String shopName : stop.total().shopNames())
+			// Every placeable tile for the stop's current leg -- each shop
+			// selling it, each furnace for a make, each practical dropper --
+			// and Shortest Path picks between them by real path distance.
+			// The same decision destinationOf names, so the label and the
+			// line on the ground cannot disagree about where this goes.
+			Destination leg = destinationOf(stop.total(), shopLocator, dropLocator, from);
+			if (leg != null)
 			{
-				addApproaches(out, shopLocator.apply(shopName));
-			}
-			if (out.isEmpty())
-			{
-				// Nothing sells it, so every place it drops is a destination
-				// and Shortest Path picks between them -- the same treatment
-				// the shops above get, for the same reason.
-				for (String dropper : stop.total().dropSourceNames())
+				for (WorldPoint candidate : leg.candidates())
 				{
-					addApproaches(out, dropLocator.apply(dropper));
+					addApproaches(out, candidate);
 				}
 			}
 			break;
@@ -500,27 +561,21 @@ final class ShopRouteStops
 		Function<String, WorldPoint> shopLocator, Function<String, WorldPoint> dropLocator,
 		WorldPoint from)
 	{
-		Destination shop = shopDestinationOf(total, shopLocator, from);
-		if (shop != null)
-		{
-			return shop;
-		}
-		return nearestOf(total.dropSourceNames(), dropLocator, from, true);
+		return MakeChain.sourceOf(total.name(), total.outstanding(), total.shopNames(),
+			total.dropSourceNames(), shopLocator, RouteSources.dropsOnly(dropLocator), from, 0);
 	}
 
-	private static Destination shopDestinationOf(QuestItems.Total total,
-		Function<String, WorldPoint> shopLocator, WorldPoint from)
-	{
-		return nearestOf(total.shopNames(), shopLocator, from, false);
-	}
-
-	private static Destination nearestOf(java.util.List<String> names,
-		Function<String, WorldPoint> locator, WorldPoint from, boolean monster)
+	/**
+	 * The placeable name nearest {@code from}, with every placeable tile as
+	 * a candidate -- or null when none of them resolves.
+	 */
+	static Destination nearestOf(List<String> names,
+		Function<String, WorldPoint> locator, WorldPoint from, Destination.Kind kind)
 	{
 		String bestName = null;
 		WorldPoint bestPoint = null;
 		long bestDistance = Long.MAX_VALUE;
-		int placeable = 0;
+		List<WorldPoint> candidates = new ArrayList<>();
 
 		for (String shopName : names)
 		{
@@ -529,7 +584,7 @@ final class ShopRouteStops
 			{
 				continue;
 			}
-			placeable++;
+			candidates.add(point);
 			// With no position to measure from, every distance is zero and
 			// the strict less-than below leaves the first placeable shop
 			// standing -- the behaviour this had before a position was
@@ -546,7 +601,26 @@ final class ShopRouteStops
 
 		return bestPoint == null
 			? null
-			: new Destination(bestName, bestPoint, placeable - 1, monster);
+			: new Destination(bestName, bestPoint, candidates.size() - 1, kind, candidates, "", "");
+	}
+
+	/** The nearest of several tiles sharing one name -- every furnace, say. */
+	static Destination nearestPoint(String name, List<WorldPoint> points, WorldPoint from, String makeText)
+	{
+		WorldPoint best = null;
+		long bestDistance = Long.MAX_VALUE;
+		for (WorldPoint point : points)
+		{
+			long distance = from == null ? 0L : squaredDistance(from, point);
+			if (best == null || distance < bestDistance)
+			{
+				best = point;
+				bestDistance = distance;
+			}
+		}
+		return best == null
+			? null
+			: new Destination(name, best, points.size() - 1, Destination.Kind.FACILITY, points, "", makeText);
 	}
 
 	private static long squaredDistance(WorldPoint a, WorldPoint b)
@@ -590,15 +664,16 @@ final class ShopRouteStops
 		String quest = total.questSummary();
 		String forQuest = quest.isEmpty() ? "" : " -- for " + quest;
 
-		Destination destination = destinationOf(total, shopLocator, dropLocator, from);
+		RouteSources sources = RouteSources.dropsOnly(dropLocator);
+		Destination destination = destinationOf(total, shopLocator, sources, from);
 		if (destination != null)
 		{
-			int others = destination.alternatives();
-			String orOthers = others == 0
-				? ""
-				: " or " + others + " other" + (others == 1 ? "" : "s");
-			String lead = destination.monster() ? "-> kill " : "-> ";
-			return lead + destination.shopName() + orOthers + forQuest;
+			return legLine(destination) + cannotMakeNote(total, destination, sources) + forQuest;
+		}
+		String noPractical = noPracticalSource(total, sources);
+		if (!noPractical.isEmpty())
+		{
+			return noPractical + forQuest;
 		}
 		if (!total.shopNames().isEmpty())
 		{
@@ -611,5 +686,81 @@ final class ShopRouteStops
 			return "A shop sells this, but none you can get to" + forQuest;
 		}
 		return "No known shop sells this yet" + forQuest;
+	}
+
+	/**
+	 * "-> Furnace: use Bucket of sand + Soda ash", "-> General store for
+	 * Bucket of sand (to make it)", "-> kill Giant bat".
+	 */
+	private static String legLine(Destination destination)
+	{
+		int others = destination.alternatives();
+		String orOthers = others == 0
+			? ""
+			: " or " + others + " other" + (others == 1 ? "" : "s");
+		String lead = destination.monster() ? "-> kill " : "-> ";
+		String place = destination.shopName().isEmpty() ? "anywhere" : destination.shopName();
+		String line = lead + place + orOthers;
+		if (destination.kind() == Destination.Kind.FACILITY)
+		{
+			return line + ": " + destination.makeText();
+		}
+		if (!destination.ingredient().isEmpty())
+		{
+			return line + " for " + destination.ingredient() + " (to make it)";
+		}
+		return line;
+	}
+
+	/**
+	 * Said beside a drop the route fell back to because a recipe is a level
+	 * short: the player may rather train than grind.
+	 */
+	private static String cannotMakeNote(QuestItems.Total total, Destination destination, RouteSources sources)
+	{
+		if (destination.kind() != Destination.Kind.MONSTER)
+		{
+			return "";
+		}
+		String why = MakeChain.cannotMakeYet(total.name(), sources);
+		return why.isEmpty() ? "" : " (can't make it yet: " + why + ")";
+	}
+
+	/**
+	 * The row for an item with ways to get it, none of them practical for
+	 * this account: a boss, a Slayer level, a recipe a level short. Empty
+	 * when the item has no such sources at all, which keeps the older, more
+	 * accurate "no known shop" wording for it.
+	 *
+	 * <p>On a group, says who already holds it -- the realistic answer for a
+	 * Group Ironman with a boss-only item is "ask Alice".
+	 */
+	private static String noPracticalSource(QuestItems.Total total, RouteSources sources)
+	{
+		List<String> why = new ArrayList<>();
+		for (String dropper : total.dropSourceNames())
+		{
+			String reason = sources.dropBlockReason(dropper);
+			if (!reason.isEmpty())
+			{
+				why.add(dropper + ": " + reason);
+			}
+		}
+		String cannotMake = MakeChain.cannotMakeYet(total.name(), sources);
+		if (!cannotMake.isEmpty())
+		{
+			why.add("make it: " + cannotMake);
+		}
+		else if (!sources.recipesFor(total.name()).isEmpty())
+		{
+			why.add("make it: an ingredient or facility is out of reach");
+		}
+		if (why.isEmpty())
+		{
+			return "";
+		}
+		String line = "No practical source: make it or ask the group (" + String.join("; ", why) + ")";
+		List<String> holders = sources.groupHolders(total.name());
+		return holders.isEmpty() ? line : line + " -- held by " + String.join(", ", holders);
 	}
 }
