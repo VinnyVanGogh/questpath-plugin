@@ -490,20 +490,6 @@ public class QuestpathPlugin extends Plugin
 	@Inject
 	private QuestGraphFetcher graphFetcher;
 
-	/**
-	 * A quest-graph-source announcement waiting for a login to actually show
-	 * it in.
-	 *
-	 * {@link #fetchLiveQuestGraph}'s fetch usually resolves before the
-	 * client is logged in at all -- it starts from {@link #startUp}, and a
-	 * chat line posted while sitting at the login screen is a message nobody
-	 * saw. Held here and flushed by {@link #onGameStateChanged}'s own {@code
-	 * LOGGED_IN} branch instead of being dropped, because "say once on load"
-	 * has to mean the player actually sees it, not merely that this class
-	 * attempted to say it.
-	 */
-	private String pendingGraphAnnouncement;
-
 	private QuestpathPanel panel;
 	private NavigationButton navButton;
 
@@ -978,10 +964,7 @@ public class QuestpathPlugin extends Plugin
 			if (outcome.succeeded())
 			{
 				questGraph = outcome.graph();
-				String message = "Quest Route: using the live quest graph from questpath ("
-					+ questGraph.quests().size() + " quests).";
-				log.info("questpath: {}", message);
-				announceGraphSource(message);
+				log.debug("questpath: using the live quest graph ({} quests)", questGraph.quests().size());
 				refresh();
 				return;
 			}
@@ -989,27 +972,8 @@ public class QuestpathPlugin extends Plugin
 			String stillOn = questGraph == null
 				? "no quest graph at all -- the Quests tab will say so"
 				: questGraph.quests().size() + " quests bundled with this build";
-			String message = "Quest Route: could not fetch the quest graph from questpath (" + outcome.reason()
-				+ "); staying on " + stillOn + ".";
-			log.info("questpath: {}", message);
-			announceGraphSource(message);
+			log.debug("questpath: could not fetch the quest graph ({}); staying on {}", outcome.reason(), stillOn);
 		}));
-	}
-
-	/**
-	 * Shows one quest-graph-source line in game chat, or holds it for the
-	 * next login if there is no chat to show it in yet -- see {@link
-	 * #pendingGraphAnnouncement}'s own doc for why this must not simply drop
-	 * the message when the client is not logged in.
-	 */
-	private void announceGraphSource(String message)
-	{
-		if (client.getGameState() == GameState.LOGGED_IN)
-		{
-			chat(message);
-			return;
-		}
-		pendingGraphAnnouncement = message;
 	}
 
 	@Override
@@ -2152,15 +2116,6 @@ public class QuestpathPlugin extends Plugin
 		{
 			refresh();
 			maybeSync();
-			if (pendingGraphAnnouncement != null)
-			{
-				// The fetch in fetchLiveQuestGraph almost always resolves
-				// before this first login, since it starts from startUp --
-				// so this is usually where the one announcement the player
-				// actually sees happens, not a rare edge case.
-				chat(pendingGraphAnnouncement);
-				pendingGraphAnnouncement = null;
-			}
 			return;
 		}
 		if (event.getGameState() == GameState.LOADING)
