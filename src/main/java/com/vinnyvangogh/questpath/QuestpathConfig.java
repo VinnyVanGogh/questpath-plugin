@@ -211,19 +211,20 @@ public interface QuestpathConfig extends Config
 	@ConfigItem(
 		keyName = "fetchQuestGraph",
 		name = "Fetch quest graph on startup",
-		description = "Ask questpath (at the address above) for its current quest graph each time this plugin starts,"
-			+ " instead of only the copy bundled with this build. Falls back to the bundled copy, and says which it"
-			+ " used, if questpath cannot be reached or answers with a graph shape this build does not understand.",
+		description = "Developer setting: ask questpath (at the address above) for its current quest graph each time"
+			+ " this plugin starts, instead of only the copy bundled with this build. Outcomes are logged at debug"
+			+ " level only; the bundled copy is used if questpath cannot be reached.",
 		warning = "This feature submits your IP address to a 3rd-party server not controlled or verified by RuneLite developers",
 		section = syncSection,
-		position = 4
+		position = 4,
+		hidden = true
 	)
 	default boolean fetchQuestGraph()
 	{
-		// Off by default, the same reasoning as syncEnabled(): the plugin's
-		// quest logic is fully useful on the bundled graph alone, so talking
-		// to a server for a fresher copy is an extra to opt into, not
-		// something the plugin needs to be worth installing.
+		// Hidden developer toggle, off by default: the bundled graph is the
+		// normal source and a player's build makes no request to a quest
+		// graph server. Set it by hand in the config file when developing
+		// against a local questpath. Keep the warning if it ever surfaces.
 		return false;
 	}
 

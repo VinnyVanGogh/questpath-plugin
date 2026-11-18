@@ -140,16 +140,6 @@ class OverlaySettingsPanel extends JPanel
 				+ " verified by RuneLite developers.\n\nTurn it on anyway?",
 			config.syncEnabled(), "syncEnabled"));
 		panel.add(Box.createRigidArea(new Dimension(0, 6)));
-		panel.add(warningToggle(
-			"Fetch quest graph on startup",
-			"Ask questpath for its current quest graph each time this plugin starts, instead of"
-				+ " only the copy bundled with this build. Falls back to the bundled copy, and says"
-				+ " which it used, if questpath cannot be reached or answers with a graph shape this"
-				+ " build does not understand.",
-			"This feature submits your IP address to a 3rd-party server not controlled or"
-				+ " verified by RuneLite developers.\n\nTurn it on anyway?",
-			config.fetchQuestGraph(), "fetchQuestGraph"));
-		panel.add(Box.createRigidArea(new Dimension(0, 6)));
 		panel.add(toggle(
 			"Share with my party",
 			"Send your finished quests, levels, build rules and counts of quest items you hold to"
