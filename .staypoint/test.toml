@@ -6,5 +6,4 @@ suite = "required"
 [[commands]]
 name      = "gradle"
 runner    = "gradle_test"
-packages  = [":test"]
 timeout_s = 900
