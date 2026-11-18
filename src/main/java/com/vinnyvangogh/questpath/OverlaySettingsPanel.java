@@ -140,16 +140,6 @@ class OverlaySettingsPanel extends JPanel
 				+ " verified by RuneLite developers.\n\nTurn it on anyway?",
 			config.syncEnabled(), "syncEnabled"));
 		panel.add(Box.createRigidArea(new Dimension(0, 6)));
-		panel.add(warningToggle(
-			"Fetch quest graph on startup",
-			"Ask questpath for its current quest graph each time this plugin starts, instead of"
-				+ " only the copy bundled with this build. Falls back to the bundled copy, and says"
-				+ " which it used, if questpath cannot be reached or answers with a graph shape this"
-				+ " build does not understand.",
-			"This feature submits your IP address to a 3rd-party server not controlled or"
-				+ " verified by RuneLite developers.\n\nTurn it on anyway?",
-			config.fetchQuestGraph(), "fetchQuestGraph"));
-		panel.add(Box.createRigidArea(new Dimension(0, 6)));
 		panel.add(toggle(
 			"Share with my party",
 			"Send your finished quests, levels, build rules and counts of quest items you hold to"
@@ -417,6 +407,8 @@ class OverlaySettingsPanel extends JPanel
 		body.add(spacer());
 		body.add(groundItemsGroup(config));
 		body.add(spacer());
+		body.add(voiceGroup(config));
+		body.add(spacer());
 		body.add(bankGroup(config));
 		body.add(spacer());
 		body.add(lampsGroup(config));
@@ -611,6 +603,42 @@ class OverlaySettingsPanel extends JPanel
 						+ " so picking it up in passing does not need a right click. Never hides or"
 						+ " reorders anything for an item you do not need.",
 					config.groundTakeLeftClick(), "groundTakeLeftClick"));
+				sub.add(toggle(
+					"Bouncing arrow over needed items",
+					"Draw a bouncing arrow above a needed item lying within the floor-item range,"
+						+ " on top of the outline.",
+					config.floorItemArrow(), "floorItemArrow"));
+				addField(sub, "Floor-item range (tiles)",
+					intField(config.floorItemRadius(), 1, 15,
+						"How close a needed item on the floor must be for the arrow and for"
+							+ " \"<item> nearby\" to be said.",
+						"floorItemRadius"));
+			});
+	}
+
+	/**
+	 * Voice: the master switch in the header, the volume and the two spoken
+	 * alerts under it.
+	 */
+	private CollapsibleGroup voiceGroup(QuestpathConfig config)
+	{
+		return toggleGroup(
+			"Voice",
+			"Speak Quest Route's reminders out loud. Off silences every spoken line below.",
+			config.voiceEnabled(), "voiceEnabled",
+			sub ->
+			{
+				addField(sub, "Volume",
+					intField(config.voiceVolume(), 0, 100, "How loud the voice is, 0 to 100.", "voiceVolume"));
+				sub.add(toggle(
+					"Say what to buy near a shop",
+					"As you come up on a shop, say every item your plan still needs from it.",
+					config.voiceShops(), "voiceShops"));
+				sub.add(toggle(
+					"Say needed items on the floor",
+					"Say \"Bucket nearby\" once when an item your plan still needs is lying within"
+						+ " the floor-item range.",
+					config.voiceFloorItems(), "voiceFloorItems"));
 			});
 	}
 

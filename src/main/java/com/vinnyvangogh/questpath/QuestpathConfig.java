@@ -110,6 +110,70 @@ public interface QuestpathConfig extends Config
 	)
 	String groupSection = "group";
 
+	@ConfigSection(
+		name = "Voice",
+		description = "Quest Route saying what to buy as you near a shop, and naming needed items"
+			+ " on the floor. Bundled recordings, played on your computer; nothing is sent anywhere.",
+		position = 8,
+		closedByDefault = true
+	)
+	String voiceSection = "voice";
+
+	// ------------------------------------------------------------------
+	// Voice. Keys freeze at the first published version: never rename.
+	// ------------------------------------------------------------------
+
+	@ConfigItem(
+		keyName = "voiceEnabled",
+		name = "Voice",
+		description = "Speak Quest Route's reminders out loud. Off silences every spoken line below.",
+		section = voiceSection,
+		position = 1
+	)
+	default boolean voiceEnabled()
+	{
+		return true;
+	}
+
+	@Range(min = 0, max = 100)
+	@ConfigItem(
+		keyName = "voiceVolume",
+		name = "Volume",
+		description = "How loud the voice is, 0 to 100.",
+		section = voiceSection,
+		position = 2
+	)
+	default int voiceVolume()
+	{
+		return 70;
+	}
+
+	@ConfigItem(
+		keyName = "voiceShops",
+		name = "Say what to buy near a shop",
+		description = "As you come up on a shop, say every item your plan still needs from it:"
+			+ " \"Looking for 30 air runes and an air talisman at Aubury's Rune Shop\".",
+		section = voiceSection,
+		position = 3
+	)
+	default boolean voiceShops()
+	{
+		return true;
+	}
+
+	@ConfigItem(
+		keyName = "voiceFloorItems",
+		name = "Say needed items on the floor",
+		description = "Say \"Bucket nearby\" once when an item your plan still needs is lying"
+			+ " within the floor-item range (Ground items section).",
+		section = voiceSection,
+		position = 4
+	)
+	default boolean voiceFloorItems()
+	{
+		return true;
+	}
+
 	@ConfigItem(
 		keyName = "partyShare",
 		name = "Share with my party",
@@ -211,19 +275,20 @@ public interface QuestpathConfig extends Config
 	@ConfigItem(
 		keyName = "fetchQuestGraph",
 		name = "Fetch quest graph on startup",
-		description = "Ask questpath (at the address above) for its current quest graph each time this plugin starts,"
-			+ " instead of only the copy bundled with this build. Falls back to the bundled copy, and says which it"
-			+ " used, if questpath cannot be reached or answers with a graph shape this build does not understand.",
+		description = "Developer setting: ask questpath (at the address above) for its current quest graph each time"
+			+ " this plugin starts, instead of only the copy bundled with this build. Outcomes are logged at debug"
+			+ " level only; the bundled copy is used if questpath cannot be reached.",
 		warning = "This feature submits your IP address to a 3rd-party server not controlled or verified by RuneLite developers",
 		section = syncSection,
-		position = 4
+		position = 4,
+		hidden = true
 	)
 	default boolean fetchQuestGraph()
 	{
-		// Off by default, the same reasoning as syncEnabled(): the plugin's
-		// quest logic is fully useful on the bundled graph alone, so talking
-		// to a server for a fresher copy is an extra to opt into, not
-		// something the plugin needs to be worth installing.
+		// Hidden developer toggle, off by default: the bundled graph is the
+		// normal source and a player's build makes no request to a quest
+		// graph server. Set it by hand in the config file when developing
+		// against a local questpath. Keep the warning if it ever surfaces.
 		return false;
 	}
 
@@ -881,6 +946,33 @@ public interface QuestpathConfig extends Config
 	default boolean groundTakeLeftClick()
 	{
 		return true;
+	}
+
+	@ConfigItem(
+		keyName = "floorItemArrow",
+		name = "Bouncing arrow over needed items",
+		description = "Draw a bouncing arrow above a needed item lying within the floor-item range,"
+			+ " on top of the outline.",
+		section = groundSection,
+		position = 5
+	)
+	default boolean floorItemArrow()
+	{
+		return true;
+	}
+
+	@Range(min = 1, max = 15)
+	@ConfigItem(
+		keyName = "floorItemRadius",
+		name = "Floor-item range (tiles)",
+		description = "How close a needed item on the floor must be for the arrow and for"
+			+ " \"<item> nearby\" to be said.",
+		section = groundSection,
+		position = 6
+	)
+	default int floorItemRadius()
+	{
+		return 10;
 	}
 
 	// ------------------------------------------------------------------

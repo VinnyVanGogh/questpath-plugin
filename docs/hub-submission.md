@@ -76,8 +76,8 @@ would change what that plugin is.
 
 **Compliance.**
 - *Network:* only to a server the user hosts and configures. Two toggles,
-  `syncEnabled` and `fetchQuestGraph`, both off by default, both with the
-  RuneLite third-party warning; the manifest carries `warning=`. The payload is
+  `syncEnabled` and `fetchQuestGraph` (a hidden developer toggle, no UI), both
+  off by default, both with the RuneLite third-party warning; the manifest carries `warning=`. The payload is
   the local player's own account only. OkHttp `enqueue`, never on the client
   thread.
 - *Party:* "Share with my party" is off by default and uses `PartyService`

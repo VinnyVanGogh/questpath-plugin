@@ -1,0 +1,65 @@
+{
+  "version": 14,
+  "quests": [
+    {
+      "id": 1,
+      "slug": "the-glass-quest",
+      "name": "The Glass Quest",
+      "items": [
+        {
+          "name": "Molten glass",
+          "item_id": 1775,
+          "quantity": 1,
+          "sources": ["Drop: Phantom Muspah (15/235)", "Drop: Thermonuclear smoke devil (1/30)"],
+          "shop_names": [],
+          "drop_source_names": ["Phantom Muspah", "Thermonuclear smoke devil"]
+        }
+      ]
+    }
+  ],
+  "diary_tasks": [],
+  "shops": [
+    {"name": "Port Sarim General Store", "x": 3014, "y": 3204, "plane": 0},
+    {"name": "Seaweed Stall", "x": 2800, "y": 3440, "plane": 0}
+  ],
+  "drop_locations": [
+    {"source_name": "Phantom Muspah", "x": 2900, "y": 10350, "plane": 0, "region": "general"},
+    {"source_name": "Thermonuclear smoke devil", "x": 2380, "y": 9450, "plane": 0, "region": "general"},
+    {"source_name": "Crab", "x": 2700, "y": 3700, "plane": 0, "region": "general"}
+  ],
+  "recipes": [
+    {
+      "product": "Molten glass",
+      "product_item_id": 1775,
+      "output_quantity": 1,
+      "facility": "Furnace",
+      "members": false,
+      "skills": [{"skill": "Crafting", "level": 1}],
+      "materials": [
+        {"name": "Bucket of sand", "item_id": 1783, "quantity": 1, "shop_names": ["Port Sarim General Store"]},
+        {"name": "Soda ash", "item_id": 1781, "quantity": 1, "shop_names": [], "drop_source_names": []}
+      ]
+    },
+    {
+      "product": "Soda ash",
+      "product_item_id": 1781,
+      "output_quantity": 1,
+      "facility": "Range",
+      "members": false,
+      "skills": [{"skill": "Cooking", "level": 1}],
+      "materials": [
+        {"name": "Seaweed", "item_id": 401, "quantity": 1, "shop_names": ["Seaweed Stall"]}
+      ]
+    }
+  ],
+  "facilities": [
+    {"name": "Furnace", "x": 3226, "y": 3255, "plane": 0},
+    {"name": "Furnace", "x": 2975, "y": 3369, "plane": 0},
+    {"name": "Range", "x": 3211, "y": 3215, "plane": 0}
+  ],
+  "drop_sources": [
+    {"name": "Thermonuclear smoke devil", "slayer_level": 93, "combat_level": 0, "boss": true},
+    {"name": "Phantom Muspah", "slayer_level": 0, "combat_level": 0, "boss": true},
+    {"name": "Crab", "slayer_level": 0, "combat_level": 0, "boss": false}
+  ]
+}

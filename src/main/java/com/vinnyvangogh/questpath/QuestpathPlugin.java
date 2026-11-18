@@ -12,10 +12,12 @@ import com.google.inject.Provides;
 import com.vinnyvangogh.questpath.groupshop.AccountKind;
 import com.vinnyvangogh.questpath.groupshop.GroupShopAlert;
 import com.vinnyvangogh.questpath.groupshop.GroupShoppingList;
+import com.vinnyvangogh.questpath.groupshop.GroupStorage;
 import com.vinnyvangogh.questpath.groupshop.ItemSources;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -45,6 +47,8 @@ import net.runelite.client.chat.ChatColorType;
 import net.runelite.client.chat.ChatMessageBuilder;
 import net.runelite.client.chat.QueuedMessage;
 import net.runelite.api.events.GameTick;
+import net.runelite.api.events.ItemDespawned;
+import net.runelite.api.events.ItemSpawned;
 import net.runelite.api.ScriptID;
 import net.runelite.api.VarClientStr;
 import net.runelite.api.events.MenuOptionClicked;
@@ -132,6 +136,13 @@ public class QuestpathPlugin extends Plugin
 	 */
 	private Map<String, Long> groupStorageSeen;
 	private long groupStorageAt;
+
+	/**
+	 * Whether {@link #groupStorageSeen} has been read back from this RS
+	 * profile since login. The profile is not known until logged in, so the
+	 * read is lazy; see {@link #loadGroupStorage}.
+	 */
+	private boolean groupStorageLoaded;
 
 	/**
 	 * Shops this account can use that sell something the party is still
@@ -317,6 +328,62 @@ public class QuestpathPlugin extends Plugin
 	private final ShopkeeperMemory shopkeeper = new ShopkeeperMemory();
 	private Boosts cachedShopBoosts;
 	private Map<String, WorldPoint> dropsByName;
+
+	/**
+	 * The graph's recipe, facility and drop-gate tables, and the graph they
+	 * were built from, so a live fetch that replaces {@link #questGraph}
+	 * rebuilds them rather than routing off the old one.
+	 */
+	private volatile RouteSources.Index routeIndex = RouteSources.Index.EMPTY;
+	private volatile QuestGraph routeIndexFor;
+
+	/**
+	 * What every shop-route surface resolves droppers, recipes and
+	 * facilities through -- handed out where {@code this::dropLocation} used
+	 * to be, so a boss or a Slayer-locked monster is refused in the one place
+	 * the route, the labels and the group list all read. See {@link
+	 * RouteSources}.
+	 */
+	private final RouteSources routeSources = new RouteSources(this::currentRouteIndex,
+		this::dropLocation, new RouteSources.Account()
+		{
+			@Override
+			public int level(String skill)
+			{
+				PlayerState account = accountSnapshot;
+				// Before the first refresh nothing is known; start levels
+				// under-claim, so a Slayer-locked monster stays refused.
+				return account == null ? RouteSources.NO_ACCOUNT.level(skill) : account.levelIn(skill);
+			}
+
+			@Override
+			public int combatLevel()
+			{
+				return cachedCombatLevel;
+			}
+
+			@Override
+			public long held(String item)
+			{
+				return heldCount(item);
+			}
+
+			@Override
+			public List<String> groupHolders(String item)
+			{
+				return groupHoldersOf(item);
+			}
+		});
+
+	/**
+	 * Every held count by lower-cased name, bank included, as of the last
+	 * refresh -- what a make chain checks its ingredients against. Replaced
+	 * wholesale on the client thread; read from Swing too.
+	 */
+	private volatile Map<String, Long> heldForRoute = Collections.emptyMap();
+
+	/** The local player's combat level at the last tick; 3 until one is read. */
+	private volatile int cachedCombatLevel = 3;
 	/**
 	 * Where the player was at the last client-thread read. Volatile
 	 * because the panel reads it from Swing -- see
@@ -325,6 +392,20 @@ public class QuestpathPlugin extends Plugin
 	private volatile WorldPoint lastPlayerLocation;
 	private Map<String, String> dropRegionsByName;
 	private final ShopApproachWatcher shopApproach = new ShopApproachWatcher();
+
+	/** The voice's word list and player; built in startUp, the player shut down in shutDown. */
+	private VoiceLines voiceLines = new VoiceLines();
+	private VoicePlayer voicePlayer;
+
+	/** When to say "Bucket nearby" -- see {@link FloorItemAnnouncer}. */
+	private final FloorItemAnnouncer floorAnnouncer = new FloorItemAnnouncer();
+
+	/**
+	 * Every ground item in the scene by tile and id, with how many lie there,
+	 * from ItemSpawned/ItemDespawned: walked once a tick for the floor-item
+	 * voice instead of sweeping scene tiles. Client thread only.
+	 */
+	private final Map<FloorSpawn, Integer> floorSpawns = new HashMap<>();
 
 	/**
 	 * Watches for a shop opening that sells something outstanding -- see its
@@ -408,20 +489,6 @@ public class QuestpathPlugin extends Plugin
 
 	@Inject
 	private QuestGraphFetcher graphFetcher;
-
-	/**
-	 * A quest-graph-source announcement waiting for a login to actually show
-	 * it in.
-	 *
-	 * {@link #fetchLiveQuestGraph}'s fetch usually resolves before the
-	 * client is logged in at all -- it starts from {@link #startUp}, and a
-	 * chat line posted while sitting at the login screen is a message nobody
-	 * saw. Held here and flushed by {@link #onGameStateChanged}'s own {@code
-	 * LOGGED_IN} branch instead of being dropped, because "say once on load"
-	 * has to mean the player actually sees it, not merely that this class
-	 * attempted to say it.
-	 */
-	private String pendingGraphAnnouncement;
 
 	private QuestpathPanel panel;
 	private NavigationButton navButton;
@@ -725,11 +792,12 @@ public class QuestpathPlugin extends Plugin
 			new OverlaySettingsPanel(config, configManager),
 			this::skillPlan, shortestPathBridge, geSearchBridge,
 			this::grandExchangeAvailable, this::shopLocation,
-			this::dropLocation, this::lastKnownPlayerLocation, this::onShopRouteSent,
+			routeSources, this::lastKnownPlayerLocation, this::onShopRouteSent,
 			this::cancelShopRoute,
 			this::shopRouteActive, this::syncNow,
 			shopItemSkips, this::diaryGraphTasks, this::diaryPush, lockedGearActions(),
 			localBuildRules, this::onLocalRulesEdited);
+		panel.setSayShopAgain(this::sayShopAgain);
 		navButton = NavigationButton.builder()
 			.tooltip("Quest Route")
 			.icon(icon())
@@ -742,7 +810,7 @@ public class QuestpathPlugin extends Plugin
 		overlays.add(new PickupsOverlay(this, config, overlayIcons));
 		overlays.add(new NeededItemsOverlay(this, config, overlayIcons, client));
 		overlays.add(new ShopRouteOverlay(this, config, overlayIcons, this::shopLocation,
-			this::dropLocation, this::playerLocation, shopItemSkips));
+			routeSources, this::playerLocation, shopItemSkips));
 		overlays.add(new DiaryRouteOverlay(this, config, overlayIcons, this::diaryGraphTasks,
 			this::diaryPush, this::playerLocation));
 		overlays.add(new GrandExchangeOverlay(this, config, overlayIcons, client, this::grandExchangeList));
@@ -783,6 +851,9 @@ public class QuestpathPlugin extends Plugin
 
 		lampOverlay = new LampOverlay(this, config, client, tooltipManager);
 		overlayManager.add(lampOverlay);
+
+		voiceLines = VoiceLines.load();
+		voicePlayer = new VoicePlayer();
 
 		bankTab = new BankTabLayout(client, clientThread, this);
 		bankButton = new BankButton(client, this::bankNeedsShown, this::toggleBankNeeds);
@@ -893,10 +964,7 @@ public class QuestpathPlugin extends Plugin
 			if (outcome.succeeded())
 			{
 				questGraph = outcome.graph();
-				String message = "Quest Route: using the live quest graph from questpath ("
-					+ questGraph.quests().size() + " quests).";
-				log.info("questpath: {}", message);
-				announceGraphSource(message);
+				log.debug("questpath: using the live quest graph ({} quests)", questGraph.quests().size());
 				refresh();
 				return;
 			}
@@ -904,27 +972,8 @@ public class QuestpathPlugin extends Plugin
 			String stillOn = questGraph == null
 				? "no quest graph at all -- the Quests tab will say so"
 				: questGraph.quests().size() + " quests bundled with this build";
-			String message = "Quest Route: could not fetch the quest graph from questpath (" + outcome.reason()
-				+ "); staying on " + stillOn + ".";
-			log.info("questpath: {}", message);
-			announceGraphSource(message);
+			log.debug("questpath: could not fetch the quest graph ({}); staying on {}", outcome.reason(), stillOn);
 		}));
-	}
-
-	/**
-	 * Shows one quest-graph-source line in game chat, or holds it for the
-	 * next login if there is no chat to show it in yet -- see {@link
-	 * #pendingGraphAnnouncement}'s own doc for why this must not simply drop
-	 * the message when the client is not logged in.
-	 */
-	private void announceGraphSource(String message)
-	{
-		if (client.getGameState() == GameState.LOGGED_IN)
-		{
-			chat(message);
-			return;
-		}
-		pendingGraphAnnouncement = message;
 	}
 
 	@Override
@@ -951,6 +1000,13 @@ public class QuestpathPlugin extends Plugin
 		floatingNotes.clear();
 		shopkeeper.forget();
 		shopApproach.clear();
+		if (voicePlayer != null)
+		{
+			voicePlayer.shutDown();
+			voicePlayer = null;
+		}
+		floorSpawns.clear();
+		floorAnnouncer.clear();
 		if (groundOverlay != null)
 		{
 			overlayManager.remove(groundOverlay);
@@ -1147,6 +1203,9 @@ public class QuestpathPlugin extends Plugin
 		QuestpathGroupState message = GroupMember.encode(completed, inProgressQuestNames(), levels, experience,
 			effectiveBuildRules(), owned.isEmpty() ? null : heldIncludingCollected(), owned.bankSeen(),
 			groupRelevantItems());
+		// A snapshot from an earlier session is still worth sharing: a member
+		// with none of their own counts it, and freshest() lets a newer one win.
+		loadGroupStorage();
 		return GroupMember.withShopping(message, routeOrder, accountKind(), groupStorageSeen, groupStorageAt,
 			groupRelevantItems());
 	}
@@ -1175,8 +1234,46 @@ public class QuestpathPlugin extends Plugin
 		{
 			groupStorageSeen = questItemCounts(container);
 			groupStorageAt = System.currentTimeMillis();
+			groupStorageLoaded = true;
+			configManager.setRSProfileConfiguration(QuestpathConfig.GROUP, GroupStorageStore.KEY,
+				GroupStorageStore.encode(gson, groupStorageSeen, groupStorageAt));
+			refreshPending = true;
 		}
 		return true;
+	}
+
+	/**
+	 * Reads this account's last storage snapshot back from its RS profile,
+	 * once per login. Client thread. A profile is one account, so another
+	 * account logging in reads its own snapshot or none -- never this one's.
+	 */
+	private void loadGroupStorage()
+	{
+		if (groupStorageLoaded || client.getGameState() != GameState.LOGGED_IN
+			|| configManager.getRSProfileKey() == null)
+		{
+			return;
+		}
+		groupStorageLoaded = true;
+		GroupStorageStore.Snapshot stored = GroupStorageStore.decode(gson,
+			configManager.getRSProfileConfiguration(QuestpathConfig.GROUP, GroupStorageStore.KEY));
+		if (stored != null && groupStorageSeen == null)
+		{
+			groupStorageSeen = stored.counts;
+			groupStorageAt = stored.at;
+		}
+	}
+
+	/**
+	 * Group storage as this account's item lists count it: the freshest of
+	 * its own snapshot and every party member's, for a group ironman only.
+	 */
+	private GroupStorageView groupStorageView()
+	{
+		loadGroupStorage();
+		GroupStorage own = groupStorageSeen == null ? null
+			: new GroupStorage(groupStorageSeen, groupStorageAt, "you");
+		return GroupStorageView.of(accountKind(), GroupStorageView.snapshots(own, partyMembers.values()));
 	}
 
 	/** A container's quest items, lower-cased name to count. Client thread. */
@@ -1356,7 +1453,7 @@ public class QuestpathPlugin extends Plugin
 				List<String> out = new java.util.ArrayList<>();
 				for (String source : known == null ? Collections.<String>emptyList() : known.dropSourceNames())
 				{
-					if (dropLocation(source) != null)
+					if (routeSources.apply(source) != null)
 					{
 						out.add(source);
 					}
@@ -1461,6 +1558,7 @@ public class QuestpathPlugin extends Plugin
 		// which in practice meant opening the shop. The reminder to go
 		// somewhere arrived once they were already standing there.
 		checkShopApproach(overlaySnapshot == null ? null : overlaySnapshot.items());
+		checkFloorItems(overlaySnapshot == null ? null : overlaySnapshot.items());
 
 		// Same reasoning as checkShopApproach: proximity to a diary task
 		// changes every tick as the player walks, whether or not the
@@ -1584,14 +1682,14 @@ public class QuestpathPlugin extends Plugin
 		}
 		boolean includeRecommended = config != null && config.recommendedItems();
 		for (ShopRouteStops.Stop stop : ShopRouteStops.tour(items.totals(includeRecommended), shopItemSkips,
-			this::shopLocation, this::dropLocation, playerLocation()))
+			this::shopLocation, routeSources, playerLocation()))
 		{
 			if (!stop.current())
 			{
 				continue;
 			}
 			ShopRouteStops.Destination destination = ShopRouteStops.destinationOf(
-				stop.total(), this::shopLocation, this::dropLocation, playerLocation());
+				stop.total(), this::shopLocation, routeSources, playerLocation());
 			return destination == null || !destination.monster();
 		}
 		return true;
@@ -2018,19 +2116,19 @@ public class QuestpathPlugin extends Plugin
 		{
 			refresh();
 			maybeSync();
-			if (pendingGraphAnnouncement != null)
-			{
-				// The fetch in fetchLiveQuestGraph almost always resolves
-				// before this first login, since it starts from startUp --
-				// so this is usually where the one announcement the player
-				// actually sees happens, not a rare edge case.
-				chat(pendingGraphAnnouncement);
-				pendingGraphAnnouncement = null;
-			}
 			return;
+		}
+		if (event.getGameState() == GameState.LOADING)
+		{
+			// The new scene re-fires ItemSpawned for every item in it, so the
+			// tracked set starts over; the announcer keeps what it has said,
+			// keyed by tile, so crossing a region edge does not repeat it.
+			floorSpawns.clear();
 		}
 		if (event.getGameState() == GameState.LOGIN_SCREEN)
 		{
+			floorSpawns.clear();
+			floorAnnouncer.clear();
 			// A logged-out client reports every skill as level 1, which would
 			// render as a confident "combat 3" for an account that is nothing
 			// of the sort.
@@ -2080,8 +2178,11 @@ public class QuestpathPlugin extends Plugin
 			// shortfall on it by coincidence of a shared item name.
 			shopItemSkips.clear();
 			// Another account's group, if it has one at all.
+			// Only the in-memory copy: the stored one belongs to this
+			// account's RS profile and is read back when it logs in again.
 			groupStorageSeen = null;
 			groupStorageAt = 0L;
+			groupStorageLoaded = false;
 			// The next login may be a different account of a different type
 			// entirely -- an ironman logging out and a main logging in on
 			// the same client session must not keep seeing the previous
@@ -2142,6 +2243,7 @@ public class QuestpathPlugin extends Plugin
 		// that is impossible to reproduce later.
 		overlaySnapshot = new OverlaySnapshot(stats, xp, route, items, effectiveBuildRules(),
 			characterName(), questPoints());
+		heldForRoute = lowerCaseCounts(heldIncludingCollected());
 
 		// Rebuilt here, once per account-state change, so the per-tick diary
 		// check never has to rescan the route -- see routeQuestInProgress's
@@ -2270,6 +2372,12 @@ public class QuestpathPlugin extends Plugin
 			? null
 			: client.getLocalPlayer().getWorldLocation();
 		lastPlayerLocation = here;
+		if (client.getLocalPlayer() != null)
+		{
+			// Read alongside the position, on the same client-thread calls,
+			// so the panel's Swing-side drop gating has a recent value.
+			cachedCombatLevel = client.getLocalPlayer().getCombatLevel();
+		}
 		return here;
 	}
 
@@ -2441,7 +2549,7 @@ public class QuestpathPlugin extends Plugin
 		}
 
 		ShopRouteAdvance.Decision decision = ShopRouteAdvance.observe(shopTripActive(), completed,
-			items.totals(), shopItemSkips, this::shopLocation, this::dropLocation, playerLocation());
+			items.totals(), shopItemSkips, this::shopLocation, routeSources, playerLocation());
 
 		if (decision.action() == ShopRouteAdvance.Action.FINISHED)
 		{
@@ -2864,9 +2972,10 @@ public class QuestpathPlugin extends Plugin
 		// right there" -- and the second is the one worth walking on.
 		boolean wantOwn = config != null && config.shopNearbyPrompt();
 		boolean wantGroup = config != null && config.groupShopAlert();
-		if (!wantOwn && !wantGroup)
+		boolean wantVoice = voiceShopsOn();
+		if (!wantOwn && !wantGroup && !wantVoice)
 		{
-			// Still not observed while both are off: the watcher's baseline
+			// Still not observed while all are off: the watcher's baseline
 			// would go stale and switching one on mid-session would announce
 			// every shop already in range at once.
 			shopApproach.clear();
@@ -2877,15 +2986,177 @@ public class QuestpathPlugin extends Plugin
 		// shop that stocks something for you and something for the group
 		// says it once, and "once per visit" means the same thing for both.
 		Map<String, WorldPoint> nearby = new HashMap<>();
-		Map<String, QuestItems.Total> wantedAt = wantOwn && items != null
+		Map<String, List<QuestItems.Total>> wantedAt = (wantOwn || wantVoice) && items != null
 			? ownShopCandidates(items, nearby) : Collections.emptyMap();
 		Map<String, List<GroupShoppingList.Line>> groupAt = wantGroup
 			? groupShopCandidates(nearby) : Collections.emptyMap();
 
 		for (String shopName : shopApproach.observe(nearby, playerLocation()))
 		{
-			announceShopApproach(shopName, nearby.get(shopName), wantedAt.get(shopName),
-				GroupShopAlert.describe(groupAt.get(shopName)));
+			shopApproached(shopName, nearby.get(shopName), wantedAt.get(shopName), groupAt.get(shopName),
+				wantOwn, wantVoice);
+		}
+	}
+
+	private boolean voiceShopsOn()
+	{
+		return config != null && config.voiceEnabled() && config.voiceShops();
+	}
+
+	/** One shop just come into range: its chat line, then its spoken line. */
+	private void shopApproached(String shopName, WorldPoint at, List<QuestItems.Total> wanted,
+		List<GroupShoppingList.Line> group, boolean wantOwn, boolean wantVoice)
+	{
+		QuestItems.Total first = wantOwn && wanted != null ? wanted.get(0) : null;
+		announceShopApproach(shopName, at, first, GroupShopAlert.describe(group));
+		if (wantVoice && wanted != null)
+		{
+			// The chat line above is the text half whenever it ran; a
+			// missing clip then only needs the ping.
+			sayShop(shopName, wanted, !wantOwn);
+		}
+	}
+
+	/**
+	 * Says "Looking for 30 air runes and an air talisman at Aubury's Rune
+	 * Shop": every still-needed item this shop stocks, how many from the
+	 * plan.
+	 *
+	 * @param chatOnFallback put the line in chat when a clip is missing,
+	 *     because nothing else has said it in text
+	 */
+	private void sayShop(String shopName, List<QuestItems.Total> wanted, boolean chatOnFallback)
+	{
+		List<VoiceLines.Want> wants = ShopVoice.wants(wanted);
+		if (!wants.isEmpty())
+		{
+			speak(voiceLines.shopLine(wants, shopName, VoiceLines::bundled), chatOnFallback);
+		}
+	}
+
+	/**
+	 * Plays one line, or a ping when a clip is missing -- never silence --
+	 * and on a fallback puts the words in chat if asked to.
+	 */
+	private void speak(Utterance line, boolean chatOnFallback)
+	{
+		VoicePlayer player = voicePlayer;
+		if (player == null || config == null)
+		{
+			return;
+		}
+		Speaker.speak(config.voiceEnabled(), config.voiceVolume(), line, chatOnFallback, new Speaker.Out()
+		{
+			@Override
+			public void play(Utterance utterance, int volume)
+			{
+				player.say(utterance, volume);
+			}
+
+			@Override
+			public void chat(String text)
+			{
+				QuestpathPlugin.this.chat(text);
+			}
+		});
+	}
+
+	/**
+	 * "Say again" on the panel's shop stop: the same line as the approach,
+	 * for this shop, now. Called from Swing, so the work hops to the client
+	 * thread, where the plan and the voice are read.
+	 */
+	void sayShopAgain(String shopName)
+	{
+		clientThread.invokeLater(() ->
+		{
+			QuestItems items = overlaySnapshot == null ? null : overlaySnapshot.items();
+			List<QuestItems.Total> wanted = items == null ? null
+				: ownShopCandidates(items, new HashMap<>()).get(shopName);
+			List<VoiceLines.Want> wants = wanted == null ? Collections.emptyList() : ShopVoice.wants(wanted);
+			if (wants.isEmpty())
+			{
+				chat("Quest Route: nothing on your list is sold at " + shopName + ".");
+				return;
+			}
+			Utterance line = voiceLines.shopLine(wants, shopName, VoiceLines::bundled);
+			if (config.voiceEnabled())
+			{
+				speak(line, true);
+			}
+			else
+			{
+				// Voice off: the button still answers, in text.
+				chat("Quest Route: " + line.text);
+			}
+		});
+	}
+
+	/**
+	 * Says "Bucket nearby" once per needed item spawn within range -- see
+	 * {@link FloorItemAnnouncer}. Walks the spawns ItemSpawned recorded, not
+	 * the scene's tiles.
+	 */
+	private void checkFloorItems(QuestItems items)
+	{
+		if (items == null || config == null || !config.voiceEnabled() || !config.voiceFloorItems()
+			|| floorSpawns.isEmpty())
+		{
+			return;
+		}
+		WorldPoint player = playerLocation();
+		if (player == null)
+		{
+			return;
+		}
+		String name = floorAnnouncer.observe(floorSightings(items, player), System.currentTimeMillis());
+		if (name != null)
+		{
+			speak(voiceLines.floorLine(name, VoiceLines::bundled), true);
+		}
+	}
+
+	/** Needed, not-yet-covered items lying within the floor-item range, by spawn. */
+	private List<FloorItemAnnouncer.Sighting> floorSightings(QuestItems items, WorldPoint player)
+	{
+		Map<Integer, QuestItems.Total> needed = new HashMap<>();
+		for (QuestItems.Total total : items.totals())
+		{
+			if (total.itemId() > 0 && !total.covered())
+			{
+				needed.putIfAbsent(total.itemId(), total);
+			}
+		}
+		int radius = config.floorItemRadius();
+		List<FloorItemAnnouncer.Sighting> inRange = new ArrayList<>();
+		for (FloorSpawn spawn : floorSpawns.keySet())
+		{
+			QuestItems.Total total = needed.get(spawn.itemId);
+			int distance = spawn.at.distanceTo(player);
+			if (total != null && distance <= radius)
+			{
+				inRange.add(new FloorItemAnnouncer.Sighting(spawn, total.name(), distance));
+			}
+		}
+		return inRange;
+	}
+
+	@Subscribe
+	public void onItemSpawned(ItemSpawned event)
+	{
+		FloorSpawn spawn = new FloorSpawn(event.getTile().getWorldLocation(), event.getItem().getId());
+		floorSpawns.merge(spawn, 1, Integer::sum);
+	}
+
+	@Subscribe
+	public void onItemDespawned(ItemDespawned event)
+	{
+		FloorSpawn spawn = new FloorSpawn(event.getTile().getWorldLocation(), event.getItem().getId());
+		Integer left = floorSpawns.computeIfPresent(spawn, (key, count) -> count > 1 ? count - 1 : null);
+		if (left == null)
+		{
+			// The last one there is gone: one dropped in its place is news.
+			floorAnnouncer.forget(spawn);
 		}
 	}
 
@@ -2941,11 +3212,12 @@ public class QuestpathPlugin extends Plugin
 	/**
 	 * This account's own near-shop candidates: shops it can use that sell an
 	 * item still short and not skipped. Fills {@code nearby} with their tiles
-	 * and returns the item each shop is announced for.
+	 * and returns every such item each shop sells, in plan order: the chat
+	 * line names the first, the voice names them all.
 	 */
-	private Map<String, QuestItems.Total> ownShopCandidates(QuestItems items, Map<String, WorldPoint> nearby)
+	private Map<String, List<QuestItems.Total>> ownShopCandidates(QuestItems items, Map<String, WorldPoint> nearby)
 	{
-		Map<String, QuestItems.Total> wantedAt = new HashMap<>();
+		Map<String, List<QuestItems.Total>> wantedAt = new HashMap<>();
 		for (QuestItems.Total total : items.totals())
 		{
 			if (total.covered() || shopItemSkips.isSkipped(total.name()))
@@ -2958,7 +3230,7 @@ public class QuestpathPlugin extends Plugin
 				if (at != null)
 				{
 					nearby.put(shopName, at);
-					wantedAt.putIfAbsent(shopName, total);
+					wantedAt.computeIfAbsent(shopName, name -> new ArrayList<>()).add(total);
 				}
 			}
 		}
@@ -3067,6 +3339,68 @@ public class QuestpathPlugin extends Plugin
 	String dropRegionNote(String sourceName)
 	{
 		return DropRegionPolicy.noteFor(dropRegion(sourceName), constraints);
+	}
+
+	/** The route tables for whichever graph is live, rebuilt when it changes. */
+	private RouteSources.Index currentRouteIndex()
+	{
+		QuestGraph graph = questGraph;
+		if (graph != routeIndexFor)
+		{
+			routeIndex = RouteSources.Index.of(graph);
+			routeIndexFor = graph;
+		}
+		return routeIndex;
+	}
+
+	private long heldCount(String item)
+	{
+		if (item == null)
+		{
+			return 0L;
+		}
+		Long count = heldForRoute.get(item.toLowerCase());
+		return count == null ? 0L : count;
+	}
+
+	private static Map<String, Long> lowerCaseCounts(Map<String, Long> counts)
+	{
+		Map<String, Long> out = new HashMap<>();
+		for (Map.Entry<String, Long> entry : counts.entrySet())
+		{
+			if (entry.getKey() != null && entry.getValue() != null)
+			{
+				out.merge(entry.getKey().toLowerCase(), entry.getValue(), Long::sum);
+			}
+		}
+		return out;
+	}
+
+	/**
+	 * "Alice (3)" for each party member whose shared bank holds this --
+	 * the answer to "nothing practical drops it" on a Group Ironman.
+	 */
+	private List<String> groupHoldersOf(String item)
+	{
+		List<String> out = new java.util.ArrayList<>();
+		for (GroupMember member : partyMembers.values())
+		{
+			long count = member.held(item);
+			if (count > 0)
+			{
+				out.add(member.name() + " (" + count + ")");
+			}
+		}
+		Map<String, Long> storage = groupStorageSeen;
+		if (storage != null && item != null)
+		{
+			long stored = lowerCaseCounts(storage).getOrDefault(item.toLowerCase(), 0L);
+			if (stored > 0)
+			{
+				out.add("group storage (" + stored + ")");
+			}
+		}
+		return out;
 	}
 
 	private WorldPoint dropLocation(String sourceName)
@@ -4082,7 +4416,7 @@ public class QuestpathPlugin extends Plugin
 			new PlayerState(levels, experience, completed, inProgressQuestNames(), effectiveBuildRules()),
 			heldIncludingCollected(), owned.bankSeen(), pickupScope(),
 			new HashSet<>(routeOrder), knownItems, owned.carriedByName(),
-			owned.bankPlaceholders(), itemPlan);
+			owned.bankPlaceholders(), itemPlan, groupStorageView());
 	}
 
 	/**
