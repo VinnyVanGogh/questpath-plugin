@@ -148,7 +148,11 @@ final class ShopRouteAdvance
 			return Decision.nothing();
 		}
 
-		List<ShopRouteStops.Stop> stops = ShopRouteStops.next(totals, skips, shopLocator, dropLocator);
+		// The tour, not next(): next() is list order and ignores where the
+		// player is, so the stop named here could be a shop across the map
+		// ("Obli's General Store" from Al Kharid) while the line on the
+		// ground, built from the tour below, went somewhere near.
+		List<ShopRouteStops.Stop> stops = ShopRouteStops.tour(totals, skips, shopLocator, dropLocator, from);
 		if (stops.isEmpty())
 		{
 			return new Decision(Action.FINISHED, Set.of(), "", "", 0);
@@ -185,6 +189,6 @@ final class ShopRouteAdvance
 		ShopRouteStops.Destination destination =
 			ShopRouteStops.destinationOf(nextTotal, shopLocator, dropLocator, from);
 		return new Decision(Action.REROUTE, destinations, nextTotal.name(),
-			destination == null ? "" : destination.shopName(), stops.size());
+			destination == null ? "" : destination.label(), stops.size());
 	}
 }

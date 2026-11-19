@@ -93,6 +93,7 @@ final class ShopRouteStops
 		private final List<WorldPoint> candidates;
 		private final String ingredient;
 		private final String makeText;
+		private String area = "";
 
 		Destination(String shopName, WorldPoint point, int alternatives)
 		{
@@ -123,8 +124,27 @@ final class ShopRouteStops
 			// The innermost ingredient wins: for a nested make, the thing to
 			// pick up here is the deepest one, not the item it ends up in.
 			return ingredient.isEmpty()
-				? new Destination(shopName, point, alternatives, kind, candidates, name, makeText)
+				? new Destination(shopName, point, alternatives, kind, candidates, name, makeText).inArea(area)
 				: this;
+		}
+
+		/** The same stop, filed under a town or area from the bundled shop data. */
+		Destination inArea(String town)
+		{
+			this.area = town == null ? "" : town;
+			return this;
+		}
+
+		/** The town or area the shop is in, or empty when the data carries none. */
+		String area()
+		{
+			return area;
+		}
+
+		/** "Shop name (Town/area)", or the bare name when no area is known. */
+		String label()
+		{
+			return kind == Kind.SHOP ? ShopPlaces.label(shopName, area) : shopName;
 		}
 
 		Kind kind()
@@ -601,7 +621,35 @@ final class ShopRouteStops
 
 		return bestPoint == null
 			? null
-			: new Destination(bestName, bestPoint, candidates.size() - 1, kind, candidates, "", "");
+			: new Destination(bestName, bestPoint, candidates.size() - 1, kind, candidates, "", "")
+				.inArea(ShopPlaces.areaOf(locator, bestName));
+	}
+
+	/**
+	 * The other still-needed items the shop at {@code stop} also sells, so
+	 * the stop can say what it is for beyond the one item it was picked for.
+	 * Skipped and covered items are left out; the item itself is too.
+	 */
+	static List<String> alsoSupplies(Destination stop, QuestItems.Total current,
+		List<QuestItems.Total> totals, ShopItemSkips skips)
+	{
+		List<String> out = new ArrayList<>();
+		if (stop == null || stop.kind() != Destination.Kind.SHOP || totals == null)
+		{
+			return out;
+		}
+		for (QuestItems.Total other : totals)
+		{
+			if (other.name().equals(current.name()) || other.covered() || skips.isSkipped(other.name()))
+			{
+				continue;
+			}
+			if (other.shopNames().contains(stop.shopName()))
+			{
+				out.add(other.name());
+			}
+		}
+		return out;
 	}
 
 	/** The nearest of several tiles sharing one name -- every furnace, say. */
@@ -661,6 +709,19 @@ final class ShopRouteStops
 		Function<String, WorldPoint> shopLocator, Function<String, WorldPoint> dropLocator,
 		WorldPoint from)
 	{
+		return destinationLine(total, shopLocator, dropLocator, from, Collections.emptyList(), new ShopItemSkips());
+	}
+
+	/**
+	 * The same, also saying which other still-needed items the named shop
+	 * supplies: "-> Al Kharid General Store (Al Kharid) -- also: Bronze bar".
+	 *
+	 * @param totals the whole outstanding list, to find what else is sold there
+	 */
+	static String destinationLine(QuestItems.Total total,
+		Function<String, WorldPoint> shopLocator, Function<String, WorldPoint> dropLocator,
+		WorldPoint from, List<QuestItems.Total> totals, ShopItemSkips skips)
+	{
 		String quest = total.questSummary();
 		String forQuest = quest.isEmpty() ? "" : " -- for " + quest;
 
@@ -668,7 +729,8 @@ final class ShopRouteStops
 		Destination destination = destinationOf(total, shopLocator, sources, from);
 		if (destination != null)
 		{
-			return legLine(destination) + cannotMakeNote(total, destination, sources) + forQuest;
+			return legLine(destination) + alsoNote(alsoSupplies(destination, total, totals, skips))
+				+ cannotMakeNote(total, destination, sources) + forQuest;
 		}
 		String noPractical = noPracticalSource(total, sources);
 		if (!noPractical.isEmpty())
@@ -699,7 +761,7 @@ final class ShopRouteStops
 			? ""
 			: " or " + others + " other" + (others == 1 ? "" : "s");
 		String lead = destination.monster() ? "-> kill " : "-> ";
-		String place = destination.shopName().isEmpty() ? "anywhere" : destination.shopName();
+		String place = destination.shopName().isEmpty() ? "anywhere" : destination.label();
 		String line = lead + place + orOthers;
 		if (destination.kind() == Destination.Kind.FACILITY)
 		{
@@ -710,6 +772,18 @@ final class ShopRouteStops
 			return line + " for " + destination.ingredient() + " (to make it)";
 		}
 		return line;
+	}
+
+	/** " -- also: A, B, C (+2 more)" for the other needed items sold at this stop. */
+	private static String alsoNote(List<String> also)
+	{
+		if (also.isEmpty())
+		{
+			return "";
+		}
+		int shown = Math.min(also.size(), 3);
+		String more = also.size() > shown ? " (+" + (also.size() - shown) + " more)" : "";
+		return " -- also: " + String.join(", ", also.subList(0, shown)) + more;
 	}
 
 	/**

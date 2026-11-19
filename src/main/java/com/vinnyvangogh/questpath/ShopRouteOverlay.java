@@ -198,7 +198,7 @@ class ShopRouteOverlay extends QuestpathOverlay
 			rows.add(OverlayRow.item(total.itemId(), total.name(),
 				total.outstanding() + " short", false,
 				stop.current() ? OverlayTheme.ACCENT : OverlayTheme.TEXT, OverlayTheme.WARN));
-			rows.add(OverlayRow.note(ShopRouteStops.destinationLine(total, shopLocator, dropLocator, playerLocation.get()), OverlayTheme.MUTED));
+			rows.add(OverlayRow.note(ShopRouteStops.destinationLine(total, shopLocator, dropLocator, playerLocation.get(), outstanding, skips), OverlayTheme.MUTED));
 		}
 		int remaining = next.size() - shown;
 		if (remaining > 0)

@@ -3106,7 +3106,16 @@ class QuestpathPanel extends PluginPanel
 		if (current != null)
 		{
 			String currentName = current.name();
-			JButton skip = new JButton("Skip \"" + currentName + "\" (move to back)");
+			// Where this stop is and what it is for, before the buttons that
+			// act on it: the shop with its town, and what else it supplies.
+			JLabel where = new JLabel("<html>" + ShopRouteStops.destinationLine(current,
+				shopLocator, dropLocator, playerLocation.get(), items.totals(includeRecommended),
+				shopItemSkips).replace("&", "&amp;").replace("<", "&lt;") + "</html>");
+			where.setFont(FontManager.getRunescapeSmallFont());
+			where.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
+			where.setAlignmentX(Component.LEFT_ALIGNMENT);
+			panel.add(where);
+			JButton skip =new JButton("Skip \"" + currentName + "\" (move to back)");
 			skip.setFont(FontManager.getRunescapeSmallFont());
 			skip.setAlignmentX(Component.LEFT_ALIGNMENT);
 			skip.addActionListener(event ->
@@ -3180,7 +3189,7 @@ class QuestpathPanel extends PluginPanel
 			return null;
 		}
 		String shopName = dest.shopName();
-		JButton again = new JButton("Say again: " + shopName);
+		JButton again = new JButton("Say again: " + dest.label());
 		again.setFont(FontManager.getRunescapeSmallFont());
 		again.setAlignmentX(Component.LEFT_ALIGNMENT);
 		again.setToolTipText("Say every item still needed from " + shopName + ", out loud if the"

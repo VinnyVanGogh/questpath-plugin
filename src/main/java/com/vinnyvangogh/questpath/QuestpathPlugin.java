@@ -791,7 +791,7 @@ public class QuestpathPlugin extends Plugin
 		panel = new QuestpathPanel(sprites, config, configManager,
 			new OverlaySettingsPanel(config, configManager),
 			this::skillPlan, shortestPathBridge, geSearchBridge,
-			this::grandExchangeAvailable, this::shopLocation,
+			this::grandExchangeAvailable, shopPlaces,
 			routeSources, this::lastKnownPlayerLocation, this::onShopRouteSent,
 			this::cancelShopRoute,
 			this::shopRouteActive, this::syncNow,
@@ -809,7 +809,7 @@ public class QuestpathPlugin extends Plugin
 		overlays.add(new NextQuestOverlay(this, config, overlayIcons));
 		overlays.add(new PickupsOverlay(this, config, overlayIcons));
 		overlays.add(new NeededItemsOverlay(this, config, overlayIcons, client));
-		overlays.add(new ShopRouteOverlay(this, config, overlayIcons, this::shopLocation,
+		overlays.add(new ShopRouteOverlay(this, config, overlayIcons, shopPlaces,
 			routeSources, this::playerLocation, shopItemSkips));
 		overlays.add(new DiaryRouteOverlay(this, config, overlayIcons, this::diaryGraphTasks,
 			this::diaryPush, this::playerLocation));
@@ -1682,14 +1682,14 @@ public class QuestpathPlugin extends Plugin
 		}
 		boolean includeRecommended = config != null && config.recommendedItems();
 		for (ShopRouteStops.Stop stop : ShopRouteStops.tour(items.totals(includeRecommended), shopItemSkips,
-			this::shopLocation, routeSources, playerLocation()))
+			shopPlaces, routeSources, playerLocation()))
 		{
 			if (!stop.current())
 			{
 				continue;
 			}
 			ShopRouteStops.Destination destination = ShopRouteStops.destinationOf(
-				stop.total(), this::shopLocation, routeSources, playerLocation());
+				stop.total(), shopPlaces, routeSources, playerLocation());
 			return destination == null || !destination.monster();
 		}
 		return true;
@@ -2549,7 +2549,7 @@ public class QuestpathPlugin extends Plugin
 		}
 
 		ShopRouteAdvance.Decision decision = ShopRouteAdvance.observe(shopTripActive(), completed,
-			items.totals(), shopItemSkips, this::shopLocation, routeSources, playerLocation());
+			items.totals(), shopItemSkips, shopPlaces, routeSources, playerLocation());
 
 		if (decision.action() == ShopRouteAdvance.Action.FINISHED)
 		{
@@ -3250,7 +3250,7 @@ public class QuestpathPlugin extends Plugin
 				.append(ChatColorType.NORMAL)
 				.append("Quest Route: ")
 				.append(ChatColorType.HIGHLIGHT)
-				.append(shopName)
+				.append(shopLabel(shopName))
 				.append(ChatColorType.NORMAL)
 				.append(" -- " + what)
 				.build())
@@ -3452,6 +3452,22 @@ public class QuestpathPlugin extends Plugin
 	PushResponse.Diary diaryPush()
 	{
 		return diaryPush;
+	}
+
+	/** Shop name to tile and town, for every route, label and stop. */
+	private final ShopPlaces shopPlaces = new ShopPlaces(this::shopLocation, this::shopTown);
+
+	/** The town or area the bundle files a shop under, or empty. */
+	private String shopTown(String shopName)
+	{
+		QuestGraph.Shop shop = questGraph == null || shopName == null ? null : questGraph.shop(shopName);
+		return shop == null ? "" : shop.town();
+	}
+
+	/** "Shop (Town)" for chat and speech-fallback text. */
+	private String shopLabel(String shopName)
+	{
+		return ShopPlaces.label(shopName, shopTown(shopName));
 	}
 
 	private WorldPoint shopLocation(String shopName)
