@@ -905,7 +905,65 @@ public class QuestpathPlugin extends Plugin
 		// that threw out of startUp and RuneLite turned the plugin straight
 		// back off.
 		refreshOnClientThread();
+
+		// Installed or turned on mid-session: no LOGGED_IN is coming, so say it
+		// now. With no stored version that is a fresh install (UpdateNotes).
+		clientThread.invokeLater(() ->
+		{
+			startedLoggedIn = client.getGameState() == GameState.LOGGED_IN;
+			if (startedLoggedIn)
+			{
+				postUpdateNotes();
+			}
+		});
 		log.debug("quest-route started");
+	}
+
+	/** Whether this start found the player logged in: with no stored version, a fresh install (UpdateNotes). */
+	private boolean startedLoggedIn;
+
+	/**
+	 * Posts the "what's new" lines once per version (and, in a developer build,
+	 * once per build commit), and stores both as seen even with the setting
+	 * off, so turning it on later does not bring back notes for an update long
+	 * past. Client thread.
+	 */
+	private void postUpdateNotes()
+	{
+		final String lastSeen = config.lastSeenVersion();
+		final String lastSeenBuild = config.lastSeenBuild();
+		final String build = BuildInfo.commit();
+		final boolean enabled = config.showUpdateNotes();
+		List<String> lines = UpdateNotes.toShow(lastSeen, enabled, startedLoggedIn);
+		if (lines.isEmpty())
+		{
+			lines = UpdateNotes.toShowForBuild(lastSeenBuild, build, enabled);
+		}
+		if (UpdateNotes.needsRecord(lastSeen))
+		{
+			configManager.setConfiguration(QuestpathConfig.GROUP, QuestpathConfig.LAST_SEEN_VERSION,
+				UpdateNotes.VERSION);
+		}
+		if (UpdateNotes.buildChanged(lastSeenBuild, build))
+		{
+			configManager.setConfiguration(QuestpathConfig.GROUP, QuestpathConfig.LAST_SEEN_BUILD, build);
+		}
+		postNoteLines(lines);
+	}
+
+	/** One console line each, title highlighted. Local only: nothing is typed or sent. */
+	private void postNoteLines(List<String> lines)
+	{
+		for (int i = 0; i < lines.size(); i++)
+		{
+			chatMessageManager.queue(QueuedMessage.builder()
+				.type(ChatMessageType.CONSOLE)
+				.runeLiteFormattedMessage(new ChatMessageBuilder()
+					.append(i == 0 ? ChatColorType.HIGHLIGHT : ChatColorType.NORMAL)
+					.append(lines.get(i))
+					.build())
+				.build());
+		}
 	}
 
 	/** Package-private so a test can pin that startUp never refreshes inline. */
@@ -1371,6 +1429,19 @@ public class QuestpathPlugin extends Plugin
 			// A momentary switch: put it back, then ask.
 			configManager.setConfiguration(QuestpathConfig.GROUP, "resetAccountSetup", false);
 			javax.swing.SwingUtilities.invokeLater(this::confirmResetSetup);
+			return;
+		}
+		if ("showWhatsNew".equals(event.getKey()) && Boolean.parseBoolean(event.getNewValue()))
+		{
+			// A momentary switch: put it back, then replay the notes.
+			configManager.setConfiguration(QuestpathConfig.GROUP, "showWhatsNew", false);
+			clientThread.invokeLater(() ->
+			{
+				if (client.getGameState() == GameState.LOGGED_IN)
+				{
+					postNoteLines(UpdateNotes.replay());
+				}
+			});
 			return;
 		}
 		if (!"partyShare".equals(event.getKey()))
@@ -2345,6 +2416,7 @@ public class QuestpathPlugin extends Plugin
 	{
 		if (event.getGameState() == GameState.LOGGED_IN)
 		{
+			postUpdateNotes();
 			refresh();
 			maybeSync();
 			return;
