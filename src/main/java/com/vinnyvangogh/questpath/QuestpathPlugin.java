@@ -4302,7 +4302,7 @@ public class QuestpathPlugin extends Plugin
 		// Passing only the completed set would judge those on completion
 		// alone and disagree with the Go planner, which has the distinction.
 		PlayerState account = new PlayerState(levels, experience, completed,
-			inProgressQuestNames(), effectiveBuildRules());
+			inProgressQuestNames(), effectiveBuildRules()).withQuestPoints(questPoints());
 		accountSnapshot = account;
 		return QuestVerdicts.of(questGraph, account);
 	}

@@ -773,6 +773,19 @@ class QuestGraph
 		@SerializedName("required_quest_ids_started_only")
 		private List<Integer> startedOnlyQuestIds;
 
+		@SerializedName("unknown")
+		private boolean unknown;
+
+		/**
+		 * True when the export could not work out what gates the shop. Not a
+		 * statement that it is open: an unknown stays unknown, and
+		 * {@link ShopReachability} treats it as unreachable.
+		 */
+		boolean unknown()
+		{
+			return unknown;
+		}
+
 		/** Skill levels needed to get in. Empty when none are. */
 		List<SkillGate> requiredSkills()
 		{
