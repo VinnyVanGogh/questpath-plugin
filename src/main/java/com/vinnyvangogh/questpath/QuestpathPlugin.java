@@ -43,6 +43,7 @@ import net.runelite.api.ItemComposition;
 import net.runelite.api.events.GameStateChanged;
 import net.runelite.api.events.GrandExchangeOfferChanged;
 import net.runelite.api.events.GrandExchangeSearched;
+import net.runelite.client.audio.AudioPlayer;
 import net.runelite.client.chat.ChatColorType;
 import net.runelite.client.chat.ChatMessageBuilder;
 import net.runelite.client.chat.QueuedMessage;
@@ -107,6 +108,9 @@ public class QuestpathPlugin extends Plugin
 
 	@Inject
 	private ClientToolbar clientToolbar;
+
+	@Inject
+	private AudioPlayer audioPlayer;
 
 	/**
 	 * RuneLite's own party relay: the only channel the Group tab uses. No
@@ -853,7 +857,7 @@ public class QuestpathPlugin extends Plugin
 		overlayManager.add(lampOverlay);
 
 		voiceLines = VoiceLines.load();
-		voicePlayer = new VoicePlayer();
+		voicePlayer = new VoicePlayer(audioPlayer);
 
 		bankTab = new BankTabLayout(client, clientThread, this);
 		bankButton = new BankButton(client, this::bankNeedsShown, this::toggleBankNeeds);
@@ -960,7 +964,7 @@ public class QuestpathPlugin extends Plugin
 			&& configManager.getConfiguration(QuestpathConfig.GROUP, "questJournalFilter") == null)
 		{
 			configManager.setConfiguration(QuestpathConfig.GROUP, "questJournalFilter", QuestJournalFilter.ALL);
-			log.info("quest-route: migrated the old \"Diary route: nearest task\" overlay switch to the new"
+			log.debug("quest-route: migrated the old \"Diary route: nearest task\" overlay switch to the new"
 				+ " Quests tab filter (set to All, so both route overlays keep showing).");
 		}
 		configManager.unsetConfiguration(QuestpathConfig.GROUP, "overlayDiaryRoute");
@@ -1849,12 +1853,12 @@ public class QuestpathPlugin extends Plugin
 	 */
 	private LockedGear.ItemStatsView itemStatsView(int itemId)
 	{
-		net.runelite.http.api.item.ItemStats stats = itemManager.getItemStats(itemId, false);
+		net.runelite.client.game.ItemStats stats = itemManager.getItemStats(itemId);
 		if (stats == null || !stats.isEquipable())
 		{
 			return UNKNOWN_ITEM_STATS;
 		}
-		net.runelite.http.api.item.ItemEquipmentStats equipment = stats.getEquipment();
+		net.runelite.client.game.ItemEquipmentStats equipment = stats.getEquipment();
 		if (equipment == null)
 		{
 			return UNKNOWN_ITEM_STATS;
@@ -1882,7 +1886,7 @@ public class QuestpathPlugin extends Plugin
 			@Override
 			public int mdmg()
 			{
-				return equipment.getMdmg();
+				return Math.round(equipment.getMdmg());
 			}
 		};
 	}
@@ -3489,7 +3493,19 @@ public class QuestpathPlugin extends Plugin
 	}
 
 	/** Shop name to tile and town, for every route, label and stop. */
-	private final ShopPlaces shopPlaces = new ShopPlaces(this::shopLocation, this::shopTown);
+	private final ShopPlaces shopPlaces = new ShopPlaces(this::shopLocation, this::shopTown, this::shopBlockReason);
+
+	/** Why the account cannot use a shop (e.g. a stall's Thieving level), or empty. */
+	private String shopBlockReason(String shopName)
+	{
+		QuestGraph.Shop shop = questGraph == null || shopName == null ? null : questGraph.shop(shopName);
+		if (shop == null || accountSnapshot == null)
+		{
+			return "";
+		}
+		ShopReachability.Result result = ShopReachability.of(shop, accountSnapshot, questGraph, shopBoosts());
+		return result.usable() ? "" : result.reason();
+	}
 
 	/** The town or area the bundle files a shop under, or empty. */
 	private String shopTown(String shopName)

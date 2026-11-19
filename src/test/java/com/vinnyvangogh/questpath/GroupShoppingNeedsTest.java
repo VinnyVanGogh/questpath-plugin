@@ -315,7 +315,9 @@ public class GroupShoppingNeedsTest
 		assertEquals(Collections.singletonList("General Store"), watcher.observe(shops, near));
 		assertTrue("standing there says nothing more", watcher.observe(shops, near).isEmpty());
 		assertTrue(watcher.observe(shops, far).isEmpty());
-		assertEquals(Collections.singletonList("General Store"), watcher.observe(shops, near));
+		// A second visit after the cooldown announces again.
+		long later = System.currentTimeMillis() + ShopApproachWatcher.COOLDOWN_MILLIS;
+		assertEquals(Collections.singletonList("General Store"), watcher.observe(shops, near, later));
 		assertEquals("group needs 3 more Bucket", GroupShopAlert.describe(byShop.get("General Store")));
 	}
 
