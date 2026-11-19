@@ -94,6 +94,12 @@ class LocalBuildRules
 		return save(BuildRuleCodec.clear(all(), skill));
 	}
 
+	/** Replaces this account's rules with exactly these (what setup saves). */
+	synchronized List<BuildRule> replaceAll(List<BuildRule> rules)
+	{
+		return save(rules == null ? Collections.<BuildRule>emptyList() : rules);
+	}
+
 	/** Removes every rule this account has written here. */
 	synchronized List<BuildRule> clearAll()
 	{
