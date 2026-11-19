@@ -465,6 +465,7 @@ public class QuestpathPlugin extends Plugin
 	 * reason: it draws into the world rather than owning a panel.
 	 */
 	private GroundItemOverlay groundOverlay;
+	private DropTargetOverlay dropTargetOverlay;
 	private FloatingNoteOverlay floatingNoteOverlay;
 
 	/**
@@ -854,6 +855,8 @@ public class QuestpathPlugin extends Plugin
 
 		groundOverlay = new GroundItemOverlay(this, config, client, tooltipManager);
 		overlayManager.add(groundOverlay);
+		dropTargetOverlay = new DropTargetOverlay(this, config, client);
+		overlayManager.add(dropTargetOverlay);
 		floatingNoteOverlay = new FloatingNoteOverlay(this, config, client, floatingNotes);
 		overlayManager.add(floatingNoteOverlay);
 
@@ -1063,6 +1066,12 @@ public class QuestpathPlugin extends Plugin
 		{
 			overlayManager.remove(groundOverlay);
 			groundOverlay = null;
+		}
+		if (dropTargetOverlay != null)
+		{
+			overlayManager.remove(dropTargetOverlay);
+			dropTargetOverlay.clear();
+			dropTargetOverlay = null;
 		}
 		if (bankOverlay != null)
 		{
@@ -2337,6 +2346,42 @@ public class QuestpathPlugin extends Plugin
 	}
 
 	@Subscribe
+	public void onNpcSpawned(net.runelite.api.events.NpcSpawned event)
+	{
+		if (dropTargetOverlay != null)
+		{
+			dropTargetOverlay.npcSpawned(event.getNpc());
+		}
+	}
+
+	@Subscribe
+	public void onNpcDespawned(net.runelite.api.events.NpcDespawned event)
+	{
+		if (dropTargetOverlay != null)
+		{
+			dropTargetOverlay.npcDespawned(event.getNpc());
+		}
+	}
+
+	@Subscribe
+	public void onGameObjectSpawned(net.runelite.api.events.GameObjectSpawned event)
+	{
+		if (dropTargetOverlay != null)
+		{
+			dropTargetOverlay.objectSpawned(event.getGameObject());
+		}
+	}
+
+	@Subscribe
+	public void onGameObjectDespawned(net.runelite.api.events.GameObjectDespawned event)
+	{
+		if (dropTargetOverlay != null)
+		{
+			dropTargetOverlay.objectDespawned(event.getGameObject());
+		}
+	}
+
+	@Subscribe
 	public void onGameStateChanged(GameStateChanged event)
 	{
 		if (event.getGameState() == GameState.LOGGED_IN)
@@ -2351,6 +2396,11 @@ public class QuestpathPlugin extends Plugin
 			// tracked set starts over; the announcer keeps what it has said,
 			// keyed by tile, so crossing a region edge does not repeat it.
 			floorSpawns.clear();
+			if (dropTargetOverlay != null)
+			{
+				// Spawn events re-fire for everything in the new scene.
+				dropTargetOverlay.clear();
+			}
 		}
 		if (event.getGameState() == GameState.LOGIN_SCREEN)
 		{
