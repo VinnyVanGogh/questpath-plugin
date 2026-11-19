@@ -149,7 +149,7 @@ class LampCatalogue
 				? "is version " + catalogue.version() + ", which this build (" + SUPPORTED_VERSION
 					+ ") does not understand yet -- update the plugin"
 				: "is version " + catalogue.version() + ", which is older than this build ("
-					+ SUPPORTED_VERSION + ") expects -- questpath needs re-exporting");
+					+ SUPPORTED_VERSION + ") expects -- Quest Route needs re-exporting");
 		}
 		if (catalogue.lamps().isEmpty())
 		{

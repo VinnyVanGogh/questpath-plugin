@@ -120,7 +120,7 @@ class NeededItemsOverlay extends QuestpathOverlay
 			// neither is "nothing needed", and saying so as an empty panel
 			// would read as exactly that.
 			return List.of(OverlayRow.note(
-				"questpath cannot answer this yet -- no item list loaded, "
+				"Quest Route cannot answer this yet -- no item list loaded, "
 					+ "or nothing seen in your bags, worn gear or bank.",
 				OverlayTheme.MUTED));
 		}
@@ -190,7 +190,7 @@ class NeededItemsOverlay extends QuestpathOverlay
 			// stack spent since the last sync still shows here -- but it is a
 			// footnote, not the warning the carried-only case needs.
 			rows.add(OverlayRow.note(
-				"Counts are from your last questpath sync plus what you are carrying.",
+				"Counts are from your last Quest Route sync plus what you are carrying.",
 				OverlayTheme.MUTED));
 		}
 		else if (!items.bankSeen())

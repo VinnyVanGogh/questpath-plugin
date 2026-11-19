@@ -477,7 +477,7 @@ public class QuestpathPlugin extends Plugin
 
 	/**
 	 * The quest graph currently in use -- fetched live from questpath when
-	 * {@link QuestpathConfig#fetchQuestGraph()} is on and the fetch
+	 * the {@link #DEV_FETCH_PROPERTY} developer flag is set and the fetch
 	 * succeeded, the bundled jar resource otherwise -- or null when neither
 	 * is available.
 	 *
@@ -861,7 +861,7 @@ public class QuestpathPlugin extends Plugin
 		try
 		{
 			questGraph = QuestGraph.load(gson);
-			log.debug("questpath: quest graph loaded, {} quests", questGraph.quests().size());
+			log.debug("quest-route: quest graph loaded, {} quests", questGraph.quests().size());
 		}
 		catch (IOException e)
 		{
@@ -869,10 +869,14 @@ public class QuestpathPlugin extends Plugin
 			// that refuses to start because one tab cannot work is worse than
 			// one tab saying why.
 			questGraph = null;
-			log.warn("questpath: bundled quest graph unavailable; the Quests tab will say so", e);
+			log.warn("quest-route: bundled quest graph unavailable; the Quests tab will say so", e);
 		}
 
-		if (config.fetchQuestGraph())
+		// The saved "fetchQuestGraph" setting used to switch this on, and a
+		// player who had it on can no longer see it to switch it off. Clear
+		// it, and gate the fetch on a developer-only JVM flag instead.
+		configManager.unsetConfiguration(QuestpathConfig.GROUP, "fetchQuestGraph");
+		if (Boolean.getBoolean(DEV_FETCH_PROPERTY))
 		{
 			fetchLiveQuestGraph();
 		}
@@ -886,9 +890,39 @@ public class QuestpathPlugin extends Plugin
 
 		// The plugin can be enabled mid-session, so there may already be a
 		// logged-in account whose StatChanged burst has been and gone.
-		refresh();
-		log.debug("questpath started");
+		// startUp runs on the Swing thread when the player toggles the plugin
+		// on, and refresh() reads quest state (Quest.getState runs a client
+		// script), which asserts it is on the client thread. Called inline,
+		// that threw out of startUp and RuneLite turned the plugin straight
+		// back off.
+		refreshOnClientThread();
+		log.debug("quest-route started");
 	}
+
+	/** Package-private so a test can pin that startUp never refreshes inline. */
+	void refreshOnClientThread()
+	{
+		deferRefresh(clientThread::invokeLater, () -> panel != null, this::refresh);
+	}
+
+	/**
+	 * Hands refresh to the client thread instead of running it, and skips it
+	 * if the plugin was switched off again before the client thread got there.
+	 */
+	static void deferRefresh(java.util.function.Consumer<Runnable> onClientThread,
+		java.util.function.BooleanSupplier stillRunning, Runnable refresh)
+	{
+		onClientThread.accept(() ->
+		{
+			if (stillRunning.getAsBoolean())
+			{
+				refresh.run();
+			}
+		});
+	}
+
+	/** JVM flag (-Dquestroute.fetchQuestGraph=true) that makes a developer build fetch the live quest graph. */
+	static final String DEV_FETCH_PROPERTY = "questroute.fetchQuestGraph";
 
 	/**
 	 * One-shot migration for the old {@code overlayDiaryRoute} on/off
@@ -926,7 +960,7 @@ public class QuestpathPlugin extends Plugin
 			&& configManager.getConfiguration(QuestpathConfig.GROUP, "questJournalFilter") == null)
 		{
 			configManager.setConfiguration(QuestpathConfig.GROUP, "questJournalFilter", QuestJournalFilter.ALL);
-			log.info("questpath: migrated the old \"Diary route: nearest task\" overlay switch to the new"
+			log.info("quest-route: migrated the old \"Diary route: nearest task\" overlay switch to the new"
 				+ " Quests tab filter (set to All, so both route overlays keep showing).");
 		}
 		configManager.unsetConfiguration(QuestpathConfig.GROUP, "overlayDiaryRoute");
@@ -964,7 +998,7 @@ public class QuestpathPlugin extends Plugin
 			if (outcome.succeeded())
 			{
 				questGraph = outcome.graph();
-				log.debug("questpath: using the live quest graph ({} quests)", questGraph.quests().size());
+				log.debug("quest-route: using the live quest graph ({} quests)", questGraph.quests().size());
 				refresh();
 				return;
 			}
@@ -972,7 +1006,7 @@ public class QuestpathPlugin extends Plugin
 			String stillOn = questGraph == null
 				? "no quest graph at all -- the Quests tab will say so"
 				: questGraph.quests().size() + " quests bundled with this build";
-			log.debug("questpath: could not fetch the quest graph ({}); staying on {}", outcome.reason(), stillOn);
+			log.debug("quest-route: could not fetch the quest graph ({}); staying on {}", outcome.reason(), stillOn);
 		}));
 	}
 
@@ -1069,7 +1103,7 @@ public class QuestpathPlugin extends Plugin
 		panel = null;
 		haveSent = false;
 		owned.clear();
-		log.debug("questpath stopped");
+		log.debug("quest-route stopped");
 	}
 
 	// ------------------------------------------------------------------

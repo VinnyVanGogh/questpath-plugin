@@ -86,8 +86,8 @@ public interface QuestpathConfig extends Config
 	String lampSection = "lamps";
 
 	@ConfigSection(
-		name = "questpath sync",
-		description = "Push this account's state to your own questpath instance",
+		name = "Quest Route sync",
+		description = "Push this account's state to your own Quest Route server",
 		position = 0,
 		closedByDefault = true
 	)
@@ -180,7 +180,7 @@ public interface QuestpathConfig extends Config
 		description = "Send your finished quests, levels, build rules, route, account type and counts of quest"
 			+ " items you hold (and in group storage, for Group Ironman) to members of your RuneLite party who"
 			+ " also run Quest Route, so the sidebar's Group tab can plan with you. Travels over RuneLite's own"
-			+ " party service only, never to questpath or any other server. Nothing is sent while this is off.",
+			+ " party service only, never to a Quest Route server or any other server. Nothing is sent while this is off.",
 		section = groupSection,
 		position = 1
 	)
@@ -231,8 +231,8 @@ public interface QuestpathConfig extends Config
 	@ConfigItem(
 		keyName = "syncEnabled",
 		name = "Send my account state",
-		description = "Push quest completion, levels and diaries to your questpath instance when they change."
-			+ " questpath then stops polling WikiSync for this account.",
+		description = "Push quest completion, levels and diaries to your Quest Route server when they change."
+			+ " Quest Route then stops polling WikiSync for this account.",
 		warning = "This feature submits your IP address to a 3rd-party server not controlled or verified by RuneLite developers",
 		section = syncSection,
 		position = 1
@@ -247,8 +247,8 @@ public interface QuestpathConfig extends Config
 
 	@ConfigItem(
 		keyName = "serverUrl",
-		name = "questpath address",
-		description = "Where your questpath instance is listening. The default is what `make run` serves.",
+		name = "Quest Route address",
+		description = "Where your Quest Route server is listening.",
 		section = syncSection,
 		position = 2
 	)
@@ -260,7 +260,7 @@ public interface QuestpathConfig extends Config
 	@ConfigItem(
 		keyName = "pairingToken",
 		name = "Pairing token",
-		description = "From `questpath -plugin-token`. It both authenticates the push and selects which account it writes.",
+		description = "From your Quest Route server. It both authenticates the push and selects which account it writes.",
 		secret = true,
 		section = syncSection,
 		position = 3
@@ -270,26 +270,6 @@ public interface QuestpathConfig extends Config
 		// No default. There is no such thing as a sensible shared secret, and
 		// an empty token means the push is off however the toggle is set.
 		return "";
-	}
-
-	@ConfigItem(
-		keyName = "fetchQuestGraph",
-		name = "Fetch quest graph on startup",
-		description = "Developer setting: ask questpath (at the address above) for its current quest graph each time"
-			+ " this plugin starts, instead of only the copy bundled with this build. Outcomes are logged at debug"
-			+ " level only; the bundled copy is used if questpath cannot be reached.",
-		warning = "This feature submits your IP address to a 3rd-party server not controlled or verified by RuneLite developers",
-		section = syncSection,
-		position = 4,
-		hidden = true
-	)
-	default boolean fetchQuestGraph()
-	{
-		// Hidden developer toggle, off by default: the bundled graph is the
-		// normal source and a player's build makes no request to a quest
-		// graph server. Set it by hand in the config file when developing
-		// against a local questpath. Keep the warning if it ever surfaces.
-		return false;
 	}
 
 	// ------------------------------------------------------------------
@@ -375,7 +355,7 @@ public interface QuestpathConfig extends Config
 	@ConfigItem(
 		keyName = "overlayNextQuest",
 		name = "Next on your route",
-		description = "The next quests on your saved questpath route, and how far through it you are.",
+		description = "The next quests on your saved Quest Route route, and how far through it you are.",
 		section = overlaySection,
 		position = 10
 	)

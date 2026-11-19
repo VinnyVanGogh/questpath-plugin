@@ -75,7 +75,7 @@ class NextQuestOverlay extends QuestpathOverlay
 		{
 			case NO_ROUTE:
 				return Collections.singletonList(OverlayRow.note(
-					"No route saved in questpath yet. Save a plan there and it will show up here.",
+					"No route saved in Quest Route yet. Save a plan there and it will show up here.",
 					OverlayTheme.MUTED));
 
 			case ALL_DONE:
@@ -184,7 +184,7 @@ class NextQuestOverlay extends QuestpathOverlay
 
 		if (needs == null || needs.lines().isEmpty())
 		{
-			rows.add(OverlayRow.note("questpath lists no items for this one.", OverlayTheme.MUTED));
+			rows.add(OverlayRow.note("Quest Route lists no items for this one.", OverlayTheme.MUTED));
 			return;
 		}
 
@@ -228,7 +228,7 @@ class NextQuestOverlay extends QuestpathOverlay
 		}
 		if (needs.unresolvedCount() > 0)
 		{
-			rows.add(OverlayRow.note("? = questpath could not match this to an item,"
+			rows.add(OverlayRow.note("? = Quest Route could not match this to an item,"
 				+ " so it cannot check your bank for it.", OverlayTheme.MUTED));
 		}
 	}
