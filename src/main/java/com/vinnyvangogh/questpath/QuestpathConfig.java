@@ -248,14 +248,14 @@ public interface QuestpathConfig extends Config
 	@ConfigItem(
 		keyName = "serverUrl",
 		name = "Quest Route address",
-		description = "Where your Quest Route server is listening, e.g. http://192.168.1.10:8080. Empty means not set.",
+		description = "Where your Quest Route server is listening, e.g. an address on your own machine or network. Blank means not set.",
 		section = syncSection,
 		position = 2
 	)
 	default String serverUrl()
 	{
-		// No default host: nothing third-party is contacted until the user
-		// types an address. An unparsed address already reads as "not set".
+		// Blank, not a prefilled host: nothing is contacted until the player
+		// types their own server address. Every reader treats blank as "not set".
 		return "";
 	}
 
@@ -1036,6 +1036,19 @@ public interface QuestpathConfig extends Config
 		position = 5
 	)
 	default boolean bankTab()
+	{
+		return true;
+	}
+
+	@ConfigItem(
+		keyName = "bankButton",
+		name = "Show the bank title-bar button",
+		description = "The button on the bank's title row that toggles the needs marks. Turn it"
+			+ " off if another plugin needs that space.",
+		section = bankSection,
+		position = 6
+	)
+	default boolean bankButton()
 	{
 		return true;
 	}

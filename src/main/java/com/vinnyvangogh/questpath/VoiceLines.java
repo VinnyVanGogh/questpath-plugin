@@ -4,7 +4,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import com.google.common.base.Charsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -74,7 +73,7 @@ final class VoiceLines
 				log.warn("Voice word list {} is missing", LIST);
 				return new VoiceLines();
 			}
-			return parse(new BufferedReader(new InputStreamReader(in, Charsets.UTF_8)));
+			return parse(new BufferedReader(new InputStreamReader(in, "UTF-8")));
 		}
 		catch (IOException e)
 		{
@@ -162,11 +161,11 @@ final class VoiceLines
 	/** Whether a clip's resource path is bundled in the jar. */
 	static boolean bundled(String path)
 	{
-		try (java.io.InputStream in = VoiceLines.class.getResourceAsStream(path))
+		try (InputStream in = VoiceLines.class.getResourceAsStream(path))
 		{
 			return in != null;
 		}
-		catch (java.io.IOException e)
+		catch (IOException e)
 		{
 			return false;
 		}

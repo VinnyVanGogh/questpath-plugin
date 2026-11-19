@@ -1,11 +1,9 @@
 package com.vinnyvangogh.questpath;
 
 import java.io.ByteArrayInputStream;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.client.audio.AudioPlayer;
 
@@ -14,37 +12,26 @@ import net.runelite.client.audio.AudioPlayer;
  * time, on one executor thread of its own -- never the client thread, which
  * must not wait on decoding or an audio device.
  *
- * <p>{@code AudioPlayer.play} returns once the clip has started, so the end
- * of a line is not reported by the device. The joined clip's length is known
- * (see {@link VoiceAudio.Joined}), so the next line is released by a
- * scheduled task after that long, through {@link VoiceQueue}. Nothing sleeps.
+ * <p>{@code AudioPlayer.play} returns as soon as the sound is started and
+ * reports no end, so "one utterance at a time" is kept by scheduling
+ * {@link VoiceQueue#finished} for when the joined WAV's known length has
+ * elapsed. That is a scheduled task, not a sleeping thread.
  */
 @Slf4j
 final class VoicePlayer
 {
-	/** Slack after a line's computed length before the next may start. */
-	private static final long TAIL_MILLIS = 60;
+	/** Slack after a line's length, so the next one does not clip its tail. */
+	private static final long TAIL_MILLIS = 100;
 
 	private final AudioPlayer audioPlayer;
-	private final ExecutorService executor = Executors.newSingleThreadExecutor(runnable ->
+	private final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor(runnable ->
 	{
 		final Thread thread = new Thread(runnable, "quest-route-voice");
 		thread.setDaemon(true);
 		return thread;
 	});
-	private final ScheduledExecutorService timer = Executors.newSingleThreadScheduledExecutor(runnable ->
-	{
-		final Thread thread = new Thread(runnable, "quest-route-voice-timer");
-		thread.setDaemon(true);
-		return thread;
-	});
 	private final VoiceQueue<Job> queue = new VoiceQueue<>(this::submit);
 	private volatile boolean stopped;
-
-	VoicePlayer(AudioPlayer audioPlayer)
-	{
-		this.audioPlayer = audioPlayer;
-	}
 
 	private static final class Job
 	{
@@ -58,6 +45,11 @@ final class VoicePlayer
 		}
 	}
 
+	VoicePlayer(AudioPlayer audioPlayer)
+	{
+		this.audioPlayer = audioPlayer;
+	}
+
 	/** Says one line, or its ping if a clip is missing; volume 0 to 100. */
 	void say(Utterance utterance, int volume)
 	{
@@ -68,13 +60,12 @@ final class VoicePlayer
 		queue.offer(new Job(utterance, volume));
 	}
 
-	/** Drops the waiting line and ends both threads. Never blocks. */
+	/** Drops the waiting line and ends the thread. Never blocks. */
 	void shutDown()
 	{
 		stopped = true;
 		queue.clear();
 		executor.shutdownNow();
-		timer.shutdownNow();
 	}
 
 	private void submit(Job job)
@@ -95,31 +86,30 @@ final class VoicePlayer
 		{
 			return;
 		}
+		long millis = 0;
 		try
 		{
-			final VoiceAudio.Joined line = job.utterance.fallback()
+			final byte[] wav = job.utterance.fallback()
 				? VoiceAudio.ping()
-				: VoiceAudio.joinTimed(job.utterance.clips, VoiceLines.class::getResourceAsStream);
-			audioPlayer.play(new ByteArrayInputStream(line.wav), VoiceAudio.gain(job.volume));
-			release(line.millis + TAIL_MILLIS);
+				: VoiceAudio.join(job.utterance.clips, VoiceLines.class::getResourceAsStream);
+			millis = VoiceAudio.durationMillis(wav);
+			audioPlayer.play(new ByteArrayInputStream(wav), VoiceAudio.gain(job.volume));
 		}
 		catch (Exception e)
 		{
-			// Decode failure, no audio device, or a missing clip: the line is lost, the queue must not be.
+			// AudioPlayer's checked exceptions are javax.sound types, which a
+			// Hub plugin may not name, so this catches broadly on purpose.
 			log.debug("Quest Route could not play \"{}\"", job.utterance.text, e);
-			queue.finished();
+			millis = 0;
 		}
-	}
-
-	private void release(long millis)
-	{
 		try
 		{
-			timer.schedule(queue::finished, millis, TimeUnit.MILLISECONDS);
+			executor.schedule(queue::finished, millis + (millis > 0 ? TAIL_MILLIS : 0),
+				java.util.concurrent.TimeUnit.MILLISECONDS);
 		}
 		catch (RejectedExecutionException e)
 		{
-			// Shut down while the line played: nothing more will.
+			// Shut down while playing: nothing more will play.
 		}
 	}
 }
