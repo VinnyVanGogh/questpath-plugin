@@ -123,7 +123,7 @@ class ShopRouteOverlay extends QuestpathOverlay
 		if (items == null)
 		{
 			return List.of(OverlayRow.note(
-				"questpath cannot answer this yet -- no item list loaded.",
+				"Quest Route cannot answer this yet -- no item list loaded.",
 				OverlayTheme.MUTED));
 		}
 

@@ -59,7 +59,7 @@ class BuildRulesOverlay extends QuestpathOverlay
 			// nobody has said so yet is the one wrong answer this panel
 			// could give.
 			return Collections.singletonList(OverlayRow.note(
-				"No build rules yet. questpath sends these when a push is "
+				"No build rules yet. Quest Route sends these when a push is "
 					+ "accepted, so turn sync on.",
 				OverlayTheme.MUTED));
 		}

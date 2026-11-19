@@ -154,7 +154,7 @@ class LampAdvisor
 		{
 			return verdict(skill, LampVerdict.State.UNKNOWN, LampVerdict.Block.NONE,
 				LampVerdict.Risk.NONE, xp, false, level, levelAfter, 0,
-				"questpath does not know this lamp's xp, and this skill is capped");
+				"Quest Route does not know this lamp's xp, and this skill is capped");
 		}
 
 		// 4. The caps. Guarded rather than an early return, because the

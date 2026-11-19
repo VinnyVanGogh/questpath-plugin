@@ -254,7 +254,7 @@ class BankTabLayout
 		catch (RuntimeException e)
 		{
 			// A half-built grid is worse than none. Put the bank back.
-			log.debug("questpath: bank layout failed, restoring", e);
+			log.debug("quest-route: bank layout failed, restoring", e);
 			removeAdded();
 		}
 	}

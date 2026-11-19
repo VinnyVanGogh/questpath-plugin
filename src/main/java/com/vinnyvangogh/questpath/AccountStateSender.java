@@ -86,7 +86,7 @@ class AccountStateSender
 				// Debug, not error: questpath not running is the normal state
 				// for anyone who has the toggle on and the app closed, and
 				// this fires on every push.
-				log.debug("questpath sync: not sent", e);
+				log.debug("quest-route sync: not sent", e);
 			}
 
 			@Override
@@ -98,7 +98,7 @@ class AccountStateSender
 					{
 						onOutcome.accept(SyncStatus.accepted(Instant.now()));
 						readBody(closed, onAccepted);
-						log.debug("questpath sync: accepted");
+						log.debug("quest-route sync: accepted");
 					}
 					else
 					{
@@ -107,7 +107,7 @@ class AccountStateSender
 						// not where they will look, which is why the outcome
 						// goes to the panel as well.
 						onOutcome.accept(SyncStatus.rejected(Instant.now(), closed.code()));
-						log.debug("questpath sync: rejected with {}", closed.code());
+						log.debug("quest-route sync: rejected with {}", closed.code());
 					}
 				}
 				finally
@@ -145,7 +145,7 @@ class AccountStateSender
 		}
 		catch (Exception e)
 		{
-			log.debug("questpath sync: response not understood", e);
+			log.debug("quest-route sync: response not understood", e);
 		}
 	}
 

@@ -74,7 +74,7 @@ class DiaryRouteOverlay extends QuestpathOverlay
 		{
 			// Absent, not empty -- see this class's own doc and
 			// PushResponse#hasDiary()'s.
-			return List.of(OverlayRow.note("Diary route needs a questpath sync.", OverlayTheme.MUTED));
+			return List.of(OverlayRow.note("Diary route needs a Quest Route sync.", OverlayTheme.MUTED));
 		}
 
 		List<DiaryRouteStops.Stop> stops =

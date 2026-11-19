@@ -126,7 +126,7 @@ final class EdtWatchdog
 		}
 		catch (RuntimeException e)
 		{
-			log.debug("questpath perf: watchdog sample failed", e);
+			log.debug("quest-route perf: watchdog sample failed", e);
 		}
 	}
 
@@ -135,7 +135,7 @@ final class EdtWatchdog
 		long eventThreadId = findEventThread();
 		if (eventThreadId < 0)
 		{
-			log.info("questpath perf: EDT stalled {}ms, thread not found", stalledFor);
+			log.info("quest-route perf: EDT stalled {}ms, thread not found", stalledFor);
 			return;
 		}
 		ThreadInfo eventThread = threads.getThreadInfo(eventThreadId, STACK_DEPTH);
@@ -145,7 +145,7 @@ final class EdtWatchdog
 		}
 
 		StringBuilder dump = new StringBuilder();
-		dump.append("questpath perf: EDT stalled ").append(stalledFor)
+		dump.append("quest-route perf: EDT stalled ").append(stalledFor)
 			.append("ms in state ").append(eventThread.getThreadState())
 			// Reported alongside every stall, because a stack dump cannot
 			// distinguish "this frame is slow" from "this frame was suspended
