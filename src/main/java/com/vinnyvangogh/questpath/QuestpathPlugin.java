@@ -3489,7 +3489,19 @@ public class QuestpathPlugin extends Plugin
 	}
 
 	/** Shop name to tile and town, for every route, label and stop. */
-	private final ShopPlaces shopPlaces = new ShopPlaces(this::shopLocation, this::shopTown);
+	private final ShopPlaces shopPlaces = new ShopPlaces(this::shopLocation, this::shopTown, this::shopBlockReason);
+
+	/** Why the account cannot use a shop (e.g. a stall's Thieving level), or empty. */
+	private String shopBlockReason(String shopName)
+	{
+		QuestGraph.Shop shop = questGraph == null || shopName == null ? null : questGraph.shop(shopName);
+		if (shop == null || accountSnapshot == null)
+		{
+			return "";
+		}
+		ShopReachability.Result result = ShopReachability.of(shop, accountSnapshot, questGraph, shopBoosts());
+		return result.usable() ? "" : result.reason();
+	}
 
 	/** The town or area the bundle files a shop under, or empty. */
 	private String shopTown(String shopName)

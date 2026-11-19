@@ -104,6 +104,11 @@ final class ShopReachability
 		{
 			return guild;
 		}
+		Result stall = GuildEntryRules.stallBlock(shop.name(), player);
+		if (stall != null)
+		{
+			return stall;
+		}
 		QuestGraph.Reachability gates = shop.reachability();
 		if (gates == null)
 		{
