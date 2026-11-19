@@ -254,7 +254,9 @@ public interface QuestpathConfig extends Config
 	)
 	default String serverUrl()
 	{
-		return "http://localhost:8080";
+		// Empty on purpose: the address is the player's own server, entered when
+		// they opt in, so no host ships baked in. Blank reads as "not set".
+		return "";
 	}
 
 	@ConfigItem(
