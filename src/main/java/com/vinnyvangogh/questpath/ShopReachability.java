@@ -120,7 +120,23 @@ final class ShopReachability
 
 		List<String> blocked = new ArrayList<>();
 		List<String> boostable = new ArrayList<>();
+		judgeSkills(gates, player, boosts, blocked, boostable);
+		judgeQuests(gates, player, graph, blocked);
 
+		if (!blocked.isEmpty())
+		{
+			return new Result(Verdict.BLOCKED, String.join(", ", blocked));
+		}
+		if (!boostable.isEmpty())
+		{
+			return new Result(Verdict.BOOSTABLE, String.join(", ", boostable));
+		}
+		return OPEN;
+	}
+
+	private static void judgeSkills(QuestGraph.Reachability gates, PlayerState player,
+		Boosts boosts, List<String> blocked, List<String> boostable)
+	{
 		for (QuestGraph.SkillGate gate : gates.requiredSkills())
 		{
 			int have = player.levelIn(gate.skill());
@@ -139,7 +155,11 @@ final class ShopReachability
 				blocked.add(need);
 			}
 		}
+	}
 
+	private static void judgeQuests(QuestGraph.Reachability gates, PlayerState player,
+		QuestGraph graph, List<String> blocked)
+	{
 		for (Integer questId : gates.requiredQuestIds())
 		{
 			if (questId == null)
@@ -165,15 +185,5 @@ final class ShopReachability
 				blocked.add(quest.name());
 			}
 		}
-
-		if (!blocked.isEmpty())
-		{
-			return new Result(Verdict.BLOCKED, String.join(", ", blocked));
-		}
-		if (!boostable.isEmpty())
-		{
-			return new Result(Verdict.BOOSTABLE, String.join(", ", boostable));
-		}
-		return OPEN;
 	}
 }
