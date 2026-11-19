@@ -8,6 +8,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- Local-first: Quest Route works with no questpath server. First run on an account shows a sidebar setup (account type: main, ironman, HCIM, UIM, GIM; quest types: free-to-play, members) on the Quests tab, then builds your route from the bundled quest graph (`LocalRoute`: prerequisites first, nothing your build or skills forbid). Setup, progress and route are saved per account to `RuneLite.RUNELITE_DIR/questroute/<account hash>/profile.json` (`LocalProfile`, `LocalProfileStore`; atomic writes, Gson, no database). A damaged file is set aside as `profile.json.corrupt` and setup runs again. "Reset account setup" in the plugin's config panel asks to confirm, wipes the profile and runs setup again. A questpath push that supplies a route still takes over for that login.
+
+### Changed
+
+- The questpath address now defaults to empty (it was `http://localhost:8080`). With no address, no request is ever attempted and nothing is said in chat; `NoServerNoNetworkTest` counts requests to prove it. Settings you saved explicitly are kept.
+
 - The shop route treats an item it can make as a chain: get each missing ingredient from its own best source (shop, a nested recipe, or a drop you can actually do), then go to the nearest facility ("-> Furnace: use Bucket of sand + Soda ash"). The order is shop, then recipe, then drop. A recipe you lack the level for says which level ("can't make it yet: needs 30 Crafting") and the route falls back to other sources. Reads quest graph v14's optional `recipes`, `facilities` and `drop_sources` tables (`MakeChain`, `RouteSources`) (#19).
 - Bosses, and monsters that need a Slayer or combat level the account lacks, are never route stops (`DropPracticality`). Your `DropRegionPolicy` declarations still apply first. These droppers stay in the item's sources with a marker ("boss, needs 93 Slayer"). When no practical source remains, the row reads "No practical source: make it or ask the group" and lists which group members, or the group's storage, hold the item. Reported 2026-11-14: Molten glass was routed to the Thermonuclear smoke devil on a low-level Group Ironman (#19).
 - `icon.png` for the Plugin Hub listing and `docs/hub-submission.md` manifest, pre-submission checklist, and draft PR body (#14).

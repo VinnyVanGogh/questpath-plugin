@@ -35,6 +35,10 @@ and a Java port of the [questpath](https://github.com/VinnyVanGogh) planner,
 tested against the same 218 quest verdicts as the website. Your route, build
 rules and diaries arrive when you sync.
 
+First run, a sidebar setup asks your account type and which quests to route,
+then shows the route; it is saved under `.runelite/questroute/`. See
+[docs/try-it-without-a-server.md](docs/try-it-without-a-server.md).
+
 ---
 
 ## The shop run

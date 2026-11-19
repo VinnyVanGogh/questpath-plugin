@@ -872,7 +872,12 @@ public class QuestpathPlugin extends Plugin
 			log.warn("questpath: bundled quest graph unavailable; the Quests tab will say so", e);
 		}
 
-		if (config.fetchQuestGraph())
+		// RuneLite's own directory is the only place Plugin Hub rules let us
+		// write; one folder per account inside it.
+		profileStore = new LocalProfileStore(
+			net.runelite.client.RuneLite.RUNELITE_DIR.toPath().resolve("questroute"), gson);
+
+		if (config.fetchQuestGraph() && hasServerUrl())
 		{
 			fetchLiveQuestGraph();
 		}
@@ -1139,10 +1144,198 @@ public class QuestpathPlugin extends Plugin
 		});
 	}
 
+	// ------------------------------------------------------------------
+	// Local profile: the account's setup, kept in RuneLite's own directory.
+	// questpath's server is an optional extra; nothing below needs it.
+	// ------------------------------------------------------------------
+
+	private LocalProfileStore profileStore;
+
+	/** Whether a questpath address is configured. Without one the plugin never connects anywhere. */
+	private boolean hasServerUrl()
+	{
+		String url = config.serverUrl();
+		return url != null && !url.trim().isEmpty();
+	}
+
+	/** The account a profile load was started for this login; null until one is. */
+	private volatile String profileKey;
+
+	/** This account's setup, or null before it loads and while setup is pending. */
+	private volatile LocalProfile localProfile;
+
+	/** True once a questpath push has supplied a route; the local one then stands down. */
+	private volatile boolean routeFromServer;
+
+	/** Client thread. Starts the one-per-login read of this account's profile file. */
+	private void ensureProfileLoaded()
+	{
+		String key = LocalProfileStore.keyFor(client.getAccountHash());
+		if (key == null || key.equals(profileKey) || profileStore == null)
+		{
+			return;
+		}
+		profileKey = key;
+		scheduler.execute(() ->
+		{
+			LocalProfileStore.Result result;
+			try
+			{
+				result = profileStore.load(key);
+			}
+			catch (RuntimeException e)
+			{
+				log.debug("questroute: profile load failed", e);
+				result = null;
+			}
+			LocalProfileStore.Result loaded = result;
+			clientThread.invokeLater(() ->
+			{
+				if (!key.equals(profileKey))
+				{
+					return;
+				}
+				applyLoadedProfile(loaded);
+				refresh();
+			});
+		});
+	}
+
+	private void applyLoadedProfile(LocalProfileStore.Result loaded)
+	{
+		if (loaded != null && loaded.status() == LocalProfileStore.Status.LOADED)
+		{
+			localProfile = loaded.profile();
+			panel.setSetup(null, null);
+			return;
+		}
+		localProfile = null;
+		String note = loaded != null && loaded.status() == LocalProfileStore.Status.ABSENT
+			? "Welcome. Two quick questions, then your route appears. Nothing leaves your computer."
+			: "Your saved setup could not be read, so it was set aside. Please answer again.";
+		panel.setSetup(note, this::onSetupChosen);
+	}
+
+	/** Swing thread, from the setup panel's button. */
+	private void onSetupChosen(LocalProfile.AccountType type, java.util.Set<LocalProfile.QuestType> types)
+	{
+		LocalProfile profile = LocalProfile.create(type, types);
+		localProfile = profile;
+		panel.setSetup(null, null);
+		saveProfileAsync(profile);
+		clientThread.invokeLater(this::refresh);
+	}
+
+	private void saveProfileAsync(LocalProfile profile)
+	{
+		String key = profileKey;
+		if (key == null || profileStore == null)
+		{
+			return;
+		}
+		scheduler.execute(() ->
+		{
+			try
+			{
+				profileStore.save(key, profile);
+			}
+			catch (java.io.IOException | RuntimeException e)
+			{
+				// Setup still works for this session; it is asked again next time.
+				log.warn("questroute: could not save the local profile", e);
+			}
+		});
+	}
+
+	/**
+	 * Client thread, inside refresh(). Fills routeOrder from the local
+	 * profile unless a questpath push has already supplied one, and keeps
+	 * the saved route and progress current.
+	 *
+	 * @param judged whether the verdicts this pass are real; false (varbits
+	 *     not loaded yet) leaves the route alone rather than emptying it
+	 */
+	private void applyLocalRoute(boolean judged)
+	{
+		LocalProfile profile = localProfile;
+		if (profile == null || routeFromServer || !judged || questGraph == null || accountSnapshot == null)
+		{
+			return;
+		}
+		List<String> computed = LocalRoute.of(questGraph, accountSnapshot, profile.questTypes());
+		routeOrder = computed;
+		if (computed.equals(profile.route()))
+		{
+			return;
+		}
+		LocalProfile updated = profile.withRoute(questGraph.version(),
+			new ArrayList<>(completedQuestNames()), computed);
+		localProfile = updated;
+		saveProfileAsync(updated);
+	}
+
+	/** Swing thread: asks, then wipes this account's profile and runs setup again. */
+	private void confirmResetSetup()
+	{
+		if (profileKey == null)
+		{
+			javax.swing.JOptionPane.showMessageDialog(panel,
+				"Log in to a character first, then reset its Quest Route setup.",
+				"Reset account setup", javax.swing.JOptionPane.INFORMATION_MESSAGE);
+			return;
+		}
+		int answer = javax.swing.JOptionPane.showConfirmDialog(panel,
+			"This deletes the saved Quest Route setup for this account (account type, quest types, route)\n"
+				+ "and asks you to set it up again. Your game progress is not touched.\n\nReset it?",
+			"Reset account setup", javax.swing.JOptionPane.YES_NO_OPTION,
+			javax.swing.JOptionPane.WARNING_MESSAGE);
+		if (answer != javax.swing.JOptionPane.YES_OPTION)
+		{
+			return;
+		}
+		String key = profileKey;
+		scheduler.execute(() ->
+		{
+			try
+			{
+				profileStore.reset(key);
+			}
+			catch (java.io.IOException | RuntimeException e)
+			{
+				log.warn("questroute: could not delete the local profile", e);
+			}
+			clientThread.invokeLater(() ->
+			{
+				if (!key.equals(profileKey))
+				{
+					return;
+				}
+				localProfile = null;
+				if (!routeFromServer)
+				{
+					routeOrder = Collections.emptyList();
+				}
+				applyLoadedProfile(new LocalProfileStore.Result(LocalProfileStore.Status.ABSENT, null));
+				refresh();
+			});
+		});
+	}
+
 	@Subscribe
 	public void onConfigChanged(ConfigChanged event)
 	{
-		if (!QuestpathConfig.GROUP.equals(event.getGroup()) || !"partyShare".equals(event.getKey()))
+		if (!QuestpathConfig.GROUP.equals(event.getGroup()))
+		{
+			return;
+		}
+		if ("resetAccountSetup".equals(event.getKey()) && Boolean.parseBoolean(event.getNewValue()))
+		{
+			// A momentary switch: put it back, then ask.
+			configManager.setConfiguration(QuestpathConfig.GROUP, "resetAccountSetup", false);
+			javax.swing.SwingUtilities.invokeLater(this::confirmResetSetup);
+			return;
+		}
+		if (!"partyShare".equals(event.getKey()))
 		{
 			return;
 		}
@@ -2145,6 +2338,11 @@ public class QuestpathPlugin extends Plugin
 			partialRuns = Collections.emptyList();
 			knownItems = Collections.emptyMap();
 			itemPlan = null;
+			// Another account may log in next, with its own local profile.
+			routeFromServer = false;
+			localProfile = null;
+			profileKey = null;
+			panel.setSetup(null, null);
 			// The next login may be a different account, with a different
 			// diary verdict entirely -- see diaryPush's own doc.
 			diaryPush = null;
@@ -2227,10 +2425,14 @@ public class QuestpathPlugin extends Plugin
 		{
 			stats = currentStats();
 			xp = currentXp();
+			// Verdicts first: the local route is derived from them, and the
+			// item list and next-quest reads below are built on the route.
+			questVerdicts = verdicts();
+			ensureProfileLoaded();
+			applyLocalRoute(questVerdicts != null);
 			items = questItems();
 			route = nextQuest();
 			report = accountReport();
-			questVerdicts = verdicts();
 		}
 		finally
 		{
@@ -4117,6 +4319,9 @@ public class QuestpathPlugin extends Plugin
 					// plan, and this push response is the only place it is
 					// handed over.
 					routeOrder = accepted.routeOrder();
+					// A server that answered with a plan owns the route from
+					// here; the local one steps aside for this login.
+					routeFromServer = !routeOrder.isEmpty();
 					partialRuns = accepted.partialRuns();
 					knownItems = accepted.knownItems();
 					// Replaced unconditionally, null included: a push answered
