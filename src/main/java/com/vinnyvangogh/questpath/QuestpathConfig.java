@@ -275,20 +275,6 @@ public interface QuestpathConfig extends Config
 		return "";
 	}
 
-	@ConfigItem(
-		keyName = "resetAccountSetup",
-		name = "Reset account setup",
-		description = "Tick to wipe this account's saved Quest Route setup (account type, quest types, route)"
-			+ " and run first-run setup again. You are asked to confirm; the box un-ticks itself.",
-		position = 0
-	)
-	default boolean resetAccountSetup()
-	{
-		// A momentary switch, not a setting: the plugin turns it back off
-		// as soon as it has been handled.
-		return false;
-	}
-
 	// ------------------------------------------------------------------
 	// Overlays.
 	//
