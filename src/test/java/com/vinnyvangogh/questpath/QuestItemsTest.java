@@ -1026,6 +1026,41 @@ public class QuestItemsTest
 			+ "\"diary_tasks\":[]}", QuestGraph.class);
 	}
 
+	/** One quest wanting six nails of any tier. */
+	private static QuestGraph nailsGraph()
+	{
+		return GSON.fromJson("{\"version\":13,\"quests\":[{\"id\":1,\"slug\":\"a\",\"name\":\"A\","
+			+ "\"items\":[{\"name\":\"Nails\",\"quantity\":6,\"group_name\":\"Nails\","
+			+ "\"alternatives\":[{\"name\":\"Bronze nails\",\"item_id\":4819},"
+			+ "{\"name\":\"Iron nails\",\"item_id\":4820},"
+			+ "{\"name\":\"Steel nails\",\"item_id\":1539}]}]}],"
+			+ "\"diary_tasks\":[]}", QuestGraph.class);
+	}
+
+	/**
+	 * An "any tier" requirement fills from every tier held, not just the one
+	 * named: three bronze and four iron nails cover six, and the row lists
+	 * every tier with what is held of each.
+	 */
+	@Test
+	public void anyTierFillsFromWhicheverTiersAreOwned()
+	{
+		Map<String, Long> held = new HashMap<>();
+		held.put("bronze nails", 3L);
+		held.put("iron nails", 4L);
+
+		QuestItems items = QuestItems.of(nailsGraph(), freshAccount(), held, true);
+
+		assertEquals(1, items.totals().size());
+		QuestItems.Total total = items.totals().get(0);
+		assertEquals(7L, total.owned());
+		assertTrue(total.satisfied());
+		assertEquals(3, total.memberCounts().size());
+		assertEquals(Long.valueOf(3L), total.memberCounts().get("Bronze nails"));
+		assertEquals(Long.valueOf(0L), total.memberCounts().get("Steel nails"));
+		assertEquals("Any of: Bronze nails (3), Iron nails (4), Steel nails", total.tiersNote());
+	}
+
 	private static QuestItems.Total named(java.util.List<QuestItems.Total> totals, String name)
 	{
 		for (QuestItems.Total total : totals)

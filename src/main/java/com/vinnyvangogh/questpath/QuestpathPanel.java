@@ -2636,7 +2636,9 @@ class QuestpathPanel extends PluginPanel
 				addRow(grid, label, line.describe(), line.held()
 					? ColorScheme.PROGRESS_COMPLETE_COLOR
 					: ColorScheme.LIGHT_GRAY_COLOR,
-					itemTooltip(null, RouteSources.dropsOnly(dropLocator).annotate(line.sources())));
+					itemTooltip(line.members().size() > 1
+						? "Any of: " + String.join(", ", line.members()) : null,
+						RouteSources.dropsOnly(dropLocator).annotate(line.sources())));
 			}
 			panel.add(grid);
 			questsShown++;
@@ -3034,6 +3036,11 @@ class QuestpathPanel extends PluginPanel
 		// on this panel means the same thing by.
 		// questpath's item plan: make steps, which member of an "X or Y" was
 		// chosen, or why nothing reachable -- worded by QuestItems.PlanNote.
+		String tiers = total.tiersNote();
+		if (tiers != null)
+		{
+			sharedNote = sharedNote == null ? tiers : sharedNote + ". " + tiers;
+		}
 		String planNote = total.plan().describe();
 		if (planNote != null)
 		{
