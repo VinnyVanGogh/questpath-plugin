@@ -472,7 +472,7 @@ class QuestpathPanel extends PluginPanel
 					long millis = (System.nanoTime() - startedAt) / 1_000_000L;
 					if (millis >= SLOW_MILLIS)
 					{
-						log.info("questpath perf: switch #{} to {} took {}ms; components {}",
+						log.info("quest-route perf: switch #{} to {} took {}ms; components {}",
 							tabSwitches, tab, millis, componentCounts());
 					}
 				});
@@ -854,7 +854,7 @@ class QuestpathPanel extends PluginPanel
 			long millis = (System.nanoTime() - startedAt) / 1_000_000L;
 			if (millis >= SLOW_MILLIS)
 			{
-				log.info("questpath perf: render took {}ms; components {}", millis, componentCounts());
+				log.info("quest-route perf: render took {}ms; components {}", millis, componentCounts());
 			}
 		}
 	}
@@ -2272,7 +2272,7 @@ class QuestpathPanel extends PluginPanel
 			// state where it matters most: with no rules at all the guard is
 			// off everywhere and off silently, so the way to fix that has to
 			// sit directly under the sentence admitting it.
-			panel.add(muted("questpath has not been told your rules. Sync sends them"
+			panel.add(muted("Quest Route has not been told your rules. Sync sends them"
 				+ " when it is on, or write them here -- with none, nothing is guarded."));
 			panel.add(buildRulesEditorBlock());
 			return panel;
@@ -2756,7 +2756,7 @@ class QuestpathPanel extends PluginPanel
 				// the list, and an empty section would read as the wiki
 				// recommending nothing for every quest on the route.
 				panel.add(muted("This quest graph carries no recommended items. Re-export it from"
-					+ " questpath (graph version 13 or later) to list them here."));
+					+ " Quest Route (graph version 13 or later) to list them here."));
 			}
 		}
 		panel.add(Box.createVerticalStrut(2));
@@ -2911,12 +2911,12 @@ class QuestpathPanel extends PluginPanel
 	 */
 	private JButton syncNowButton()
 	{
-		JButton button = new JButton("Sync with questpath");
+		JButton button = new JButton("Sync with Quest Route");
 		button.setFont(FontManager.getRunescapeSmallFont());
 		button.setAlignmentX(Component.LEFT_ALIGNMENT);
-		button.setToolTipText("<html><body style='width:220px'>Pushes this account to questpath"
+		button.setToolTipText("<html><body style='width:220px'>Pushes this account to Quest Route"
 			+ " and applies whatever comes back -- build rules, your saved plan, and the items"
-			+ " questpath holds for you.<br><br>Automatic sync only fires when something changes"
+			+ " Quest Route holds for you.<br><br>Automatic sync only fires when something changes"
 			+ " in-game, so this is how a plan you edited on the website arrives without waiting"
 			+ " for your next level-up.</body></html>");
 		button.addActionListener(event -> onSyncNow.run());
@@ -2995,7 +2995,7 @@ class QuestpathPanel extends PluginPanel
 		}
 		// Named in the log, not just counted. A count alone said "29" three
 		// skips running while the stop never moved, which read as working.
-		log.info("questpath shop route: stop \"{}\" -> {} ({} destination(s), {} skipped)",
+		log.info("quest-route shop route: stop \"{}\" -> {} ({} destination(s), {} skipped)",
 			stopName, named == null ? "nowhere placeable" : named.shopName(),
 			destinations.size(), shopItemSkips.size());
 		if (destinations.isEmpty())
@@ -3132,7 +3132,16 @@ class QuestpathPanel extends PluginPanel
 		if (current != null)
 		{
 			String currentName = current.name();
-			JButton skip = new JButton("Skip \"" + currentName + "\" (move to back)");
+			// Where this stop is and what it is for, before the buttons that
+			// act on it: the shop with its town, and what else it supplies.
+			JLabel where = new JLabel("<html>" + ShopRouteStops.destinationLine(current,
+				shopLocator, dropLocator, playerLocation.get(), items.totals(includeRecommended),
+				shopItemSkips).replace("&", "&amp;").replace("<", "&lt;") + "</html>");
+			where.setFont(FontManager.getRunescapeSmallFont());
+			where.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
+			where.setAlignmentX(Component.LEFT_ALIGNMENT);
+			panel.add(where);
+			JButton skip =new JButton("Skip \"" + currentName + "\" (move to back)");
 			skip.setFont(FontManager.getRunescapeSmallFont());
 			skip.setAlignmentX(Component.LEFT_ALIGNMENT);
 			skip.addActionListener(event ->
@@ -3206,7 +3215,7 @@ class QuestpathPanel extends PluginPanel
 			return null;
 		}
 		String shopName = dest.shopName();
-		JButton again = new JButton("Say again: " + shopName);
+		JButton again = new JButton("Say again: " + dest.label());
 		again.setFont(FontManager.getRunescapeSmallFont());
 		again.setAlignmentX(Component.LEFT_ALIGNMENT);
 		again.setToolTipText("Say every item still needed from " + shopName + ", out loud if the"
@@ -3310,7 +3319,7 @@ class QuestpathPanel extends PluginPanel
 		switch (next.state())
 		{
 			case NO_ROUTE:
-				panel.add(muted("No route saved in questpath. Save a plan there and it will show up here."));
+				panel.add(muted("No route saved in Quest Route. Save a plan there and it will show up here."));
 				return panel;
 			case ALL_DONE:
 				JLabel done = new JLabel(wrap("Nothing left to do \u2014 every quest on your route is finished."));
@@ -3571,7 +3580,7 @@ class QuestpathPanel extends PluginPanel
 		PushResponse.Diary diary = diaryPush.get();
 		if (diary == null)
 		{
-			panel.add(muted("Diary route needs a questpath sync."));
+			panel.add(muted("Diary route needs a Quest Route sync."));
 			return panel;
 		}
 
@@ -3698,9 +3707,9 @@ class QuestpathPanel extends PluginPanel
 		if (DiaryJournal.progressNeverSynced(diary))
 		{
 			panel.add(muted(diary == null
-				? "Diary progress not synced yet -- push this account's state from a questpath"
+				? "Diary progress not synced yet -- push this account's state from a Quest Route"
 					+ " that supports diary routing."
-				: "Diary progress not synced yet -- questpath has not read this account's"
+				: "Diary progress not synced yet -- Quest Route has not read this account's"
 					+ " per-task diary progress."));
 			panel.add(Box.createVerticalStrut(6));
 		}
@@ -3709,7 +3718,7 @@ class QuestpathPanel extends PluginPanel
 		List<DiaryJournal.Area> areas = DiaryJournal.group(graphTasks, diary);
 		if (areas.isEmpty())
 		{
-			panel.add(muted("questpath has not bundled any diary tasks yet."));
+			panel.add(muted("Quest Route has not bundled any diary tasks yet."));
 			return panel;
 		}
 
@@ -3833,7 +3842,7 @@ class QuestpathPanel extends PluginPanel
 					? "This diary tier is deferred -- never nudged, only listed here."
 					: "Deferred. " + entry.reason();
 			case UNKNOWN:
-				return "questpath cannot yet tell whether this task is done for this account.";
+				return "Quest Route cannot yet tell whether this task is done for this account.";
 			case NOT_SYNCED:
 				return "No diary progress has been read for this account yet.";
 			default:
@@ -3916,7 +3925,7 @@ class QuestpathPanel extends PluginPanel
 			// below is "as far as I know". A pure's quest list rendered as a
 			// main's is exactly the mistake this plugin exists to prevent.
 			JLabel warning = new JLabel(wrap("No build rules yet, so nothing can be"
-				+ " judged against them. Turn on sync to get them from questpath."));
+				+ " judged against them. Turn on sync to get them from Quest Route."));
 			warning.setFont(FontManager.getRunescapeSmallFont());
 			warning.setForeground(ColorScheme.PROGRESS_ERROR_COLOR);
 			panel.add(warning);
@@ -4307,7 +4316,7 @@ class QuestpathPanel extends PluginPanel
 		{
 			// No graph, or logged out. Not "nothing to train" -- there is no
 			// account to answer about, which is a different statement.
-			skillResults.add(muted("Log in, and questpath will price this out."));
+			skillResults.add(muted("Log in, and Quest Route will price this out."));
 		}
 		else
 		{
@@ -4770,7 +4779,7 @@ class QuestpathPanel extends PluginPanel
 
 		if (sync.state() == SyncStatus.State.NO_TOKEN)
 		{
-			JLabel hint = new JLabel(wrap("Run: questpath -plugin-token"));
+			JLabel hint = new JLabel(wrap("Get this token from your Quest Route server"));
 			hint.setFont(FontManager.getRunescapeSmallFont());
 			hint.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
 			panel.add(hint);
@@ -4791,7 +4800,7 @@ class QuestpathPanel extends PluginPanel
 				settings.hasToken() ? ColorScheme.PROGRESS_COMPLETE_COLOR : ColorScheme.PROGRESS_ERROR_COLOR);
 			panel.add(grid);
 
-			JLabel where = new JLabel(wrap("Change these under Settings, questpath."));
+			JLabel where = new JLabel(wrap("Change these under Settings, Quest Route."));
 			where.setFont(FontManager.getRunescapeSmallFont());
 			where.setForeground(ColorScheme.MEDIUM_GRAY_COLOR);
 			panel.add(where);
@@ -4852,7 +4861,7 @@ class QuestpathPanel extends PluginPanel
 		{
 			panel.add(Box.createVerticalStrut(6));
 			JLabel header = new JLabel(wrap(unmatchedQuests.size()
-				+ " quest names questpath did not recognise:"));
+				+ " quest names Quest Route did not recognise:"));
 			header.setFont(FontManager.getRunescapeSmallFont());
 			header.setForeground(ColorScheme.PROGRESS_INPROGRESS_COLOR);
 			panel.add(header);

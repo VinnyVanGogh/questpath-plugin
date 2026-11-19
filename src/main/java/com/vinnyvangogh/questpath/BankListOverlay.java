@@ -109,7 +109,7 @@ class BankListOverlay extends QuestpathOverlay
 		if (items == null)
 		{
 			return List.of(OverlayRow.note(
-				"questpath has not loaded an item list yet.", OverlayTheme.MUTED));
+				"Quest Route has not loaded an item list yet.", OverlayTheme.MUTED));
 		}
 
 		List<QuestItems.Total> ranOut = new ArrayList<>();

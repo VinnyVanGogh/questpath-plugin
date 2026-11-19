@@ -44,7 +44,7 @@ enum PanelSections
 
 	SYNC(
 		Tab.SYNC,
-		"questpath sync",
+		"Quest Route sync",
 		Status.LIVE,
 		null),
 

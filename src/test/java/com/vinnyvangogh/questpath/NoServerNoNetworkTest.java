@@ -39,7 +39,8 @@ public class NoServerNoNetworkTest
 		};
 		assertEquals("", defaults.serverUrl());
 		assertFalse(defaults.syncEnabled());
-		assertFalse(defaults.fetchQuestGraph());
+		// The quest-graph fetch is a developer JVM flag now, never a setting.
+		assertFalse(Boolean.getBoolean(QuestpathPlugin.DEV_FETCH_PROPERTY));
 	}
 
 	@Test
