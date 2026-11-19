@@ -150,6 +150,27 @@ class QuestItems
 		private PlanNote plan = PlanNote.NONE;
 		private long equivalentOwned;
 		private long inGroupStorage;
+		private List<String> members = java.util.Collections.emptyList();
+
+		/**
+		 * Every tier of the category this line came from, in the wiki's order
+		 * -- empty for a line that named one item outright.
+		 *
+		 * <p>{@link #owned()} already counts all of them; this is what lets a
+		 * surface say so, and lets {@link #totalsOf} count them too instead of
+		 * only the one tier {@link #name()} happens to be.
+		 */
+		List<String> members()
+		{
+			return members;
+		}
+
+		/** Records every tier of the category. Returns this line, for chaining. */
+		Line withMembers(List<String> names)
+		{
+			this.members = names == null ? java.util.Collections.emptyList() : names;
+			return this;
+		}
 
 		/**
 		 * Attaches questpath's decision for this line -- see {@link PlanNote}.
@@ -359,7 +380,8 @@ class QuestItems
 		Line withRecommended(boolean recommended)
 		{
 			Line copy = new Line(name, itemId, wanted, owned, optional, unresolved,
-				sources, shopNames, dropSourceNames, groupName, notes, recommended).withPlan(plan);
+				sources, shopNames, dropSourceNames, groupName, notes, recommended)
+				.withPlan(plan).withMembers(members);
 			copy.setEquivalentOwned(this.equivalentOwned);
 			copy.inGroupStorage = this.inGroupStorage;
 			return copy;
@@ -950,6 +972,62 @@ class QuestItems
 		return out;
 	}
 
+	private static List<String> memberNamesOf(List<QuestGraph.Alternative> alternatives)
+	{
+		List<String> names = new ArrayList<>();
+		for (QuestGraph.Alternative alt : alternatives)
+		{
+			names.add(alt.name());
+		}
+		return names;
+	}
+
+	private static Total newTotal(String name, Line line, Map<String, Long> held,
+		Map<String, Long> carried, java.util.Set<String> placeholders)
+	{
+		if (line.members().isEmpty())
+		{
+			return new Total(name, line.itemId(),
+				held.getOrDefault(name.toLowerCase(), 0L),
+				carried == null ? 0L : carried.getOrDefault(name.toLowerCase(), 0L),
+				placeholders != null && placeholders.contains(name.toLowerCase()),
+				line.sources(), line.shopNames(), line.dropSourceNames());
+		}
+		return new Total(name, line.itemId(),
+			sumHeld(line.members(), held),
+			sumHeld(line.members(), carried),
+			placeholders != null && anyIn(line.members(), placeholders),
+			line.sources(), line.shopNames(), line.dropSourceNames())
+			.withMembers(line.members(), held);
+	}
+
+	private static boolean anyIn(List<String> names, java.util.Set<String> lowerCaseSet)
+	{
+		for (String name : names)
+		{
+			if (lowerCaseSet.contains(name.toLowerCase()))
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/** The sum of what is held of each named item, keyed by lower-case name. */
+	private static long sumHeld(List<String> names, Map<String, Long> counts)
+	{
+		long total = 0;
+		if (counts == null)
+		{
+			return 0;
+		}
+		for (String name : names)
+		{
+			total += counts.getOrDefault(name.toLowerCase(), 0L);
+		}
+		return total;
+	}
+
 	private static void processItem(QuestNeeds needs, QuestGraph.Item item, QuestGraph graph,
 		PlayerState account, Map<String, Long> held, ItemPlan itemPlan, boolean recommended)
 	{
@@ -972,7 +1050,7 @@ class QuestItems
 			Line line = new Line(name, itemId, item.quantity(), owned,
 				item.optional(), item.unresolved(), item.sources(), item.shopNames(),
 				item.dropSourceNames(), groupName, item.notes(), recommended);
-			needs.lines.add(line);
+			needs.lines.add(line.withMembers(memberNamesOf(item.alternatives())));
 		}
 		else
 		{
@@ -1177,12 +1255,10 @@ class QuestItems
 					// A balance, not a buy -- see recommendedCoins().
 					continue;
 				}
+				// An "any tier" line is satisfied by whichever member is held, so
+				// its total counts every member, not only the one named.
 				Total total = merged.computeIfAbsent(line.name(),
-					name -> new Total(name, line.itemId(),
-						held.getOrDefault(name.toLowerCase(), 0L),
-						carried == null ? 0L : carried.getOrDefault(name.toLowerCase(), 0L),
-						placeholders != null && placeholders.contains(name.toLowerCase()),
-						line.sources(), line.shopNames(), line.dropSourceNames()));
+					name -> newTotal(name, line, held, carried, placeholders));
 				total.add(line, needs.questName());
 			}
 		}
@@ -1320,6 +1396,46 @@ class QuestItems
 
 		private final List<String> notes = new java.util.ArrayList<>();
 
+		private final Map<String, Long> memberCounts = new LinkedHashMap<>();
+
+		/**
+		 * Records every tier of an "any tier" requirement and how many of each
+		 * the account holds, in the wiki's order. Returns this, for chaining.
+		 */
+		Total withMembers(List<String> names, Map<String, Long> held)
+		{
+			for (String member : names)
+			{
+				memberCounts.put(member, held == null ? 0L : held.getOrDefault(member.toLowerCase(), 0L));
+			}
+			return this;
+		}
+
+		/** Every tier that satisfies this, with how many are held; empty for a single named item. */
+		Map<String, Long> memberCounts()
+		{
+			return memberCounts;
+		}
+
+		/**
+		 * One tooltip line listing every tier and what is held of each, or null
+		 * for a single named item. Tiers held are marked; the rest are listed
+		 * bare so the player sees the whole set, not only the one named.
+		 */
+		String tiersNote()
+		{
+			if (memberCounts.size() < 2)
+			{
+				return null;
+			}
+			List<String> parts = new ArrayList<>();
+			for (Map.Entry<String, Long> e : memberCounts.entrySet())
+			{
+				parts.add(e.getValue() > 0 ? e.getKey() + " (" + e.getValue() + ")" : e.getKey());
+			}
+			return "Any of: " + String.join(", ", parts);
+		}
+
 		/** The full shape, including the monsters that drop it. */
 		Total(String name, int itemId, long owned, long carried, boolean placeholder,
 			List<String> sources, List<String> shopNames, List<String> dropSourceNames)
@@ -1431,6 +1547,7 @@ class QuestItems
 			out.inGroupStorage = inGroupStorage;
 			out.questNames.addAll(questNames);
 			out.notes.addAll(notes);
+			out.memberCounts.putAll(memberCounts);
 			return out;
 		}
 

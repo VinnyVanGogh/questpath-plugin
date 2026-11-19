@@ -248,14 +248,14 @@ public interface QuestpathConfig extends Config
 	@ConfigItem(
 		keyName = "serverUrl",
 		name = "Quest Route address",
-		description = "Optional. Where your Quest Route server is listening, e.g. http://localhost:8080."
-			+ " Leave empty (the default) to use Quest Route on its own: nothing is sent anywhere.",
+		description = "Optional. Where your Quest Route server is listening, e.g. an address on your own machine or network."
+			+ " Leave blank (the default) to use Quest Route on its own: nothing is sent anywhere.",
 		section = syncSection,
 		position = 2
 	)
 	default String serverUrl()
 	{
-		// Empty on purpose. The plugin is local-first: with no address it
+		// Blank on purpose. The plugin is local-first: with no address it
 		// never opens a connection, and no chat line complains about it.
 		return "";
 	}
@@ -1051,6 +1051,19 @@ public interface QuestpathConfig extends Config
 		position = 5
 	)
 	default boolean bankTab()
+	{
+		return true;
+	}
+
+	@ConfigItem(
+		keyName = "bankButton",
+		name = "Show the bank title-bar button",
+		description = "The button on the bank's title row that toggles the needs marks. Turn it"
+			+ " off if another plugin needs that space.",
+		section = bankSection,
+		position = 6
+	)
+	default boolean bankButton()
 	{
 		return true;
 	}

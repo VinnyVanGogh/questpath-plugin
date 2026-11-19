@@ -745,6 +745,16 @@ final class ShopRouteStops
 			// ShopReachability). Naming only the first would be wrong
 			// whenever the second applies, and this line's whole job is not
 			// to claim more than is known.
+			// The only sources are gated: say what the gate is rather than
+			// leaving the player to click a stall and be told.
+			for (String name : total.shopNames())
+			{
+				String why = ShopPlaces.blockReason(shopLocator, name);
+				if (!why.isEmpty())
+				{
+					return name.replaceAll("\\.$", "") + " (" + why + ")" + forQuest;
+				}
+			}
 			return "A shop sells this, but none you can get to" + forQuest;
 		}
 		return "No known shop sells this yet" + forQuest;

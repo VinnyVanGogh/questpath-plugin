@@ -523,6 +523,11 @@ class OverlaySettingsPanel extends JPanel
 						+ " one thing outlining a slot can never tell you.",
 					config.bankTab(), "bankTab"));
 				sub.add(toggle(
+					"Show the bank title-bar button",
+					"The button on the bank's title row that toggles the needs marks. Turn it"
+						+ " off if another plugin needs that space.",
+					config.bankButton(), "bankButton"));
+				sub.add(toggle(
 					"Show the ordered list too",
 					"Alongside the marks, list what the plan needs beside the bank: what you"
 						+ " ran out of first, then what you are short of, then what you have.",

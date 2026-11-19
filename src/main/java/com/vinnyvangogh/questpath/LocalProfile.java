@@ -8,10 +8,10 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * What the player told Quest Route about this account, as it is kept on disk.
+ * What the player told Quest Route about this account, as it is saved.
  *
- * <p>One of these per RuneScape account, in {@code
- * RuneLite.RUNELITE_DIR/questroute/<account hash>/profile.json}, written by
+ * <p>One of these per RuneScape account, as JSON in RuneLite's config
+ * ({@code questrouteprofile / profile.<account hash>}), written by
  * {@link LocalProfileStore}. It is the source of truth when no questpath
  * server is configured, which is the normal case: the account type, the quest
  * types chosen in first-run setup, and the progress and route derived from

@@ -1,12 +1,10 @@
 package com.vinnyvangogh.questpath;
 
 import com.google.gson.Gson;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.Map;
 import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
@@ -15,52 +13,58 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 /**
- * The local profile file: first run, save and reload, reset, and every way a
- * file can be bad. Runs against a temp directory, never the real
- * {@code .runelite}.
+ * The saved local profile: first run, save and reload, reset, and every way a
+ * saved value can be bad. Runs against a map standing in for RuneLite's
+ * config, never the real one.
  */
 public class LocalProfileStoreTest
 {
-	private Path root;
+	private Map<String, String> config;
 	private LocalProfileStore store;
 
-	/**
-	 * Under build/ rather than java.io.tmpdir: that is inside the project, so
-	 * it works where the system temp directory is not writable, and Gradle's
-	 * clean removes it.
-	 */
 	@Before
-	public void setUp() throws IOException
+	public void setUp()
 	{
-		Path base = Path.of("build", "test-profiles");
-		Files.createDirectories(base);
-		root = Files.createTempDirectory(base, "case").resolve("questroute");
-		store = new LocalProfileStore(root, new Gson());
+		config = new HashMap<>();
+		store = new LocalProfileStore(new LocalProfileStore.Backend()
+		{
+			@Override
+			public String get(String key)
+			{
+				return config.get(key);
+			}
+
+			@Override
+			public void set(String key, String value)
+			{
+				config.put(key, value);
+			}
+
+			@Override
+			public void unset(String key)
+			{
+				config.remove(key);
+			}
+		}, new Gson());
 	}
 
-	private Path profileFile(String key)
+	private void write(String key, String content)
 	{
-		return root.resolve(key).resolve("profile.json");
-	}
-
-	private void write(String key, String content) throws IOException
-	{
-		Files.createDirectories(profileFile(key).getParent());
-		Files.write(profileFile(key), content.getBytes(StandardCharsets.UTF_8));
+		config.put(LocalProfileStore.configKey(key), content);
 	}
 
 	@Test
-	public void firstRunWithNoFilesIsAbsentAndCreatesNothing()
+	public void firstRunWithNothingSavedIsAbsentAndWritesNothing()
 	{
 		LocalProfileStore.Result result = store.load("123");
 
 		assertEquals(LocalProfileStore.Status.ABSENT, result.status());
 		assertNull(result.profile());
-		assertFalse("reading must not create the directory", Files.exists(root));
+		assertTrue("reading must not write", config.isEmpty());
 	}
 
 	@Test
-	public void aSavedProfileComesBackIntact() throws IOException
+	public void aSavedProfileComesBackIntact()
 	{
 		LocalProfile profile = LocalProfile.create(LocalProfile.AccountType.HCIM,
 			EnumSet.of(LocalProfile.QuestType.FREE_TO_PLAY))
@@ -76,12 +80,11 @@ public class LocalProfileStoreTest
 		assertEquals(Arrays.asList("Sheep Shearer", "Romeo & Juliet"), loaded.route());
 		assertEquals(Arrays.asList("Cook's Assistant"), loaded.completedQuests());
 		assertEquals(12, loaded.graphVersion());
-		assertFalse("the temp file must not be left behind",
-			Files.exists(profileFile("123").resolveSibling("profile.json.tmp")));
+		assertEquals("one value per account", 1, config.size());
 	}
 
 	@Test
-	public void accountsDoNotShareAFile() throws IOException
+	public void accountsDoNotShareAValue()
 	{
 		store.save("1", LocalProfile.create(LocalProfile.AccountType.MAIN, EnumSet.allOf(LocalProfile.QuestType.class)));
 
@@ -89,18 +92,18 @@ public class LocalProfileStoreTest
 	}
 
 	@Test
-	public void resetWipesTheProfileSoSetupRunsAgain() throws IOException
+	public void resetWipesTheProfileSoSetupRunsAgain()
 	{
 		store.save("123", LocalProfile.create(LocalProfile.AccountType.GIM, EnumSet.allOf(LocalProfile.QuestType.class)));
 
 		store.reset("123");
 
-		assertFalse(Files.exists(profileFile("123")));
+		assertFalse(config.containsKey(LocalProfileStore.configKey("123")));
 		assertEquals(LocalProfileStore.Status.ABSENT, store.load("123").status());
 	}
 
 	@Test
-	public void resetWithNothingSavedIsHarmless() throws IOException
+	public void resetWithNothingSavedIsHarmless()
 	{
 		store.reset("123");
 
@@ -108,19 +111,19 @@ public class LocalProfileStoreTest
 	}
 
 	@Test
-	public void resetAlsoClearsAQuarantinedFile() throws IOException
+	public void resetAlsoClearsASetAsideCopy()
 	{
 		write("123", "{not json");
 		store.load("123");
-		assertTrue(Files.exists(profileFile("123").resolveSibling("profile.json.corrupt")));
+		assertTrue(config.containsKey(LocalProfileStore.corruptKey("123")));
 
 		store.reset("123");
 
-		assertFalse(Files.exists(profileFile("123").resolveSibling("profile.json.corrupt")));
+		assertTrue(config.isEmpty());
 	}
 
 	@Test
-	public void garbageIsCorruptAndSetAsideNotDeleted() throws IOException
+	public void garbageIsCorruptAndSetAsideNotDeleted()
 	{
 		write("123", "{this is not json");
 
@@ -128,15 +131,14 @@ public class LocalProfileStoreTest
 
 		assertEquals(LocalProfileStore.Status.CORRUPT, result.status());
 		assertNull(result.profile());
-		assertFalse(Files.exists(profileFile("123")));
-		assertEquals("{this is not json", new String(
-			Files.readAllBytes(profileFile("123").resolveSibling("profile.json.corrupt")), StandardCharsets.UTF_8));
+		assertFalse(config.containsKey(LocalProfileStore.configKey("123")));
+		assertEquals("{this is not json", config.get(LocalProfileStore.corruptKey("123")));
 		assertEquals("a second load starts clean",
 			LocalProfileStore.Status.ABSENT, store.load("123").status());
 	}
 
 	@Test
-	public void anEmptyFileIsCorrupt() throws IOException
+	public void anEmptyValueIsCorrupt()
 	{
 		write("123", "");
 
@@ -144,7 +146,7 @@ public class LocalProfileStoreTest
 	}
 
 	@Test
-	public void aTruncatedWriteIsCorrupt() throws IOException
+	public void aTruncatedValueIsCorrupt()
 	{
 		write("123", "{\"schema_version\":1,\"account_type\":\"MAIN\",\"quest_types\":[\"FREE_TO");
 
@@ -152,7 +154,7 @@ public class LocalProfileStoreTest
 	}
 
 	@Test
-	public void validJsonThatIsNotAProfileIsCorrupt() throws IOException
+	public void validJsonThatIsNotAProfileIsCorrupt()
 	{
 		write("123", "[1,2,3]");
 
@@ -160,7 +162,7 @@ public class LocalProfileStoreTest
 	}
 
 	@Test
-	public void anUnknownAccountTypeSendsThePlayerBackToSetup() throws IOException
+	public void anUnknownAccountTypeSendsThePlayerBackToSetup()
 	{
 		write("123", "{\"schema_version\":1,\"account_type\":\"WIZARD\",\"quest_types\":[\"MEMBERS\"]}");
 
@@ -168,7 +170,7 @@ public class LocalProfileStoreTest
 	}
 
 	@Test
-	public void aProfileWithNoQuestTypesIsNotASetup() throws IOException
+	public void aProfileWithNoQuestTypesIsNotASetup()
 	{
 		write("123", "{\"schema_version\":1,\"account_type\":\"MAIN\",\"quest_types\":[]}");
 
@@ -176,7 +178,7 @@ public class LocalProfileStoreTest
 	}
 
 	@Test
-	public void aNewerSchemaIsNotGuessedAt() throws IOException
+	public void aNewerSchemaIsNotGuessedAt()
 	{
 		write("123", "{\"schema_version\":99,\"account_type\":\"MAIN\",\"quest_types\":[\"MEMBERS\"]}");
 
@@ -184,7 +186,7 @@ public class LocalProfileStoreTest
 	}
 
 	@Test
-	public void aQuestTypeFromANewerBuildIsIgnoredNotFatal() throws IOException
+	public void aQuestTypeFromANewerBuildIsIgnoredNotFatal()
 	{
 		write("123", "{\"schema_version\":1,\"account_type\":\"MAIN\",\"quest_types\":[\"MEMBERS\",\"MINIQUESTS\"]}");
 
@@ -195,9 +197,9 @@ public class LocalProfileStoreTest
 	}
 
 	@Test
-	public void anAccountKeyCannotEscapeTheDirectory()
+	public void anAccountKeyMustBeASimpleToken()
 	{
-		for (String bad : new String[]{"../evil", "a/b", "", "..", "a b"})
+		for (String bad : new String[]{"../evil", "a/b", "", "..", "a b", "a.b"})
 		{
 			try
 			{
@@ -206,7 +208,7 @@ public class LocalProfileStoreTest
 			}
 			catch (IllegalArgumentException expected)
 			{
-				// refused before it reaches a path
+				// refused before it reaches a config key
 			}
 		}
 		try

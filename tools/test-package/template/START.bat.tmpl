@@ -1,0 +1,32 @@
+@echo off
+rem Starts the __DISPLAY_NAME__ test build in a RuneLite developer client.
+setlocal
+cd /d "%~dp0"
+
+where java >nul 2>nul
+if errorlevel 1 (
+  echo Java was not found.
+  echo Install Java 11 or newer ^(for example Temurin from https://adoptium.net^),
+  echo then double-click this file again.
+  pause
+  exit /b 1
+)
+
+rem Java 11+ is required. "java -version" prints e.g.  openjdk version "17.0.9"
+for /f "tokens=3" %%v in ('java -version 2^>^&1 ^| findstr /i "version"') do set JVER=%%~v
+for /f "delims=. tokens=1" %%m in ("%JVER%") do set JMAJOR=%%m
+if "%JMAJOR%"=="1" (
+  echo Your Java is too old ^(%JVER%^). Install Java 11 or newer.
+  pause
+  exit /b 1
+)
+if %JMAJOR% LSS 11 (
+  echo Your Java is too old ^(%JVER%^). Install Java 11 or newer.
+  pause
+  exit /b 1
+)
+
+echo Starting __DISPLAY_NAME__ test build ^(__BUILD_ID__^)...
+echo Close this window to stop RuneLite. Logs are shown here.
+java -ea -jar "__JAR_NAME__" --developer-mode --debug
+pause

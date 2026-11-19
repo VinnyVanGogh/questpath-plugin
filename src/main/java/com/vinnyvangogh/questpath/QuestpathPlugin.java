@@ -1,8 +1,9 @@
 package com.vinnyvangogh.questpath;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
-import java.awt.Font;
 import java.awt.Graphics2D;
+import java.awt.Polygon;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.util.EnumMap;
@@ -43,6 +44,7 @@ import net.runelite.api.ItemComposition;
 import net.runelite.api.events.GameStateChanged;
 import net.runelite.api.events.GrandExchangeOfferChanged;
 import net.runelite.api.events.GrandExchangeSearched;
+import net.runelite.client.audio.AudioPlayer;
 import net.runelite.client.chat.ChatColorType;
 import net.runelite.client.chat.ChatMessageBuilder;
 import net.runelite.client.chat.QueuedMessage;
@@ -107,6 +109,9 @@ public class QuestpathPlugin extends Plugin
 
 	@Inject
 	private ClientToolbar clientToolbar;
+
+	@Inject
+	private AudioPlayer audioPlayer;
 
 	/**
 	 * RuneLite's own party relay: the only channel the Group tab uses. No
@@ -853,7 +858,7 @@ public class QuestpathPlugin extends Plugin
 		overlayManager.add(lampOverlay);
 
 		voiceLines = VoiceLines.load();
-		voicePlayer = new VoicePlayer();
+		voicePlayer = new VoicePlayer(audioPlayer);
 
 		bankTab = new BankTabLayout(client, clientThread, this);
 		bankButton = new BankButton(client, this::bankNeedsShown, this::toggleBankNeeds);
@@ -872,10 +877,9 @@ public class QuestpathPlugin extends Plugin
 			log.warn("quest-route: bundled quest graph unavailable; the Quests tab will say so", e);
 		}
 
-		// RuneLite's own directory is the only place Plugin Hub rules let us
-		// write; one folder per account inside it.
-		profileStore = new LocalProfileStore(
-			net.runelite.client.RuneLite.RUNELITE_DIR.toPath().resolve("questroute"), gson);
+		// Saved in RuneLite's config, one value per account: Plugin Hub rules
+		// do not let a plugin write its own files.
+		profileStore = new LocalProfileStore(LocalProfileStore.of(configManager), gson);
 
 		// The saved "fetchQuestGraph" setting used to switch this on, and a
 		// player who had it on can no longer see it to switch it off. Clear
@@ -965,7 +969,7 @@ public class QuestpathPlugin extends Plugin
 			&& configManager.getConfiguration(QuestpathConfig.GROUP, "questJournalFilter") == null)
 		{
 			configManager.setConfiguration(QuestpathConfig.GROUP, "questJournalFilter", QuestJournalFilter.ALL);
-			log.info("quest-route: migrated the old \"Diary route: nearest task\" overlay switch to the new"
+			log.debug("quest-route: migrated the old \"Diary route: nearest task\" overlay switch to the new"
 				+ " Quests tab filter (set to All, so both route overlays keep showing).");
 		}
 		configManager.unsetConfiguration(QuestpathConfig.GROUP, "overlayDiaryRoute");
@@ -1201,7 +1205,7 @@ public class QuestpathPlugin extends Plugin
 	/** True once a questpath push has supplied a route; the local one then stands down. */
 	private volatile boolean routeFromServer;
 
-	/** Client thread. Starts the one-per-login read of this account's profile file. */
+	/** Client thread. Starts the one-per-login read of this account's saved profile. */
 	private void ensureProfileLoaded()
 	{
 		String key = LocalProfileStore.keyFor(client.getAccountHash());
@@ -1273,7 +1277,7 @@ public class QuestpathPlugin extends Plugin
 			{
 				profileStore.save(key, profile);
 			}
-			catch (java.io.IOException | RuntimeException e)
+			catch (RuntimeException e)
 			{
 				// Setup still works for this session; it is asked again next time.
 				log.warn("questroute: could not save the local profile", e);
@@ -1334,7 +1338,7 @@ public class QuestpathPlugin extends Plugin
 			{
 				profileStore.reset(key);
 			}
-			catch (java.io.IOException | RuntimeException e)
+			catch (RuntimeException e)
 			{
 				log.warn("questroute: could not delete the local profile", e);
 			}
@@ -2042,12 +2046,12 @@ public class QuestpathPlugin extends Plugin
 	 */
 	private LockedGear.ItemStatsView itemStatsView(int itemId)
 	{
-		net.runelite.http.api.item.ItemStats stats = itemManager.getItemStats(itemId, false);
+		net.runelite.client.game.ItemStats stats = itemManager.getItemStats(itemId);
 		if (stats == null || !stats.isEquipable())
 		{
 			return UNKNOWN_ITEM_STATS;
 		}
-		net.runelite.http.api.item.ItemEquipmentStats equipment = stats.getEquipment();
+		net.runelite.client.game.ItemEquipmentStats equipment = stats.getEquipment();
 		if (equipment == null)
 		{
 			return UNKNOWN_ITEM_STATS;
@@ -2075,7 +2079,7 @@ public class QuestpathPlugin extends Plugin
 			@Override
 			public int mdmg()
 			{
-				return equipment.getMdmg();
+				return Math.round(equipment.getMdmg());
 			}
 		};
 	}
@@ -3107,6 +3111,21 @@ public class QuestpathPlugin extends Plugin
 			// Our own button. It carries a "View tab" option so it reads like
 			// the bank's tabs, which means without this it would match the
 			// rule below and close the tab it had just opened.
+			//
+			// While the tab is open a click on the button leaves it. That is
+			// done here, and the click consumed, rather than left to the
+			// widget's op listener: the listener is the path that opens the
+			// tab, and relying on it a second time to close it left the tab
+			// stuck on whenever the client did not deliver the op.
+			if (option.equals(BankButton.ACTION_HIDE))
+			{
+				event.consume();
+				setBankTab(false);
+				if (bankButton != null)
+				{
+					bankButton.refresh();
+				}
+			}
 			return;
 		}
 		if (option.startsWith("View tab") || option.startsWith("View tag tab")
@@ -3691,7 +3710,19 @@ public class QuestpathPlugin extends Plugin
 	}
 
 	/** Shop name to tile and town, for every route, label and stop. */
-	private final ShopPlaces shopPlaces = new ShopPlaces(this::shopLocation, this::shopTown);
+	private final ShopPlaces shopPlaces = new ShopPlaces(this::shopLocation, this::shopTown, this::shopBlockReason);
+
+	/** Why the account cannot use a shop (e.g. a stall's Thieving level), or empty. */
+	private String shopBlockReason(String shopName)
+	{
+		QuestGraph.Shop shop = questGraph == null || shopName == null ? null : questGraph.shop(shopName);
+		if (shop == null || accountSnapshot == null)
+		{
+			return "";
+		}
+		ShopReachability.Result result = ShopReachability.of(shop, accountSnapshot, questGraph, shopBoosts());
+		return result.usable() ? "" : result.reason();
+	}
 
 	/** The town or area the bundle files a shop under, or empty. */
 	private String shopTown(String shopName)
@@ -3932,6 +3963,11 @@ public class QuestpathPlugin extends Plugin
 			return;
 		}
 		if (event.getGroupId() != InterfaceID.BANKMAIN || bankButton == null)
+		{
+			return;
+		}
+		QuestpathConfig cfg = config();
+		if (cfg != null && !cfg.bankButton())
 		{
 			return;
 		}
@@ -4722,21 +4758,40 @@ public class QuestpathPlugin extends Plugin
 	}
 
 	/**
-	 * Drawn rather than loaded from a resource, deliberately: a placeholder
-	 * PNG committed now would be an asset nobody designed, and AGENTS.md warns
-	 * about shipping images that are not what they claim to be. Replace with a
-	 * real icon.png when there is one.
+	 * Drawn rather than loaded from a resource, deliberately: no committed
+	 * asset to keep honest, and nothing to mis-size. A max-cape-style cape
+	 * (dark body, gold trim, the cape's shoulder notch) carrying a quest
+	 * scroll, so the tab reads as "quests" at a glance instead of as text.
 	 */
-	private static BufferedImage icon()
+	static BufferedImage icon()
 	{
 		BufferedImage image = new BufferedImage(24, 24, BufferedImage.TYPE_INT_ARGB);
 		Graphics2D g = image.createGraphics();
 		try
 		{
 			g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-			g.setColor(new Color(0xC8, 0x8B, 0x2E));
-			g.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 14));
-			g.drawString("qp", 2, 18);
+			Color gold = new Color(0xE0, 0xB2, 0x3A);
+			Color goldDark = new Color(0x9A, 0x6F, 0x1B);
+
+			// Cape: shoulders with a notch at the neck, flaring to the hem.
+			Polygon cape = new Polygon(
+				new int[]{5, 9, 12, 15, 19, 21, 3},
+				new int[]{2, 2, 4, 2, 2, 22, 22}, 7);
+			g.setColor(new Color(0x1E, 0x1E, 0x26));
+			g.fillPolygon(cape);
+			g.setStroke(new BasicStroke(1.5f));
+			g.setColor(gold);
+			g.drawPolygon(cape);
+
+			// Quest scroll: parchment with rolled ends and text lines.
+			g.setColor(new Color(0xF2, 0xE2, 0xB0));
+			g.fillRect(8, 8, 8, 9);
+			g.setColor(goldDark);
+			g.fillRoundRect(7, 7, 10, 2, 2, 2);
+			g.fillRoundRect(7, 16, 10, 2, 2, 2);
+			g.setStroke(new BasicStroke(1f));
+			g.drawLine(10, 11, 14, 11);
+			g.drawLine(10, 13, 14, 13);
 		}
 		finally
 		{

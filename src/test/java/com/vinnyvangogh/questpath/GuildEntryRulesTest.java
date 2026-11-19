@@ -33,6 +33,38 @@ public class GuildEntryRulesTest
 		return ShopReachability.of(shop, player, graph, null);
 	}
 
+	private static PlayerState thief(int thieving)
+	{
+		Map<String, Integer> levels = new HashMap<>();
+		levels.put("Thieving", thieving);
+		return new PlayerState(levels, new HashMap<>(), new HashSet<>(), Collections.emptyList());
+	}
+
+	@Test
+	public void gemStallBlockedBelow75ThievingWithTheRequirement() throws Exception
+	{
+		ShopReachability.Result result = judge("Ardougne Gem Stall.", thief(2));
+		assertFalse(result.usable());
+		assertEquals("needs 75 Thieving, you have 2", result.reason());
+		assertTrue(judge("Ardougne Gem Stall.", thief(75)).usable());
+		assertTrue(judge("Ardougne Baker's Stall.", thief(5)).usable());
+	}
+
+	@Test
+	public void stallThievingStillHonoursTheBundlesOwnGates() throws Exception
+	{
+		// Prifddinas gem stall also needs a quest; 99 Thieving must not skip it.
+		assertFalse(judge("Prifddinas Gem Stall", thief(99)).usable());
+	}
+
+	@Test
+	public void ordinaryShopsCarryingTheWordStallAreNotThieving() throws Exception
+	{
+		assertEquals(0, GuildEntryRules.stallLevel("Vannah's Farming Stall"));
+		assertEquals(0, GuildEntryRules.stallLevel("Elder Krill's Fishing Stall"));
+		assertEquals(75, GuildEntryRules.stallLevel("Fortis Gem Stall"));
+	}
+
 	@Test
 	public void warriorsGuildClosedBelow130Combined() throws Exception
 	{

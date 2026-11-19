@@ -439,13 +439,13 @@ class ShortestPathBridge
 	{
 		if (availability() != Availability.AVAILABLE)
 		{
-			log.info("Not clearing the Shortest Path route -- {}", availability());
+			log.debug("Not clearing the Shortest Path route -- {}", availability());
 			return false;
 		}
 		try
 		{
 			eventPoster.accept(new PluginMessage(CONFIG_GROUP, CLEAR_MESSAGE_NAME, Map.of()));
-			log.info("Cleared the Shortest Path route");
+			log.debug("Cleared the Shortest Path route");
 			return true;
 		}
 		catch (RuntimeException | AssertionError e)
@@ -461,13 +461,13 @@ class ShortestPathBridge
 	{
 		if (availability() != Availability.AVAILABLE)
 		{
-			log.info("Not sending a shop route to Shortest Path -- {}", availability());
+			log.debug("Not sending a shop route to Shortest Path -- {}", availability());
 			onOutcome.accept(RouteOutcome.UNAVAILABLE);
 			return;
 		}
 		if (destinations == null || destinations.isEmpty())
 		{
-			log.info("Not sending a shop route to Shortest Path -- no destinations to send");
+			log.debug("Not sending a shop route to Shortest Path -- no destinations to send");
 			onOutcome.accept(RouteOutcome.NO_DESTINATIONS);
 			return;
 		}
@@ -505,7 +505,7 @@ class ShortestPathBridge
 		// RuneLite's own EventBus before it ever reaches this method's catch
 		// block, so SENT here means "the event went out", never "Shortest
 		// Path definitely acted on it".
-		log.info("Sent {} destination(s) to Shortest Path via PluginMessage(\"{}\", \"{}\", ...)",
+		log.debug("Sent {} destination(s) to Shortest Path via PluginMessage(\"{}\", \"{}\", ...)",
 			destinations.size(), CONFIG_GROUP, MESSAGE_NAME);
 		onOutcome.accept(RouteOutcome.SENT);
 	}

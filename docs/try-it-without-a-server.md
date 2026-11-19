@@ -12,9 +12,9 @@ account anywhere.
 4. The route appears. Quests your build or levels forbid are left off.
 5. Settings are in RuneLite's plugin configuration for Quest Route.
 
-Where it keeps things: `~/.runelite/questroute/<account hash>/profile.json`
-(your account type, quest types, progress, route). Delete that folder, or tick
-**Reset account setup** in the plugin settings (it asks first), to start over.
+Where it keeps things: RuneLite's own settings, one saved value per account
+(your account type, quest types, progress, route). No files are written. Tick
+**Reset account setup** in the plugin settings (it asks first) to start over.
 
 Leave the **questpath address** setting empty. With nothing there the plugin
 makes no network requests and says nothing in chat. The website is an optional
