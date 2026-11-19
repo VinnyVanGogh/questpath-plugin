@@ -397,6 +397,9 @@ public class QuestpathPlugin extends Plugin
 	private VoiceLines voiceLines = new VoiceLines();
 	private VoicePlayer voicePlayer;
 
+	@Inject
+	private net.runelite.client.audio.AudioPlayer audioPlayer;
+
 	/** When to say "Bucket nearby" -- see {@link FloorItemAnnouncer}. */
 	private final FloorItemAnnouncer floorAnnouncer = new FloorItemAnnouncer();
 
@@ -853,7 +856,7 @@ public class QuestpathPlugin extends Plugin
 		overlayManager.add(lampOverlay);
 
 		voiceLines = VoiceLines.load();
-		voicePlayer = new VoicePlayer();
+		voicePlayer = new VoicePlayer(audioPlayer);
 
 		bankTab = new BankTabLayout(client, clientThread, this);
 		bankButton = new BankButton(client, this::bankNeedsShown, this::toggleBankNeeds);
@@ -1842,19 +1845,19 @@ public class QuestpathPlugin extends Plugin
 	}
 
 	/**
-	 * Adapts {@code ItemManager.getItemStats(id, false)} into {@link
+	 * Adapts {@code ItemManager.getItemStats(id)} into {@link
 	 * LockedGear.ItemStatsView} without {@link LockedGear} ever seeing an
 	 * {@code ItemManager} -- see runelite-api.md &sect;6-8. Client-thread
 	 * only, like every {@code ItemManager} call in this plugin.
 	 */
 	private LockedGear.ItemStatsView itemStatsView(int itemId)
 	{
-		net.runelite.http.api.item.ItemStats stats = itemManager.getItemStats(itemId, false);
+		net.runelite.client.game.ItemStats stats = itemManager.getItemStats(itemId);
 		if (stats == null || !stats.isEquipable())
 		{
 			return UNKNOWN_ITEM_STATS;
 		}
-		net.runelite.http.api.item.ItemEquipmentStats equipment = stats.getEquipment();
+		net.runelite.client.game.ItemEquipmentStats equipment = stats.getEquipment();
 		if (equipment == null)
 		{
 			return UNKNOWN_ITEM_STATS;
@@ -1882,7 +1885,8 @@ public class QuestpathPlugin extends Plugin
 			@Override
 			public int mdmg()
 			{
-				return equipment.getMdmg();
+				// The client's stat is a float percentage; the planner sums whole percents.
+				return Math.round(equipment.getMdmg());
 			}
 		};
 	}

@@ -10,9 +10,9 @@ import net.runelite.api.Item;
 import net.runelite.api.ItemComposition;
 import net.runelite.api.ItemContainer;
 import net.runelite.api.gameval.InventoryID;
+import net.runelite.client.game.ItemEquipmentStats;
 import net.runelite.client.game.ItemManager;
-import net.runelite.http.api.item.ItemEquipmentStats;
-import net.runelite.http.api.item.ItemStats;
+import net.runelite.client.game.ItemStats;
 
 /**
  * Snapshots currently worn equipment into a {@link Loadout}. Capture only --
@@ -150,7 +150,7 @@ public final class LoadoutCapture
 			// weapon with no positive offensive bonus in any style.
 			return classifyWeaponStyles(0, 0, 0, 0, 0);
 		}
-		ItemStats stats = itemManager.getItemStats(weaponItemId, false);
+		ItemStats stats = itemManager.getItemStats(weaponItemId);
 		if (stats == null || !stats.isEquipable() || stats.getEquipment() == null)
 		{
 			return null;

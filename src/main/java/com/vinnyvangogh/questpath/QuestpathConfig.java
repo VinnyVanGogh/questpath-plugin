@@ -254,7 +254,9 @@ public interface QuestpathConfig extends Config
 	)
 	default String serverUrl()
 	{
-		return "http://localhost:8080";
+		// Blank until the player sets their own server: a default address
+		// would be a third-party host this plugin names without being asked.
+		return "";
 	}
 
 	@ConfigItem(
