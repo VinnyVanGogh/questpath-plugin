@@ -135,7 +135,7 @@ final class EdtWatchdog
 		long eventThreadId = findEventThread();
 		if (eventThreadId < 0)
 		{
-			log.info("quest-route perf: EDT stalled {}ms, thread not found", stalledFor);
+			log.debug("quest-route perf: EDT stalled {}ms, thread not found", stalledFor);
 			return;
 		}
 		ThreadInfo eventThread = threads.getThreadInfo(eventThreadId, STACK_DEPTH);
@@ -156,7 +156,7 @@ final class EdtWatchdog
 		{
 			dump.append("    at ").append(frame).append('\n');
 		}
-		log.info("{}", dump);
+		log.debug("{}", dump);
 	}
 
 	private long totalCollectionMillis()

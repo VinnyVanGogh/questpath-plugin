@@ -960,7 +960,7 @@ public class QuestpathPlugin extends Plugin
 			&& configManager.getConfiguration(QuestpathConfig.GROUP, "questJournalFilter") == null)
 		{
 			configManager.setConfiguration(QuestpathConfig.GROUP, "questJournalFilter", QuestJournalFilter.ALL);
-			log.info("quest-route: migrated the old \"Diary route: nearest task\" overlay switch to the new"
+			log.debug("quest-route: migrated the old \"Diary route: nearest task\" overlay switch to the new"
 				+ " Quests tab filter (set to All, so both route overlays keep showing).");
 		}
 		configManager.unsetConfiguration(QuestpathConfig.GROUP, "overlayDiaryRoute");
@@ -1849,12 +1849,12 @@ public class QuestpathPlugin extends Plugin
 	 */
 	private LockedGear.ItemStatsView itemStatsView(int itemId)
 	{
-		net.runelite.http.api.item.ItemStats stats = itemManager.getItemStats(itemId, false);
+		net.runelite.client.game.ItemStats stats = itemManager.getItemStats(itemId);
 		if (stats == null || !stats.isEquipable())
 		{
 			return UNKNOWN_ITEM_STATS;
 		}
-		net.runelite.http.api.item.ItemEquipmentStats equipment = stats.getEquipment();
+		net.runelite.client.game.ItemEquipmentStats equipment = stats.getEquipment();
 		if (equipment == null)
 		{
 			return UNKNOWN_ITEM_STATS;
@@ -1882,7 +1882,7 @@ public class QuestpathPlugin extends Plugin
 			@Override
 			public int mdmg()
 			{
-				return equipment.getMdmg();
+				return Math.round(equipment.getMdmg());
 			}
 		};
 	}

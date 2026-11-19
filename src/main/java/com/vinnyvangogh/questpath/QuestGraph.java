@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.nio.charset.StandardCharsets;
+import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -1392,7 +1392,7 @@ class QuestGraph
 			}
 			try
 			{
-				return parse(gson, new InputStreamReader(stream, StandardCharsets.UTF_8));
+				return parse(gson, new InputStreamReader(stream, Charset.forName("UTF-8")));
 			}
 			catch (IOException e)
 			{
