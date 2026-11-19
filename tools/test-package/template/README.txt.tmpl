@@ -1,0 +1,43 @@
+__DISPLAY_NAME__ - test build
+Build: __BUILD_ID__
+
+Thanks for testing. This is an unreleased test copy of a RuneLite plugin.
+It runs inside a RuneLite "developer client" started from this folder. It
+does not touch your normal RuneLite install or its plugins.
+
+WHAT IT DOES
+  __DESCRIPTION__
+
+WHAT YOU NEED
+  - Windows 10 or 11
+  - Java 11 or newer (https://adoptium.net, any "Temurin" 11/17/21 JDK or JRE)
+
+START IT
+  1. Unzip this whole folder somewhere (do not run it from inside the zip).
+  2. Double-click START.bat.
+  3. A RuneLite window opens with a log window behind it. Leave the log open.
+  4. Find "__DISPLAY_NAME__" in the plugin list / sidebar and turn it on.
+
+LOGGING IN (Jagex accounts)
+  The developer client cannot use the Jagex Launcher directly. Follow
+  "Using Jagex Accounts" here:
+    https://github.com/runelite/runelite/wiki/Using-Jagex-Accounts
+  In short: run the RuneLite launcher once with --insecure-write-credentials so
+  it saves a login file, then start this test build. That login file lets
+  anything on your PC log in as you, so delete it when you are done:
+    %USERPROFILE%\.runelite\credentials.properties
+  Old-style (non-Jagex) accounts can just log in normally.
+
+SETTINGS
+  The dev client shares %USERPROFILE%\.runelite with your normal RuneLite, so
+  plugin settings you change here are kept there.
+
+IF SOMETHING GOES WRONG
+  - Window flashes and closes: open Command Prompt, run START.bat from there,
+    and send a screenshot of what it prints.
+  - Plugin does not show up: send the log window text (select all, copy).
+  - Anything odd in game: tell me what you did, what you expected, what
+    happened, and roughly when.
+
+Please do not share this build with others. When you are done, delete this
+folder; nothing else was installed.
