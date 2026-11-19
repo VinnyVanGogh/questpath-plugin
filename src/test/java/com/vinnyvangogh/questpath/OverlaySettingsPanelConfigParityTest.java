@@ -63,10 +63,6 @@ public class OverlaySettingsPanelConfigParityTest
 	 * QuestpathPanel}'s build-rules-block rendering.
 	 */
 	private static final Set<String> EXEMPT_KEYS = Set.of("serverUrl", "pairingToken", "buildRulesShowAll",
-		// A momentary switch that opens a confirm dialog from the plugin; it
-		// belongs in RuneLite's config panel, next to the other account-level
-		// settings, not among the sidebar's view toggles.
-		"resetAccountSetup",
 		// Update notes: a chat toggle and a replay switch that live in
 		// RuneLite's config panel next to the other chat settings, plus two
 		// hidden bookkeeping values the plugin writes itself.

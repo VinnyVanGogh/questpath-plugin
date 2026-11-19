@@ -34,7 +34,8 @@ final class LocalProfile
 		IRONMAN("Ironman"),
 		HCIM("Hardcore ironman"),
 		UIM("Ultimate ironman"),
-		GIM("Group ironman");
+		GIM("Group ironman"),
+		HCGIM("Hardcore group ironman");
 
 		private final String label;
 
@@ -80,6 +81,14 @@ final class LocalProfile
 
 	@SerializedName("quest_types")
 	private List<String> questTypes = new ArrayList<>();
+
+	/**
+	 * Slug of the named build chosen in setup ({@link BuildPresets}), or null
+	 * for none/custom. Added after schema 1 shipped: an older file simply lacks
+	 * it, which reads as "no preset", so no schema bump is needed.
+	 */
+	@SerializedName("build_preset")
+	private String buildPreset;
 
 	/** Quest names finished as of the last route computation. */
 	@SerializedName("completed_quests")
@@ -177,10 +186,39 @@ final class LocalProfile
 			&& accountType() != null && !questTypes().isEmpty();
 	}
 
+	/** The chosen named build's slug, or null. */
+	String buildPreset()
+	{
+		return buildPreset;
+	}
+
+	/** A new setup answer: account type, quest types and build, with no route yet. */
+	static LocalProfile create(AccountType accountType, Set<QuestType> questTypes, String buildPreset)
+	{
+		LocalProfile profile = create(accountType, questTypes);
+		profile.buildPreset = buildPreset;
+		return profile;
+	}
+
+	/**
+	 * These answers over this profile: account type, quest types and build come
+	 * from {@code answers}; progress and the route stay, and are recomputed
+	 * from the new answers on the next refresh.
+	 */
+	LocalProfile withSetup(LocalProfile answers)
+	{
+		LocalProfile copy = withRoute(graphVersion, completedQuests(), route());
+		copy.accountType = answers.accountType;
+		copy.questTypes = new ArrayList<>(answers.questTypes == null ? Collections.emptyList() : answers.questTypes);
+		copy.buildPreset = answers.buildPreset;
+		return copy;
+	}
+
 	/** A copy carrying a freshly computed route and progress. */
 	LocalProfile withRoute(int graphVersion, List<String> completed, List<String> route)
 	{
 		LocalProfile copy = new LocalProfile();
+		copy.buildPreset = buildPreset;
 		copy.accountType = accountType;
 		copy.questTypes = new ArrayList<>(questTypes == null ? Collections.emptyList() : questTypes);
 		copy.graphVersion = graphVersion;

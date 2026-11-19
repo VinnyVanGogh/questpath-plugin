@@ -241,6 +241,11 @@ class NeededItemsOverlay extends QuestpathOverlay
 				QuestItems.Total total = shortItems.get(i);
 				rows.add(OverlayRow.item(total.itemId(), total.name(), total.describe(),
 					total.satisfied(), OverlayTheme.TEXT, OverlayTheme.WARN));
+				String drops = DropTargets.dropsFrom(total.sources());
+				if (drops != null)
+				{
+					rows.add(OverlayRow.note(drops, OverlayTheme.MUTED));
+				}
 			}
 			int remaining = shortItems.size() - shown;
 			if (remaining > 0)
