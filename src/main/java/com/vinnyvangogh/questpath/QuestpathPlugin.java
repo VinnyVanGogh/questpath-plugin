@@ -2905,6 +2905,21 @@ public class QuestpathPlugin extends Plugin
 			// Our own button. It carries a "View tab" option so it reads like
 			// the bank's tabs, which means without this it would match the
 			// rule below and close the tab it had just opened.
+			//
+			// While the tab is open a click on the button leaves it. That is
+			// done here, and the click consumed, rather than left to the
+			// widget's op listener: the listener is the path that opens the
+			// tab, and relying on it a second time to close it left the tab
+			// stuck on whenever the client did not deliver the op.
+			if (option.equals(BankButton.ACTION_HIDE))
+			{
+				event.consume();
+				setBankTab(false);
+				if (bankButton != null)
+				{
+					bankButton.refresh();
+				}
+			}
 			return;
 		}
 		if (option.startsWith("View tab") || option.startsWith("View tag tab")
