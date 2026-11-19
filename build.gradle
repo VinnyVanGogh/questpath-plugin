@@ -61,6 +61,43 @@ def printRuneLiteVersion = tasks.register('printRuneLiteVersion') {
 	}
 }
 
+// Dev builds only (the Plugin Hub replaces this file): stamps the git commit
+// into the jar so the plugin can show "what's new" again when it changes.
+// Without git, no file is written and the plugin simply skips the check.
+def buildInfoDir = layout.buildDirectory.dir('generated/build-info')
+def writeBuildInfo = tasks.register('writeBuildInfo') {
+	def out = buildInfoDir
+	def root = projectDir
+	outputs.dir(out)
+	outputs.upToDateWhen { false }
+	doLast {
+		def commit = ''
+		try
+		{
+			def proc = ['git', 'rev-parse', '--short', 'HEAD'].execute(null, root)
+			commit = proc.text.trim()
+			proc.waitFor()
+		}
+		catch (Exception ignored)
+		{
+		}
+		def file = out.get().file('build-info.properties').asFile
+		file.parentFile.mkdirs()
+		if (commit)
+		{
+			file.text = "commit=${commit}\n"
+		}
+		else
+		{
+			file.delete()
+		}
+	}
+}
+sourceSets.main.resources.srcDir(buildInfoDir)
+tasks.named('processResources') {
+	dependsOn writeBuildInfo
+}
+
 tasks.named('test') {
 	dependsOn printRuneLiteVersion
 

@@ -26,6 +26,9 @@ public interface QuestpathConfig extends Config
 {
 	String GROUP = "questroute";
 
+	String LAST_SEEN_VERSION = "lastSeenVersion";
+	String LAST_SEEN_BUILD = "lastSeenBuild";
+
 	/**
 	 * The group this plugin used before it was renamed to Quest Route.
 	 * Read once, by {@link ConfigGroupMigration}, and never written.
@@ -60,6 +63,14 @@ public interface QuestpathConfig extends Config
 		closedByDefault = true
 	)
 	String groundSection = "ground";
+
+	@ConfigSection(
+		name = "Drop sources",
+		description = "Outline the NPCs and objects that drop what your route still needs",
+		position = 3,
+		closedByDefault = true
+	)
+	String dropSection = "dropSources";
 
 	@ConfigSection(
 		name = "Bank",
@@ -918,6 +929,57 @@ public interface QuestpathConfig extends Config
 	}
 
 	@ConfigItem(
+		keyName = "dropHighlight",
+		name = "Mark what drops what you need",
+		description = "Outline the NPCs and objects in view that are the only source of an item"
+			+ " your route still needs -- imps for a bead, say -- and stop once you have enough."
+			+ " Outline only: nothing is clicked or changed.",
+		section = dropSection,
+		position = 1
+	)
+	default boolean dropHighlight()
+	{
+		return true;
+	}
+
+	@ConfigItem(
+		keyName = "dropHighlightLabels",
+		name = "Show what it drops",
+		description = "Print \"drops White bead\" above the outlined NPC or object.",
+		section = dropSection,
+		position = 2
+	)
+	default boolean dropHighlightLabels()
+	{
+		return true;
+	}
+
+	@ConfigItem(
+		keyName = "dropHighlightColour",
+		name = "Outline colour",
+		description = "The colour a drop source is outlined in.",
+		section = dropSection,
+		position = 3
+	)
+	default java.awt.Color dropHighlightColour()
+	{
+		return OverlayTheme.ACCENT;
+	}
+
+	@ConfigItem(
+		keyName = "dropHighlightWholeRoute",
+		name = "Whole route, not just this quest",
+		description = "Off: only outline sources for the quest you are on. On: every quest your"
+			+ " route covers.",
+		section = dropSection,
+		position = 4
+	)
+	default boolean dropHighlightWholeRoute()
+	{
+		return false;
+	}
+
+	@ConfigItem(
 		keyName = "groundTakeLeftClick",
 		name = "Left-click take items you need",
 		description = "Make \"Take\" the left-click option for a ground item your plan still"
@@ -1078,6 +1140,56 @@ public interface QuestpathConfig extends Config
 	default boolean chatOnItemComplete()
 	{
 		return true;
+	}
+
+	@ConfigItem(
+		keyName = "showUpdateNotes",
+		name = "Show update notes in chat",
+		description = "After Quest Route updates, say what is new in the game chat once, on your next login.",
+		section = chatSection,
+		position = 2
+	)
+	default boolean showUpdateNotes()
+	{
+		return true;
+	}
+
+	@ConfigItem(
+		keyName = "showWhatsNew",
+		name = "Show what's new",
+		description = "Tick to print the latest update notes in the game chat again. The box un-ticks itself.",
+		section = chatSection,
+		position = 3
+	)
+	default boolean showWhatsNew()
+	{
+		// A momentary switch, not a setting: the plugin turns it back off
+		// as soon as it has been handled.
+		return false;
+	}
+
+	/** The last version whose update notes were handled; written by the plugin, never shown. */
+	@ConfigItem(
+		keyName = LAST_SEEN_VERSION,
+		name = "",
+		description = "",
+		hidden = true
+	)
+	default String lastSeenVersion()
+	{
+		return "";
+	}
+
+	/** The last developer-build commit whose notes were handled; written by the plugin, never shown. */
+	@ConfigItem(
+		keyName = LAST_SEEN_BUILD,
+		name = "",
+		description = "",
+		hidden = true
+	)
+	default String lastSeenBuild()
+	{
+		return "";
 	}
 
 	@ConfigItem(

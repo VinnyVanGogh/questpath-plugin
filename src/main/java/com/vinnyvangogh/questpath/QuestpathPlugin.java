@@ -465,6 +465,7 @@ public class QuestpathPlugin extends Plugin
 	 * reason: it draws into the world rather than owning a panel.
 	 */
 	private GroundItemOverlay groundOverlay;
+	private DropTargetOverlay dropTargetOverlay;
 	private FloatingNoteOverlay floatingNoteOverlay;
 
 	/**
@@ -854,6 +855,8 @@ public class QuestpathPlugin extends Plugin
 
 		groundOverlay = new GroundItemOverlay(this, config, client, tooltipManager);
 		overlayManager.add(groundOverlay);
+		dropTargetOverlay = new DropTargetOverlay(this, config, client);
+		overlayManager.add(dropTargetOverlay);
 		floatingNoteOverlay = new FloatingNoteOverlay(this, config, client, floatingNotes);
 		overlayManager.add(floatingNoteOverlay);
 
@@ -914,7 +917,65 @@ public class QuestpathPlugin extends Plugin
 		// that threw out of startUp and RuneLite turned the plugin straight
 		// back off.
 		refreshOnClientThread();
+
+		// Installed or turned on mid-session: no LOGGED_IN is coming, so say it
+		// now. With no stored version that is a fresh install (UpdateNotes).
+		clientThread.invokeLater(() ->
+		{
+			startedLoggedIn = client.getGameState() == GameState.LOGGED_IN;
+			if (startedLoggedIn)
+			{
+				postUpdateNotes();
+			}
+		});
 		log.debug("quest-route started");
+	}
+
+	/** Whether this start found the player logged in: with no stored version, a fresh install (UpdateNotes). */
+	private boolean startedLoggedIn;
+
+	/**
+	 * Posts the "what's new" lines once per version (and, in a developer build,
+	 * once per build commit), and stores both as seen even with the setting
+	 * off, so turning it on later does not bring back notes for an update long
+	 * past. Client thread.
+	 */
+	private void postUpdateNotes()
+	{
+		final String lastSeen = config.lastSeenVersion();
+		final String lastSeenBuild = config.lastSeenBuild();
+		final String build = BuildInfo.commit();
+		final boolean enabled = config.showUpdateNotes();
+		List<String> lines = UpdateNotes.toShow(lastSeen, enabled, startedLoggedIn);
+		if (lines.isEmpty())
+		{
+			lines = UpdateNotes.toShowForBuild(lastSeenBuild, build, enabled);
+		}
+		if (UpdateNotes.needsRecord(lastSeen))
+		{
+			configManager.setConfiguration(QuestpathConfig.GROUP, QuestpathConfig.LAST_SEEN_VERSION,
+				UpdateNotes.VERSION);
+		}
+		if (UpdateNotes.buildChanged(lastSeenBuild, build))
+		{
+			configManager.setConfiguration(QuestpathConfig.GROUP, QuestpathConfig.LAST_SEEN_BUILD, build);
+		}
+		postNoteLines(lines);
+	}
+
+	/** One console line each, title highlighted. Local only: nothing is typed or sent. */
+	private void postNoteLines(List<String> lines)
+	{
+		for (int i = 0; i < lines.size(); i++)
+		{
+			chatMessageManager.queue(QueuedMessage.builder()
+				.type(ChatMessageType.CONSOLE)
+				.runeLiteFormattedMessage(new ChatMessageBuilder()
+					.append(i == 0 ? ChatColorType.HIGHLIGHT : ChatColorType.NORMAL)
+					.append(lines.get(i))
+					.build())
+				.build());
+		}
 	}
 
 	/** Package-private so a test can pin that startUp never refreshes inline. */
@@ -1063,6 +1124,12 @@ public class QuestpathPlugin extends Plugin
 		{
 			overlayManager.remove(groundOverlay);
 			groundOverlay = null;
+		}
+		if (dropTargetOverlay != null)
+		{
+			overlayManager.remove(dropTargetOverlay);
+			dropTargetOverlay.clear();
+			dropTargetOverlay = null;
 		}
 		if (bankOverlay != null)
 		{
@@ -1368,6 +1435,19 @@ public class QuestpathPlugin extends Plugin
 		if (panel != null)
 		{
 			panel.refreshQuickSettings();
+		}
+		if ("showWhatsNew".equals(event.getKey()) && Boolean.parseBoolean(event.getNewValue()))
+		{
+			// A momentary switch: put it back, then replay the notes.
+			configManager.setConfiguration(QuestpathConfig.GROUP, "showWhatsNew", false);
+			clientThread.invokeLater(() ->
+			{
+				if (client.getGameState() == GameState.LOGGED_IN)
+				{
+					postNoteLines(UpdateNotes.replay());
+				}
+			});
+			return;
 		}
 		if (!"partyShare".equals(event.getKey()))
 		{
@@ -2337,10 +2417,47 @@ public class QuestpathPlugin extends Plugin
 	}
 
 	@Subscribe
+	public void onNpcSpawned(net.runelite.api.events.NpcSpawned event)
+	{
+		if (dropTargetOverlay != null)
+		{
+			dropTargetOverlay.npcSpawned(event.getNpc());
+		}
+	}
+
+	@Subscribe
+	public void onNpcDespawned(net.runelite.api.events.NpcDespawned event)
+	{
+		if (dropTargetOverlay != null)
+		{
+			dropTargetOverlay.npcDespawned(event.getNpc());
+		}
+	}
+
+	@Subscribe
+	public void onGameObjectSpawned(net.runelite.api.events.GameObjectSpawned event)
+	{
+		if (dropTargetOverlay != null)
+		{
+			dropTargetOverlay.objectSpawned(event.getGameObject());
+		}
+	}
+
+	@Subscribe
+	public void onGameObjectDespawned(net.runelite.api.events.GameObjectDespawned event)
+	{
+		if (dropTargetOverlay != null)
+		{
+			dropTargetOverlay.objectDespawned(event.getGameObject());
+		}
+	}
+
+	@Subscribe
 	public void onGameStateChanged(GameStateChanged event)
 	{
 		if (event.getGameState() == GameState.LOGGED_IN)
 		{
+			postUpdateNotes();
 			refresh();
 			maybeSync();
 			return;
@@ -2351,6 +2468,11 @@ public class QuestpathPlugin extends Plugin
 			// tracked set starts over; the announcer keeps what it has said,
 			// keyed by tile, so crossing a region edge does not repeat it.
 			floorSpawns.clear();
+			if (dropTargetOverlay != null)
+			{
+				// Spawn events re-fire for everything in the new scene.
+				dropTargetOverlay.clear();
+			}
 		}
 		if (event.getGameState() == GameState.LOGIN_SCREEN)
 		{
