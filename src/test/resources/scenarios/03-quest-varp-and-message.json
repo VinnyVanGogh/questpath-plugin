@@ -1,0 +1,8 @@
+{
+  "name": "Quest progress varp and message",
+  "description": "A quest varp change and a quest-complete game message. The varp id is illustrative; use Paste JSON for a real quest's id.",
+  "steps": [
+    {"kind": "varp", "varp": 281, "value": 10, "note": "tutorial-style varp"},
+    {"kind": "chat", "type": "GAMEMESSAGE", "message": "Congratulations! You have completed a quest.", "wait": 500, "note": "quest complete"}
+  ]
+}

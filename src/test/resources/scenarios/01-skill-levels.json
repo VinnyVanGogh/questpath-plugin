@@ -1,0 +1,9 @@
+{
+  "name": "Skill levels loaded",
+  "description": "Three skills reported with real xp, as the client does after login. Exercises the xp/level path.",
+  "steps": [
+    {"kind": "stat", "skill": "ATTACK", "level": 60, "xp": 273742, "note": "Attack 60"},
+    {"kind": "stat", "skill": "PRAYER", "level": 43, "xp": 50339, "wait": 500, "note": "Prayer 43"},
+    {"kind": "stat", "skill": "WOODCUTTING", "level": 61, "xp": 272000, "wait": 500, "note": "Woodcutting 61"}
+  ]
+}
