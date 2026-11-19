@@ -33,7 +33,7 @@ When a vector test fails, treat it as a bug in the Java port. Never hand-edit or
 RuneLite implements `@ConfigGroup` interfaces at runtime using a JDK dynamic proxy in the `jdk.proxy2` module.
 
 - **Public return types:** Every enum or class returned by a `@ConfigItem` method in `QuestpathConfig` must be `public`. A package-private return type compiles cleanly but throws `IllegalAccessError` on startup. `QuestpathConfigProxyTest` enforces this structurally.
-- **Sidebar parity:** Every user-facing `@ConfigItem` must also be wired into `OverlaySettingsPanel` unless explicitly exempted in `OverlaySettingsPanelConfigParityTest`.
+- **Sidebar parity:** Every user-facing `@ConfigItem` must also be wired into `OverlaySettingsPanel` unless explicitly exempted in `OverlaySettingsPanelConfigParityTest` (such as the hidden developer toggle `fetchQuestGraph`).
 - **Frozen keys:** Do not rename the config group (`"questroute"`, migrated once from pre-rename `"questpath"` by `ConfigGroupMigration` in `provideConfig`) or existing `keyName` values without a migration, as doing so silently resets saved user settings and per-account build rules.
 
 ### Threading and performance
@@ -48,5 +48,5 @@ All changes must adhere to Jagex's Third-Party Client Guidelines and the RuneLit
 
 - Java 11 source and target compatibility; no reflection, JNI/JNA, subprocess execution, or serialization.
 - Use `net.runelite.api.gameval` constants (`ItemID`, `InterfaceID`, `ObjectID`, `SpriteID`) rather than raw numeric IDs.
-- Third-party server features (`syncEnabled`, `fetchLatestGraph`) must remain disabled by default and retain the required RuneLite IP warning string.
+- Third-party server features (`syncEnabled`, `fetchQuestGraph`) must remain disabled by default and retain the required RuneLite IP warning string.
 - Never automate game input or interact with the live game client programmatically; in-game behaviour must be verified manually by a player in the developer client.
