@@ -240,6 +240,10 @@ public class QuestpathPlugin extends Plugin
 	@Inject
 	private net.runelite.client.chat.ChatMessageManager chatMessageManager;
 
+	/** RuneLite's audio player: the voice hands it a finished WAV. */
+	@Inject
+	private net.runelite.client.audio.AudioPlayer audioPlayer;
+
 	/** RuneLite's shared scheduler. The watchdog samples on it. */
 	@Inject
 	private java.util.concurrent.ScheduledExecutorService scheduler;
@@ -853,7 +857,7 @@ public class QuestpathPlugin extends Plugin
 		overlayManager.add(lampOverlay);
 
 		voiceLines = VoiceLines.load();
-		voicePlayer = new VoicePlayer();
+		voicePlayer = new VoicePlayer(audioPlayer);
 
 		bankTab = new BankTabLayout(client, clientThread, this);
 		bankButton = new BankButton(client, this::bankNeedsShown, this::toggleBankNeeds);
@@ -1842,19 +1846,19 @@ public class QuestpathPlugin extends Plugin
 	}
 
 	/**
-	 * Adapts {@code ItemManager.getItemStats(id, false)} into {@link
+	 * Adapts {@code ItemManager.getItemStats(id)} into {@link
 	 * LockedGear.ItemStatsView} without {@link LockedGear} ever seeing an
 	 * {@code ItemManager} -- see runelite-api.md &sect;6-8. Client-thread
 	 * only, like every {@code ItemManager} call in this plugin.
 	 */
 	private LockedGear.ItemStatsView itemStatsView(int itemId)
 	{
-		net.runelite.http.api.item.ItemStats stats = itemManager.getItemStats(itemId, false);
+		net.runelite.client.game.ItemStats stats = itemManager.getItemStats(itemId);
 		if (stats == null || !stats.isEquipable())
 		{
 			return UNKNOWN_ITEM_STATS;
 		}
-		net.runelite.http.api.item.ItemEquipmentStats equipment = stats.getEquipment();
+		net.runelite.client.game.ItemEquipmentStats equipment = stats.getEquipment();
 		if (equipment == null)
 		{
 			return UNKNOWN_ITEM_STATS;
@@ -1882,7 +1886,9 @@ public class QuestpathPlugin extends Plugin
 			@Override
 			public int mdmg()
 			{
-				return equipment.getMdmg();
+				// The client's own ItemEquipmentStats carries a float; the old
+				// http-api one was an int, and this view is a whole percent.
+				return (int) equipment.getMdmg();
 			}
 		};
 	}

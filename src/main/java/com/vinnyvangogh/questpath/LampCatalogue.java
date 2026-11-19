@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.nio.charset.StandardCharsets;
+import com.google.common.base.Charsets;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -113,7 +113,7 @@ class LampCatalogue
 			}
 			try
 			{
-				return parse(gson, new InputStreamReader(stream, StandardCharsets.UTF_8));
+				return parse(gson, new InputStreamReader(stream, Charsets.UTF_8));
 			}
 			catch (IOException e)
 			{
