@@ -84,6 +84,12 @@ class BankButton
 	 */
 	static final String TARGET = "Quest Route";
 
+	/** Menu option while the tab is closed: reads like the bank's own tabs. */
+	static final String ACTION_VIEW = "View tab";
+
+	/** Menu option while the tab is open: a click leaves it. */
+	static final String ACTION_HIDE = "Hide tab";
+
 	private final Client client;
 	private final BooleanSupplier shown;
 	private final Runnable onToggle;
@@ -121,7 +127,7 @@ class BankButton
 		button = graphic(parent, SPRITE_BUTTON, SIZE, x, BUTTON_Y);
 		button.setName(TARGET);
 		button.setHasListener(true);
-		button.setAction(1, "View tab");
+		button.setAction(1, ACTION_VIEW);
 		button.setOnOpListener((JavaScriptCallback) event -> toggle());
 		button.revalidate();
 
@@ -171,7 +177,10 @@ class BankButton
 		{
 			return;
 		}
-		button.setSpriteId(shown.getAsBoolean() ? SPRITE_BUTTON_SELECTED : SPRITE_BUTTON);
+		boolean on = shown.getAsBoolean();
+		// The menu says what a click will do: open the tab, or leave it.
+		button.setAction(1, on ? ACTION_HIDE : ACTION_VIEW);
+		button.setSpriteId(on ? SPRITE_BUTTON_SELECTED : SPRITE_BUTTON);
 		button.revalidate();
 		if (icon != null)
 		{
