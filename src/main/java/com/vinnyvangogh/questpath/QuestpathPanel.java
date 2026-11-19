@@ -375,15 +375,68 @@ class QuestpathPanel extends PluginPanel
 	 * run, or a damaged file that was set aside). Set from the plugin.
 	 */
 	private volatile String setupNote;
-	private volatile java.util.function.BiConsumer<LocalProfile.AccountType,
-		java.util.Set<LocalProfile.QuestType>> onSetupDone;
+	private volatile LocalProfile setupCurrent;
+	private volatile java.util.function.BiConsumer<LocalProfile, List<BuildRule>> onSetupDone;
+	private volatile Runnable onSetupCancel;
+	private volatile Runnable onOpenSetup;
+	/** Bumped on every setSetup, so reopening setup rebuilds the tab even with an unchanged note. */
+	private volatile int setupRevision;
+	private final java.util.Map<PanelSections.Tab, MaterialTab> materialTabs = new java.util.EnumMap<>(PanelSections.Tab.class);
+	private MaterialTabGroup tabGroup;
 
 	/** Shows ({@code note != null}) or hides first-run setup; takes effect on the next render. */
-	void setSetup(String note,
-		java.util.function.BiConsumer<LocalProfile.AccountType, java.util.Set<LocalProfile.QuestType>> onDone)
+	void setSetup(String note, java.util.function.BiConsumer<LocalProfile, List<BuildRule>> onDone)
+	{
+		setSetup(note, null, onDone, null);
+	}
+
+	/**
+	 * Shows setup, filled in from {@code current} when there is one, with a
+	 * cancel that leaves the saved answers alone ({@code onCancel} null hides it).
+	 */
+	void setSetup(String note, LocalProfile current,
+		java.util.function.BiConsumer<LocalProfile, List<BuildRule>> onDone, Runnable onCancel)
 	{
 		this.setupNote = note;
+		this.setupCurrent = current;
 		this.onSetupDone = onDone;
+		this.onSetupCancel = onCancel;
+		this.setupRevision++;
+	}
+
+	/** Wires the always-visible "Account setup" button. */
+	void setOnOpenSetup(Runnable onOpenSetup)
+	{
+		this.onOpenSetup = onOpenSetup;
+	}
+
+	/** Makes the Quests tab the one on screen; setup lives there. */
+	void showQuestsTab()
+	{
+		MaterialTab tab = materialTabs.get(PanelSections.Tab.QUESTS);
+		if (tab != null && tabGroup != null)
+		{
+			tabGroup.select(tab);
+		}
+	}
+
+	private JPanel setupHeader()
+	{
+		JButton button = new JButton("Account setup");
+		button.setFont(FontManager.getRunescapeSmallFont());
+		button.setToolTipText("Account type, build, skill caps and quest filters. Opens setup from any page.");
+		button.addActionListener(event ->
+		{
+			Runnable open = onOpenSetup;
+			if (open != null)
+			{
+				open.run();
+			}
+		});
+		JPanel row = new JPanel(new BorderLayout());
+		row.setBorder(BorderFactory.createEmptyBorder(0, 0, 6, 0));
+		row.add(button, BorderLayout.CENTER);
+		return row;
 	}
 
 	/** Wires the shop stop's "Say again" button to the plugin's voice. */
@@ -479,6 +532,7 @@ class QuestpathPanel extends PluginPanel
 				return true;
 			});
 			tabGroup.addTab(materialTab);
+			materialTabs.put(tab, materialTab);
 			if (first == null)
 			{
 				first = materialTab;
@@ -507,7 +561,13 @@ class QuestpathPanel extends PluginPanel
 		buildSkillTab();
 		quickenTooltips();
 
-		add(tabGroup, BorderLayout.NORTH);
+		// The setup button sits above the tabs, not inside one, so it is the
+		// same one click from every page.
+		JPanel top = new JPanel(new BorderLayout());
+		top.add(setupHeader(), BorderLayout.NORTH);
+		top.add(tabGroup, BorderLayout.CENTER);
+		this.tabGroup = tabGroup;
+		add(top, BorderLayout.NORTH);
 		add(display, BorderLayout.CENTER);
 
 		if (first != null)
@@ -963,7 +1023,7 @@ class QuestpathPanel extends PluginPanel
 			routeWork == null ? null : routeWorkSignature(routeWork),
 			diaryPush.get(),
 			config.questJournalFilter(),
-			setupNote);
+			setupNote, setupRevision);
 		if (!java.util.Objects.equals(questsSignature, lastVerdictSignature))
 		{
 			rebuildQuestsTab(verdicts, nextQuest, routeWork);
@@ -1062,8 +1122,12 @@ class QuestpathPanel extends PluginPanel
 		String setup = setupNote;
 		if (setup != null)
 		{
-			quests.add(new SetupPanel(setup, onSetupDone));
+			quests.add(new SetupPanel(setup, setupCurrent,
+				localBuildRules == null ? java.util.Collections.<BuildRule>emptyList() : localBuildRules.all(),
+				onSetupDone, onSetupCancel));
 			showBodies(PanelSections.Tab.QUESTS);
+			// Setup is on the Quests tab; wherever the player was, take them to it.
+			showQuestsTab();
 			return;
 		}
 
