@@ -455,7 +455,7 @@ class QuestpathPanel extends PluginPanel
 					long millis = (System.nanoTime() - startedAt) / 1_000_000L;
 					if (millis >= SLOW_MILLIS)
 					{
-						log.info("quest-route perf: switch #{} to {} took {}ms; components {}",
+						log.debug("quest-route perf: switch #{} to {} took {}ms; components {}",
 							tabSwitches, tab, millis, componentCounts());
 					}
 				});
@@ -837,7 +837,7 @@ class QuestpathPanel extends PluginPanel
 			long millis = (System.nanoTime() - startedAt) / 1_000_000L;
 			if (millis >= SLOW_MILLIS)
 			{
-				log.info("quest-route perf: render took {}ms; components {}", millis, componentCounts());
+				log.debug("quest-route perf: render took {}ms; components {}", millis, componentCounts());
 			}
 		}
 	}

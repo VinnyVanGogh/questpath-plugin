@@ -248,13 +248,14 @@ public interface QuestpathConfig extends Config
 	@ConfigItem(
 		keyName = "serverUrl",
 		name = "Quest Route address",
-		description = "Where your Quest Route server is listening.",
+		description = "Where your Quest Route server is listening, e.g. http://localhost:8080."
+			+ " Empty until you set it: nothing is sent or fetched without an address.",
 		section = syncSection,
 		position = 2
 	)
 	default String serverUrl()
 	{
-		return "http://localhost:8080";
+		return "";
 	}
 
 	@ConfigItem(
