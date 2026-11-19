@@ -8,8 +8,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- `.staypoint/test.toml` declaring the required Gradle JUnit test suite (`gradle_test`) (#22).
+- Gated shop, guild, and boss/Slayer-only item source entry-requirement audit under `docs/research/shop-requirements.md` and `docs/research/shop-requirements.json` (#20).
 - The shop route treats an item it can make as a chain: get each missing ingredient from its own best source (shop, a nested recipe, or a drop you can actually do), then go to the nearest facility ("-> Furnace: use Bucket of sand + Soda ash"). The order is shop, then recipe, then drop. A recipe you lack the level for says which level ("can't make it yet: needs 30 Crafting") and the route falls back to other sources. Reads quest graph v14's optional `recipes`, `facilities` and `drop_sources` tables (`MakeChain`, `RouteSources`) (#19).
 - Bosses, and monsters that need a Slayer or combat level the account lacks, are never route stops (`DropPracticality`). Your `DropRegionPolicy` declarations still apply first. These droppers stay in the item's sources with a marker ("boss, needs 93 Slayer"). When no practical source remains, the row reads "No practical source: make it or ask the group" and lists which group members, or the group's storage, hold the item. Reported 2026-11-14: Molten glass was routed to the Thermonuclear smoke devil on a low-level Group Ironman (#19).
+- Spoken shop approach and floor-item call-outs (`VoiceLines`, `VoicePlayer`, `VoiceAudio`, `VoiceQueue`, `Speaker`, `ShopVoice`, `FloorItemAnnouncer`, `FloorSpawn`, `Utterance`) using stitched Kokoro `af_heart` clip tables (`voice/lines.tsv`, `tools/voice/build_lines.py`, `tools/voice/generate_voice.py`) with ping-and-chat fallback, a bouncing overlay arrow (`BouncingArrow`) over needed floor items, a "Say again" button on the active shop stop, and `docs/voice-compliance.md` (#17).
 - `icon.png` for the Plugin Hub listing and `docs/hub-submission.md` manifest, pre-submission checklist, and draft PR body (#14).
 - `NoReflectionTest`, `ConfigGroupMigrationTest` and `QuestHelperAbsentTest` (#14).
 - Group shopping in the Group tab: what the whole party still has to get across each member's route (or every quest their build allows), with per-member breakdown, hand-overs, who holds what, Group Ironman storage, and GE-or-shop/drop sources filtered for the viewer; quest/member/still-needed filters and a Shortest Path button to the group's shops. Portable `groupshop` package (`GroupShoppingList`, `ItemSources`, `GroupShopAlert`), `GroupShoppingNeeds` adapter, party wire adds optional `route`, `accountType`, `groupStorage`, and a 5-minute heartbeat with stale marking. Opt-in `groupShopAlert` adds the group's needs to the near-shop chat line, once per visit (#11).
@@ -52,6 +55,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
+- Marked `fetchQuestGraph` as a hidden developer config item (`hidden = true`), removed its toggle from `OverlaySettingsPanel`, and logged startup quest-graph fetch outcomes at `debug` level instead of posting a chat notice on login (#21).
+- Ran the Gradle `test` task with `-Djava.awt.headless=true` so AWT/Swing rendering tests do not abort when a window server is unavailable (#17, #18, #19).
 - Renamed to **Quest Route** for the Plugin Hub: `displayName`, `@PluginDescriptor(name)` and every in-game string. The Hub name `questpath` belongs to another author's live plugin. The config group is now `questroute`; `ConfigGroupMigration` copies a pre-rename `questpath` profile (plain and per-account keys) once, never overwriting, from the config provider before RuneLite writes defaults. The Java package stays `com.vinnyvangogh.questpath` (#14).
 - Clicking an item in the sidebar's Grand Exchange list now shows that one item through the buy-list button's sentinel search (`GrandExchangeButton#showOne`) instead of typing its name into the search box, which the Hub's no-autotyping rule forbids (#14).
 - `BuildRuleCodec` reads and writes `BuildRule[]` instead of a Gson `TypeToken`, so `src/main` has no reflection types at all (#14).
@@ -69,6 +74,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Fixed
 
+- Counted the freshest Group Ironman storage snapshot across the local player and party members (`GroupStorageView`) as held in `QuestItems` and persisted the local player's snapshot per RSProfile (`GroupStorageStore`) so Group Ironman item lists, the shop route, and the needed-items overlay do not mark items in group storage as missing (#18).
 - Copied existing rune totals before merging in `TeleportEquivalence.decompose` so per-frame overlay rendering does not mutate shared `QuestItems.Total` counts, and replaced item ID `8013` (Teleport to house) with `ItemID.TELETAB_DRAYNOR` on `TeleportEquivalence.DRAYNOR` (#4).
 - Labelled id-less generic wiki item requirements (such as `"Seeds"`) as `"check wiki"` (`Availability.GENERIC`) instead of `"can't look up"` on the Grand Exchange overlay (#5).
 - Changed the Grand Exchange item-completion chat notice (`ItemCompletionWatcher.Completion`) to read `"you now have the <item>"` instead of `"you now have all 1 <item>"` when a quest needs only one (#3).

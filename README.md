@@ -40,15 +40,20 @@ rules and diaries arrive when you sync.
 ## The shop run
 
 1. **One list for the whole plan.** One total per item across every quest on
-   your route, counted against bank, inventory and what you're wearing.
+   your route, counted against bank, inventory and what you're wearing (plus
+   Group Ironman storage once you or a party member has opened it).
 2. **Send it to Shortest Path.** One button builds the trip, nearest stop first,
    with items sold in the same place grouped together. Shortest Path draws the
    path and tells you where to teleport.
 3. **Only places you can get to.** Guilds and quest-locked towns you can't enter
-   are skipped. If no shop you can reach sells an item, the route sends you to a
-   monster that drops it.
+   are skipped. If no shop you can reach sells an item, the route chains its
+   recipe (missing ingredients first, then the nearest furnace, range or anvil)
+   or sends you to a monster drop you have the Slayer and combat levels for —
+   never a boss or a Slayer-locked monster.
 4. **Shopkeepers shout as you pass.** Come within 16 tiles of a shop stocking
-   something you still need and it calls out, even if it isn't your next stop.
+   something you still need and it calls out (and speaks every still-needed item
+   that shop sells, with a "Say again" button on the active stop), even if it
+   isn't your next stop.
 5. **The trip moves itself on.** When the last one lands in your bags, the route
    jumps to the next stop and chat says where. Skip an item and it goes to the
    back, with a restore button.
@@ -75,8 +80,9 @@ and the "Needed from your bank" overlay sits beside it.
 ![The bank switched to the plugin's own tab, grouped into Ran out, Still needed and Ready to withdraw (captured under the plugin's development name)](docs/screenshots/bank-tab.jpg)
 
 **Ground.** Needed items lying within 15 tiles are outlined with how many you
-still need and which quests want them, and left-clicking picks them up before
-the tile's other items.
+still need and which quests want them, marked with a bouncing arrow and a
+spoken `"<item> nearby"` call-out once per spawn within the floor-item radius,
+and left-clicking picks them up before the tile's other items.
 
 ![Ashes on the ground outlined, reading 2 of 3 for Shades of Mort'ton and Desert Treasure I](docs/screenshots/ground-items.jpg)
 
@@ -191,7 +197,7 @@ the quest that wanted it.
 
 ## Syncing with questpath
 
-Off by default, and both settings that reach the server carry RuneLite's
+Off by default, and the setting that reaches the server carries RuneLite's
 warning: **this feature submits your IP address to a 3rd-party server not
 controlled or verified by RuneLite developers.** With sync on, the plugin pushes your quests, levels, XP, bank,
 inventory and equipment to a [questpath](https://github.com/VinnyVanGogh)
@@ -205,8 +211,6 @@ client already has.
   owned items and diary tasks.
 - The Sync tab says whether the last push was accepted, refused or never
   answered. A wrong token says so rather than failing quietly.
-- On startup the plugin can fetch a fresher quest graph from the server, and
-  says which one it ended up on.
 - A "Sync with questpath" button pulls a plan you just edited on the site
   straight into the game.
 
