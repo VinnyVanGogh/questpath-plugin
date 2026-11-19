@@ -118,7 +118,7 @@ class QuestGraphFetcher
 		HttpUrl url = endpoint(serverUrl);
 		if (url == null)
 		{
-			onOutcome.accept(Outcome.failed("questpath address \"" + serverUrl + "\" is not a usable URL"));
+			onOutcome.accept(Outcome.failed("Quest Route address \"" + serverUrl + "\" is not a usable URL"));
 			return;
 		}
 
@@ -129,7 +129,7 @@ class QuestGraphFetcher
 			public void onFailure(Call call, IOException e)
 			{
 				log.debug("quest graph: fetch failed", e);
-				onOutcome.accept(Outcome.failed("questpath unreachable at " + serverUrl));
+				onOutcome.accept(Outcome.failed("Quest Route server unreachable at " + serverUrl));
 			}
 
 			@Override
@@ -141,13 +141,13 @@ class QuestGraphFetcher
 					{
 						log.debug("quest graph: fetch rejected with {}", closed.code());
 						onOutcome.accept(Outcome.failed(
-							"questpath answered " + closed.code() + " for the quest graph"));
+							"Quest Route server answered " + closed.code() + " for the quest graph"));
 						return;
 					}
 					ResponseBody body = closed.body();
 					if (body == null)
 					{
-						onOutcome.accept(Outcome.failed("questpath sent no body for the quest graph"));
+						onOutcome.accept(Outcome.failed("Quest Route server sent no body for the quest graph"));
 						return;
 					}
 					QuestGraph graph = QuestGraph.parse(

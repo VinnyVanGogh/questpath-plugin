@@ -201,7 +201,7 @@ class GrandExchangeButton
 		catch (RuntimeException | AssertionError e)
 		{
 			// AssertionError is deliberate, not a typo. See class doc.
-			log.warn("Could not draw questpath's Grand Exchange button", e);
+			log.warn("Could not draw Quest Route's Grand Exchange button", e);
 		}
 	}
 
@@ -394,7 +394,7 @@ class GrandExchangeButton
 		}
 		catch (RuntimeException | AssertionError e)
 		{
-			log.warn("Toggling questpath's Grand Exchange button failed", e);
+			log.warn("Toggling Quest Route's Grand Exchange button failed", e);
 		}
 	}
 
@@ -509,7 +509,7 @@ class GrandExchangeButton
 		}
 		catch (RuntimeException | AssertionError e)
 		{
-			log.warn("Removing questpath's Grand Exchange button failed", e);
+			log.warn("Removing Quest Route's Grand Exchange button failed", e);
 		}
 	}
 

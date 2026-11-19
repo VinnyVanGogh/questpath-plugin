@@ -114,7 +114,7 @@ class BuildRulesEditor extends JPanel
 
 		JButton clear = new JButton("Remove");
 		clear.setToolTipText("Remove this account's own rule on the selected skill. A rule"
-			+ " questpath pushed is untouched -- there is one editor per origin.");
+			+ " Quest Route pushed is untouched -- there is one editor per origin.");
 		clear.addActionListener(e ->
 		{
 			String skill = String.valueOf(skillBox.getSelectedItem());

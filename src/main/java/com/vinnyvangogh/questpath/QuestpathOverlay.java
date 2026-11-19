@@ -64,7 +64,7 @@ abstract class QuestpathOverlay extends Overlay
 		setResizable(false);
 		setMovable(true);
 		setSnappable(true);
-		addMenuEntry(MenuAction.RUNELITE_OVERLAY_CONFIG, "Configure", "questpath " + title);
+		addMenuEntry(MenuAction.RUNELITE_OVERLAY_CONFIG, "Configure", "Quest Route " + title);
 	}
 
 	/**
