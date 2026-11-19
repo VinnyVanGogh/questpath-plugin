@@ -28,14 +28,14 @@ public class SyncStatusTest
 	public void anUnknownRejectionReportsItsCodeRatherThanGuessing()
 	{
 		SyncStatus rejected = SyncStatus.rejected(NOW, 503);
-		assertEquals("questpath answered 503 · just now", rejected.describe(NOW));
+		assertEquals("Quest Route server answered 503 · just now", rejected.describe(NOW));
 	}
 
 	@Test
 	public void aClosedQuestpathIsNotTheSameAsARejection()
 	{
 		SyncStatus unreachable = SyncStatus.unreachable(NOW.minus(Duration.ofMinutes(5)));
-		assertEquals("questpath not reachable · 5m ago", unreachable.describe(NOW));
+		assertEquals("Quest Route server not reachable · 5m ago", unreachable.describe(NOW));
 		assertFalse("questpath being closed is not a misconfiguration to warn about",
 			unreachable.needsAttention());
 	}

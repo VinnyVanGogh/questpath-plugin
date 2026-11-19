@@ -133,7 +133,7 @@ class GrandExchangeOverlay extends QuestpathOverlay
 			// as "nothing to buy", and drawing it as an empty panel would
 			// read as exactly that.
 			return List.of(OverlayRow.note(
-				"questpath cannot answer this yet -- no item list loaded, "
+				"Quest Route cannot answer this yet -- no item list loaded, "
 					+ "or nothing seen in your bags, worn gear or bank.",
 				OverlayTheme.MUTED));
 		}

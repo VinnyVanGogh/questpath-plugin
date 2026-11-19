@@ -85,7 +85,7 @@ final class SyncStatus
 			case REJECTED:
 				return reason() + " · " + ago(now);
 			case UNREACHABLE:
-				return "questpath not reachable · " + ago(now);
+				return "Quest Route server not reachable · " + ago(now);
 			default:
 				return "";
 		}
@@ -103,9 +103,9 @@ final class SyncStatus
 			case 401:
 				return "Pairing token rejected";
 			case 400:
-				return "questpath refused the payload";
+				return "Quest Route server refused the payload";
 			default:
-				return "questpath answered " + code;
+				return "Quest Route server answered " + code;
 		}
 	}
 

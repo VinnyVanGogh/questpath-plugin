@@ -195,7 +195,7 @@ the quest that wanted it.
 
 ---
 
-## Syncing with questpath
+## Syncing with a Quest Route server
 
 Off by default, and the setting that reaches the server carries RuneLite's
 warning: **this feature submits your IP address to a 3rd-party server not
@@ -211,7 +211,7 @@ client already has.
   owned items and diary tasks.
 - The Sync tab says whether the last push was accepted, refused or never
   answered. A wrong token says so rather than failing quietly.
-- A "Sync with questpath" button pulls a plan you just edited on the site
+- A "Sync with Quest Route" button pulls a plan you just edited on the site
   straight into the game.
 
 What ships in the bundle: 314 shops, 125 monster drop locations, 205 quest start
