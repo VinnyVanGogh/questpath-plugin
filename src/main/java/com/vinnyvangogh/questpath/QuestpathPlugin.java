@@ -1,8 +1,9 @@
 package com.vinnyvangogh.questpath;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
-import java.awt.Font;
 import java.awt.Graphics2D;
+import java.awt.Polygon;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.util.EnumMap;
@@ -4517,21 +4518,40 @@ public class QuestpathPlugin extends Plugin
 	}
 
 	/**
-	 * Drawn rather than loaded from a resource, deliberately: a placeholder
-	 * PNG committed now would be an asset nobody designed, and AGENTS.md warns
-	 * about shipping images that are not what they claim to be. Replace with a
-	 * real icon.png when there is one.
+	 * Drawn rather than loaded from a resource, deliberately: no committed
+	 * asset to keep honest, and nothing to mis-size. A max-cape-style cape
+	 * (dark body, gold trim, the cape's shoulder notch) carrying a quest
+	 * scroll, so the tab reads as "quests" at a glance instead of as text.
 	 */
-	private static BufferedImage icon()
+	static BufferedImage icon()
 	{
 		BufferedImage image = new BufferedImage(24, 24, BufferedImage.TYPE_INT_ARGB);
 		Graphics2D g = image.createGraphics();
 		try
 		{
 			g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-			g.setColor(new Color(0xC8, 0x8B, 0x2E));
-			g.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 14));
-			g.drawString("qp", 2, 18);
+			Color gold = new Color(0xE0, 0xB2, 0x3A);
+			Color goldDark = new Color(0x9A, 0x6F, 0x1B);
+
+			// Cape: shoulders with a notch at the neck, flaring to the hem.
+			Polygon cape = new Polygon(
+				new int[]{5, 9, 12, 15, 19, 21, 3},
+				new int[]{2, 2, 4, 2, 2, 22, 22}, 7);
+			g.setColor(new Color(0x1E, 0x1E, 0x26));
+			g.fillPolygon(cape);
+			g.setStroke(new BasicStroke(1.5f));
+			g.setColor(gold);
+			g.drawPolygon(cape);
+
+			// Quest scroll: parchment with rolled ends and text lines.
+			g.setColor(new Color(0xF2, 0xE2, 0xB0));
+			g.fillRect(8, 8, 8, 9);
+			g.setColor(goldDark);
+			g.fillRoundRect(7, 7, 10, 2, 2, 2);
+			g.fillRoundRect(7, 16, 10, 2, 2, 2);
+			g.setStroke(new BasicStroke(1f));
+			g.drawLine(10, 11, 14, 11);
+			g.drawLine(10, 13, 14, 13);
 		}
 		finally
 		{
