@@ -1039,6 +1039,19 @@ public interface QuestpathConfig extends Config
 	}
 
 	@ConfigItem(
+		keyName = "bankButton",
+		name = "Show the bank title-bar button",
+		description = "The button on the bank's title row that toggles the needs marks. Turn it"
+			+ " off if another plugin needs that space.",
+		section = bankSection,
+		position = 6
+	)
+	default boolean bankButton()
+	{
+		return true;
+	}
+
+	@ConfigItem(
 		keyName = "bankList",
 		name = "Show the ordered list too",
 		description = "Alongside the marks, list what the plan needs beside the bank:"

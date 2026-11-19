@@ -3733,6 +3733,11 @@ public class QuestpathPlugin extends Plugin
 		{
 			return;
 		}
+		QuestpathConfig cfg = config();
+		if (cfg != null && !cfg.bankButton())
+		{
+			return;
+		}
 		bankButton.attach();
 	}
 
