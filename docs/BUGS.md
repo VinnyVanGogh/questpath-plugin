@@ -4,6 +4,26 @@ Merged bug fixes in reverse chronological order (newest first). Each entry recor
 
 ---
 
+## Startup quest-graph fetch posted a chat error on every login when enabled without a local server
+- **What broke:** When `fetchQuestGraph` was turned on without a running `questpath` server at `localhost:8080`, `QuestpathPlugin.fetchLiveQuestGraph()` posted `"Quest Route: could not fetch the quest graph from questpath (...); staying on 218 quests bundled with this build."` to game chat on every login.
+- **How it was found:** Reported from in-game play when logging in without a local server running.
+- **Fix:** Marked `fetchQuestGraph` as a hidden developer config item (`hidden = true`), removed its toggle from `OverlaySettingsPanel`, and logged quest-graph fetch outcomes at `debug` level only without posting a chat line (#21).
+
+## Shop route sent low-level accounts to bosses and Slayer-locked monsters for craftable items
+- **What broke:** When no shop sold a needed quest item (such as Molten glass), the shop router fell back to any monster in `drop_locations` that dropped it without checking whether the dropper was a boss or required a Slayer or combat level the account lacked—routing a low-level Group Ironman to the Thermonuclear smoke devil (93 Slayer boss) for Molten glass instead of routing the ingredients and a furnace.
+- **How it was found:** Reported from in-game play on a low-level Group Ironman when the shop route pointed to the Thermonuclear smoke devil for Molten glass.
+- **Fix:** Added quest graph v14 `recipes`, `facilities`, and `drop_sources` support with `MakeChain` (routing missing ingredients from their own best source and then to the nearest crafting facility) and `DropPracticality` in `RouteSources` so bosses and monsters above the account's Slayer or combat level are never route stops (#19).
+
+## Group Ironman item lists and shop routes reported items in group storage as missing
+- **What broke:** `QuestItems` only summed bank, inventory, and worn equipment (plus the synced server floor), ignoring Group Ironman shared storage, and the local group-storage snapshot lived only in memory and was cleared on logout. As a result, a Group Ironman's quest item lists and shop route still said `"need a blood rune"` when one was already sitting in group storage.
+- **How it was found:** Reported from in-game play on a Group Ironman account with quest items stored in group storage.
+- **Fix:** Selected the freshest group-storage snapshot across the local player and party members (`GroupStorageView`), persisted the local player's snapshot per RSProfile (`GroupStorageStore`), and added group-storage quantities into `QuestItems` held totals for Group Ironman accounts with an `"in group storage"` note when personal holdings alone would be short (#18).
+
+## Gradle test JVM aborted with exit 134 in headless/sandboxed runs
+- **What broke:** Overlay and UI tests (`BouncingArrowTest`, `OverlayDisplayModeTest`) touch `java.awt` font metrics on a `BufferedImage`. On macOS without `-Djava.awt.headless=true`, AWT attempts to connect to `WindowServer` on first font use and aborts the test JVM (`exit 134`) before any JUnit report is written when running in a headless or sandboxed environment.
+- **How it was found:** Observed when running `./gradlew test` inside a sandboxed test runner with no GUI session.
+- **Fix:** Set `systemProperty 'java.awt.headless', 'true'` on the Gradle `test` task in `build.gradle` (#17, #18, #19).
+
 ## Sidebar Grand Exchange single-item click wrote item names into `VarClientStr.INPUT_TEXT` and `src/main` retained reflection types
 - **What broke:** Clicking a row in the sidebar's Grand Exchange list (`GrandExchangeSearchBridge`) wrote `searchText(itemName)` directly into `VarClientStr.INPUT_TEXT` (varcstr 359, the chatbox message-layer input) and replayed the search box's key listener, violating the Plugin Hub's no-autotyping rule. Separately, `QuestHelperBridge` used `java.lang.reflect` and `BuildRuleCodec` used `com.google.gson.reflect.TypeToken` (`java.lang.reflect.Type`), violating the Plugin Hub's ban on reflection.
 - **How it was found:** Caught during the Plugin Hub compliance audit and bridge re-check before first submission.
