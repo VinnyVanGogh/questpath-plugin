@@ -455,7 +455,7 @@ class QuestpathPanel extends PluginPanel
 					long millis = (System.nanoTime() - startedAt) / 1_000_000L;
 					if (millis >= SLOW_MILLIS)
 					{
-						log.info("quest-route perf: switch #{} to {} took {}ms; components {}",
+						log.debug("quest-route perf: switch #{} to {} took {}ms; components {}",
 							tabSwitches, tab, millis, componentCounts());
 					}
 				});
@@ -837,7 +837,7 @@ class QuestpathPanel extends PluginPanel
 			long millis = (System.nanoTime() - startedAt) / 1_000_000L;
 			if (millis >= SLOW_MILLIS)
 			{
-				log.info("quest-route perf: render took {}ms; components {}", millis, componentCounts());
+				log.debug("quest-route perf: render took {}ms; components {}", millis, componentCounts());
 			}
 		}
 	}
@@ -2969,7 +2969,7 @@ class QuestpathPanel extends PluginPanel
 		}
 		// Named in the log, not just counted. A count alone said "29" three
 		// skips running while the stop never moved, which read as working.
-		log.info("quest-route shop route: stop \"{}\" -> {} ({} destination(s), {} skipped)",
+		log.debug("quest-route shop route: stop \"{}\" -> {} ({} destination(s), {} skipped)",
 			stopName, named == null ? "nowhere placeable" : named.shopName(),
 			destinations.size(), shopItemSkips.size());
 		if (destinations.isEmpty())
