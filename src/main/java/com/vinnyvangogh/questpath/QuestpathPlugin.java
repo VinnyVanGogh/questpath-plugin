@@ -886,7 +886,10 @@ public class QuestpathPlugin extends Plugin
 
 		// The plugin can be enabled mid-session, so there may already be a
 		// logged-in account whose StatChanged burst has been and gone.
-		refresh();
+		// startUp runs on the Swing thread when the player toggles the plugin
+		// on, and refresh() reads quest state (Quest.getState runs a client
+		// script), which asserts it is on the client thread.
+		clientThread.invokeLater(this::refresh);
 		log.debug("questpath started");
 	}
 
