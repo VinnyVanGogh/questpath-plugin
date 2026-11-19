@@ -120,6 +120,9 @@ public class QuestpathPlugin extends Plugin
 	@Inject
 	private WSClient wsClient;
 
+	@Inject
+	private net.runelite.client.audio.AudioPlayer audioPlayer;
+
 	/**
 	 * What each other party member last sent, by party member id. Written
 	 * from the party socket's thread, read from the client thread.
@@ -854,7 +857,7 @@ public class QuestpathPlugin extends Plugin
 		overlayManager.add(lampOverlay);
 
 		voiceLines = VoiceLines.load();
-		voicePlayer = new VoicePlayer();
+		voicePlayer = new VoicePlayer(audioPlayer);
 
 		bankTab = new BankTabLayout(client, clientThread, this);
 		bankButton = new BankButton(client, this::bankNeedsShown, this::toggleBankNeeds);
@@ -1850,12 +1853,12 @@ public class QuestpathPlugin extends Plugin
 	 */
 	private LockedGear.ItemStatsView itemStatsView(int itemId)
 	{
-		net.runelite.http.api.item.ItemStats stats = itemManager.getItemStats(itemId, false);
+		net.runelite.client.game.ItemStats stats = itemManager.getItemStats(itemId);
 		if (stats == null || !stats.isEquipable())
 		{
 			return UNKNOWN_ITEM_STATS;
 		}
-		net.runelite.http.api.item.ItemEquipmentStats equipment = stats.getEquipment();
+		net.runelite.client.game.ItemEquipmentStats equipment = stats.getEquipment();
 		if (equipment == null)
 		{
 			return UNKNOWN_ITEM_STATS;
@@ -1883,7 +1886,7 @@ public class QuestpathPlugin extends Plugin
 			@Override
 			public int mdmg()
 			{
-				return equipment.getMdmg();
+				return Math.round(equipment.getMdmg());
 			}
 		};
 	}

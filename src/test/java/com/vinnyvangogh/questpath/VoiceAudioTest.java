@@ -82,7 +82,8 @@ public class VoiceAudioTest
 	@Test
 	public void thePingIsAPlayableWavBuiltInCode() throws Exception
 	{
-		byte[] ping = VoiceAudio.ping();
+		byte[] ping = VoiceAudio.ping().wav;
+		assertEquals(180, VoiceAudio.ping().millis, 2);
 		assertEquals(AudioFormat.Encoding.PCM_SIGNED, decoded(ping).getEncoding());
 		assertTrue("ping has sound", frames(ping) > 1000);
 	}
