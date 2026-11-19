@@ -198,11 +198,6 @@ class LampVerdict
 		this.tier = tier;
 	}
 
-	void setTier(Tier tier)
-	{
-		this.tier = tier;
-	}
-
 	/**
 	 * Recorded by the ranking rather than by the classification, because the
 	 * clamp depends on what the account is working towards and only the

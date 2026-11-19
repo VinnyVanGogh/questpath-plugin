@@ -377,16 +377,6 @@ class QuestItems
 			this.equivalentOwned = equivalentOwned;
 		}
 
-		Line withRecommended(boolean recommended)
-		{
-			Line copy = new Line(name, itemId, wanted, owned, optional, unresolved,
-				sources, shopNames, dropSourceNames, groupName, notes, recommended)
-				.withPlan(plan).withMembers(members);
-			copy.setEquivalentOwned(this.equivalentOwned);
-			copy.inGroupStorage = this.inGroupStorage;
-			return copy;
-		}
-
 		/**
 		 * How much of {@link #owned()} is in group storage rather than on the
 		 * account. Zero for anyone who is not a group ironman.

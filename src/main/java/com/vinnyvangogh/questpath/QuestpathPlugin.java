@@ -3725,15 +3725,6 @@ public class QuestpathPlugin extends Plugin
 		return dropRegionsByName.getOrDefault(sourceName.toLowerCase(), "");
 	}
 
-	/**
-	 * A region worth naming beside a destination, or empty. Handed to the
-	 * overlay so a warned region is said out loud rather than walked into.
-	 */
-	String dropRegionNote(String sourceName)
-	{
-		return DropRegionPolicy.noteFor(dropRegion(sourceName), constraints);
-	}
-
 	/** The route tables for whichever graph is live, rebuilt when it changes. */
 	private RouteSources.Index currentRouteIndex()
 	{
