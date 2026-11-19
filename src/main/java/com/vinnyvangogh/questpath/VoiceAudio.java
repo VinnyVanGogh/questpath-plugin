@@ -11,12 +11,14 @@ import java.util.function.Function;
  * tested: joining clips into one WAV, the fallback ping, and the volume
  * slider as a gain.
  *
- * <p>Clips are parsed and written by hand rather than through
- * {@code javax.sound}, which Plugin Hub plugins may not use; the joined
- * bytes go to RuneLite's {@code AudioPlayer}. Every part is converted to
- * 16-bit signed PCM, so a list rendered as mu-law
- * ({@code generate_voice.py --ulaw}) joins and plays the same as one
- * rendered as PCM.
+ * <p>The Plugin Hub rejects {@code javax.sound}, so playback goes through
+ * RuneLite's {@code AudioPlayer} and the WAV container is read and written
+ * here by hand. Only the two formats {@code generate_voice.py} renders are
+ * understood: 16-bit PCM and 8-bit mu-law (as {@code --ulaw}). Every part is
+ * converted to 16-bit signed little-endian PCM, so a list rendered either way
+ * joins and plays the same.
+ *
+ * <p>{@link #gain} is ported from Combat Vitals' {@code AlertSounds}.
  */
 final class VoiceAudio
 {
@@ -25,8 +27,9 @@ final class VoiceAudio
 	private static final double PING_SECONDS = 0.18;
 	private static final double PING_HZ = 880;
 
-	/** A canonical 44-byte RIFF/WAVE header, which is all {@link #wav} writes. */
-	private static final int HEADER = 44;
+	private static final int FORMAT_PCM = 1;
+	private static final int FORMAT_MULAW = 7;
+	private static final int HEADER_BYTES = 44;
 
 	private VoiceAudio()
 	{
@@ -39,16 +42,30 @@ final class VoiceAudio
 		return (float) (Math.log10(clamped / 100.0) * 20);
 	}
 
+	/** One clip's samples as 16-bit little-endian PCM, with the rate and channels they play at. */
+	private static final class Pcm
+	{
+		final int rate;
+		final int channels;
+		final byte[] data;
+
+		Pcm(int rate, int channels, byte[] data)
+		{
+			this.rate = rate;
+			this.channels = channels;
+			this.data = data;
+		}
+	}
+
 	/**
-	 * Joins several WAV clips into one 16-bit PCM WAV, so a line plays as one
-	 * sound with no gaps between parts.
+	 * Joins several WAV clips into one WAV, so a line plays as one sound with
+	 * no gaps between parts.
 	 *
 	 * @param open opens a clip's bytes by its resource path; null if missing
 	 */
 	static byte[] join(List<String> parts, Function<String, InputStream> open) throws IOException
 	{
-		int rate = 0;
-		int channels = 0;
+		Pcm first = null;
 		final ByteArrayOutputStream pcm = new ByteArrayOutputStream();
 		for (String part : parts)
 		{
@@ -57,39 +74,27 @@ final class VoiceAudio
 			{
 				throw new IOException("missing clip " + part);
 			}
-			final byte[] bytes;
+			final Pcm clip;
 			try (InputStream in = raw)
 			{
-				bytes = readAll(in);
+				clip = decode(readAll(in), part);
 			}
-			final Clip clip = parse(bytes, part);
-			if (rate == 0)
+			if (first == null)
 			{
-				rate = clip.rate;
-				channels = clip.channels;
+				first = clip;
 			}
-			else if (rate != clip.rate || channels != clip.channels)
+			else if (clip.rate != first.rate || clip.channels != first.channels)
 			{
-				throw new IOException("cannot join " + part + ": format differs from the first clip");
+				throw new IOException("cannot join " + part + " (" + clip.rate + " Hz, " + clip.channels
+					+ " ch) to " + first.rate + " Hz, " + first.channels + " ch");
 			}
-			pcm.write(clip.pcm16, 0, clip.pcm16.length);
+			pcm.write(clip.data);
 		}
-		if (rate == 0)
+		if (first == null)
 		{
 			throw new IOException("no clips");
 		}
-		return wav(pcm.toByteArray(), rate, channels);
-	}
-
-	/** How long a WAV built by this class plays, in milliseconds. */
-	static long durationMillis(byte[] wav)
-	{
-		if (wav.length <= HEADER)
-		{
-			return 0;
-		}
-		final long byteRate = le32(wav, 28);
-		return byteRate <= 0 ? 0 : (wav.length - HEADER) * 1000L / byteRate;
+		return wav(pcm.toByteArray(), first.rate, first.channels);
 	}
 
 	/** A short soft sine ping, built in code so it can never be the missing file. */
@@ -109,111 +114,135 @@ final class VoiceAudio
 		return wav(data, PING_RATE, 1);
 	}
 
-	private static final class Clip
+	/** How long a WAV made by {@link #join} or {@link #ping} plays, in milliseconds. */
+	static long durationMillis(byte[] wav)
 	{
-		final int rate;
-		final int channels;
-		final byte[] pcm16;
-
-		Clip(int rate, int channels, byte[] pcm16)
+		if (wav.length < HEADER_BYTES)
 		{
-			this.rate = rate;
-			this.channels = channels;
-			this.pcm16 = pcm16;
+			return 0;
 		}
+		final int rate = le32(wav, 24);
+		final int channels = le16(wav, 22);
+		if (rate <= 0 || channels <= 0)
+		{
+			return 0;
+		}
+		final long frames = (wav.length - HEADER_BYTES) / (2L * channels);
+		return frames * 1000L / rate;
 	}
 
-	/** Reads a RIFF/WAVE clip in 16-bit PCM or 8-bit mu-law, as 16-bit little-endian PCM. */
-	private static Clip parse(byte[] b, String name) throws IOException
+	private static byte[] wav(byte[] data, int rate, int channels)
 	{
-		if (b.length < 12 || !tag(b, 0, "RIFF") || !tag(b, 8, "WAVE"))
+		final byte[] out = new byte[HEADER_BYTES + data.length];
+		put(out, 0, "RIFF");
+		putLe32(out, 4, 36 + data.length);
+		put(out, 8, "WAVE");
+		put(out, 12, "fmt ");
+		putLe32(out, 16, 16);
+		putLe16(out, 20, FORMAT_PCM);
+		putLe16(out, 22, channels);
+		putLe32(out, 24, rate);
+		putLe32(out, 28, rate * channels * 2);
+		putLe16(out, 32, channels * 2);
+		putLe16(out, 34, 16);
+		put(out, 36, "data");
+		putLe32(out, 40, data.length);
+		System.arraycopy(data, 0, out, HEADER_BYTES, data.length);
+		return out;
+	}
+
+	/** Reads a RIFF/WAVE clip of 16-bit PCM or 8-bit mu-law into 16-bit PCM. */
+	private static Pcm decode(byte[] wav, String name) throws IOException
+	{
+		if (wav.length < 12 || !tag(wav, 0, "RIFF") || !tag(wav, 8, "WAVE"))
 		{
-			throw new IOException("not a WAV: " + name);
+			throw new IOException(name + " is not a WAV file");
 		}
 		int format = -1;
 		int channels = 0;
 		int rate = 0;
 		int bits = 0;
-		long pos = 12;
-		while (pos + 8 <= b.length)
+		int pos = 12;
+		while (pos + 8 <= wav.length)
 		{
-			final int at = (int) pos;
-			final long size = le32(b, at + 4);
-			final int body = at + 8;
-			if (tag(b, at, "fmt ") && body + 16 <= b.length)
+			final long size = le32(wav, pos + 4) & 0xFFFFFFFFL;
+			final int body = pos + 8;
+			if (tag(wav, pos, "fmt ") && body + 16 <= wav.length)
 			{
-				format = le16(b, body);
-				channels = le16(b, body + 2);
-				rate = (int) le32(b, body + 4);
-				bits = le16(b, body + 14);
+				format = le16(wav, body);
+				channels = le16(wav, body + 2);
+				rate = le32(wav, body + 4);
+				bits = le16(wav, body + 14);
 			}
-			else if (tag(b, at, "data"))
+			else if (tag(wav, pos, "data"))
 			{
-				final int len = (int) Math.min(size, b.length - body);
-				return new Clip(rate, channels, toPcm16(b, body, len, format, bits, name));
+				// A streamed WAV can carry a bogus length: take what is there.
+				final int length = (int) Math.min(size, wav.length - body);
+				return convert(wav, body, length, format, channels, rate, bits, name);
 			}
-			pos = body + size + (size & 1);
+			final long next = body + size + (size & 1);
+			if (next > wav.length)
+			{
+				break;
+			}
+			pos = (int) next;
 		}
-		throw new IOException("no data chunk: " + name);
+		throw new IOException(name + " has no audio data");
 	}
 
-	private static byte[] toPcm16(byte[] b, int off, int len, int format, int bits, String name) throws IOException
+	private static Pcm convert(byte[] wav, int offset, int length, int format, int channels, int rate, int bits,
+		String name) throws IOException
 	{
-		if (format == 1 && bits == 16)
+		if (channels <= 0 || rate <= 0)
 		{
-			final byte[] out = new byte[len & ~1];
-			System.arraycopy(b, off, out, 0, out.length);
-			return out;
+			throw new IOException(name + " has no format chunk");
 		}
-		if (format == 7 && bits == 8)
+		if (format == FORMAT_PCM && bits == 16)
 		{
-			final byte[] out = new byte[len * 2];
-			for (int i = 0; i < len; i++)
+			final int usable = length - (length % (2 * channels));
+			final byte[] data = new byte[usable];
+			System.arraycopy(wav, offset, data, 0, usable);
+			return new Pcm(rate, channels, data);
+		}
+		if (format == FORMAT_MULAW && bits == 8)
+		{
+			final int usable = length - (length % channels);
+			final byte[] data = new byte[usable * 2];
+			for (int i = 0; i < usable; i++)
 			{
-				final int sample = ulaw(b[off + i]);
-				out[2 * i] = (byte) sample;
-				out[2 * i + 1] = (byte) (sample >> 8);
+				final int sample = muLaw(wav[offset + i]);
+				data[2 * i] = (byte) sample;
+				data[2 * i + 1] = (byte) (sample >> 8);
 			}
-			return out;
+			return new Pcm(rate, channels, data);
 		}
-		throw new IOException("unsupported WAV encoding (format " + format + ", " + bits + " bit): " + name);
+		throw new IOException(name + " is format " + format + " at " + bits + " bits; only 16-bit PCM and 8-bit mu-law play");
 	}
 
-	/** ITU-T G.711 mu-law byte to a 16-bit linear sample. */
-	private static int ulaw(byte value)
+	/** G.711 mu-law byte to a 16-bit linear sample. */
+	private static int muLaw(byte encoded)
 	{
-		final int u = ~value & 0xff;
-		final int magnitude = (((u & 0x0f) << 3) + 0x84) << ((u & 0x70) >> 4);
-		return (u & 0x80) != 0 ? 0x84 - magnitude : magnitude - 0x84;
+		final int u = ~encoded & 0xFF;
+		final int exponent = (u >> 4) & 0x07;
+		final int mantissa = u & 0x0F;
+		final int sample = (((mantissa << 3) + 0x84) << exponent) - 0x84;
+		return (u & 0x80) != 0 ? -sample : sample;
 	}
 
-	private static byte[] wav(byte[] data, int rate, int channels)
+	private static byte[] readAll(InputStream in) throws IOException
 	{
-		final byte[] out = new byte[HEADER + data.length];
-		final int blockAlign = channels * 2;
-		put(out, 0, "RIFF");
-		put32(out, 4, 36 + data.length);
-		put(out, 8, "WAVE");
-		put(out, 12, "fmt ");
-		put32(out, 16, 16);
-		put16(out, 20, 1);
-		put16(out, 22, channels);
-		put32(out, 24, rate);
-		put32(out, 28, rate * blockAlign);
-		put16(out, 32, blockAlign);
-		put16(out, 34, 16);
-		put(out, 36, "data");
-		put32(out, 40, data.length);
-		System.arraycopy(data, 0, out, HEADER, data.length);
-		return out;
+		final ByteArrayOutputStream out = new ByteArrayOutputStream();
+		final byte[] buffer = new byte[8192];
+		int read;
+		while ((read = in.read(buffer)) > 0)
+		{
+			out.write(buffer, 0, read);
+		}
+		return out.toByteArray();
 	}
 
 	private static boolean tag(byte[] b, int at, String tag)
 	{
-		if (at + 4 > b.length)
-		{
-			return false;
-		}
 		for (int i = 0; i < 4; i++)
 		{
 			if (b[at + i] != (byte) tag.charAt(i))
@@ -232,37 +261,25 @@ final class VoiceAudio
 		}
 	}
 
-	private static void put16(byte[] b, int at, int v)
+	private static int le16(byte[] b, int at)
+	{
+		return (b[at] & 0xFF) | ((b[at + 1] & 0xFF) << 8);
+	}
+
+	private static int le32(byte[] b, int at)
+	{
+		return le16(b, at) | (le16(b, at + 2) << 16);
+	}
+
+	private static void putLe16(byte[] b, int at, int v)
 	{
 		b[at] = (byte) v;
 		b[at + 1] = (byte) (v >> 8);
 	}
 
-	private static void put32(byte[] b, int at, int v)
+	private static void putLe32(byte[] b, int at, int v)
 	{
-		put16(b, at, v);
-		put16(b, at + 2, v >> 16);
-	}
-
-	private static int le16(byte[] b, int at)
-	{
-		return (b[at] & 0xff) | ((b[at + 1] & 0xff) << 8);
-	}
-
-	private static long le32(byte[] b, int at)
-	{
-		return (le16(b, at) & 0xffffL) | ((long) le16(b, at + 2) << 16);
-	}
-
-	private static byte[] readAll(InputStream in) throws IOException
-	{
-		final ByteArrayOutputStream out = new ByteArrayOutputStream();
-		final byte[] buffer = new byte[8192];
-		int read;
-		while ((read = in.read(buffer)) > 0)
-		{
-			out.write(buffer, 0, read);
-		}
-		return out.toByteArray();
+		putLe16(b, at, v);
+		putLe16(b, at + 2, v >> 16);
 	}
 }

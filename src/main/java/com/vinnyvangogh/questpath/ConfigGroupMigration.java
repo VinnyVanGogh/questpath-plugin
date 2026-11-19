@@ -154,7 +154,7 @@ final class ConfigGroupMigration
 			int copied = migrate(of(configManager), QuestpathConfig.LEGACY_GROUP, QuestpathConfig.GROUP);
 			if (copied > 0)
 			{
-				log.info("Quest Route: carried {} setting(s) over from the old \"{}\" config group",
+				log.debug("Quest Route: carried {} setting(s) over from the old \"{}\" config group",
 					copied, QuestpathConfig.LEGACY_GROUP);
 			}
 		}

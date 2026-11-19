@@ -248,14 +248,14 @@ public interface QuestpathConfig extends Config
 	@ConfigItem(
 		keyName = "serverUrl",
 		name = "Quest Route address",
-		description = "Where your Quest Route server is listening.",
+		description = "Where your Quest Route server is listening, e.g. an address on your own machine or network. Blank means not set.",
 		section = syncSection,
 		position = 2
 	)
 	default String serverUrl()
 	{
-		// Blank until the player sets their own server: a default address
-		// would be a third-party host this plugin names without being asked.
+		// Blank, not a prefilled host: nothing is contacted until the player
+		// types their own server address. Every reader treats blank as "not set".
 		return "";
 	}
 

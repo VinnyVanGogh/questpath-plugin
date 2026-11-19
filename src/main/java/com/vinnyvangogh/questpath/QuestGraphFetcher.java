@@ -1,6 +1,5 @@
 package com.vinnyvangogh.questpath;
 
-import com.google.common.base.Charsets;
 import com.google.gson.Gson;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -151,7 +150,7 @@ class QuestGraphFetcher
 						return;
 					}
 					QuestGraph graph = QuestGraph.parse(
-						gson, new InputStreamReader(body.byteStream(), Charsets.UTF_8));
+						gson, new InputStreamReader(body.byteStream(), "UTF-8"));
 					onOutcome.accept(Outcome.fetched(graph));
 				}
 				catch (IOException e)

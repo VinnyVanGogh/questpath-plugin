@@ -19,10 +19,31 @@ final class ShopPlaces implements Function<String, WorldPoint>
 	private final Function<String, WorldPoint> locator;
 	private final Function<String, String> areas;
 
+	private final Function<String, String> blocks;
+
 	ShopPlaces(Function<String, WorldPoint> locator, Function<String, String> areas)
+	{
+		this(locator, areas, name -> "");
+	}
+
+	/** @param blocks why a shop is not usable ("needs 75 Thieving, you have 2"), or empty */
+	ShopPlaces(Function<String, WorldPoint> locator, Function<String, String> areas,
+		Function<String, String> blocks)
 	{
 		this.locator = locator;
 		this.areas = areas;
+		this.blocks = blocks;
+	}
+
+	/** Why this account cannot use the shop, or empty when unknown or usable. */
+	static String blockReason(Function<String, WorldPoint> locator, String shopName)
+	{
+		if (!(locator instanceof ShopPlaces) || shopName == null)
+		{
+			return "";
+		}
+		String reason = ((ShopPlaces) locator).blocks.apply(shopName);
+		return reason == null ? "" : reason;
 	}
 
 	@Override
