@@ -69,6 +69,9 @@ class BankTabLayout
 	/** Widgets this class created, deleted wholesale before every rebuild. */
 	private final List<Widget> added = new ArrayList<>();
 
+	/** The bank's own slots this class hid, given back by {@link #removeAdded()}. */
+	private final List<Widget> hiddenSlots = new ArrayList<>();
+
 	/** How far into the container's existing children the rebuild has got. */
 	private int nextChild;
 
@@ -558,6 +561,10 @@ class BankTabLayout
 		}
 		for (Widget child : children)
 		{
+			if (child != null && !child.isSelfHidden())
+			{
+				hiddenSlots.add(child);
+			}
 			child.setHidden(true);
 		}
 	}
@@ -579,5 +586,13 @@ class BankTabLayout
 			}
 		}
 		added.clear();
+		// The bank's own slots were hidden to make room. Handing them back here
+		// means leaving the tab restores the grid even if the client's rebuild
+		// reuses the widgets rather than recreating them.
+		for (Widget slot : hiddenSlots)
+		{
+			slot.setHidden(false);
+		}
+		hiddenSlots.clear();
 	}
 }

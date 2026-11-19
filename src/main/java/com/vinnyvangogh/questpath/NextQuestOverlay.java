@@ -220,6 +220,12 @@ class NextQuestOverlay extends QuestpathOverlay
 			String label = line.optional() ? line.name() + " (optional)" : line.name();
 			rows.add(OverlayRow.item(line.itemId(), label, line.describe(), line.held(),
 				OverlayTheme.TEXT, line.held() ? OverlayTheme.GOOD : OverlayTheme.WARN));
+			// Where it comes from, when a drop is the only way: "drops from Imps".
+			String drops = line.held() ? null : DropTargets.dropsFrom(line.sources());
+			if (drops != null)
+			{
+				rows.add(OverlayRow.note(drops, OverlayTheme.MUTED));
+			}
 		}
 		int more = needs.lines().size() - shown;
 		if (more > 0)

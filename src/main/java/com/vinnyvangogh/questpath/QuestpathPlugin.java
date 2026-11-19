@@ -465,6 +465,7 @@ public class QuestpathPlugin extends Plugin
 	 * reason: it draws into the world rather than owning a panel.
 	 */
 	private GroundItemOverlay groundOverlay;
+	private DropTargetOverlay dropTargetOverlay;
 	private FloatingNoteOverlay floatingNoteOverlay;
 
 	/**
@@ -803,6 +804,15 @@ public class QuestpathPlugin extends Plugin
 			shopItemSkips, this::diaryGraphTasks, this::diaryPush, lockedGearActions(),
 			localBuildRules, this::onLocalRulesEdited);
 		panel.setSayShopAgain(this::sayShopAgain);
+		panel.setOnOpenSetup(this::openSetup);
+		// The retired "Reset account setup" checkbox: read once, then cleared,
+		// so a box ticked before this update still opens setup rather than
+		// being silently dropped.
+		if (Boolean.parseBoolean(configManager.getConfiguration(QuestpathConfig.GROUP, "resetAccountSetup")))
+		{
+			legacyResetRequested = true;
+		}
+		configManager.unsetConfiguration(QuestpathConfig.GROUP, "resetAccountSetup");
 		navButton = NavigationButton.builder()
 			.tooltip("Quest Route")
 			.icon(icon())
@@ -845,6 +855,8 @@ public class QuestpathPlugin extends Plugin
 
 		groundOverlay = new GroundItemOverlay(this, config, client, tooltipManager);
 		overlayManager.add(groundOverlay);
+		dropTargetOverlay = new DropTargetOverlay(this, config, client);
+		overlayManager.add(dropTargetOverlay);
 		floatingNoteOverlay = new FloatingNoteOverlay(this, config, client, floatingNotes);
 		overlayManager.add(floatingNoteOverlay);
 
@@ -1113,6 +1125,12 @@ public class QuestpathPlugin extends Plugin
 			overlayManager.remove(groundOverlay);
 			groundOverlay = null;
 		}
+		if (dropTargetOverlay != null)
+		{
+			overlayManager.remove(dropTargetOverlay);
+			dropTargetOverlay.clear();
+			dropTargetOverlay = null;
+		}
 		if (bankOverlay != null)
 		{
 			overlayManager.remove(bankOverlay);
@@ -1292,6 +1310,12 @@ public class QuestpathPlugin extends Plugin
 					return;
 				}
 				applyLoadedProfile(loaded);
+				if (legacyResetRequested)
+				{
+					// The retired checkbox was ticked: open setup, as it meant to.
+					legacyResetRequested = false;
+					openSetup();
+				}
 				refresh();
 			});
 		});
@@ -1312,13 +1336,44 @@ public class QuestpathPlugin extends Plugin
 		panel.setSetup(note, this::onSetupChosen);
 	}
 
-	/** Swing thread, from the setup panel's button. */
-	private void onSetupChosen(LocalProfile.AccountType type, java.util.Set<LocalProfile.QuestType> types)
+	/** Set when the retired "Reset account setup" checkbox was found ticked at startup. */
+	private volatile boolean legacyResetRequested;
+
+	/**
+	 * Any thread, from the sidebar's "Account setup" button: shows setup on the
+	 * Quests tab, filled in with what is saved, and leaves what is saved alone
+	 * until the player presses save. Cancel puts the route back.
+	 *
+	 * <p>Replaces the "Reset account setup" checkbox, which wiped the profile
+	 * behind a confirm dialog and did nothing when the server was off.
+	 */
+	void openSetup()
 	{
-		LocalProfile profile = LocalProfile.create(type, types);
+		LocalProfile current = localProfile;
+		String note = current == null
+			? "Welcome. A few questions, then your route appears. Nothing leaves your computer."
+			: "Change any answer and save. Your game progress is not touched.";
+		panel.setSetup(note, current, this::onSetupChosen, current == null ? null : this::closeSetup);
+		clientThread.invokeLater(this::refresh);
+	}
+
+	private void closeSetup()
+	{
+		panel.setSetup(null, null);
+		clientThread.invokeLater(this::refresh);
+	}
+
+	/** Swing thread, from the setup panel's button. */
+	private void onSetupChosen(LocalProfile chosen, List<BuildRule> rules)
+	{
+		LocalProfile previous = localProfile;
+		LocalProfile profile = previous == null ? chosen : previous.withSetup(chosen);
 		localProfile = profile;
 		panel.setSetup(null, null);
 		saveProfileAsync(profile);
+		// The limits are the build: written as this account's own rules, which
+		// the verdicts, the lamp advisor and the route all read.
+		localBuildRules.replaceAll(rules);
 		clientThread.invokeLater(this::refresh);
 	}
 
@@ -1370,53 +1425,6 @@ public class QuestpathPlugin extends Plugin
 		saveProfileAsync(updated);
 	}
 
-	/** Swing thread: asks, then wipes this account's profile and runs setup again. */
-	private void confirmResetSetup()
-	{
-		if (profileKey == null)
-		{
-			javax.swing.JOptionPane.showMessageDialog(panel,
-				"Log in to a character first, then reset its Quest Route setup.",
-				"Reset account setup", javax.swing.JOptionPane.INFORMATION_MESSAGE);
-			return;
-		}
-		int answer = javax.swing.JOptionPane.showConfirmDialog(panel,
-			"This deletes the saved Quest Route setup for this account (account type, quest types, route)\n"
-				+ "and asks you to set it up again. Your game progress is not touched.\n\nReset it?",
-			"Reset account setup", javax.swing.JOptionPane.YES_NO_OPTION,
-			javax.swing.JOptionPane.WARNING_MESSAGE);
-		if (answer != javax.swing.JOptionPane.YES_OPTION)
-		{
-			return;
-		}
-		String key = profileKey;
-		scheduler.execute(() ->
-		{
-			try
-			{
-				profileStore.reset(key);
-			}
-			catch (RuntimeException e)
-			{
-				log.warn("questroute: could not delete the local profile", e);
-			}
-			clientThread.invokeLater(() ->
-			{
-				if (!key.equals(profileKey))
-				{
-					return;
-				}
-				localProfile = null;
-				if (!routeFromServer)
-				{
-					routeOrder = Collections.emptyList();
-				}
-				applyLoadedProfile(new LocalProfileStore.Result(LocalProfileStore.Status.ABSENT, null));
-				refresh();
-			});
-		});
-	}
-
 	@Subscribe
 	public void onConfigChanged(ConfigChanged event)
 	{
@@ -1424,11 +1432,21 @@ public class QuestpathPlugin extends Plugin
 		{
 			return;
 		}
-		if ("resetAccountSetup".equals(event.getKey()) && Boolean.parseBoolean(event.getNewValue()))
+		if (panel != null)
 		{
-			// A momentary switch: put it back, then ask.
-			configManager.setConfiguration(QuestpathConfig.GROUP, "resetAccountSetup", false);
-			javax.swing.SwingUtilities.invokeLater(this::confirmResetSetup);
+			panel.refreshQuickSettings();
+		}
+		if ("showWhatsNew".equals(event.getKey()) && Boolean.parseBoolean(event.getNewValue()))
+		{
+			// A momentary switch: put it back, then replay the notes.
+			configManager.setConfiguration(QuestpathConfig.GROUP, "showWhatsNew", false);
+			clientThread.invokeLater(() ->
+			{
+				if (client.getGameState() == GameState.LOGGED_IN)
+				{
+					postNoteLines(UpdateNotes.replay());
+				}
+			});
 			return;
 		}
 		if ("showWhatsNew".equals(event.getKey()) && Boolean.parseBoolean(event.getNewValue()))
@@ -2412,6 +2430,42 @@ public class QuestpathPlugin extends Plugin
 	}
 
 	@Subscribe
+	public void onNpcSpawned(net.runelite.api.events.NpcSpawned event)
+	{
+		if (dropTargetOverlay != null)
+		{
+			dropTargetOverlay.npcSpawned(event.getNpc());
+		}
+	}
+
+	@Subscribe
+	public void onNpcDespawned(net.runelite.api.events.NpcDespawned event)
+	{
+		if (dropTargetOverlay != null)
+		{
+			dropTargetOverlay.npcDespawned(event.getNpc());
+		}
+	}
+
+	@Subscribe
+	public void onGameObjectSpawned(net.runelite.api.events.GameObjectSpawned event)
+	{
+		if (dropTargetOverlay != null)
+		{
+			dropTargetOverlay.objectSpawned(event.getGameObject());
+		}
+	}
+
+	@Subscribe
+	public void onGameObjectDespawned(net.runelite.api.events.GameObjectDespawned event)
+	{
+		if (dropTargetOverlay != null)
+		{
+			dropTargetOverlay.objectDespawned(event.getGameObject());
+		}
+	}
+
+	@Subscribe
 	public void onGameStateChanged(GameStateChanged event)
 	{
 		if (event.getGameState() == GameState.LOGGED_IN)
@@ -2427,6 +2481,11 @@ public class QuestpathPlugin extends Plugin
 			// tracked set starts over; the announcer keeps what it has said,
 			// keyed by tile, so crossing a region edge does not repeat it.
 			floorSpawns.clear();
+			if (dropTargetOverlay != null)
+			{
+				// Spawn events re-fire for everything in the new scene.
+				dropTargetOverlay.clear();
+			}
 		}
 		if (event.getGameState() == GameState.LOGIN_SCREEN)
 		{
@@ -2958,9 +3017,33 @@ public class QuestpathPlugin extends Plugin
 		return bankNeedsShown;
 	}
 
+	private final BankToggleGuard bankToggleGuard = new BankToggleGuard();
+
+	/**
+	 * The button's own op listener. It and {@link #onMenuOptionClicked} both
+	 * see one click on the button, and whichever runs second must not undo the
+	 * first: a "Hide tab" click that was consumed here and then re-delivered to
+	 * the listener would turn the tab straight back on, which reads as "Hide
+	 * tab does nothing".
+	 */
 	private void toggleBankNeeds()
 	{
+		if (bankToggleGuard.isEcho(bankNeedsShown, client.getTickCount()))
+		{
+			return;
+		}
 		setBankTab(!bankNeedsShown);
+	}
+
+	/** Leaves the tab because the button said "Hide tab". */
+	private void hideBankTabFromButton()
+	{
+		bankToggleGuard.left(client.getTickCount());
+		setBankTab(false);
+		if (bankButton != null)
+		{
+			bankButton.refresh();
+		}
 	}
 
 	/**
@@ -3192,11 +3275,7 @@ public class QuestpathPlugin extends Plugin
 			if (option.equals(BankButton.ACTION_HIDE))
 			{
 				event.consume();
-				setBankTab(false);
-				if (bankButton != null)
-				{
-					bankButton.refresh();
-				}
+				hideBankTabFromButton();
 			}
 			return;
 		}

@@ -65,6 +65,14 @@ public interface QuestpathConfig extends Config
 	String groundSection = "ground";
 
 	@ConfigSection(
+		name = "Drop sources",
+		description = "Outline the NPCs and objects that drop what your route still needs",
+		position = 3,
+		closedByDefault = true
+	)
+	String dropSection = "dropSources";
+
+	@ConfigSection(
 		name = "Bank",
 		description = "Mark what your plan needs while the bank is open",
 		position = 4,
@@ -276,20 +284,6 @@ public interface QuestpathConfig extends Config
 		// No default. There is no such thing as a sensible shared secret, and
 		// an empty token means the push is off however the toggle is set.
 		return "";
-	}
-
-	@ConfigItem(
-		keyName = "resetAccountSetup",
-		name = "Reset account setup",
-		description = "Tick to wipe this account's saved Quest Route setup (account type, quest types, route)"
-			+ " and run first-run setup again. You are asked to confirm; the box un-ticks itself.",
-		position = 0
-	)
-	default boolean resetAccountSetup()
-	{
-		// A momentary switch, not a setting: the plugin turns it back off
-		// as soon as it has been handled.
-		return false;
 	}
 
 	// ------------------------------------------------------------------
@@ -932,6 +926,57 @@ public interface QuestpathConfig extends Config
 	default java.awt.Color groundHighlightColour()
 	{
 		return OverlayTheme.WARN;
+	}
+
+	@ConfigItem(
+		keyName = "dropHighlight",
+		name = "Mark what drops what you need",
+		description = "Outline the NPCs and objects in view that are the only source of an item"
+			+ " your route still needs -- imps for a bead, say -- and stop once you have enough."
+			+ " Outline only: nothing is clicked or changed.",
+		section = dropSection,
+		position = 1
+	)
+	default boolean dropHighlight()
+	{
+		return true;
+	}
+
+	@ConfigItem(
+		keyName = "dropHighlightLabels",
+		name = "Show what it drops",
+		description = "Print \"drops White bead\" above the outlined NPC or object.",
+		section = dropSection,
+		position = 2
+	)
+	default boolean dropHighlightLabels()
+	{
+		return true;
+	}
+
+	@ConfigItem(
+		keyName = "dropHighlightColour",
+		name = "Outline colour",
+		description = "The colour a drop source is outlined in.",
+		section = dropSection,
+		position = 3
+	)
+	default java.awt.Color dropHighlightColour()
+	{
+		return OverlayTheme.ACCENT;
+	}
+
+	@ConfigItem(
+		keyName = "dropHighlightWholeRoute",
+		name = "Whole route, not just this quest",
+		description = "Off: only outline sources for the quest you are on. On: every quest your"
+			+ " route covers.",
+		section = dropSection,
+		position = 4
+	)
+	default boolean dropHighlightWholeRoute()
+	{
+		return false;
 	}
 
 	@ConfigItem(
