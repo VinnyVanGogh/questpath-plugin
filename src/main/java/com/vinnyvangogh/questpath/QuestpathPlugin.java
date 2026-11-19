@@ -43,6 +43,7 @@ import net.runelite.api.ItemComposition;
 import net.runelite.api.events.GameStateChanged;
 import net.runelite.api.events.GrandExchangeOfferChanged;
 import net.runelite.api.events.GrandExchangeSearched;
+import net.runelite.client.audio.AudioPlayer;
 import net.runelite.client.chat.ChatColorType;
 import net.runelite.client.chat.ChatMessageBuilder;
 import net.runelite.client.chat.QueuedMessage;
@@ -396,6 +397,9 @@ public class QuestpathPlugin extends Plugin
 	/** The voice's word list and player; built in startUp, the player shut down in shutDown. */
 	private VoiceLines voiceLines = new VoiceLines();
 	private VoicePlayer voicePlayer;
+
+	@Inject
+	private AudioPlayer audioPlayer;
 
 	/** When to say "Bucket nearby" -- see {@link FloorItemAnnouncer}. */
 	private final FloorItemAnnouncer floorAnnouncer = new FloorItemAnnouncer();
@@ -853,7 +857,7 @@ public class QuestpathPlugin extends Plugin
 		overlayManager.add(lampOverlay);
 
 		voiceLines = VoiceLines.load();
-		voicePlayer = new VoicePlayer();
+		voicePlayer = new VoicePlayer(audioPlayer);
 
 		bankTab = new BankTabLayout(client, clientThread, this);
 		bankButton = new BankButton(client, this::bankNeedsShown, this::toggleBankNeeds);
@@ -1849,12 +1853,12 @@ public class QuestpathPlugin extends Plugin
 	 */
 	private LockedGear.ItemStatsView itemStatsView(int itemId)
 	{
-		net.runelite.http.api.item.ItemStats stats = itemManager.getItemStats(itemId, false);
+		net.runelite.client.game.ItemStats stats = itemManager.getItemStats(itemId);
 		if (stats == null || !stats.isEquipable())
 		{
 			return UNKNOWN_ITEM_STATS;
 		}
-		net.runelite.http.api.item.ItemEquipmentStats equipment = stats.getEquipment();
+		net.runelite.client.game.ItemEquipmentStats equipment = stats.getEquipment();
 		if (equipment == null)
 		{
 			return UNKNOWN_ITEM_STATS;
@@ -1882,7 +1886,8 @@ public class QuestpathPlugin extends Plugin
 			@Override
 			public int mdmg()
 			{
-				return equipment.getMdmg();
+				// The client's getMdmg() is a float percent; the plan works in whole percents.
+				return Math.round(equipment.getMdmg());
 			}
 		};
 	}
