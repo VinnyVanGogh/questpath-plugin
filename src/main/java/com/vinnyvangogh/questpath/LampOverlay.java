@@ -178,6 +178,17 @@ class LampOverlay extends Overlay
 			graphics.setStroke(BOX_STROKE);
 			graphics.drawRect(bounds.x, bounds.y, bounds.width - 1, bounds.height - 1);
 			graphics.setStroke(previous);
+
+			String badge = verdict.gainBadge();
+			if (!badge.isEmpty())
+			{
+				int x = bounds.x + 3;
+				int y = bounds.y + bounds.height - 3;
+				graphics.setColor(Color.BLACK);
+				graphics.drawString(badge, x + 1, y + 1);
+				graphics.setColor(Color.WHITE);
+				graphics.drawString(badge, x, y);
+			}
 		}
 	}
 
@@ -224,7 +235,9 @@ class LampOverlay extends Overlay
 			String tier = verdict.tier() == LampVerdict.Tier.ROUTE
 				? " -- a level your route is waiting on"
 				: verdict.tier() == LampVerdict.Tier.GOAL ? " -- towards your goal" : "";
-			return "#" + verdict.rank() + ": " + levels + " levels here"
+			String badge = verdict.gainBadge();
+			return "#" + verdict.rank() + ": " + (badge.isEmpty() ? "" : badge + " level -- ")
+				+ levels + " levels here"
 				+ " (" + verdict.levelNow() + " to " + verdict.levelAfter() + ")" + tier;
 		}
 		return "";
