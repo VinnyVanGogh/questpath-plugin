@@ -116,7 +116,7 @@ class OverlaySettingsPanel extends JPanel
 	 * -- see this file's own class doc's second paragraph, and {@link
 	 * QuestpathConfig}'s.
 	 *
-	 * <p>{@code syncEnabled} and {@code fetchQuestGraph} both live here.
+	 * <p>{@code syncEnabled} lives here.
 	 * {@code serverUrl} and {@code pairingToken} are the two settings this
 	 * file deliberately never duplicates -- a URL and a secret token are
 	 * exactly the free-text and masked-field controls RuneLite's own config
@@ -134,8 +134,8 @@ class OverlaySettingsPanel extends JPanel
 		JPanel panel = column();
 		panel.add(warningToggle(
 			"Send my account state",
-			"Push quest completion, levels and diaries to your questpath instance when they"
-				+ " change. questpath then stops polling WikiSync for this account.",
+			"Push quest completion, levels and diaries to your Quest Route server when they"
+				+ " change. Quest Route then stops polling WikiSync for this account.",
 			"This feature submits your IP address to a 3rd-party server not controlled or"
 				+ " verified by RuneLite developers.\n\nTurn it on anyway?",
 			config.syncEnabled(), "syncEnabled"));
@@ -144,7 +144,7 @@ class OverlaySettingsPanel extends JPanel
 			"Share with my party",
 			"Send your finished quests, levels, build rules and counts of quest items you hold to"
 				+ " RuneLite party members who also run Quest Route, for the Group tab. RuneLite's own"
-				+ " party service only -- never questpath. Nothing is sent while this is off.",
+				+ " party service only -- never a Quest Route server. Nothing is sent while this is off.",
 			config.partyShare(), "partyShare"));
 		panel.add(Box.createRigidArea(new Dimension(0, 6)));
 		panel.add(toggle(
@@ -153,8 +153,8 @@ class OverlaySettingsPanel extends JPanel
 				+ " chat with how many more the group needs. Uses what party members share; once per visit.",
 			config.groupShopAlert(), "groupShopAlert"));
 		panel.add(Box.createRigidArea(new Dimension(0, 6)));
-		JLabel note = new JLabel(wrap("The address to fetch from and push to, and the pairing token"
-			+ " from questpath -plugin-token, are set in RuneLite's own Configuration panel for this"
+		JLabel note = new JLabel(wrap("The address to push to, and the pairing token"
+			+ " from the Quest Route server, are set in RuneLite's own Configuration panel for this"
 			+ " plugin -- not duplicated here."));
 		note.setFont(FontManager.getRunescapeSmallFont());
 		note.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
@@ -258,7 +258,7 @@ class OverlaySettingsPanel extends JPanel
 		JPanel body = column();
 		body.add(toggleGroup(
 			"Next on your route",
-			"The next quests on your saved questpath route, and how far through it you are.",
+			"The next quests on your saved Quest Route route, and how far through it you are.",
 			config.overlayNextQuest(), "overlayNextQuest",
 			sub ->
 			{
@@ -467,7 +467,7 @@ class OverlaySettingsPanel extends JPanel
 					"Grey out skills a rule closes",
 					"Wash out any skill your rules forbid -- no experience at all, a cap this"
 						+ " lamp would cross, a cap already reached, or a level the lamp itself"
-						+ " requires. A skill questpath cannot price the lamp against is left"
+						+ " requires. A skill Quest Route cannot price the lamp against is left"
 						+ " alone and says \"amount unknown\" on hover, rather than being"
 						+ " greyed on a guess.",
 					config.lampGreyBlocked(), "lampGreyBlocked"));

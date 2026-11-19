@@ -1440,7 +1440,7 @@ class QuestGraph
 				? "is version " + graph.version() + ", which this build (" + MAX_VERSION
 					+ ") does not understand yet -- update the plugin"
 				: "is version " + graph.version() + ", which is older than this build ("
-					+ SUPPORTED_VERSION + ") expects -- questpath needs re-exporting or upgrading");
+					+ SUPPORTED_VERSION + ") expects -- Quest Route needs re-exporting or upgrading");
 		}
 		if (graph.quests().isEmpty())
 		{
