@@ -100,6 +100,57 @@ public class GuildEntryRulesTest
 			.usable());
 	}
 
+	/**
+	 * The reported bug: a bronze med helm account under 130 combined has
+	 * reachable shops for it, and the guild is not among them. At 130 the guild
+	 * is allowed.
+	 */
+	@Test
+	public void bronzeMedHelmRoutesToAReachableShopNeverTheGuildBelow130() throws Exception
+	{
+		String[] sellers = {"Blair's Armour", "Helmet Shop.", WARRIORS};
+		PlayerState under = account(65, 64, new HashSet<>());
+		int reachable = 0;
+		for (String name : sellers)
+		{
+			boolean usable = judge(name, under).usable();
+			assertEquals(name, !WARRIORS.equals(name), usable);
+			reachable += usable ? 1 : 0;
+		}
+		assertTrue("a reachable med helm shop must remain", reachable > 0);
+		assertTrue(judge(WARRIORS, account(65, 65, new HashSet<>())).usable());
+	}
+
+	/** Ranging Guild shop: 40 Ranged, boundary values. */
+	@Test
+	public void rangingGuildNeeds40Ranged() throws Exception
+	{
+		Map<String, Integer> levels = new HashMap<>();
+		levels.put("Ranged", 39);
+		assertFalse(judge("Dargaud's Bow and Arrows.",
+			new PlayerState(levels, new HashMap<>(), new HashSet<>(), Collections.emptyList()))
+			.usable());
+		levels.put("Ranged", 40);
+		assertTrue(judge("Dargaud's Bow and Arrows.",
+			new PlayerState(levels, new HashMap<>(), new HashSet<>(), Collections.emptyList()))
+			.usable());
+	}
+
+	/** A shop named for a guild must be gated, ruled or unknown: never silently open. */
+	@Test
+	public void noGuildNamedShopIsUngated() throws Exception
+	{
+		QuestGraph graph = QuestGraph.load(GSON);
+		for (QuestGraph.Shop shop : graph.shops())
+		{
+			if (shop.name().toLowerCase().contains("guild") && shop.reachability() == null)
+			{
+				assertTrue(shop.name() + " is guild-named with no gate",
+					GuildEntryRules.judge(shop.name(), account(1, 1, new HashSet<>())) != null);
+			}
+		}
+	}
+
 	/** Every shop the bundle marks unknown is unreachable unless a guild rule opens it. */
 	@Test
 	public void everyUnknownShopIsUnreachableForAFreshAccount() throws Exception
