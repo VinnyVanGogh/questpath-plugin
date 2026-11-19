@@ -804,6 +804,15 @@ public class QuestpathPlugin extends Plugin
 			shopItemSkips, this::diaryGraphTasks, this::diaryPush, lockedGearActions(),
 			localBuildRules, this::onLocalRulesEdited);
 		panel.setSayShopAgain(this::sayShopAgain);
+		panel.setOnOpenSetup(this::openSetup);
+		// The retired "Reset account setup" checkbox: read once, then cleared,
+		// so a box ticked before this update still opens setup rather than
+		// being silently dropped.
+		if (Boolean.parseBoolean(configManager.getConfiguration(QuestpathConfig.GROUP, "resetAccountSetup")))
+		{
+			legacyResetRequested = true;
+		}
+		configManager.unsetConfiguration(QuestpathConfig.GROUP, "resetAccountSetup");
 		navButton = NavigationButton.builder()
 			.tooltip("Quest Route")
 			.icon(icon())
@@ -908,7 +917,65 @@ public class QuestpathPlugin extends Plugin
 		// that threw out of startUp and RuneLite turned the plugin straight
 		// back off.
 		refreshOnClientThread();
+
+		// Installed or turned on mid-session: no LOGGED_IN is coming, so say it
+		// now. With no stored version that is a fresh install (UpdateNotes).
+		clientThread.invokeLater(() ->
+		{
+			startedLoggedIn = client.getGameState() == GameState.LOGGED_IN;
+			if (startedLoggedIn)
+			{
+				postUpdateNotes();
+			}
+		});
 		log.debug("quest-route started");
+	}
+
+	/** Whether this start found the player logged in: with no stored version, a fresh install (UpdateNotes). */
+	private boolean startedLoggedIn;
+
+	/**
+	 * Posts the "what's new" lines once per version (and, in a developer build,
+	 * once per build commit), and stores both as seen even with the setting
+	 * off, so turning it on later does not bring back notes for an update long
+	 * past. Client thread.
+	 */
+	private void postUpdateNotes()
+	{
+		final String lastSeen = config.lastSeenVersion();
+		final String lastSeenBuild = config.lastSeenBuild();
+		final String build = BuildInfo.commit();
+		final boolean enabled = config.showUpdateNotes();
+		List<String> lines = UpdateNotes.toShow(lastSeen, enabled, startedLoggedIn);
+		if (lines.isEmpty())
+		{
+			lines = UpdateNotes.toShowForBuild(lastSeenBuild, build, enabled);
+		}
+		if (UpdateNotes.needsRecord(lastSeen))
+		{
+			configManager.setConfiguration(QuestpathConfig.GROUP, QuestpathConfig.LAST_SEEN_VERSION,
+				UpdateNotes.VERSION);
+		}
+		if (UpdateNotes.buildChanged(lastSeenBuild, build))
+		{
+			configManager.setConfiguration(QuestpathConfig.GROUP, QuestpathConfig.LAST_SEEN_BUILD, build);
+		}
+		postNoteLines(lines);
+	}
+
+	/** One console line each, title highlighted. Local only: nothing is typed or sent. */
+	private void postNoteLines(List<String> lines)
+	{
+		for (int i = 0; i < lines.size(); i++)
+		{
+			chatMessageManager.queue(QueuedMessage.builder()
+				.type(ChatMessageType.CONSOLE)
+				.runeLiteFormattedMessage(new ChatMessageBuilder()
+					.append(i == 0 ? ChatColorType.HIGHLIGHT : ChatColorType.NORMAL)
+					.append(lines.get(i))
+					.build())
+				.build());
+		}
 	}
 
 	/** Package-private so a test can pin that startUp never refreshes inline. */
@@ -1243,6 +1310,12 @@ public class QuestpathPlugin extends Plugin
 					return;
 				}
 				applyLoadedProfile(loaded);
+				if (legacyResetRequested)
+				{
+					// The retired checkbox was ticked: open setup, as it meant to.
+					legacyResetRequested = false;
+					openSetup();
+				}
 				refresh();
 			});
 		});
@@ -1263,13 +1336,44 @@ public class QuestpathPlugin extends Plugin
 		panel.setSetup(note, this::onSetupChosen);
 	}
 
-	/** Swing thread, from the setup panel's button. */
-	private void onSetupChosen(LocalProfile.AccountType type, java.util.Set<LocalProfile.QuestType> types)
+	/** Set when the retired "Reset account setup" checkbox was found ticked at startup. */
+	private volatile boolean legacyResetRequested;
+
+	/**
+	 * Any thread, from the sidebar's "Account setup" button: shows setup on the
+	 * Quests tab, filled in with what is saved, and leaves what is saved alone
+	 * until the player presses save. Cancel puts the route back.
+	 *
+	 * <p>Replaces the "Reset account setup" checkbox, which wiped the profile
+	 * behind a confirm dialog and did nothing when the server was off.
+	 */
+	void openSetup()
 	{
-		LocalProfile profile = LocalProfile.create(type, types);
+		LocalProfile current = localProfile;
+		String note = current == null
+			? "Welcome. A few questions, then your route appears. Nothing leaves your computer."
+			: "Change any answer and save. Your game progress is not touched.";
+		panel.setSetup(note, current, this::onSetupChosen, current == null ? null : this::closeSetup);
+		clientThread.invokeLater(this::refresh);
+	}
+
+	private void closeSetup()
+	{
+		panel.setSetup(null, null);
+		clientThread.invokeLater(this::refresh);
+	}
+
+	/** Swing thread, from the setup panel's button. */
+	private void onSetupChosen(LocalProfile chosen, List<BuildRule> rules)
+	{
+		LocalProfile previous = localProfile;
+		LocalProfile profile = previous == null ? chosen : previous.withSetup(chosen);
 		localProfile = profile;
 		panel.setSetup(null, null);
 		saveProfileAsync(profile);
+		// The limits are the build: written as this account's own rules, which
+		// the verdicts, the lamp advisor and the route all read.
+		localBuildRules.replaceAll(rules);
 		clientThread.invokeLater(this::refresh);
 	}
 
@@ -1321,53 +1425,6 @@ public class QuestpathPlugin extends Plugin
 		saveProfileAsync(updated);
 	}
 
-	/** Swing thread: asks, then wipes this account's profile and runs setup again. */
-	private void confirmResetSetup()
-	{
-		if (profileKey == null)
-		{
-			javax.swing.JOptionPane.showMessageDialog(panel,
-				"Log in to a character first, then reset its Quest Route setup.",
-				"Reset account setup", javax.swing.JOptionPane.INFORMATION_MESSAGE);
-			return;
-		}
-		int answer = javax.swing.JOptionPane.showConfirmDialog(panel,
-			"This deletes the saved Quest Route setup for this account (account type, quest types, route)\n"
-				+ "and asks you to set it up again. Your game progress is not touched.\n\nReset it?",
-			"Reset account setup", javax.swing.JOptionPane.YES_NO_OPTION,
-			javax.swing.JOptionPane.WARNING_MESSAGE);
-		if (answer != javax.swing.JOptionPane.YES_OPTION)
-		{
-			return;
-		}
-		String key = profileKey;
-		scheduler.execute(() ->
-		{
-			try
-			{
-				profileStore.reset(key);
-			}
-			catch (RuntimeException e)
-			{
-				log.warn("questroute: could not delete the local profile", e);
-			}
-			clientThread.invokeLater(() ->
-			{
-				if (!key.equals(profileKey))
-				{
-					return;
-				}
-				localProfile = null;
-				if (!routeFromServer)
-				{
-					routeOrder = Collections.emptyList();
-				}
-				applyLoadedProfile(new LocalProfileStore.Result(LocalProfileStore.Status.ABSENT, null));
-				refresh();
-			});
-		});
-	}
-
 	@Subscribe
 	public void onConfigChanged(ConfigChanged event)
 	{
@@ -1375,11 +1432,21 @@ public class QuestpathPlugin extends Plugin
 		{
 			return;
 		}
-		if ("resetAccountSetup".equals(event.getKey()) && Boolean.parseBoolean(event.getNewValue()))
+		if (panel != null)
 		{
-			// A momentary switch: put it back, then ask.
-			configManager.setConfiguration(QuestpathConfig.GROUP, "resetAccountSetup", false);
-			javax.swing.SwingUtilities.invokeLater(this::confirmResetSetup);
+			panel.refreshQuickSettings();
+		}
+		if ("showWhatsNew".equals(event.getKey()) && Boolean.parseBoolean(event.getNewValue()))
+		{
+			// A momentary switch: put it back, then replay the notes.
+			configManager.setConfiguration(QuestpathConfig.GROUP, "showWhatsNew", false);
+			clientThread.invokeLater(() ->
+			{
+				if (client.getGameState() == GameState.LOGGED_IN)
+				{
+					postNoteLines(UpdateNotes.replay());
+				}
+			});
 			return;
 		}
 		if (!"partyShare".equals(event.getKey()))
@@ -2390,6 +2457,7 @@ public class QuestpathPlugin extends Plugin
 	{
 		if (event.getGameState() == GameState.LOGGED_IN)
 		{
+			postUpdateNotes();
 			refresh();
 			maybeSync();
 			return;
@@ -2936,9 +3004,33 @@ public class QuestpathPlugin extends Plugin
 		return bankNeedsShown;
 	}
 
+	private final BankToggleGuard bankToggleGuard = new BankToggleGuard();
+
+	/**
+	 * The button's own op listener. It and {@link #onMenuOptionClicked} both
+	 * see one click on the button, and whichever runs second must not undo the
+	 * first: a "Hide tab" click that was consumed here and then re-delivered to
+	 * the listener would turn the tab straight back on, which reads as "Hide
+	 * tab does nothing".
+	 */
 	private void toggleBankNeeds()
 	{
+		if (bankToggleGuard.isEcho(bankNeedsShown, client.getTickCount()))
+		{
+			return;
+		}
 		setBankTab(!bankNeedsShown);
+	}
+
+	/** Leaves the tab because the button said "Hide tab". */
+	private void hideBankTabFromButton()
+	{
+		bankToggleGuard.left(client.getTickCount());
+		setBankTab(false);
+		if (bankButton != null)
+		{
+			bankButton.refresh();
+		}
 	}
 
 	/**
@@ -3170,11 +3262,7 @@ public class QuestpathPlugin extends Plugin
 			if (option.equals(BankButton.ACTION_HIDE))
 			{
 				event.consume();
-				setBankTab(false);
-				if (bankButton != null)
-				{
-					bankButton.refresh();
-				}
+				hideBankTabFromButton();
 			}
 			return;
 		}

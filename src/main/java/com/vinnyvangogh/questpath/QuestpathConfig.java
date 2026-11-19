@@ -26,6 +26,9 @@ public interface QuestpathConfig extends Config
 {
 	String GROUP = "questroute";
 
+	String LAST_SEEN_VERSION = "lastSeenVersion";
+	String LAST_SEEN_BUILD = "lastSeenBuild";
+
 	/**
 	 * The group this plugin used before it was renamed to Quest Route.
 	 * Read once, by {@link ConfigGroupMigration}, and never written.
@@ -281,20 +284,6 @@ public interface QuestpathConfig extends Config
 		// No default. There is no such thing as a sensible shared secret, and
 		// an empty token means the push is off however the toggle is set.
 		return "";
-	}
-
-	@ConfigItem(
-		keyName = "resetAccountSetup",
-		name = "Reset account setup",
-		description = "Tick to wipe this account's saved Quest Route setup (account type, quest types, route)"
-			+ " and run first-run setup again. You are asked to confirm; the box un-ticks itself.",
-		position = 0
-	)
-	default boolean resetAccountSetup()
-	{
-		// A momentary switch, not a setting: the plugin turns it back off
-		// as soon as it has been handled.
-		return false;
 	}
 
 	// ------------------------------------------------------------------
@@ -1151,6 +1140,56 @@ public interface QuestpathConfig extends Config
 	default boolean chatOnItemComplete()
 	{
 		return true;
+	}
+
+	@ConfigItem(
+		keyName = "showUpdateNotes",
+		name = "Show update notes in chat",
+		description = "After Quest Route updates, say what is new in the game chat once, on your next login.",
+		section = chatSection,
+		position = 2
+	)
+	default boolean showUpdateNotes()
+	{
+		return true;
+	}
+
+	@ConfigItem(
+		keyName = "showWhatsNew",
+		name = "Show what's new",
+		description = "Tick to print the latest update notes in the game chat again. The box un-ticks itself.",
+		section = chatSection,
+		position = 3
+	)
+	default boolean showWhatsNew()
+	{
+		// A momentary switch, not a setting: the plugin turns it back off
+		// as soon as it has been handled.
+		return false;
+	}
+
+	/** The last version whose update notes were handled; written by the plugin, never shown. */
+	@ConfigItem(
+		keyName = LAST_SEEN_VERSION,
+		name = "",
+		description = "",
+		hidden = true
+	)
+	default String lastSeenVersion()
+	{
+		return "";
+	}
+
+	/** The last developer-build commit whose notes were handled; written by the plugin, never shown. */
+	@ConfigItem(
+		keyName = LAST_SEEN_BUILD,
+		name = "",
+		description = "",
+		hidden = true
+	)
+	default String lastSeenBuild()
+	{
+		return "";
 	}
 
 	@ConfigItem(
