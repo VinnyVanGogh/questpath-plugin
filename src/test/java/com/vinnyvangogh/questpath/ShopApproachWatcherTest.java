@@ -72,10 +72,46 @@ public class ShopApproachWatcherTest
 		ShopApproachWatcher watcher = new ShopApproachWatcher();
 		Map<String, WorldPoint> shops = shops("Harry's Fishing Shop");
 
-		watcher.observe(shops, away(50));
-		assertEquals(1, watcher.observe(shops, away(2)).size());
-		assertTrue(watcher.observe(shops, away(50)).isEmpty());
-		assertEquals("a second trip is a second reminder", 1, watcher.observe(shops, away(2)).size());
+		long t = 1_000_000L;
+		watcher.observe(shops, away(50), t);
+		assertEquals(1, watcher.observe(shops, away(2), t).size());
+		assertTrue(watcher.observe(shops, away(50), t + 1000).isEmpty());
+		assertEquals("a trip after the cooldown is a second reminder", 1,
+			watcher.observe(shops, away(2), t + ShopApproachWatcher.COOLDOWN_MILLIS).size());
+	}
+
+	/** Region flapping / running in and out inside the cooldown says nothing more. */
+	@Test
+	public void flappingInsideTheCooldownIsSilent()
+	{
+		ShopApproachWatcher watcher = new ShopApproachWatcher();
+		Map<String, WorldPoint> shops = shops("Harry's Fishing Shop");
+		long t = 1_000_000L;
+		watcher.observe(shops, away(50), t);
+		assertEquals(1, watcher.observe(shops, away(2), t).size());
+		for (int i = 1; i <= 20; i++)
+		{
+			watcher.observe(shops, away(50), t + i * 2000L);
+			assertTrue("repeated at flap " + i,
+				watcher.observe(shops, away(2), t + i * 2000L + 1000).isEmpty());
+		}
+		watcher.clear();
+		watcher.observe(shops, away(50), t + 50_000);
+		assertTrue("clear() must not drop the cooldown",
+			watcher.observe(shops, away(2), t + 51_000).isEmpty());
+	}
+
+	/** Acting on a shop lifts its cooldown. */
+	@Test
+	public void actingOnAShopResetsItsCooldown()
+	{
+		ShopApproachWatcher watcher = new ShopApproachWatcher();
+		Map<String, WorldPoint> shops = shops("Harry's Fishing Shop");
+		watcher.observe(shops, away(50), 0);
+		assertEquals(1, watcher.observe(shops, away(2), 1).size());
+		watcher.acted("Harry's Fishing Shop");
+		watcher.observe(shops, away(50), 2);
+		assertEquals(1, watcher.observe(shops, away(2), 3).size());
 	}
 
 	/**

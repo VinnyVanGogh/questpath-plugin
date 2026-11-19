@@ -4,7 +4,6 @@ import java.io.ByteArrayInputStream;
 import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.client.audio.AudioPlayer;
 
@@ -13,18 +12,18 @@ import net.runelite.client.audio.AudioPlayer;
  * time, on one executor thread of its own -- never the client thread, which
  * must not wait on decoding or an audio device.
  *
- * <p>{@code AudioPlayer} starts a clip and returns, and says nothing when it
- * ends. "One utterance at a time" needs to know, so the joined WAV's length
- * is computed ({@link VoiceAudio#durationMillis}) and the next line is
- * released from a timer on the same executor, through {@link VoiceQueue}.
+ * <p>{@code AudioPlayer.play} returns as soon as the sound is started and
+ * reports no end, so "one utterance at a time" is kept by scheduling
+ * {@link VoiceQueue#finished} for when the joined WAV's known length has
+ * elapsed. That is a scheduled task, not a sleeping thread.
  */
 @Slf4j
 final class VoicePlayer
 {
-	/** Slack after a line's computed length, so the next one does not clip its tail. */
-	private static final long TAIL_MILLIS = 60;
+	/** Slack after a line's length, so the next one does not clip its tail. */
+	private static final long TAIL_MILLIS = 100;
 
-	private final AudioPlayer audio;
+	private final AudioPlayer audioPlayer;
 	private final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor(runnable ->
 	{
 		final Thread thread = new Thread(runnable, "quest-route-voice");
@@ -46,9 +45,9 @@ final class VoicePlayer
 		}
 	}
 
-	VoicePlayer(AudioPlayer audio)
+	VoicePlayer(AudioPlayer audioPlayer)
 	{
-		this.audio = audio;
+		this.audioPlayer = audioPlayer;
 	}
 
 	/** Says one line, or its ping if a clip is missing; volume 0 to 100. */
@@ -87,24 +86,30 @@ final class VoicePlayer
 		{
 			return;
 		}
+		long millis = 0;
 		try
 		{
 			final byte[] wav = job.utterance.fallback()
 				? VoiceAudio.ping()
 				: VoiceAudio.join(job.utterance.clips, VoiceLines.class::getResourceAsStream);
-			audio.play(new ByteArrayInputStream(wav), VoiceAudio.gain(job.volume));
-			executor.schedule(queue::finished, VoiceAudio.durationMillis(wav) + TAIL_MILLIS, TimeUnit.MILLISECONDS);
-		}
-		catch (RejectedExecutionException e)
-		{
-			// Shut down while this line was starting.
+			millis = VoiceAudio.durationMillis(wav);
+			audioPlayer.play(new ByteArrayInputStream(wav), VoiceAudio.gain(job.volume));
 		}
 		catch (Exception e)
 		{
-			// AudioPlayer declares javax.sound's checked exceptions, which the
-			// Hub does not let a plugin name; any failure means "could not play".
+			// AudioPlayer's checked exceptions are javax.sound types, which a
+			// Hub plugin may not name, so this catches broadly on purpose.
 			log.debug("Quest Route could not play \"{}\"", job.utterance.text, e);
-			queue.finished();
+			millis = 0;
+		}
+		try
+		{
+			executor.schedule(queue::finished, millis + (millis > 0 ? TAIL_MILLIS : 0),
+				java.util.concurrent.TimeUnit.MILLISECONDS);
+		}
+		catch (RejectedExecutionException e)
+		{
+			// Shut down while playing: nothing more will play.
 		}
 	}
 }
