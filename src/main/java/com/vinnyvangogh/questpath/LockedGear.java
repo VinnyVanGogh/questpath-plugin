@@ -23,7 +23,7 @@ import net.runelite.api.Skill;
  *
  * <p>Pure and client-free: {@link #resolve} touches no {@code Client} or
  * {@code ItemManager} directly, only the tiny {@link ItemStatsView}
- * interface the plugin adapts {@code ItemManager.getItemStats(id)}
+ * interface the plugin adapts {@code ItemManager.getItemStats(id, false)}
  * into. That keeps this class -- and therefore {@code LockedGearTest} --
  * off the client thread entirely.
  */
@@ -482,7 +482,7 @@ public final class LockedGear
 	 * back to the first by name
 	 * @param levels the caller's live combat levels (never boosted)
 	 * @param statsFor looks up an item's stats by id, adapting {@code
-	 * ItemManager.getItemStats(id)} without this class ever seeing
+	 * ItemManager.getItemStats(id, false)} without this class ever seeing
 	 * an {@code ItemManager}
 	 */
 	public static LockedGear resolve(LoadoutStore.Result stored, String selectedName, CombatStats levels,

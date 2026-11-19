@@ -192,7 +192,7 @@ class BankTabLayout
 		Widget title = client.getWidget(InterfaceID.Bankmain.TITLE);
 		if (title != null)
 		{
-			title.setText("Tab <col=ff9040>Quest Route</col>");
+			title.setText(retitle(title.getText()));
 		}
 
 		Widget container = client.getWidget(InterfaceID.Bankmain.ITEMS);
@@ -221,6 +221,28 @@ class BankTabLayout
 		}
 		OverlaySnapshot snapshot = plugin.overlaySnapshot();
 		return snapshot != null && snapshot.items() != null;
+	}
+
+	/**
+	 * Swaps only the bank's own "Tab N" label for ours, keeping anything
+	 * another plugin appended after it. Other text is left as found.
+	 */
+	static String retitle(String current)
+	{
+		if (current == null || !current.startsWith("Tab "))
+		{
+			return current;
+		}
+		int i = 4;
+		while (i < current.length() && Character.isDigit(current.charAt(i)))
+		{
+			i++;
+		}
+		if (i == 4)
+		{
+			return current;
+		}
+		return "Tab <col=ff9040>Quest Route</col>" + current.substring(i);
 	}
 
 	private void rebuild(Widget container)

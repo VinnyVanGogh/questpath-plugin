@@ -1,5 +1,7 @@
 package com.vinnyvangogh.questpath;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.BooleanSupplier;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
@@ -51,6 +53,14 @@ class BankButton
 	private static final int BUTTON_X = 380;
 	private static final int BUTTON_Y = 5;
 
+	/**
+	 * Leftmost x this will step to when another plugin is in the way, and the
+	 * widest widget treated as a neighbouring button rather than bank furniture.
+	 * Past MIN_X the row is the bank's own title text.
+	 */
+	private static final int MIN_X = 250;
+	private static final int MAX_NEIGHBOUR = 40;
+
 	/** The bank's own small square button, unselected and selected. */
 	private static final int SPRITE_BUTTON = 195;
 	private static final int SPRITE_BUTTON_SELECTED = 196;
@@ -73,6 +83,12 @@ class BankButton
 	 * whoever edits one of them.
 	 */
 	static final String TARGET = "Quest Route";
+
+	/** Menu option while the tab is closed: reads like the bank's own tabs. */
+	static final String ACTION_VIEW = "View tab";
+
+	/** Menu option while the tab is open: a click leaves it. */
+	static final String ACTION_HIDE = "Hide tab";
 
 	private final Client client;
 	private final BooleanSupplier shown;
@@ -106,10 +122,12 @@ class BankButton
 			return;
 		}
 
-		button = graphic(parent, SPRITE_BUTTON, SIZE, BUTTON_X, BUTTON_Y);
+		int x = BankButtonSlots.pick(occupiedOnRow(parent), BUTTON_X, SIZE, MIN_X);
+
+		button = graphic(parent, SPRITE_BUTTON, SIZE, x, BUTTON_Y);
 		button.setName(TARGET);
 		button.setHasListener(true);
-		button.setAction(1, "View tab");
+		button.setAction(1, ACTION_VIEW);
 		button.setOnOpListener((JavaScriptCallback) event -> toggle());
 		button.revalidate();
 
@@ -117,9 +135,39 @@ class BankButton
 		// clicks fall through to the button underneath it. An icon that
 		// swallowed the click would make the middle of the button dead.
 		icon = graphic(parent, SPRITE_ICON, SIZE - ICON_INSET * 2,
-			BUTTON_X + ICON_INSET, BUTTON_Y + ICON_INSET);
+			x + ICON_INSET, BUTTON_Y + ICON_INSET);
 
 		refresh();
+	}
+
+	/**
+	 * The x and width of every small visible widget other plugins have already
+	 * hung on the title-bar row. Our own are skipped, and anything wider than a
+	 * button is the bank's own furniture (title, frame), not a neighbour.
+	 */
+	private List<int[]> occupiedOnRow(Widget parent)
+	{
+		List<int[]> row = new ArrayList<>();
+		Widget[] children = parent.getDynamicChildren();
+		if (children == null)
+		{
+			return row;
+		}
+		for (Widget child : children)
+		{
+			if (child == null || child == button || child == icon || child.isSelfHidden())
+			{
+				continue;
+			}
+			boolean onRow = child.getOriginalY() < BUTTON_Y + SIZE
+				&& child.getOriginalY() + child.getOriginalHeight() > BUTTON_Y;
+			boolean buttonSized = child.getOriginalWidth() > 0 && child.getOriginalWidth() <= MAX_NEIGHBOUR;
+			if (onRow && buttonSized && child.getOriginalX() >= MIN_X)
+			{
+				row.add(new int[]{child.getOriginalX(), child.getOriginalWidth()});
+			}
+		}
+		return row;
 	}
 
 	/** Repaints the button for the current state. */
@@ -129,7 +177,10 @@ class BankButton
 		{
 			return;
 		}
-		button.setSpriteId(shown.getAsBoolean() ? SPRITE_BUTTON_SELECTED : SPRITE_BUTTON);
+		boolean on = shown.getAsBoolean();
+		// The menu says what a click will do: open the tab, or leave it.
+		button.setAction(1, on ? ACTION_HIDE : ACTION_VIEW);
+		button.setSpriteId(on ? SPRITE_BUTTON_SELECTED : SPRITE_BUTTON);
 		button.revalidate();
 		if (icon != null)
 		{
