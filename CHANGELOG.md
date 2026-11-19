@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- Local-first: Quest Route works with no Quest Route server. First run on an account shows a sidebar setup (account type: main, ironman, HCIM, UIM, GIM; quest types: free-to-play, members) on the Quests tab, then builds your route from the bundled quest graph (`LocalRoute`: prerequisites first, nothing your build or skills forbid). Setup, progress and route are saved per account as JSON in RuneLite config, group `questrouteprofile`, key `profile.<account hash>` (`LocalProfile`, `LocalProfileStore`; one config write per save, Gson, no files, no database). A damaged value is set aside as `profile.<account hash>.corrupt` and setup runs again. "Reset account setup" in the plugin's config panel asks to confirm, wipes the profile and runs setup again. A server push that supplies a route still takes over for that login (#26).
 - `.staypoint/test.toml` declaring the required Gradle JUnit test suite (`gradle_test`) (#22).
 - Gated shop, guild, and boss/Slayer-only item source entry-requirement audit under `docs/research/shop-requirements.md` and `docs/research/shop-requirements.json` (#20).
 - The shop route treats an item it can make as a chain: get each missing ingredient from its own best source (shop, a nested recipe, or a drop you can actually do), then go to the nearest facility ("-> Furnace: use Bucket of sand + Soda ash"). The order is shop, then recipe, then drop. A recipe you lack the level for says which level ("can't make it yet: needs 30 Crafting") and the route falls back to other sources. Reads quest graph v14's optional `recipes`, `facilities` and `drop_sources` tables (`MakeChain`, `RouteSources`) (#19).
@@ -55,6 +56,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
+- The Quest Route address now defaults to empty (it was `http://localhost:8080`). With no address, no request is ever attempted and nothing is said in chat; `NoServerNoNetworkTest` counts requests to prove it. Settings you saved explicitly are kept (#26).
 - Marked `fetchQuestGraph` as a hidden developer config item (`hidden = true`), removed its toggle from `OverlaySettingsPanel`, and logged startup quest-graph fetch outcomes at `debug` level instead of posting a chat notice on login (#21).
 - Ran the Gradle `test` task with `-Djava.awt.headless=true` so AWT/Swing rendering tests do not abort when a window server is unavailable (#17, #18, #19).
 - Renamed to **Quest Route** for the Plugin Hub: `displayName`, `@PluginDescriptor(name)` and every in-game string. The Hub name `questpath` belongs to another author's live plugin. The config group is now `questroute`; `ConfigGroupMigration` copies a pre-rename `questpath` profile (plain and per-account keys) once, never overwriting, from the config provider before RuneLite writes defaults. The Java package stays `com.vinnyvangogh.questpath` (#14).
