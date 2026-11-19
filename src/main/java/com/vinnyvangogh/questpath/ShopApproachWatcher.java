@@ -59,6 +59,19 @@ class ShopApproachWatcher
 	 */
 	List<String> observe(Map<String, WorldPoint> shops, WorldPoint player)
 	{
+		return observe(shops, player, System.currentTimeMillis());
+	}
+
+	/**
+	 * Per-shop cooldown: edge-triggering alone repeated the line whenever
+	 * the player ran in and out of range (or a region reload flapped the
+	 * position), so a shop that has spoken stays quiet for
+	 * {@link #COOLDOWN_MILLIS} -- or until {@link #acted} says the player
+	 * dealt with it. The cooldown survives {@link #clear}, which only drops
+	 * the near/far baselines.
+	 */
+	List<String> observe(Map<String, WorldPoint> shops, WorldPoint player, long now)
+	{
 		if (shops == null)
 		{
 			return List.of();
@@ -84,11 +97,27 @@ class ShopApproachWatcher
 			Boolean wasNear = nearBefore.put(name, nearNow);
 			if (nearNow && wasNear != null && !wasNear)
 			{
-				arrived.add(name);
+				Long said = lastSaid.get(name);
+				if (said == null || now - said >= COOLDOWN_MILLIS)
+				{
+					lastSaid.put(name, now);
+					arrived.add(name);
+				}
 			}
 		}
 		return arrived;
 	}
+
+	/** The player acted on this shop (opened it): its next approach may speak at once. */
+	void acted(String shopName)
+	{
+		lastSaid.remove(shopName);
+	}
+
+	/** How long a shop that has spoken stays quiet: five minutes. */
+	static final long COOLDOWN_MILLIS = 5 * 60 * 1000L;
+
+	private final Map<String, Long> lastSaid = new HashMap<>();
 
 	/** Forgets every baseline -- on logout, and when the plugin stops. */
 	void clear()

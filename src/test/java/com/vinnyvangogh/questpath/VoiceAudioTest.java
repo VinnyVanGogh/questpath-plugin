@@ -88,6 +88,32 @@ public class VoiceAudioTest
 	}
 
 	@Test
+	public void durationIsReadFromTheJoinedWav() throws Exception
+	{
+		AudioFormat pcm = new AudioFormat(22050f, 16, 1, true, false);
+		byte[] clip = wav(pcm, 22050);
+		byte[] joined = VoiceAudio.join(Collections.singletonList("a"), path -> new ByteArrayInputStream(clip));
+		assertEquals(1000, VoiceAudio.durationMillis(joined));
+	}
+
+	@Test
+	public void clipsAtDifferentRatesAreRefusedNotMangled() throws Exception
+	{
+		Map<String, byte[]> clips = new HashMap<>();
+		clips.put("a", wav(new AudioFormat(22050f, 16, 1, true, false), 100));
+		clips.put("b", wav(new AudioFormat(16000f, 16, 1, true, false), 100));
+		try
+		{
+			VoiceAudio.join(Arrays.asList("a", "b"), path -> new ByteArrayInputStream(clips.get(path)));
+			fail("expected IOException");
+		}
+		catch (IOException expected)
+		{
+			assertTrue(expected.getMessage().contains("cannot join"));
+		}
+	}
+
+	@Test
 	public void volumeIsAGainInDecibels()
 	{
 		assertEquals(0f, VoiceAudio.gain(100), 0.001f);

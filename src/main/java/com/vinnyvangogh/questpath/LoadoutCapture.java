@@ -10,8 +10,8 @@ import net.runelite.api.Item;
 import net.runelite.api.ItemComposition;
 import net.runelite.api.ItemContainer;
 import net.runelite.api.gameval.InventoryID;
-import net.runelite.client.game.ItemManager;
 import net.runelite.client.game.ItemEquipmentStats;
+import net.runelite.client.game.ItemManager;
 import net.runelite.client.game.ItemStats;
 
 /**
