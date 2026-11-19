@@ -1373,6 +1373,10 @@ public class QuestpathPlugin extends Plugin
 			javax.swing.SwingUtilities.invokeLater(this::confirmResetSetup);
 			return;
 		}
+		if (panel != null)
+		{
+			panel.refreshQuickSettings();
+		}
 		if (!"partyShare".equals(event.getKey()))
 		{
 			return;

@@ -219,6 +219,31 @@ class QuestpathPanel extends PluginPanel
 	/** The overlay settings tab's contents, built once and kept. */
 	private final OverlaySettingsPanel overlaySettings;
 
+	/** The most-used toggles, above {@link #overlaySettings}; re-read on every config change. */
+	private final QuickSettingsPanel quickSettings;
+
+	/** Re-reads the quick settings after a config change; safe from any thread. */
+	void refreshQuickSettings()
+	{
+		SwingUtilities.invokeLater(quickSettings::refresh);
+	}
+
+	/** The quick settings' "All settings" link: scrolls the full settings into view. */
+	private void scrollToAllSettings()
+	{
+		if (overlaySettings == null)
+		{
+			return;
+		}
+		java.awt.Container viewport = SwingUtilities.getAncestorOfClass(javax.swing.JViewport.class, overlaySettings);
+		if (viewport instanceof javax.swing.JViewport)
+		{
+			java.awt.Point p = SwingUtilities.convertPoint(overlaySettings, 0, 0,
+				((javax.swing.JViewport) viewport).getView());
+			((javax.swing.JViewport) viewport).setViewPosition(new java.awt.Point(0, p.y));
+		}
+	}
+
 	/**
 	 * Read for {@code buildRulesShowAll} and written by its checkbox in the
 	 * Build rules section -- see {@link #buildRulesToggle()}. Everything
@@ -415,6 +440,9 @@ class QuestpathPanel extends PluginPanel
 		this.config = config;
 		this.configManager = configManager;
 		this.overlaySettings = overlaySettings;
+		this.quickSettings = new QuickSettingsPanel(QuickSettingsPanel.rows(config),
+			(key, value) -> configManager.setConfiguration(QuestpathConfig.GROUP, key, value),
+			this::scrollToAllSettings);
 		this.planner = planner;
 		this.shortestPathBridge = shortestPathBridge;
 		this.geSearchBridge = geSearchBridge;
@@ -501,6 +529,7 @@ class QuestpathPanel extends PluginPanel
 		// else.
 		if (overlaySettings != null)
 		{
+			tabBodies.get(PanelSections.Tab.VIEW).add(quickSettings);
 			tabBodies.get(PanelSections.Tab.VIEW).add(overlaySettings);
 		}
 
@@ -819,6 +848,7 @@ class QuestpathPanel extends PluginPanel
 				// Settings are about the client, not the account, so they stay
 				// readable and editable while logged out -- which is exactly
 				// when someone is most likely to be setting them up.
+				tabBodies.get(PanelSections.Tab.VIEW).add(quickSettings);
 				tabBodies.get(PanelSections.Tab.VIEW).add(overlaySettings);
 			}
 			tabBodies.get(PanelSections.Tab.COMBAT).add(muted("Log in to see your levels."));
