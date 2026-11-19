@@ -1365,6 +1365,10 @@ public class QuestpathPlugin extends Plugin
 		{
 			return;
 		}
+		if (panel != null)
+		{
+			panel.refreshQuickSettings();
+		}
 		if (!"partyShare".equals(event.getKey()))
 		{
 			return;
