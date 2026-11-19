@@ -1,8 +1,9 @@
 package com.vinnyvangogh.questpath;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
-import java.awt.Font;
 import java.awt.Graphics2D;
+import java.awt.Polygon;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.util.EnumMap;
@@ -876,11 +877,15 @@ public class QuestpathPlugin extends Plugin
 			log.warn("quest-route: bundled quest graph unavailable; the Quests tab will say so", e);
 		}
 
+		// Saved in RuneLite's config, one value per account: Plugin Hub rules
+		// do not let a plugin write its own files.
+		profileStore = new LocalProfileStore(LocalProfileStore.of(configManager), gson);
+
 		// The saved "fetchQuestGraph" setting used to switch this on, and a
 		// player who had it on can no longer see it to switch it off. Clear
 		// it, and gate the fetch on a developer-only JVM flag instead.
 		configManager.unsetConfiguration(QuestpathConfig.GROUP, "fetchQuestGraph");
-		if (Boolean.getBoolean(DEV_FETCH_PROPERTY))
+		if (Boolean.getBoolean(DEV_FETCH_PROPERTY) && hasServerUrl())
 		{
 			fetchLiveQuestGraph();
 		}
@@ -1177,10 +1182,198 @@ public class QuestpathPlugin extends Plugin
 		});
 	}
 
+	// ------------------------------------------------------------------
+	// Local profile: the account's setup, kept in RuneLite's own directory.
+	// questpath's server is an optional extra; nothing below needs it.
+	// ------------------------------------------------------------------
+
+	private LocalProfileStore profileStore;
+
+	/** Whether a questpath address is configured. Without one the plugin never connects anywhere. */
+	private boolean hasServerUrl()
+	{
+		String url = config.serverUrl();
+		return url != null && !url.trim().isEmpty();
+	}
+
+	/** The account a profile load was started for this login; null until one is. */
+	private volatile String profileKey;
+
+	/** This account's setup, or null before it loads and while setup is pending. */
+	private volatile LocalProfile localProfile;
+
+	/** True once a questpath push has supplied a route; the local one then stands down. */
+	private volatile boolean routeFromServer;
+
+	/** Client thread. Starts the one-per-login read of this account's saved profile. */
+	private void ensureProfileLoaded()
+	{
+		String key = LocalProfileStore.keyFor(client.getAccountHash());
+		if (key == null || key.equals(profileKey) || profileStore == null)
+		{
+			return;
+		}
+		profileKey = key;
+		scheduler.execute(() ->
+		{
+			LocalProfileStore.Result result;
+			try
+			{
+				result = profileStore.load(key);
+			}
+			catch (RuntimeException e)
+			{
+				log.debug("questroute: profile load failed", e);
+				result = null;
+			}
+			LocalProfileStore.Result loaded = result;
+			clientThread.invokeLater(() ->
+			{
+				if (!key.equals(profileKey))
+				{
+					return;
+				}
+				applyLoadedProfile(loaded);
+				refresh();
+			});
+		});
+	}
+
+	private void applyLoadedProfile(LocalProfileStore.Result loaded)
+	{
+		if (loaded != null && loaded.status() == LocalProfileStore.Status.LOADED)
+		{
+			localProfile = loaded.profile();
+			panel.setSetup(null, null);
+			return;
+		}
+		localProfile = null;
+		String note = loaded != null && loaded.status() == LocalProfileStore.Status.ABSENT
+			? "Welcome. Two quick questions, then your route appears. Nothing leaves your computer."
+			: "Your saved setup could not be read, so it was set aside. Please answer again.";
+		panel.setSetup(note, this::onSetupChosen);
+	}
+
+	/** Swing thread, from the setup panel's button. */
+	private void onSetupChosen(LocalProfile.AccountType type, java.util.Set<LocalProfile.QuestType> types)
+	{
+		LocalProfile profile = LocalProfile.create(type, types);
+		localProfile = profile;
+		panel.setSetup(null, null);
+		saveProfileAsync(profile);
+		clientThread.invokeLater(this::refresh);
+	}
+
+	private void saveProfileAsync(LocalProfile profile)
+	{
+		String key = profileKey;
+		if (key == null || profileStore == null)
+		{
+			return;
+		}
+		scheduler.execute(() ->
+		{
+			try
+			{
+				profileStore.save(key, profile);
+			}
+			catch (RuntimeException e)
+			{
+				// Setup still works for this session; it is asked again next time.
+				log.warn("questroute: could not save the local profile", e);
+			}
+		});
+	}
+
+	/**
+	 * Client thread, inside refresh(). Fills routeOrder from the local
+	 * profile unless a questpath push has already supplied one, and keeps
+	 * the saved route and progress current.
+	 *
+	 * @param judged whether the verdicts this pass are real; false (varbits
+	 *     not loaded yet) leaves the route alone rather than emptying it
+	 */
+	private void applyLocalRoute(boolean judged)
+	{
+		LocalProfile profile = localProfile;
+		if (profile == null || routeFromServer || !judged || questGraph == null || accountSnapshot == null)
+		{
+			return;
+		}
+		List<String> computed = LocalRoute.of(questGraph, accountSnapshot, profile.questTypes());
+		routeOrder = computed;
+		if (computed.equals(profile.route()))
+		{
+			return;
+		}
+		LocalProfile updated = profile.withRoute(questGraph.version(),
+			new ArrayList<>(completedQuestNames()), computed);
+		localProfile = updated;
+		saveProfileAsync(updated);
+	}
+
+	/** Swing thread: asks, then wipes this account's profile and runs setup again. */
+	private void confirmResetSetup()
+	{
+		if (profileKey == null)
+		{
+			javax.swing.JOptionPane.showMessageDialog(panel,
+				"Log in to a character first, then reset its Quest Route setup.",
+				"Reset account setup", javax.swing.JOptionPane.INFORMATION_MESSAGE);
+			return;
+		}
+		int answer = javax.swing.JOptionPane.showConfirmDialog(panel,
+			"This deletes the saved Quest Route setup for this account (account type, quest types, route)\n"
+				+ "and asks you to set it up again. Your game progress is not touched.\n\nReset it?",
+			"Reset account setup", javax.swing.JOptionPane.YES_NO_OPTION,
+			javax.swing.JOptionPane.WARNING_MESSAGE);
+		if (answer != javax.swing.JOptionPane.YES_OPTION)
+		{
+			return;
+		}
+		String key = profileKey;
+		scheduler.execute(() ->
+		{
+			try
+			{
+				profileStore.reset(key);
+			}
+			catch (RuntimeException e)
+			{
+				log.warn("questroute: could not delete the local profile", e);
+			}
+			clientThread.invokeLater(() ->
+			{
+				if (!key.equals(profileKey))
+				{
+					return;
+				}
+				localProfile = null;
+				if (!routeFromServer)
+				{
+					routeOrder = Collections.emptyList();
+				}
+				applyLoadedProfile(new LocalProfileStore.Result(LocalProfileStore.Status.ABSENT, null));
+				refresh();
+			});
+		});
+	}
+
 	@Subscribe
 	public void onConfigChanged(ConfigChanged event)
 	{
-		if (!QuestpathConfig.GROUP.equals(event.getGroup()) || !"partyShare".equals(event.getKey()))
+		if (!QuestpathConfig.GROUP.equals(event.getGroup()))
+		{
+			return;
+		}
+		if ("resetAccountSetup".equals(event.getKey()) && Boolean.parseBoolean(event.getNewValue()))
+		{
+			// A momentary switch: put it back, then ask.
+			configManager.setConfiguration(QuestpathConfig.GROUP, "resetAccountSetup", false);
+			javax.swing.SwingUtilities.invokeLater(this::confirmResetSetup);
+			return;
+		}
+		if (!"partyShare".equals(event.getKey()))
 		{
 			return;
 		}
@@ -2183,6 +2376,11 @@ public class QuestpathPlugin extends Plugin
 			partialRuns = Collections.emptyList();
 			knownItems = Collections.emptyMap();
 			itemPlan = null;
+			// Another account may log in next, with its own local profile.
+			routeFromServer = false;
+			localProfile = null;
+			profileKey = null;
+			panel.setSetup(null, null);
 			// The next login may be a different account, with a different
 			// diary verdict entirely -- see diaryPush's own doc.
 			diaryPush = null;
@@ -2265,10 +2463,14 @@ public class QuestpathPlugin extends Plugin
 		{
 			stats = currentStats();
 			xp = currentXp();
+			// Verdicts first: the local route is derived from them, and the
+			// item list and next-quest reads below are built on the route.
+			questVerdicts = verdicts();
+			ensureProfileLoaded();
+			applyLocalRoute(questVerdicts != null);
 			items = questItems();
 			route = nextQuest();
 			report = accountReport();
-			questVerdicts = verdicts();
 		}
 		finally
 		{
@@ -2909,6 +3111,21 @@ public class QuestpathPlugin extends Plugin
 			// Our own button. It carries a "View tab" option so it reads like
 			// the bank's tabs, which means without this it would match the
 			// rule below and close the tab it had just opened.
+			//
+			// While the tab is open a click on the button leaves it. That is
+			// done here, and the click consumed, rather than left to the
+			// widget's op listener: the listener is the path that opens the
+			// tab, and relying on it a second time to close it left the tab
+			// stuck on whenever the client did not deliver the op.
+			if (option.equals(BankButton.ACTION_HIDE))
+			{
+				event.consume();
+				setBankTab(false);
+				if (bankButton != null)
+				{
+					bankButton.refresh();
+				}
+			}
 			return;
 		}
 		if (option.startsWith("View tab") || option.startsWith("View tag tab")
@@ -4188,6 +4405,9 @@ public class QuestpathPlugin extends Plugin
 					// plan, and this push response is the only place it is
 					// handed over.
 					routeOrder = accepted.routeOrder();
+					// A server that answered with a plan owns the route from
+					// here; the local one steps aside for this login.
+					routeFromServer = !routeOrder.isEmpty();
 					partialRuns = accepted.partialRuns();
 					knownItems = accepted.knownItems();
 					// Replaced unconditionally, null included: a push answered
@@ -4538,21 +4758,40 @@ public class QuestpathPlugin extends Plugin
 	}
 
 	/**
-	 * Drawn rather than loaded from a resource, deliberately: a placeholder
-	 * PNG committed now would be an asset nobody designed, and AGENTS.md warns
-	 * about shipping images that are not what they claim to be. Replace with a
-	 * real icon.png when there is one.
+	 * Drawn rather than loaded from a resource, deliberately: no committed
+	 * asset to keep honest, and nothing to mis-size. A max-cape-style cape
+	 * (dark body, gold trim, the cape's shoulder notch) carrying a quest
+	 * scroll, so the tab reads as "quests" at a glance instead of as text.
 	 */
-	private static BufferedImage icon()
+	static BufferedImage icon()
 	{
 		BufferedImage image = new BufferedImage(24, 24, BufferedImage.TYPE_INT_ARGB);
 		Graphics2D g = image.createGraphics();
 		try
 		{
 			g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-			g.setColor(new Color(0xC8, 0x8B, 0x2E));
-			g.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 14));
-			g.drawString("qp", 2, 18);
+			Color gold = new Color(0xE0, 0xB2, 0x3A);
+			Color goldDark = new Color(0x9A, 0x6F, 0x1B);
+
+			// Cape: shoulders with a notch at the neck, flaring to the hem.
+			Polygon cape = new Polygon(
+				new int[]{5, 9, 12, 15, 19, 21, 3},
+				new int[]{2, 2, 4, 2, 2, 22, 22}, 7);
+			g.setColor(new Color(0x1E, 0x1E, 0x26));
+			g.fillPolygon(cape);
+			g.setStroke(new BasicStroke(1.5f));
+			g.setColor(gold);
+			g.drawPolygon(cape);
+
+			// Quest scroll: parchment with rolled ends and text lines.
+			g.setColor(new Color(0xF2, 0xE2, 0xB0));
+			g.fillRect(8, 8, 8, 9);
+			g.setColor(goldDark);
+			g.fillRoundRect(7, 7, 10, 2, 2, 2);
+			g.fillRoundRect(7, 16, 10, 2, 2, 2);
+			g.setStroke(new BasicStroke(1f));
+			g.drawLine(10, 11, 14, 11);
+			g.drawLine(10, 13, 14, 13);
 		}
 		finally
 		{

@@ -62,7 +62,11 @@ public class OverlaySettingsPanelConfigParityTest
 	 * to the quest list rather than on a settings screen. See {@code
 	 * QuestpathPanel}'s build-rules-block rendering.
 	 */
-	private static final Set<String> EXEMPT_KEYS = Set.of("serverUrl", "pairingToken", "buildRulesShowAll");
+	private static final Set<String> EXEMPT_KEYS = Set.of("serverUrl", "pairingToken", "buildRulesShowAll",
+		// A momentary switch that opens a confirm dialog from the plugin; it
+		// belongs in RuneLite's config panel, next to the other account-level
+		// settings, not among the sidebar's view toggles.
+		"resetAccountSetup");
 
 	private static final Path PANEL_SOURCE =
 		Path.of("src/main/java/com/vinnyvangogh/questpath/OverlaySettingsPanel.java");

@@ -248,14 +248,15 @@ public interface QuestpathConfig extends Config
 	@ConfigItem(
 		keyName = "serverUrl",
 		name = "Quest Route address",
-		description = "Where your Quest Route server is listening, e.g. an address on your own machine or network. Blank means not set.",
+		description = "Optional. Where your Quest Route server is listening, e.g. an address on your own machine or network."
+			+ " Leave blank (the default) to use Quest Route on its own: nothing is sent anywhere.",
 		section = syncSection,
 		position = 2
 	)
 	default String serverUrl()
 	{
-		// Blank, not a prefilled host: nothing is contacted until the player
-		// types their own server address. Every reader treats blank as "not set".
+		// Blank on purpose. The plugin is local-first: with no address it
+		// never opens a connection, and no chat line complains about it.
 		return "";
 	}
 
@@ -272,6 +273,20 @@ public interface QuestpathConfig extends Config
 		// No default. There is no such thing as a sensible shared secret, and
 		// an empty token means the push is off however the toggle is set.
 		return "";
+	}
+
+	@ConfigItem(
+		keyName = "resetAccountSetup",
+		name = "Reset account setup",
+		description = "Tick to wipe this account's saved Quest Route setup (account type, quest types, route)"
+			+ " and run first-run setup again. You are asked to confirm; the box un-ticks itself.",
+		position = 0
+	)
+	default boolean resetAccountSetup()
+	{
+		// A momentary switch, not a setting: the plugin turns it back off
+		// as soon as it has been handled.
+		return false;
 	}
 
 	// ------------------------------------------------------------------

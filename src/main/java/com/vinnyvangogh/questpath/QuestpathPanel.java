@@ -369,6 +369,23 @@ class QuestpathPanel extends PluginPanel
 	/** "Say again" on the current shop stop; null until the plugin sets it. */
 	private volatile java.util.function.Consumer<String> sayShopAgain;
 
+	/**
+	 * Non-null while this account has no local profile: the Quests tab then
+	 * shows first-run setup instead of the route. The text says why (first
+	 * run, or a damaged file that was set aside). Set from the plugin.
+	 */
+	private volatile String setupNote;
+	private volatile java.util.function.BiConsumer<LocalProfile.AccountType,
+		java.util.Set<LocalProfile.QuestType>> onSetupDone;
+
+	/** Shows ({@code note != null}) or hides first-run setup; takes effect on the next render. */
+	void setSetup(String note,
+		java.util.function.BiConsumer<LocalProfile.AccountType, java.util.Set<LocalProfile.QuestType>> onDone)
+	{
+		this.setupNote = note;
+		this.onSetupDone = onDone;
+	}
+
 	/** Wires the shop stop's "Say again" button to the plugin's voice. */
 	void setSayShopAgain(java.util.function.Consumer<String> sayShopAgain)
 	{
@@ -945,7 +962,8 @@ class QuestpathPanel extends PluginPanel
 			nextQuest == null ? null : nextQuest.hashCode(),
 			routeWork == null ? null : routeWorkSignature(routeWork),
 			diaryPush.get(),
-			config.questJournalFilter());
+			config.questJournalFilter(),
+			setupNote);
 		if (!java.util.Objects.equals(questsSignature, lastVerdictSignature))
 		{
 			rebuildQuestsTab(verdicts, nextQuest, routeWork);
@@ -1040,6 +1058,14 @@ class QuestpathPanel extends PluginPanel
 
 		clearBodies(PanelSections.Tab.QUESTS);
 		JPanel quests = tabBodies.get(PanelSections.Tab.QUESTS);
+
+		String setup = setupNote;
+		if (setup != null)
+		{
+			quests.add(new SetupPanel(setup, onSetupDone));
+			showBodies(PanelSections.Tab.QUESTS);
+			return;
+		}
 
 		quests.add(journalFilterCombo);
 		quests.add(Box.createVerticalStrut(10));
@@ -2636,7 +2662,9 @@ class QuestpathPanel extends PluginPanel
 				addRow(grid, label, line.describe(), line.held()
 					? ColorScheme.PROGRESS_COMPLETE_COLOR
 					: ColorScheme.LIGHT_GRAY_COLOR,
-					itemTooltip(null, RouteSources.dropsOnly(dropLocator).annotate(line.sources())));
+					itemTooltip(line.members().size() > 1
+						? "Any of: " + String.join(", ", line.members()) : null,
+						RouteSources.dropsOnly(dropLocator).annotate(line.sources())));
 			}
 			panel.add(grid);
 			questsShown++;
@@ -3034,6 +3062,11 @@ class QuestpathPanel extends PluginPanel
 		// on this panel means the same thing by.
 		// questpath's item plan: make steps, which member of an "X or Y" was
 		// chosen, or why nothing reachable -- worded by QuestItems.PlanNote.
+		String tiers = total.tiersNote();
+		if (tiers != null)
+		{
+			sharedNote = sharedNote == null ? tiers : sharedNote + ". " + tiers;
+		}
 		String planNote = total.plan().describe();
 		if (planNote != null)
 		{
