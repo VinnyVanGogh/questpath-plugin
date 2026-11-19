@@ -406,6 +406,7 @@ class OverlaySettingsPanel extends JPanel
 		body.add(shopsGroup(config));
 		body.add(spacer());
 		body.add(groundItemsGroup(config));
+		body.add(dropSourcesGroup(config));
 		body.add(spacer());
 		body.add(voiceGroup(config));
 		body.add(spacer());
@@ -618,6 +619,31 @@ class OverlaySettingsPanel extends JPanel
 						"How close a needed item on the floor must be for the arrow and for"
 							+ " \"<item> nearby\" to be said.",
 						"floorItemRadius"));
+			});
+	}
+
+	/** Outlines on the NPCs and objects that drop what the route still needs. */
+	private CollapsibleGroup dropSourcesGroup(QuestpathConfig config)
+	{
+		return toggleGroup(
+			"Drop sources",
+			"Outline the NPCs and objects that are the only source of an item your route still"
+				+ " needs, such as imps for a bead. Outline only; stops once you have enough.",
+			config.dropHighlight(), "dropHighlight",
+			sub ->
+			{
+				sub.add(toggle(
+					"Show what it drops",
+					"Print \"drops White bead\" above the outlined NPC or object.",
+					config.dropHighlightLabels(), "dropHighlightLabels"));
+				addField(sub, "Outline colour",
+					colorField(config.dropHighlightColour(),
+						"The colour a drop source is outlined in.",
+						"Drop source colour", "dropHighlightColour"));
+				sub.add(toggle(
+					"Whole route, not just this quest",
+					"Off: only the quest you are on. On: every quest your route covers.",
+					config.dropHighlightWholeRoute(), "dropHighlightWholeRoute"));
 			});
 	}
 
