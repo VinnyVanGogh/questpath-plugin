@@ -92,10 +92,6 @@ class QuestpathPanel extends PluginPanel
 	 * Logged only when a pass is slow enough to notice, so an idle client
 	 * stays quiet.
 	 */
-	private static final long SLOW_MILLIS = 4;
-
-	/** Counts how many switches have happened, to expose growth over time. */
-	private int tabSwitches;
 
 	/**
 	 * The skill icons are around 25px; the tab strip has five of them across a
@@ -539,24 +535,9 @@ class QuestpathPanel extends PluginPanel
 			display.add(wrapper, tab.name());
 
 			MaterialTab materialTab = tabFor(sprites, tab, tabGroup, wrapper);
-			// Times the switch itself. MaterialTabGroup.select swaps the
-			// displayed wrapper and validates it, which is where the cost of
-			// a big tab actually lands -- laying out and painting everything
-			// it holds, every time it comes back on screen.
 			materialTab.setOnSelectEvent(() ->
 			{
-				long startedAt = System.nanoTime();
-				tabSwitches++;
 				cards.show(display, tab.name());
-				SwingUtilities.invokeLater(() ->
-				{
-					long millis = (System.nanoTime() - startedAt) / 1_000_000L;
-					if (millis >= SLOW_MILLIS)
-					{
-						log.debug("quest-route perf: switch #{} to {} took {}ms; components {}",
-							tabSwitches, tab, millis, componentCounts());
-					}
-				});
 				return true;
 			});
 			tabGroup.addTab(materialTab);
@@ -933,54 +914,8 @@ class QuestpathPanel extends PluginPanel
 		NextQuestStatus nextQuest, RouteWork routeWork, SyncSettings settings, AccountReport report,
 		LockedGear lockedGear)
 	{
-		long startedAt = System.nanoTime();
-		try
-		{
-			renderBody(stats, xp, sync, rules, unmatchedQuests, verdicts, items, nextQuest,
-				routeWork, settings, report, lockedGear);
-		}
-		finally
-		{
-			long millis = (System.nanoTime() - startedAt) / 1_000_000L;
-			if (millis >= SLOW_MILLIS)
-			{
-				log.debug("quest-route perf: render took {}ms; components {}", millis, componentCounts());
-			}
-		}
-	}
-
-	/**
-	 * How many Swing components each tab is currently holding.
-	 *
-	 * The number that matters for the "worse the more you switch" report: if
-	 * it climbs across switches, something is accumulating rather than being
-	 * replaced.
-	 */
-	private String componentCounts()
-	{
-		StringBuilder out = new StringBuilder();
-		for (Map.Entry<PanelSections.Tab, JPanel> entry : tabBodies.entrySet())
-		{
-			if (out.length() > 0)
-			{
-				out.append(' ');
-			}
-			out.append(entry.getKey()).append('=').append(countDeep(entry.getValue()));
-		}
-		return out.toString();
-	}
-
-	private static int countDeep(Component component)
-	{
-		int total = 1;
-		if (component instanceof java.awt.Container)
-		{
-			for (Component child : ((java.awt.Container) component).getComponents())
-			{
-				total += countDeep(child);
-			}
-		}
-		return total;
+		renderBody(stats, xp, sync, rules, unmatchedQuests, verdicts, items, nextQuest,
+			routeWork, settings, report, lockedGear);
 	}
 
 	private void renderBody(CombatStats stats, SkillXp xp, SyncStatus sync,
@@ -2022,21 +1957,12 @@ class QuestpathPanel extends PluginPanel
 		switch (line.kind())
 		{
 			case NEEDS_SELECTION:
-			{
-				JLabel value = new JLabel("Choose a style and prayer");
-				value.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
-				value.setAlignmentX(Component.LEFT_ALIGNMENT);
-				panel.add(value);
+				panel.add(tinted("Choose a style and prayer", ColorScheme.LIGHT_GRAY_COLOR));
 				break;
-			}
 			case UNKNOWN_STATS:
-			{
-				JLabel value = new JLabel(wrap("Stats unknown for: " + String.join(", ", line.unknownItemNames())));
-				value.setForeground(ColorScheme.PROGRESS_ERROR_COLOR);
-				value.setAlignmentX(Component.LEFT_ALIGNMENT);
-				panel.add(value);
+				panel.add(tinted(wrap("Stats unknown for: " + String.join(", ", line.unknownItemNames())),
+					ColorScheme.PROGRESS_ERROR_COLOR));
 				break;
-			}
 			case RESULT:
 			default:
 			{
@@ -2056,10 +1982,7 @@ class QuestpathPanel extends PluginPanel
 				}
 				else
 				{
-					JLabel value = new JLabel(wrap(result.reason()));
-					value.setForeground(ColorScheme.PROGRESS_ERROR_COLOR);
-					value.setAlignmentX(Component.LEFT_ALIGNMENT);
-					panel.add(value);
+					panel.add(tinted(wrap(result.reason()), ColorScheme.PROGRESS_ERROR_COLOR));
 				}
 				break;
 			}
@@ -5146,16 +5069,10 @@ class QuestpathPanel extends PluginPanel
 			{
 				html.append("<br>");
 			}
-			html.append(escapeHtml(lines.get(i)));
+			html.append(escape(lines.get(i)));
 		}
 		html.append("</html>");
 		return html.toString();
-	}
-
-	/** Swing tooltips render as HTML, so a source line has to escape it. */
-	private static String escapeHtml(String text)
-	{
-		return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
 	}
 
 	private static void addRow(JPanel grid, String label, String detail, Color detailColor)
@@ -5228,8 +5145,13 @@ class QuestpathPanel extends PluginPanel
 
 	private static JLabel muted(String text)
 	{
-		JLabel label = new JLabel(wrap(text));
-		label.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
+		return tinted(wrap(text), ColorScheme.LIGHT_GRAY_COLOR);
+	}
+
+	private static JLabel tinted(String text, Color colour)
+	{
+		JLabel label = new JLabel(text);
+		label.setForeground(colour);
 		label.setAlignmentX(Component.LEFT_ALIGNMENT);
 		return label;
 	}
