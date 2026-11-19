@@ -1,0 +1,9 @@
+{
+  "name": "Bank and inventory",
+  "description": "Inventory then bank contents, then the bank interface opens. Exercises the owned-items and bank overlay path.",
+  "steps": [
+    {"kind": "container", "id": "INVENTORY", "items": {"SHARK": 10, "COINS": 25000}, "note": "inventory"},
+    {"kind": "container", "id": "BANK", "items": {"LOGS": 500, "OAK_LOGS": 200, "DRAGON_BONES": 40}, "wait": 300, "note": "bank"},
+    {"kind": "widgetLoaded", "group": "BANK_GROUP", "wait": 300, "note": "bank opens"}
+  ]
+}
