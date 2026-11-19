@@ -1,6 +1,5 @@
 package com.vinnyvangogh.questpath;
 
-import com.google.common.base.Charsets;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -74,7 +73,7 @@ final class VoiceLines
 				log.warn("Voice word list {} is missing", LIST);
 				return new VoiceLines();
 			}
-			return parse(new BufferedReader(new InputStreamReader(in, Charsets.UTF_8)));
+			return parse(new BufferedReader(new InputStreamReader(in, "UTF-8")));
 		}
 		catch (IOException e)
 		{

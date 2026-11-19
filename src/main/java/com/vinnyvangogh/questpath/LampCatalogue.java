@@ -1,6 +1,5 @@
 package com.vinnyvangogh.questpath;
 
-import com.google.common.base.Charsets;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.annotations.SerializedName;
@@ -113,7 +112,7 @@ class LampCatalogue
 			}
 			try
 			{
-				return parse(gson, new InputStreamReader(stream, Charsets.UTF_8));
+				return parse(gson, new InputStreamReader(stream, "UTF-8"));
 			}
 			catch (IOException e)
 			{

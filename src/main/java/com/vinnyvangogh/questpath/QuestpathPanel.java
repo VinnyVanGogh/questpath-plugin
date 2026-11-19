@@ -2969,7 +2969,7 @@ class QuestpathPanel extends PluginPanel
 		}
 		// Named in the log, not just counted. A count alone said "29" three
 		// skips running while the stop never moved, which read as working.
-		log.info("quest-route shop route: stop \"{}\" -> {} ({} destination(s), {} skipped)",
+		log.debug("quest-route shop route: stop \"{}\" -> {} ({} destination(s), {} skipped)",
 			stopName, named == null ? "nowhere placeable" : named.shopName(),
 			destinations.size(), shopItemSkips.size());
 		if (destinations.isEmpty())

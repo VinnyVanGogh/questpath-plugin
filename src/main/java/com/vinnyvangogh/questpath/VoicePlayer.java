@@ -4,7 +4,6 @@ import java.io.ByteArrayInputStream;
 import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.client.audio.AudioPlayer;
 
@@ -13,15 +12,16 @@ import net.runelite.client.audio.AudioPlayer;
  * time, on one executor thread of its own -- never the client thread, which
  * must not wait on decoding or an audio device.
  *
- * <p>{@code AudioPlayer} reports no end-of-line event, so the line's length is
- * read from the WAV this class joined itself ({@link VoiceAudio#durationMillis})
- * and the next line is released from a timer, through {@link VoiceQueue}.
+ * <p>{@code AudioPlayer.play} returns as soon as the sound is started and
+ * reports no end, so "one utterance at a time" is kept by scheduling
+ * {@link VoiceQueue#finished} for when the joined WAV's known length has
+ * elapsed. That is a scheduled task, not a sleeping thread.
  */
 @Slf4j
 final class VoicePlayer
 {
-	/** Slack after a line's length before the next may start, for the device's own buffering. */
-	private static final long TAIL_MILLIS = 60;
+	/** Slack after a line's length, so the next one does not clip its tail. */
+	private static final long TAIL_MILLIS = 100;
 
 	private final AudioPlayer audioPlayer;
 	private final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor(runnable ->
@@ -86,23 +86,30 @@ final class VoicePlayer
 		{
 			return;
 		}
+		long millis = 0;
 		try
 		{
 			final byte[] wav = job.utterance.fallback()
 				? VoiceAudio.ping()
 				: VoiceAudio.join(job.utterance.clips, VoiceLines.class::getResourceAsStream);
+			millis = VoiceAudio.durationMillis(wav);
 			audioPlayer.play(new ByteArrayInputStream(wav), VoiceAudio.gain(job.volume));
-			executor.schedule(queue::finished, VoiceAudio.durationMillis(wav) + TAIL_MILLIS, TimeUnit.MILLISECONDS);
-		}
-		catch (RejectedExecutionException e)
-		{
-			// Shut down while this line was starting.
 		}
 		catch (Exception e)
 		{
-			// AudioPlayer declares javax.sound's checked exceptions; none is worth telling the player.
+			// AudioPlayer's checked exceptions are javax.sound types, which a
+			// Hub plugin may not name, so this catches broadly on purpose.
 			log.debug("Quest Route could not play \"{}\"", job.utterance.text, e);
-			queue.finished();
+			millis = 0;
+		}
+		try
+		{
+			executor.schedule(queue::finished, millis + (millis > 0 ? TAIL_MILLIS : 0),
+				java.util.concurrent.TimeUnit.MILLISECONDS);
+		}
+		catch (RejectedExecutionException e)
+		{
+			// Shut down while playing: nothing more will play.
 		}
 	}
 }

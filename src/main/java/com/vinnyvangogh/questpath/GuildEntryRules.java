@@ -43,6 +43,65 @@ final class GuildEntryRules
 		return rule == null ? null : rule.judge(player);
 	}
 
+	/*
+	 * Thieving levels of the stalls a shop entry names, OSRS Wiki "Thieving"
+	 * stall table. Bundled, never fetched. Only stalls whose kind is a known
+	 * stealable stall are listed: the Elder / Carefree / Vannah stalls are
+	 * ordinary shops that merely carry the word.
+	 */
+	private static final String[][] STALL_LEVELS = {
+		{"veg", "2"}, {"baker", "5"}, {"bake stall", "5"}, {"craft", "5"},
+		{"silk", "20"}, {"fur", "35"}, {"fish", "42"}, {"silver", "50"},
+		{"spice", "65"}, {"gem", "75"}
+	};
+
+	private static final String[] NOT_THIEVING = {"elder ", "carefree", "vannah", "grud", "solihib", "vermundi"};
+
+	/** The Thieving level a stall shop needs, or 0 when it is not a stall. */
+	static int stallLevel(String shopName)
+	{
+		if (shopName == null)
+		{
+			return 0;
+		}
+		String name = shopName.toLowerCase();
+		if (!name.contains("stall"))
+		{
+			return 0;
+		}
+		for (String not : NOT_THIEVING)
+		{
+			if (name.contains(not))
+			{
+				return 0;
+			}
+		}
+		for (String[] kind : STALL_LEVELS)
+		{
+			if (name.contains(kind[0]))
+			{
+				return Integer.parseInt(kind[1]);
+			}
+		}
+		return 0;
+	}
+
+	/**
+	 * Blocked result when this is a stall the account lacks the Thieving
+	 * level for, else null. Unlike guild rules, a null here means "keep
+	 * checking the bundle's own gates" (quests, Sailing), never "open".
+	 */
+	static ShopReachability.Result stallBlock(String shopName, PlayerState player)
+	{
+		int need = stallLevel(shopName);
+		if (need == 0)
+		{
+			return null;
+		}
+		int have = player.levelIn("thieving");
+		return have >= need ? null : blocked("needs " + need + " Thieving, you have " + have);
+	}
+
 	private static ShopReachability.Result open()
 	{
 		return new ShopReachability.Result(ShopReachability.Verdict.OPEN, "");
