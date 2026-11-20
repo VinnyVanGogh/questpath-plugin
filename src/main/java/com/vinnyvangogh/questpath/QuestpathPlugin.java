@@ -42,6 +42,7 @@ import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -88,7 +89,9 @@ import net.runelite.api.widgets.Widget;
 import net.runelite.client.callback.ClientThread;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.events.ConfigChanged;
+import net.runelite.client.events.OverlayMenuClicked;
 import net.runelite.client.events.PartyChanged;
+import net.runelite.client.events.PluginMessage;
 import net.runelite.client.game.SkillIconManager;
 import net.runelite.client.party.PartyMember;
 import net.runelite.client.party.PartyService;
@@ -849,11 +852,9 @@ public class QuestpathPlugin extends Plugin
 		overlays.add(new GrandExchangeOverlay(this, config, overlayIcons, client, this::grandExchangeList));
 		overlays.add(new CombatXpOverlay(this, config, overlayIcons));
 		overlays.add(new BuildRulesOverlay(this, config, overlayIcons));
-		// The lamp catalogue is bundled, so a failure here is a broken jar
-		// rather than a missing server. Logged and carried on with an empty
-		// catalogue: every lamp then reads as unmodelled, which still greys
-		// NO_XP skills and still refuses to rank. A broken bundle must not
-		// take the advisor's only irreversible-mistake guard down with it.
+		overlays.add(new QuestWarningOverlay(this, config, overlayIcons));
+		// Bundled, so failure means a broken jar; an empty catalogue keeps the
+		// NO_XP guard (every lamp reads as unmodelled).
 		try
 		{
 			lampCatalogue = LampCatalogue.load(gson);
@@ -1839,20 +1840,16 @@ public class QuestpathPlugin extends Plugin
 		// -- see lastKnownPlayerLocation's own doc for why a Swing caller
 		// (the panel's Items tab) must never read Client state directly.
 		accountType = client.getAccountType();
+		checkQuestStarts();
 
-		// Re-announce an unchanged state now and then, so the party can tell
-		// a quiet member from a gone one; heartbeatDue reads no account
-		// state, so asking every tick costs nothing. The Group tab is redrawn
-		// with it, which is also when a silent member turns stale on screen.
+		// Heartbeat: lets the party tell a quiet member from a gone one.
 		if (groupBroadcaster != null && groupBroadcaster.heartbeatDue())
 		{
 			offerGroupState(false);
 			refreshGroup();
 		}
 
-		// Unconditional, unlike the refresh below: this is about whether a
-		// shop interface is open right now, which has nothing to do with
-		// whether the account's own state changed this tick.
+		// Unconditional: whether a shop is open is independent of account changes.
 		checkShopArrival();
 
 		// Whether the lamp interface is still up. There is no reliable
@@ -2294,6 +2291,7 @@ public class QuestpathPlugin extends Plugin
 	@Subscribe
 	public void onVarbitChanged(VarbitChanged event)
 	{
+		questStatesDirty = true;
 		maybeSync();
 	}
 
@@ -2425,6 +2423,9 @@ public class QuestpathPlugin extends Plugin
 		}
 		if (event.getGameState() == GameState.LOGIN_SCREEN)
 		{
+			questWarnings.reset();
+			questWarning = null;
+			questStatesDirty = false;
 			floorSpawns.clear();
 			floorAnnouncer.clear();
 			// A logged-out client reports every skill as level 1, which would
@@ -4007,6 +4008,84 @@ public class QuestpathPlugin extends Plugin
 	OverlaySnapshot overlaySnapshot()
 	{
 		return overlaySnapshot;
+	}
+
+	/** The warning the popup draws. */
+	private volatile QuestWarning questWarning;
+
+	private final QuestWarnings questWarnings = new QuestWarnings(
+		() -> config.questWarnings(), this::questWarningMuted, this::showQuestWarning);
+
+	/** Set by a varbit change; the next tick re-reads quest states once. */
+	private boolean questStatesDirty;
+
+	QuestWarning questWarning()
+	{
+		return questWarning;
+	}
+
+	private boolean questWarningMuted(String questName)
+	{
+		return Arrays.asList(config.questWarningMuted().split("\\|")).contains(questName);
+	}
+
+	private void showQuestWarning(QuestWarning warning)
+	{
+		questWarning = warning;
+		queue(ChatMessageType.GAMEMESSAGE, new ChatMessageBuilder()
+			.append(ChatColorType.HIGHLIGHT).append(warning.headline() + " " + String.join("; ", warning.lines)));
+	}
+
+	/** Quest Helper's selection over the plugin bus (quest-helper#2846); inert until it sends one. */
+	@Subscribe
+	public void onPluginMessage(PluginMessage message)
+	{
+		if (!QuestWarnings.NAMESPACE.equals(message.getNamespace())
+			|| !QuestWarnings.SELECTED.equals(message.getName()))
+		{
+			return;
+		}
+		Object quest = message.getData() == null ? null : message.getData().get("quest");
+		String name = quest instanceof String ? (String) quest : null;
+		clientThread.invoke(() ->
+		{
+			if (questGraph != null && client.getGameState() == GameState.LOGGED_IN)
+			{
+				questWarnings.onSelected(name, questGraph, playerState(completedQuestNames()));
+			}
+		});
+	}
+
+	@Subscribe
+	public void onOverlayMenuClicked(OverlayMenuClicked event)
+	{
+		if (!(event.getOverlay() instanceof QuestWarningOverlay))
+		{
+			return;
+		}
+		QuestWarning shown = questWarning;
+		if (QuestWarningOverlay.MUTE.equals(event.getEntry().getOption()) && shown != null)
+		{
+			String muted = config.questWarningMuted();
+			configManager.setConfiguration(QuestpathConfig.GROUP, "questWarningMuted",
+				muted.isEmpty() ? shown.questName : muted + "|" + shown.questName);
+		}
+		questWarning = null;
+	}
+
+	/** Fallback: quests newly started, read once per tick after a varbit change. */
+	private void checkQuestStarts()
+	{
+		if (!questStatesDirty)
+		{
+			return;
+		}
+		questStatesDirty = false;
+		if (questGraph != null && config.questWarnings())
+		{
+			Set<String> inProgress = inProgressQuestNames();
+			questWarnings.onQuestStates(inProgress, questGraph, playerState(completedQuestNames()));
+		}
 	}
 
 	// -----------------------------------------------------------------------

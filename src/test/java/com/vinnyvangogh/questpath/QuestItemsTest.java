@@ -778,7 +778,7 @@ public class QuestItemsTest
 		known.put("rope", 4L);
 
 		java.util.Map<String, Long> merged =
-			QuestItems.effectiveHeldForTest(carried, false, known);
+			QuestItems.effectiveHeld(carried, false, known);
 
 		// The larger of the two, never the sum: questpath's record already
 		// includes whatever was carried when it was taken, so adding would
@@ -801,7 +801,7 @@ public class QuestItemsTest
 		java.util.Map<String, Long> known = new java.util.HashMap<>();
 		known.put("bucket", 9L);
 
-		java.util.Map<String, Long> merged = QuestItems.effectiveHeldForTest(live, true, known);
+		java.util.Map<String, Long> merged = QuestItems.effectiveHeld(live, true, known);
 
 		assertEquals(Long.valueOf(1L), merged.get("bucket"));
 	}

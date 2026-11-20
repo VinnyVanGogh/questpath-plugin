@@ -139,39 +139,6 @@ class Boosts
 	}
 
 	/**
-	 * The best boost including the ones that might drain instead.
-	 *
-	 * Kept apart from {@link #bestFor} so a caller can decide whether a quest
-	 * is reachable using only what is reliable, and still be able to mention
-	 * that a stew exists and might get you there. Merging the two would make
-	 * a coin flip look like a plan.
-	 */
-	Best bestIncludingRandom(String skill, int level)
-	{
-		List<QuestGraph.Boost> boosts = bySkill.get(skill == null ? "" : skill.toLowerCase());
-		if (boosts == null)
-		{
-			return NONE;
-		}
-		Best best = bestFor(skill, level);
-		for (QuestGraph.Boost boost : boosts)
-		{
-			if (!boost.random())
-			{
-				continue;
-			}
-			// A random boost's ceiling is what it might give, which is the
-			// only interesting thing about it.
-			int ceiling = boost.max() > 0 ? boost.max() : boost.base();
-			if (ceiling > best.levels())
-			{
-				best = new Best(ceiling, boost.item(), true);
-			}
-		}
-		return best;
-	}
-
-	/**
 	 * Whether a shortfall in this skill can actually be boosted away.
 	 *
 	 * <p>The whole point of the class. {@code shortfall} is how many levels

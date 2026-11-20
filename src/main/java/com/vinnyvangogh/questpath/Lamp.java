@@ -171,20 +171,6 @@ class Lamp
 		return xp;
 	}
 
-	/** A short description of what the lamp is worth, for a tooltip. */
-	String describeAmount()
-	{
-		if (!modelled)
-		{
-			return "amount unknown";
-		}
-		if (scaling())
-		{
-			return xpPerLevel + " xp per level";
-		}
-		return XpTable.format((long) xp) + " xp";
-	}
-
 	/** Lowercase name, for matching against a skill list. */
 	static String normalise(String skill)
 	{
