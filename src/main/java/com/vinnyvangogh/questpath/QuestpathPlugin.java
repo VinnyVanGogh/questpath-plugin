@@ -3050,8 +3050,6 @@ public class QuestpathPlugin extends Plugin
 		bankNeedsShown = on;
 		if (bankButton != null)
 		{
-			// Keep the menu text ("View tab"/"Hide tab") in step with the flag
-			// whichever path flipped it.
 			bankButton.refresh();
 		}
 		if (bankTab == null)
@@ -3253,10 +3251,6 @@ public class QuestpathPlugin extends Plugin
 		boolean ours = target != null && target.contains("Quest Route");
 		if (!BankToggleGuard.handles(bankNeedsShown, ours, option))
 		{
-			// "Hide tab" is handled even with the flag already off: the flag
-			// can drop (search toggle) while the button still reads "Hide
-			// tab", and letting that click through to the op listener would
-			// switch the tab ON instead.
 			return;
 		}
 		if (ours)
