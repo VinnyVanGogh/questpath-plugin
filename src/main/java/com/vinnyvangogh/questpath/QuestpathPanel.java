@@ -4,27 +4,40 @@ import com.vinnyvangogh.questpath.groupshop.GroupShoppingList;
 import com.vinnyvangogh.questpath.groupshop.GroupStorage;
 import com.vinnyvangogh.questpath.groupshop.ItemSources;
 import com.vinnyvangogh.questpath.groupshop.Transfer;
+import com.vinnyvangogh.questpath.PanelSections.Tab;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.Insets;
+import java.awt.Point;
 import java.awt.Window;
-import java.awt.image.BufferedImage;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
+import java.util.function.BooleanSupplier;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -37,12 +50,11 @@ import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JList;
-import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
 import javax.swing.JProgressBar;
 import javax.swing.JSpinner;
+import javax.swing.JViewport;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
@@ -55,9 +67,9 @@ import net.runelite.api.Skill;
 import net.runelite.api.coords.WorldPoint;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.game.SpriteManager;
-import net.runelite.client.ui.ColorScheme;
-import net.runelite.client.ui.FontManager;
 import net.runelite.client.ui.PluginPanel;
+import static com.vinnyvangogh.questpath.Ui.*;
+import static net.runelite.client.ui.ColorScheme.*;
 import net.runelite.client.ui.components.materialtabs.MaterialTab;
 import net.runelite.client.ui.components.materialtabs.MaterialTabGroup;
 import net.runelite.client.util.ImageUtil;
@@ -100,7 +112,7 @@ class QuestpathPanel extends PluginPanel
 	 */
 	private static final int TAB_ICON_SIZE = 20;
 
-	private final Map<PanelSections.Tab, JPanel> tabBodies = new EnumMap<>(PanelSections.Tab.class);
+	private final Map<Tab, JPanel> tabBodies = new EnumMap<>(Tab.class);
 
 	/**
 	 * Switches tabs by changing which one is visible, never by removing one.
@@ -231,12 +243,12 @@ class QuestpathPanel extends PluginPanel
 		{
 			return;
 		}
-		java.awt.Container viewport = SwingUtilities.getAncestorOfClass(javax.swing.JViewport.class, overlaySettings);
-		if (viewport instanceof javax.swing.JViewport)
+		Container viewport = SwingUtilities.getAncestorOfClass(JViewport.class, overlaySettings);
+		if (viewport instanceof JViewport)
 		{
-			java.awt.Point p = SwingUtilities.convertPoint(overlaySettings, 0, 0,
-				((javax.swing.JViewport) viewport).getView());
-			((javax.swing.JViewport) viewport).setViewPosition(new java.awt.Point(0, p.y));
+			Point p = SwingUtilities.convertPoint(overlaySettings, 0, 0,
+				((JViewport) viewport).getView());
+			((JViewport) viewport).setViewPosition(new Point(0, p.y));
 		}
 	}
 
@@ -270,7 +282,7 @@ class QuestpathPanel extends PluginPanel
 	 * has neither and should not learn to build a classifier. The plugin owns
 	 * that, and hands down the one question this tab asks.
 	 */
-	private final java.util.function.BiFunction<String, Integer, SkillPlan> planner;
+	private final BiFunction<String, Integer, SkillPlan> planner;
 
 	/** What the skill plan was last drawn for; see the Build tab's gate. */
 	private Object lastSkillSignature;
@@ -302,7 +314,7 @@ class QuestpathPanel extends PluginPanel
 	 * list is behind: automatic, not a config item, so an ironman never
 	 * sees it however any setting is left.
 	 */
-	private final java.util.function.BooleanSupplier geAvailable;
+	private final BooleanSupplier geAvailable;
 
 	/**
 	 * Where to walk for a shop by name, or null when the bundled graph
@@ -310,7 +322,7 @@ class QuestpathPanel extends PluginPanel
 	 * own for the same reason {@link #planner} is one: the panel should not
 	 * learn to hold the bundle, only ask the one question it needs answered.
 	 */
-	private final java.util.function.Function<String, WorldPoint> shopLocator;
+	private final Function<String, WorldPoint> shopLocator;
 
 	/**
 	 * Told the moment the shop-route button actually sends a route -- see
@@ -349,11 +361,11 @@ class QuestpathPanel extends PluginPanel
 	 * sort by something that is not distance -- which is how it ended up
 	 * alphabetical.
 	 */
-	private final java.util.function.Supplier<WorldPoint> playerLocation;
+	private final Supplier<WorldPoint> playerLocation;
 
 	/** Resolves a monster name to a tile, for an item no shop sells. */
-	private final java.util.function.Function<String, WorldPoint> dropLocator;
-	private final java.util.function.BooleanSupplier shopRouteActive;
+	private final Function<String, WorldPoint> dropLocator;
+	private final BooleanSupplier shopRouteActive;
 	private final ShopItemSkips shopItemSkips;
 
 	/**
@@ -362,14 +374,14 @@ class QuestpathPanel extends PluginPanel
 	 * graph of its own, the same reasoning {@link #shopLocator} follows: the
 	 * panel should not learn to hold the bundle.
 	 */
-	private final java.util.function.Supplier<List<QuestGraph.DiaryTask>> diaryGraphTasks;
+	private final Supplier<List<QuestGraph.DiaryTask>> diaryGraphTasks;
 
 	/**
 	 * The account's per-account diary routing data, as questpath last
 	 * reported it, or null when there is none -- see {@code
 	 * QuestpathPlugin#diaryPush}'s own doc for what "none" covers.
 	 */
-	private final java.util.function.Supplier<PushResponse.Diary> diaryPush;
+	private final Supplier<PushResponse.Diary> diaryPush;
 
 	/** Every callback the Locked gear section calls back into the plugin for. See its own class doc. */
 	private final LockedGearActions lockedGearActions;
@@ -388,7 +400,7 @@ class QuestpathPanel extends PluginPanel
 	private boolean lockedGearItemsExpanded;
 
 	/** "Say again" on the current shop stop; null until the plugin sets it. */
-	private volatile java.util.function.Consumer<String> sayShopAgain;
+	private volatile Consumer<String> sayShopAgain;
 
 	/**
 	 * Non-null while this account has no local profile: the Quests tab then
@@ -397,16 +409,16 @@ class QuestpathPanel extends PluginPanel
 	 */
 	private volatile String setupNote;
 	private volatile LocalProfile setupCurrent;
-	private volatile java.util.function.BiConsumer<LocalProfile, List<BuildRule>> onSetupDone;
+	private volatile BiConsumer<LocalProfile, List<BuildRule>> onSetupDone;
 	private volatile Runnable onSetupCancel;
 	private volatile Runnable onOpenSetup;
 	/** Bumped on every setSetup, so reopening setup rebuilds the tab even with an unchanged note. */
 	private volatile int setupRevision;
-	private final java.util.Map<PanelSections.Tab, MaterialTab> materialTabs = new java.util.EnumMap<>(PanelSections.Tab.class);
+	private final Map<Tab, MaterialTab> materialTabs = new EnumMap<>(Tab.class);
 	private MaterialTabGroup tabGroup;
 
 	/** Shows ({@code note != null}) or hides first-run setup; takes effect on the next render. */
-	void setSetup(String note, java.util.function.BiConsumer<LocalProfile, List<BuildRule>> onDone)
+	void setSetup(String note, BiConsumer<LocalProfile, List<BuildRule>> onDone)
 	{
 		setSetup(note, null, onDone, null);
 	}
@@ -416,7 +428,7 @@ class QuestpathPanel extends PluginPanel
 	 * cancel that leaves the saved answers alone ({@code onCancel} null hides it).
 	 */
 	void setSetup(String note, LocalProfile current,
-		java.util.function.BiConsumer<LocalProfile, List<BuildRule>> onDone, Runnable onCancel)
+		BiConsumer<LocalProfile, List<BuildRule>> onDone, Runnable onCancel)
 	{
 		this.setupNote = note;
 		this.setupCurrent = current;
@@ -434,7 +446,7 @@ class QuestpathPanel extends PluginPanel
 	/** Makes the Quests tab the one on screen; setup lives there. */
 	void showQuestsTab()
 	{
-		MaterialTab tab = materialTabs.get(PanelSections.Tab.QUESTS);
+		MaterialTab tab = materialTabs.get(Tab.QUESTS);
 		if (tab != null && tabGroup != null)
 		{
 			tabGroup.select(tab);
@@ -443,10 +455,7 @@ class QuestpathPanel extends PluginPanel
 
 	private JPanel setupHeader()
 	{
-		JButton button = new JButton("Account setup");
-		button.setFont(FontManager.getRunescapeSmallFont());
-		button.setToolTipText("Account type, build, skill caps and quest filters. Opens setup from any page.");
-		button.addActionListener(event ->
+		JButton button = button("Account setup", event ->
 		{
 			Runnable open = onOpenSetup;
 			if (open != null)
@@ -454,6 +463,7 @@ class QuestpathPanel extends PluginPanel
 				open.run();
 			}
 		});
+		button.setToolTipText("Account type, build, skill caps and quest filters. Opens setup from any page.");
 		JPanel row = new JPanel(new BorderLayout());
 		row.setBorder(BorderFactory.createEmptyBorder(0, 0, 6, 0));
 		row.add(button, BorderLayout.CENTER);
@@ -461,24 +471,24 @@ class QuestpathPanel extends PluginPanel
 	}
 
 	/** Wires the shop stop's "Say again" button to the plugin's voice. */
-	void setSayShopAgain(java.util.function.Consumer<String> sayShopAgain)
+	void setSayShopAgain(Consumer<String> sayShopAgain)
 	{
 		this.sayShopAgain = sayShopAgain;
 	}
 
 	QuestpathPanel(SpriteManager sprites, QuestpathConfig config, ConfigManager configManager,
 		OverlaySettingsPanel overlaySettings,
-		java.util.function.BiFunction<String, Integer, SkillPlan> planner,
+		BiFunction<String, Integer, SkillPlan> planner,
 		ShortestPathBridge shortestPathBridge,
-		GrandExchangeSearchBridge geSearchBridge, java.util.function.BooleanSupplier geAvailable,
-		java.util.function.Function<String, WorldPoint> shopLocator,
-		java.util.function.Function<String, WorldPoint> dropLocator,
-		java.util.function.Supplier<WorldPoint> playerLocation, Runnable onShopRouteSent,
+		GrandExchangeSearchBridge geSearchBridge, BooleanSupplier geAvailable,
+		Function<String, WorldPoint> shopLocator,
+		Function<String, WorldPoint> dropLocator,
+		Supplier<WorldPoint> playerLocation, Runnable onShopRouteSent,
 		Runnable onCancelShopRoute,
-		java.util.function.BooleanSupplier shopRouteActive, Runnable onSyncNow,
+		BooleanSupplier shopRouteActive, Runnable onSyncNow,
 		ShopItemSkips shopItemSkips,
-		java.util.function.Supplier<List<QuestGraph.DiaryTask>> diaryGraphTasks,
-		java.util.function.Supplier<PushResponse.Diary> diaryPush,
+		Supplier<List<QuestGraph.DiaryTask>> diaryGraphTasks,
+		Supplier<PushResponse.Diary> diaryPush,
 		LockedGearActions lockedGearActions,
 		LocalBuildRules localBuildRules, Runnable onRulesEdited)
 	{
@@ -515,11 +525,11 @@ class QuestpathPanel extends PluginPanel
 		MaterialTabGroup tabGroup = new MaterialTabGroup();
 		// One row, equal widths. Five labels at the sidebar's 225px is about
 		// six characters each, which is why the tab names are one word.
-		tabGroup.setLayout(new GridLayout(0, PanelSections.Tab.values().length, 2, 2));
+		tabGroup.setLayout(new GridLayout(0, Tab.values().length, 2, 2));
 		tabGroup.setBorder(BorderFactory.createEmptyBorder(0, 0, 6, 0));
 
 		MaterialTab first = null;
-		for (PanelSections.Tab tab : PanelSections.Tab.values())
+		for (Tab tab : Tab.values())
 		{
 			JPanel bodyForTab = new JPanel();
 			bodyForTab.setLayout(new BoxLayout(bodyForTab, BoxLayout.Y_AXIS));
@@ -549,9 +559,9 @@ class QuestpathPanel extends PluginPanel
 		}
 
 		questResults.setLayout(new BoxLayout(questResults, BoxLayout.Y_AXIS));
-		questResults.setAlignmentX(Component.LEFT_ALIGNMENT);
+		questResults.setAlignmentX(LEFT_ALIGNMENT);
 		itemResults.setLayout(new BoxLayout(itemResults, BoxLayout.Y_AXIS));
-		itemResults.setAlignmentX(Component.LEFT_ALIGNMENT);
+		itemResults.setAlignmentX(LEFT_ALIGNMENT);
 		styleSearch(questSearch, "Filter the quests below by name", this::refilterQuests);
 		styleSearch(itemSearch, "Filter the items below by name", this::refilterItems);
 		styleStatusFilter(questStatusFilter, this::refilterQuests);
@@ -564,8 +574,8 @@ class QuestpathPanel extends PluginPanel
 		// else.
 		if (overlaySettings != null)
 		{
-			tabBodies.get(PanelSections.Tab.VIEW).add(quickSettings);
-			tabBodies.get(PanelSections.Tab.VIEW).add(overlaySettings);
+			body(Tab.VIEW).add(quickSettings);
+			body(Tab.VIEW).add(overlaySettings);
 		}
 
 		buildSkillTab();
@@ -597,13 +607,13 @@ class QuestpathPanel extends PluginPanel
 	private void styleSearch(JTextField field, String tooltip, Runnable onChange)
 	{
 		field.setToolTipText(tooltip);
-		field.setBackground(ColorScheme.DARKER_GRAY_COLOR);
+		field.setBackground(DARKER_GRAY_COLOR);
 		field.setForeground(Color.WHITE);
 		field.setBorder(BorderFactory.createCompoundBorder(
-			BorderFactory.createLineBorder(ColorScheme.DARK_GRAY_COLOR),
+			BorderFactory.createLineBorder(DARK_GRAY_COLOR),
 			BorderFactory.createEmptyBorder(2, 4, 2, 4)));
 		field.setMaximumSize(new Dimension(Integer.MAX_VALUE, 22));
-		field.setAlignmentX(Component.LEFT_ALIGNMENT);
+		field.setAlignmentX(LEFT_ALIGNMENT);
 
 		field.getDocument().addDocumentListener(new DocumentListener()
 		{
@@ -642,12 +652,7 @@ class QuestpathPanel extends PluginPanel
 			combo.addItem(QuestVerdicts.label(status));
 		}
 		combo.setSelectedItem(STATUS_FILTER_ALL);
-		combo.setBackground(ColorScheme.DARKER_GRAY_COLOR);
-		combo.setForeground(Color.WHITE);
-		combo.setMaximumSize(new Dimension(Integer.MAX_VALUE, 22));
-		combo.setAlignmentX(Component.LEFT_ALIGNMENT);
-		combo.setToolTipText("Show only one verdict group");
-		combo.addActionListener(e -> onChange.run());
+		styled(combo, "Show only one verdict group").addActionListener(e -> onChange.run());
 	}
 
 	/**
@@ -671,11 +676,7 @@ class QuestpathPanel extends PluginPanel
 		}
 		combo.setSelectedItem(config.questJournalFilter());
 		populatingJournalFilter = false;
-		combo.setBackground(ColorScheme.DARKER_GRAY_COLOR);
-		combo.setForeground(Color.WHITE);
-		combo.setMaximumSize(new Dimension(Integer.MAX_VALUE, 22));
-		combo.setAlignmentX(Component.LEFT_ALIGNMENT);
-		combo.setToolTipText("Quests: the quest route only. Diaries: the diary journal and route only."
+		styled(combo, "Quests: the quest route only. Diaries: the diary journal and route only."
 			+ " All: both, each in its own order. Also drives which of the two in-game route"
 			+ " overlays can show, the same as the in-game quest journal's own filter.");
 		combo.addActionListener(e ->
@@ -702,7 +703,7 @@ class QuestpathPanel extends PluginPanel
 		{
 			return;
 		}
-		configManager.setConfiguration(QuestpathConfig.GROUP, "questJournalFilter", filter);
+		setConfig("questJournalFilter", filter);
 		if (lastVerdicts == null && lastNextQuest == null && lastRouteWork == null)
 		{
 			// Nothing has rendered yet -- the first real render already
@@ -710,7 +711,7 @@ class QuestpathPanel extends PluginPanel
 			return;
 		}
 		rebuildQuestsTab(lastVerdicts, lastNextQuest, lastRouteWork);
-		lastVerdictSignature = java.util.Arrays.asList(
+		lastVerdictSignature = Arrays.asList(
 			lastVerdicts == null ? null : lastVerdicts.signature(),
 			lastNextQuest == null ? null : lastNextQuest.hashCode(),
 			lastRouteWork == null ? null : routeWorkSignature(lastRouteWork),
@@ -780,7 +781,7 @@ class QuestpathPanel extends PluginPanel
 	 * concepts they stand for have no skill, and an icon that has to be
 	 * learned needs a way to be learned.
 	 */
-	private static MaterialTab tabFor(SpriteManager sprites, PanelSections.Tab tab,
+	private static MaterialTab tabFor(SpriteManager sprites, Tab tab,
 		MaterialTabGroup group, JPanel content)
 	{
 		// Built with its label first and given the picture when the picture
@@ -832,7 +833,7 @@ class QuestpathPanel extends PluginPanel
 		LockedGear lockedGear)
 	{
 		SwingUtilities.invokeLater(() ->
-			render(stats, xp, sync, rules, unmatchedQuests, verdicts, items, nextQuest, routeWork,
+			renderBody(stats, xp, sync, rules, unmatchedQuests, verdicts, items, nextQuest, routeWork,
 				settings, report, lockedGear));
 	}
 
@@ -889,14 +890,14 @@ class QuestpathPanel extends PluginPanel
 				// Settings are about the client, not the account, so they stay
 				// readable and editable while logged out -- which is exactly
 				// when someone is most likely to be setting them up.
-				tabBodies.get(PanelSections.Tab.VIEW).add(quickSettings);
-				tabBodies.get(PanelSections.Tab.VIEW).add(overlaySettings);
+				body(Tab.VIEW).add(quickSettings);
+				body(Tab.VIEW).add(overlaySettings);
 			}
-			tabBodies.get(PanelSections.Tab.COMBAT).add(muted("Log in to see your levels."));
-			tabBodies.get(PanelSections.Tab.SYNC).add(muted("Log in to sync."));
-			tabBodies.get(PanelSections.Tab.QUESTS).add(muted("Log in to judge your quests."));
-			tabBodies.get(PanelSections.Tab.ITEMS).add(muted("Log in to check your bank."));
-			tabBodies.get(PanelSections.Tab.GROUP).add(muted("Log in to plan with your group."));
+			body(Tab.COMBAT).add(muted("Log in to see your levels."));
+			body(Tab.SYNC).add(muted("Log in to sync."));
+			body(Tab.QUESTS).add(muted("Log in to judge your quests."));
+			body(Tab.ITEMS).add(muted("Log in to check your bank."));
+			body(Tab.GROUP).add(muted("Log in to plan with your group."));
 			lastGroupView = null;
 			// Cleared with everything else, so put them back before asking
 			// them to redraw. The instances are the same, so whatever was
@@ -904,18 +905,9 @@ class QuestpathPanel extends PluginPanel
 			addSkillFurniture();
 			lastSkillSignature = null;
 			renderSkillPlan();
-			renderPlannedSections();
+			renderPlannedSectionsFor(Tab.values());
 			repaintAll();
 		});
-	}
-
-	private void render(CombatStats stats, SkillXp xp, SyncStatus sync,
-		List<BuildRule> rules, List<String> unmatchedQuests, QuestVerdicts verdicts, QuestItems items,
-		NextQuestStatus nextQuest, RouteWork routeWork, SyncSettings settings, AccountReport report,
-		LockedGear lockedGear)
-	{
-		renderBody(stats, xp, sync, rules, unmatchedQuests, verdicts, items, nextQuest,
-			routeWork, settings, report, lockedGear);
 	}
 
 	private void renderBody(CombatStats stats, SkillXp xp, SyncStatus sync,
@@ -923,7 +915,7 @@ class QuestpathPanel extends PluginPanel
 		NextQuestStatus nextQuest, RouteWork routeWork, SyncSettings settings, AccountReport report,
 		LockedGear lockedGear)
 	{
-		clearBodies(PanelSections.Tab.SYNC);
+		clearBodies(Tab.SYNC);
 
 		lastStats = stats;
 		lastXp = xp;
@@ -931,14 +923,14 @@ class QuestpathPanel extends PluginPanel
 		lastLockedGear = lockedGear;
 
 		Object combatSignature =
-			java.util.Arrays.asList(stats, xp.signature(), rules, config.buildRulesShowAll(), lockedGear);
-		if (!java.util.Objects.equals(combatSignature, lastCombatSignature))
+			Arrays.asList(stats, xp.signature(), rules, config.buildRulesShowAll(), lockedGear);
+		if (!Objects.equals(combatSignature, lastCombatSignature))
 		{
 			rebuildCombatTab();
 			lastCombatSignature = combatSignature;
 		}
 
-		JPanel syncBody = tabBodies.get(PanelSections.Tab.SYNC);
+		JPanel syncBody = body(Tab.SYNC);
 		syncBody.add(heading(PanelSections.SYNC.title()));
 		syncBody.add(syncBlock(sync, unmatchedQuests, settings, report));
 
@@ -948,8 +940,8 @@ class QuestpathPanel extends PluginPanel
 		// already-known rules render as, not the rules themselves), so
 		// coupling it to the combat signature would rebuild it on changes it
 		// has no reason to care about.
-		Object skillSignature = java.util.Arrays.asList(stats, rules);
-		if (!java.util.Objects.equals(skillSignature, lastSkillSignature))
+		Object skillSignature = Arrays.asList(stats, rules);
+		if (!Objects.equals(skillSignature, lastSkillSignature))
 		{
 			lastSkillSignature = skillSignature;
 			renderSkillPlan();
@@ -982,14 +974,14 @@ class QuestpathPanel extends PluginPanel
 		// which rebuilds immediately on its own) still reaches this tab on
 		// the next tick instead of sitting stale until something else
 		// invalidates it.
-		Object questsSignature = java.util.Arrays.asList(
+		Object questsSignature = Arrays.asList(
 			verdicts == null ? null : verdicts.signature(),
 			nextQuest == null ? null : nextQuest.hashCode(),
 			routeWork == null ? null : routeWorkSignature(routeWork),
 			diaryPush.get(),
 			config.questJournalFilter(),
 			setupNote, setupRevision);
-		if (!java.util.Objects.equals(questsSignature, lastVerdictSignature))
+		if (!Objects.equals(questsSignature, lastVerdictSignature))
 		{
 			rebuildQuestsTab(verdicts, nextQuest, routeWork);
 			lastVerdictSignature = questsSignature;
@@ -997,25 +989,25 @@ class QuestpathPanel extends PluginPanel
 
 		lastItems = items;
 		Integer itemsSignature = items == null ? null : items.signature();
-		if (!java.util.Objects.equals(itemsSignature, lastItemsSignature))
+		if (!Objects.equals(itemsSignature, lastItemsSignature))
 		{
-			clearBodies(PanelSections.Tab.ITEMS);
-			JPanel itemsBody = tabBodies.get(PanelSections.Tab.ITEMS);
+			clearBodies(Tab.ITEMS);
+			JPanel itemsBody = body(Tab.ITEMS);
 			itemsBody.add(heading(PanelSections.ITEMS.title()));
 			if (items != null && !items.isEmpty())
 			{
 				itemsBody.add(itemSearch);
-				itemsBody.add(Box.createVerticalStrut(6));
+				itemsBody.add(gap(6));
 			}
 			itemsBody.add(itemResults);
 			fillItemResults(items);
-			renderPlannedSectionsFor(PanelSections.Tab.ITEMS);
+			renderPlannedSectionsFor(Tab.ITEMS);
 			lastItemsSignature = itemsSignature;
-			showBodies(PanelSections.Tab.ITEMS);
+			showBodies(Tab.ITEMS);
 		}
 
-		renderPlannedSectionsFor(PanelSections.Tab.SYNC);
-		showBodies(PanelSections.Tab.SYNC);
+		renderPlannedSectionsFor(Tab.SYNC);
+		showBodies(Tab.SYNC);
 		repaintAll();
 	}
 
@@ -1039,28 +1031,20 @@ class QuestpathPanel extends PluginPanel
 		List<BuildRule> rules = lastRules;
 		int ceiling = CombatMath.freeRangedCeiling(stats.get(Skill.ATTACK), stats.get(Skill.STRENGTH));
 
-		clearBodies(PanelSections.Tab.COMBAT);
-		JPanel combat = tabBodies.get(PanelSections.Tab.COMBAT);
+		clearBodies(Tab.COMBAT);
+		JPanel combat = body(Tab.COMBAT);
 		// The panel opens on this tab, so the button people reach for
 		// most lives here as well as on Sync. Two call sites, one
 		// behaviour -- see syncNowButton.
 		combat.add(syncNowButton());
-		combat.add(Box.createVerticalStrut(10));
-		combat.add(heading(PanelSections.COMBAT.title()));
-		combat.add(combatBlock(stats));
-		combat.add(Box.createVerticalStrut(14));
-		combat.add(heading(PanelSections.LOCKED_GEAR.title()));
-		combat.add(lockedGearSection(lastLockedGear));
-		combat.add(Box.createVerticalStrut(14));
-		combat.add(heading(PanelSections.CEILING.title()));
-		combat.add(ceilingBlock(stats, xp, ceiling));
-		combat.add(Box.createVerticalStrut(14));
-		combat.add(heading(PanelSections.COST.title()));
-		combat.add(costBlock(stats, xp));
-		combat.add(Box.createVerticalStrut(14));
+		combat.add(gap(10));
+		section(combat, PanelSections.COMBAT, combatBlock(stats));
+		section(combat, PanelSections.LOCKED_GEAR, lockedGearSection(lastLockedGear));
+		section(combat, PanelSections.CEILING, ceilingBlock(stats, xp, ceiling));
+		section(combat, PanelSections.COST, costBlock(stats, xp));
 		combat.add(buildRulesSection(stats, rules));
-		renderPlannedSectionsFor(PanelSections.Tab.COMBAT);
-		showBodies(PanelSections.Tab.COMBAT);
+		renderPlannedSectionsFor(Tab.COMBAT);
+		showBodies(Tab.COMBAT);
 	}
 
 	/**
@@ -1081,23 +1065,23 @@ class QuestpathPanel extends PluginPanel
 	{
 		QuestJournalFilter filter = config.questJournalFilter();
 
-		clearBodies(PanelSections.Tab.QUESTS);
-		JPanel quests = tabBodies.get(PanelSections.Tab.QUESTS);
+		clearBodies(Tab.QUESTS);
+		JPanel quests = body(Tab.QUESTS);
 
 		String setup = setupNote;
 		if (setup != null)
 		{
 			quests.add(new SetupPanel(setup, setupCurrent,
-				localBuildRules == null ? java.util.Collections.<BuildRule>emptyList() : localBuildRules.all(),
+				localBuildRules == null ? Collections.<BuildRule>emptyList() : localBuildRules.all(),
 				onSetupDone, onSetupCancel));
-			showBodies(PanelSections.Tab.QUESTS);
+			showBodies(Tab.QUESTS);
 			// Setup is on the Quests tab; wherever the player was, take them to it.
 			showQuestsTab();
 			return;
 		}
 
 		quests.add(journalFilterCombo);
-		quests.add(Box.createVerticalStrut(10));
+		quests.add(gap(10));
 
 		if (filter.showsQuests())
 		{
@@ -1107,24 +1091,18 @@ class QuestpathPanel extends PluginPanel
 			if (verdicts != null)
 			{
 				quests.add(questSearch);
-				quests.add(Box.createVerticalStrut(4));
+				quests.add(gap(4));
 				quests.add(questStatusFilter);
-				quests.add(Box.createVerticalStrut(10));
+				quests.add(gap(10));
 			}
-			quests.add(heading(PanelSections.NEXT_QUEST.title()));
-			quests.add(nextQuestBlock(nextQuest));
-			quests.add(Box.createVerticalStrut(14));
+			section(quests, PanelSections.NEXT_QUEST, nextQuestBlock(nextQuest));
 			if (routeWork != null && !routeWork.outstanding().isEmpty())
 			{
-				quests.add(heading(PanelSections.ROUTE_OUTSTANDING.title()));
-				quests.add(routeOutstandingBlock(routeWork));
-				quests.add(Box.createVerticalStrut(14));
+				section(quests, PanelSections.ROUTE_OUTSTANDING, routeOutstandingBlock(routeWork));
 			}
 			if (routeWork != null && !routeWork.partial().isEmpty())
 			{
-				quests.add(heading(PanelSections.ROUTE_PARTIAL.title()));
-				quests.add(routePartialBlock(routeWork));
-				quests.add(Box.createVerticalStrut(14));
+				section(quests, PanelSections.ROUTE_PARTIAL, routePartialBlock(routeWork));
 			}
 			quests.add(heading(PanelSections.QUEST_VERDICT.title()));
 			quests.add(questResults);
@@ -1133,16 +1111,12 @@ class QuestpathPanel extends PluginPanel
 
 		if (filter.showsDiaries())
 		{
-			quests.add(heading(PanelSections.DIARY_ROUTE.title()));
-			quests.add(diaryRouteBlock());
-			quests.add(Box.createVerticalStrut(14));
-			quests.add(heading(PanelSections.DIARY_JOURNAL.title()));
-			quests.add(diaryJournalBlock());
-			quests.add(Box.createVerticalStrut(14));
+			section(quests, PanelSections.DIARY_ROUTE, diaryRouteBlock());
+			section(quests, PanelSections.DIARY_JOURNAL, diaryJournalBlock());
 		}
 
-		renderPlannedSectionsFor(PanelSections.Tab.QUESTS);
-		showBodies(PanelSections.Tab.QUESTS);
+		renderPlannedSectionsFor(Tab.QUESTS);
+		showBodies(Tab.QUESTS);
 	}
 
 	// ------------------------------------------------------------------
@@ -1175,8 +1149,8 @@ class QuestpathPanel extends PluginPanel
 	private void rebuildGroupTab()
 	{
 		GroupView view = lastGroupView;
-		clearBodies(PanelSections.Tab.GROUP);
-		JPanel body = tabBodies.get(PanelSections.Tab.GROUP);
+		clearBodies(Tab.GROUP);
+		JPanel body = body(Tab.GROUP);
 		body.add(heading(PanelSections.GROUP_MEMBERS.title()));
 
 		if (view == null)
@@ -1190,7 +1164,7 @@ class QuestpathPanel extends PluginPanel
 					+ " your party."
 				: "Not sharing. Your party sees nothing from you; turn on \"Share with my party\" in the"
 					+ " View tab's Sync section to let them plan with you."));
-			body.add(Box.createVerticalStrut(6));
+			body.add(gap(6));
 			switch (view.state())
 			{
 				case NO_GRAPH:
@@ -1209,7 +1183,7 @@ class QuestpathPanel extends PluginPanel
 					break;
 			}
 		}
-		showBodies(PanelSections.Tab.GROUP);
+		showBodies(Tab.GROUP);
 		body.revalidate();
 		body.repaint();
 	}
@@ -1223,7 +1197,7 @@ class QuestpathPanel extends PluginPanel
 		{
 			if (!member.compatible())
 			{
-				addRow(members, member.name(), "other version", ColorScheme.PROGRESS_ERROR_COLOR,
+				addRow(members, member.name(), "other version", PROGRESS_ERROR_COLOR,
 					"Runs a Quest Route that sends a different message shape (v" + member.version()
 						+ "). Update both clients to the same version to plan together.");
 				continue;
@@ -1244,18 +1218,18 @@ class QuestpathPanel extends PluginPanel
 		}
 		for (String name : view.notSharing())
 		{
-			addRow(members, name, "not sharing", ColorScheme.LIGHT_GRAY_COLOR,
+			addRow(members, name, "not sharing", LIGHT_GRAY_COLOR,
 				"Sends nothing: Quest Route is not running for them, or their sharing is off.");
 		}
 		body.add(members);
 
 		if (total < 2)
 		{
-			body.add(Box.createVerticalStrut(6));
+			body.add(gap(6));
 			body.add(muted("Nobody else in the party is sharing yet, so the lists below are for you alone."));
 		}
 
-		body.add(Box.createVerticalStrut(14));
+		body.add(gap(14));
 		body.add(heading(PanelSections.GROUP_TOGETHER.title()));
 		List<QuestGraph.Quest> together = plan.together();
 		if (together.isEmpty())
@@ -1267,7 +1241,7 @@ class QuestpathPanel extends PluginPanel
 			questNameList(body, together);
 		}
 
-		body.add(Box.createVerticalStrut(14));
+		body.add(gap(14));
 		body.add(heading(PanelSections.GROUP_FLAGGED.title()));
 		List<GroupPlan.Flag> flagged = plan.flagged();
 		if (flagged.isEmpty())
@@ -1285,27 +1259,23 @@ class QuestpathPanel extends PluginPanel
 					body.add(muted("... and " + (flagged.size() - GROUP_LIST_LIMIT) + " more."));
 					break;
 				}
-				JLabel quest = row(flag.quest().name());
-				quest.setForeground(ColorScheme.PROGRESS_ERROR_COLOR);
-				body.add(quest);
+				body.add(row(flag.quest().name(), PROGRESS_ERROR_COLOR));
 				for (GroupPlan.MemberBreach breach : flag.breaches())
 				{
-					JLabel reason = row("  " + breach.describe());
-					reason.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
-					body.add(reason);
+					body.add(row("  " + breach.describe(), LIGHT_GRAY_COLOR));
 				}
 			}
 		}
 
-		body.add(Box.createVerticalStrut(14));
+		body.add(gap(14));
 		body.add(heading(PanelSections.GROUP_ITEMS.title()));
 		itemSplitBlock(body, plan, together);
 
-		body.add(Box.createVerticalStrut(14));
+		body.add(gap(14));
 		body.add(heading(PanelSections.GROUP_SHOPPING.title()));
 		groupShoppingBlock(body, view);
 
-		body.add(Box.createVerticalStrut(14));
+		body.add(gap(14));
 		body.add(heading(PanelSections.GROUP_DONE_BY_SOME.title()));
 		List<GroupPlan.Partial> partial = plan.doneBySome();
 		if (partial.isEmpty())
@@ -1365,7 +1335,7 @@ class QuestpathPanel extends PluginPanel
 		}
 		body.add(groupPicker(names, selected.name(), "Which group quest to split the item list for", chosen ->
 			groupSplitQuest = chosen));
-		body.add(Box.createVerticalStrut(6));
+		body.add(gap(6));
 
 		ItemSplit split = plan.split(selected);
 		if (split.lines().isEmpty())
@@ -1379,34 +1349,23 @@ class QuestpathPanel extends PluginPanel
 			String each = (line.quantityStated() ? "" : "at least ") + line.perMember() + " each";
 			JLabel title = row(line.name() + " — " + each + (line.obtainable() ? " (found in quest)" : ""));
 			body.add(title);
-			for (Transfer transfer : line.transfers())
-			{
-				JLabel give = row("  " + transfer.from() + " gives " + transfer.to() + " " + transfer.count());
-				give.setForeground(ColorScheme.PROGRESS_COMPLETE_COLOR);
-				body.add(give);
-			}
+			transfers(body, line.transfers());
 			for (Map.Entry<String, Long> get : line.toGet().entrySet())
 			{
-				JLabel need = row("  " + get.getKey() + " gets " + get.getValue());
-				need.setForeground(ColorScheme.PROGRESS_INPROGRESS_COLOR);
-				body.add(need);
+				body.add(row("  " + get.getKey() + " gets " + get.getValue(), PROGRESS_INPROGRESS_COLOR));
 			}
 			if (!line.unknown().isEmpty())
 			{
-				JLabel unknown = row("  unknown: " + String.join(", ", line.unknown()));
-				unknown.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
-				body.add(unknown);
+				body.add(row("  unknown: " + String.join(", ", line.unknown()), LIGHT_GRAY_COLOR));
 			}
 			if (line.transfers().isEmpty() && line.toGet().isEmpty() && line.unknown().isEmpty())
 			{
-				JLabel covered = row("  everyone has theirs");
-				covered.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
-				body.add(covered);
+				body.add(row("  everyone has theirs", LIGHT_GRAY_COLOR));
 			}
 		}
 		if (split.unsplit() > 0)
 		{
-			body.add(Box.createVerticalStrut(4));
+			body.add(gap(4));
 			body.add(muted(split.unsplit() + " more line" + (split.unsplit() == 1 ? "" : "s")
 				+ " (optional, a category like \"any pickaxe\", or unmatched) not split -- see the Items tab."));
 		}
@@ -1429,20 +1388,10 @@ class QuestpathPanel extends PluginPanel
 	 * rebuild does not, because the listener is attached after it.
 	 */
 	private JComboBox<String> groupPicker(List<String> options, String selected, String tooltip,
-		java.util.function.Consumer<String> onPick)
+		Consumer<String> onPick)
 	{
-		JComboBox<String> picker = new JComboBox<>();
-		for (String option : options)
-		{
-			picker.addItem(option);
-		}
+		JComboBox<String> picker = styled(new JComboBox<>(options.toArray(new String[0])), tooltip);
 		picker.setSelectedItem(selected);
-		picker.setBackground(ColorScheme.DARKER_GRAY_COLOR);
-		picker.setForeground(Color.WHITE);
-		picker.setFont(FontManager.getRunescapeSmallFont());
-		picker.setMaximumSize(new Dimension(Integer.MAX_VALUE, 22));
-		picker.setAlignmentX(Component.LEFT_ALIGNMENT);
-		picker.setToolTipText(tooltip);
 		picker.addActionListener(e ->
 		{
 			Object chosen = picker.getSelectedItem();
@@ -1497,7 +1446,7 @@ class QuestpathPanel extends PluginPanel
 			}
 			groupShopLine(body, view, line);
 		}
-		body.add(Box.createVerticalStrut(6));
+		body.add(gap(6));
 		body.add(groupShopRouteButton(view, lines));
 		groupShopFootnotes(body, list);
 	}
@@ -1526,18 +1475,12 @@ class QuestpathPanel extends PluginPanel
 			"Only items this member needs; totals stay the group's",
 			chosen -> groupShopMember = EVERYONE.equals(chosen) ? null : chosen));
 
-		JCheckBox stillNeeded = new JCheckBox("Still needed only", groupShopStillNeeded);
-		stillNeeded.setFont(FontManager.getRunescapeSmallFont());
-		stillNeeded.setForeground(Color.WHITE);
-		stillNeeded.setBackground(ColorScheme.DARK_GRAY_COLOR);
-		stillNeeded.setAlignmentX(Component.LEFT_ALIGNMENT);
-		stillNeeded.addActionListener(e ->
+		body.add(check("Still needed only", groupShopStillNeeded, Color.WHITE, e ->
 		{
-			groupShopStillNeeded = stillNeeded.isSelected();
+			groupShopStillNeeded = ((JCheckBox) e.getSource()).isSelected();
 			rebuildGroupTab();
-		});
-		body.add(stillNeeded);
-		body.add(Box.createVerticalStrut(4));
+		}));
+		body.add(gap(4));
 	}
 
 	/** One item: the headline count, then who, who holds what, and where to get it. */
@@ -1549,12 +1492,7 @@ class QuestpathPanel extends PluginPanel
 			groupShopDetail(body, "  " + share.member() + ": " + describeShare(share)
 				+ (share.stale() ? " (stale)" : ""));
 		}
-		for (Transfer transfer : line.transfers())
-		{
-			JLabel give = row("  " + transfer.from() + " gives " + transfer.to() + " " + transfer.count());
-			give.setForeground(ColorScheme.PROGRESS_COMPLETE_COLOR);
-			body.add(give);
-		}
+		transfers(body, line.transfers());
 		String held = describeHolders(line);
 		if (!held.isEmpty())
 		{
@@ -1573,7 +1511,7 @@ class QuestpathPanel extends PluginPanel
 		boolean shortOf = line.stillNeeded() > 0;
 		JLabel title = row(line.name() + " — " + (shortOf ? "need " + floor + line.stillNeeded() + " more" : "covered")
 			+ " (" + floor + line.totalNeeded() + " total)" + (line.obtainable() ? " (found in quest)" : ""));
-		title.setForeground(shortOf ? ColorScheme.PROGRESS_INPROGRESS_COLOR : ColorScheme.PROGRESS_COMPLETE_COLOR);
+		title.setForeground(shortOf ? PROGRESS_INPROGRESS_COLOR : PROGRESS_COMPLETE_COLOR);
 		title.setToolTipText("For: " + String.join(", ", line.quests())
 			+ (line.tradeable() ? "" : ". Untradeable: only each member's own holding counts."));
 		return title;
@@ -1581,9 +1519,17 @@ class QuestpathPanel extends PluginPanel
 
 	private void groupShopDetail(JPanel body, String text)
 	{
-		JLabel label = row(text);
-		label.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
-		body.add(label);
+		body.add(row(text, LIGHT_GRAY_COLOR));
+	}
+
+	/** "Alice gives Bob 3", one green row each. */
+	private static void transfers(JPanel body, List<Transfer> transfers)
+	{
+		for (Transfer transfer : transfers)
+		{
+			body.add(row("  " + transfer.from() + " gives " + transfer.to() + " " + transfer.count(),
+				PROGRESS_COMPLETE_COLOR));
+		}
 	}
 
 	private static String describeShare(GroupShoppingList.Share share)
@@ -1634,7 +1580,7 @@ class QuestpathPanel extends PluginPanel
 	/** Sends every usable shop on the shown, still-short lines to Shortest Path. */
 	private JButton groupShopRouteButton(GroupView view, List<GroupShoppingList.Line> lines)
 	{
-		Set<WorldPoint> destinations = new java.util.LinkedHashSet<>();
+		Set<WorldPoint> destinations = new LinkedHashSet<>();
 		for (GroupShoppingList.Line line : lines)
 		{
 			ItemSources.Options options = view.sources(line.name());
@@ -1651,20 +1597,28 @@ class QuestpathPanel extends PluginPanel
 				}
 			}
 		}
-		JButton button = new JButton();
-		button.setAlignmentX(Component.LEFT_ALIGNMENT);
 		if (destinations.isEmpty() || shortestPathBridge == null)
 		{
-			button.setText("No shop you can use sells what the group needs");
-			button.setEnabled(false);
-			return button;
+			return disabled("No shop you can use sells what the group needs");
 		}
-		ShortestPathBridge.Availability availability = shortestPathBridge.availability();
-		button.setText(availability.menuLabel() + " (group shops)");
-		button.setEnabled(availability == ShortestPathBridge.Availability.AVAILABLE);
 		int count = destinations.size();
-		button.addActionListener(event -> shortestPathBridge.route(destinations, outcome ->
+		return routeButton(" (group shops)", event -> shortestPathBridge.route(destinations, outcome ->
 			SwingUtilities.invokeLater(() -> reportRouteOutcome(outcome, count))));
+	}
+
+	private static JButton disabled(String text)
+	{
+		JButton button = button(text, null);
+		button.setEnabled(false);
+		return button;
+	}
+
+	/** A Shortest Path button: its label is the bridge's own availability word, enabled only when AVAILABLE. */
+	private JButton routeButton(String suffix, ActionListener onClick)
+	{
+		ShortestPathBridge.Availability availability = shortestPathBridge.availability();
+		JButton button = button(availability.menuLabel() + suffix, onClick);
+		button.setEnabled(availability == ShortestPathBridge.Availability.AVAILABLE);
 		return button;
 	}
 
@@ -1712,11 +1666,8 @@ class QuestpathPanel extends PluginPanel
 
 		if (lockedGearMessage != null)
 		{
-			JLabel error = new JLabel(wrap(lockedGearMessage));
-			error.setForeground(ColorScheme.PROGRESS_ERROR_COLOR);
-			error.setAlignmentX(Component.LEFT_ALIGNMENT);
-			panel.add(error);
-			panel.add(Box.createVerticalStrut(6));
+			panel.add(tinted(wrap(lockedGearMessage), PROGRESS_ERROR_COLOR));
+			panel.add(gap(6));
 		}
 
 		if (gear == null || gear.shape() == LockedGear.Shape.NOT_LOGGED_IN)
@@ -1740,18 +1691,15 @@ class QuestpathPanel extends PluginPanel
 
 		if (gear.shape() == LockedGear.Shape.CORRUPT)
 		{
-			JLabel error = new JLabel(wrap("Could not read your saved loadouts: " + gear.corruptDetail()
-				+ ". Nothing was overwritten."));
-			error.setForeground(ColorScheme.PROGRESS_ERROR_COLOR);
-			error.setAlignmentX(Component.LEFT_ALIGNMENT);
-			panel.add(error);
+			panel.add(tinted(wrap("Could not read your saved loadouts: " + gear.corruptDetail()
+				+ ". Nothing was overwritten."), PROGRESS_ERROR_COLOR));
 			return panel;
 		}
 
 		if (gear.shape() == LockedGear.Shape.NO_LOADOUTS)
 		{
 			panel.add(muted("No loadout saved. Put on the gear you plan to fight in, then press Lock current gear."));
-			panel.add(Box.createVerticalStrut(6));
+			panel.add(gap(6));
 			panel.add(lockCurrentGearButton(gear));
 			return panel;
 		}
@@ -1766,19 +1714,19 @@ class QuestpathPanel extends PluginPanel
 		boolean anyStyleShown = false;
 		if (selected.showsMeleeBlock())
 		{
-			panel.add(Box.createVerticalStrut(8));
+			panel.add(gap(8));
 			panel.add(styleRow("Melee", gear.melee(), meleeControls(gear)));
 			anyStyleShown = true;
 		}
 		if (selected.showsRangedBlock())
 		{
-			panel.add(Box.createVerticalStrut(8));
+			panel.add(gap(8));
 			panel.add(styleRow("Ranged", gear.ranged(), rangedControls(gear)));
 			anyStyleShown = true;
 		}
 		if (selected.showsMagicBlock())
 		{
-			panel.add(Box.createVerticalStrut(8));
+			panel.add(gap(8));
 			panel.add(styleRow("Magic", gear.magic(), magicControls(gear)));
 			anyStyleShown = true;
 		}
@@ -1790,12 +1738,12 @@ class QuestpathPanel extends PluginPanel
 			// non-null weaponStyles list, and silently showing nothing
 			// would look like the section rendered wrong rather than like
 			// a state worth explaining.
-			panel.add(Box.createVerticalStrut(8));
+			panel.add(gap(8));
 			panel.add(muted("This loadout's captured weapon styles don't match any known style."));
 		}
-		panel.add(Box.createVerticalStrut(6));
+		panel.add(gap(6));
 		panel.add(muted("At your real levels, in " + selected.name()));
-		panel.add(Box.createVerticalStrut(6));
+		panel.add(gap(6));
 		panel.add(itemListSection(selected));
 
 		return panel;
@@ -1806,14 +1754,9 @@ class QuestpathPanel extends PluginPanel
 	{
 		JPanel panel = column();
 
-		JComboBox<String> picker = new JComboBox<>(gear.loadoutNames().toArray(new String[0]));
+		JComboBox<String> picker = styled(new JComboBox<>(gear.loadoutNames().toArray(new String[0])),
+			"Which saved loadout to show the max hit for");
 		picker.setSelectedItem(gear.selectedLoadout().name());
-		picker.setBackground(ColorScheme.DARKER_GRAY_COLOR);
-		picker.setForeground(Color.WHITE);
-		picker.setFont(FontManager.getRunescapeSmallFont());
-		picker.setMaximumSize(new Dimension(Integer.MAX_VALUE, 22));
-		picker.setAlignmentX(Component.LEFT_ALIGNMENT);
-		picker.setToolTipText("Which saved loadout to show the max hit for");
 		// Attached after setSelectedItem above, so restoring the current
 		// selection on rebuild never fires a spurious select of itself.
 		picker.addActionListener(e ->
@@ -1827,7 +1770,7 @@ class QuestpathPanel extends PluginPanel
 			lockedGearActions.selectLoadout.accept(chosen);
 		});
 		panel.add(picker);
-		panel.add(Box.createVerticalStrut(4));
+		panel.add(gap(4));
 
 		// Two rows, not one: "Lock current gear" / "Rename" / "Delete" side
 		// by side overflowed the standard PluginPanel width -- Delete showed
@@ -1837,10 +1780,10 @@ class QuestpathPanel extends PluginPanel
 		JButton lockButton = lockCurrentGearButton(gear);
 		lockButton.setMaximumSize(new Dimension(Integer.MAX_VALUE, lockButton.getPreferredSize().height));
 		panel.add(lockButton);
-		panel.add(Box.createVerticalStrut(4));
+		panel.add(gap(4));
 
 		JPanel secondRow = new JPanel(new GridLayout(1, 2, 4, 0));
-		secondRow.setAlignmentX(Component.LEFT_ALIGNMENT);
+		secondRow.setAlignmentX(LEFT_ALIGNMENT);
 		secondRow.setOpaque(false);
 		secondRow.setMaximumSize(new Dimension(Integer.MAX_VALUE, lockButton.getPreferredSize().height));
 		secondRow.add(renameButton(gear));
@@ -1859,13 +1802,7 @@ class QuestpathPanel extends PluginPanel
 	 */
 	private JButton lockCurrentGearButton(LockedGear gear)
 	{
-		JButton button = new JButton("Lock current gear");
-		button.setFont(FontManager.getRunescapeSmallFont());
-		button.setAlignmentX(Component.LEFT_ALIGNMENT);
-		button.setToolTipText("<html><body style='width:200px'>Snapshots the gear you are wearing"
-			+ " right now and saves it under a name. Only your live levels move after this --"
-			+ " the gear itself stays exactly as locked until you press this again.</body></html>");
-		button.addActionListener(e ->
+		JButton button = button("Lock current gear", e ->
 		{
 			boolean ready = gear.shape() == LockedGear.Shape.READY;
 			String defaultName = ready ? gear.selectedLoadout().name() : "";
@@ -1894,15 +1831,15 @@ class QuestpathPanel extends PluginPanel
 			lockedGearMessage = null;
 			lockedGearActions.lockCurrentGear.accept(trimmed);
 		});
+		button.setToolTipText("<html><body style='width:200px'>Snapshots the gear you are wearing"
+			+ " right now and saves it under a name. Only your live levels move after this --"
+			+ " the gear itself stays exactly as locked until you press this again.</body></html>");
 		return button;
 	}
 
 	private JButton renameButton(LockedGear gear)
 	{
-		JButton button = new JButton("Rename");
-		button.setFont(FontManager.getRunescapeSmallFont());
-		button.setAlignmentX(Component.LEFT_ALIGNMENT);
-		button.addActionListener(e ->
+		return button("Rename", e ->
 		{
 			String current = gear.selectedLoadout().name();
 			String name = JOptionPane.showInputDialog(this, "Rename \"" + current + "\" to:", current);
@@ -1918,15 +1855,11 @@ class QuestpathPanel extends PluginPanel
 			lockedGearMessage = null;
 			lockedGearActions.renameLoadout.accept(current, trimmed);
 		});
-		return button;
 	}
 
 	private JButton deleteButton(LockedGear gear)
 	{
-		JButton button = new JButton("Delete");
-		button.setFont(FontManager.getRunescapeSmallFont());
-		button.setAlignmentX(Component.LEFT_ALIGNMENT);
-		button.addActionListener(e ->
+		return button("Delete", e ->
 		{
 			String current = gear.selectedLoadout().name();
 			int choice = JOptionPane.showConfirmDialog(this,
@@ -1939,7 +1872,6 @@ class QuestpathPanel extends PluginPanel
 			lockedGearMessage = null;
 			lockedGearActions.deleteLoadout.accept(current);
 		});
-		return button;
 	}
 
 	/**
@@ -1949,19 +1881,16 @@ class QuestpathPanel extends PluginPanel
 	private JPanel styleRow(String label, LockedGear.StyleLine line, JComponent controls)
 	{
 		JPanel panel = column();
-
-		JLabel title = row(label);
-		title.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
-		panel.add(title);
+		panel.add(row(label, LIGHT_GRAY_COLOR));
 
 		switch (line.kind())
 		{
 			case NEEDS_SELECTION:
-				panel.add(tinted("Choose a style and prayer", ColorScheme.LIGHT_GRAY_COLOR));
+				panel.add(tinted("Choose a style and prayer", LIGHT_GRAY_COLOR));
 				break;
 			case UNKNOWN_STATS:
 				panel.add(tinted(wrap("Stats unknown for: " + String.join(", ", line.unknownItemNames())),
-					ColorScheme.PROGRESS_ERROR_COLOR));
+					PROGRESS_ERROR_COLOR));
 				break;
 			case RESULT:
 			default:
@@ -1969,10 +1898,8 @@ class QuestpathPanel extends PluginPanel
 				MaxHitResult result = line.result();
 				if (result.isKnown())
 				{
-					JLabel value = new JLabel(String.valueOf(result.value()));
-					value.setFont(FontManager.getRunescapeBoldFont().deriveFont(20f));
-					value.setForeground(Color.WHITE);
-					value.setAlignmentX(Component.LEFT_ALIGNMENT);
+					JLabel value = tinted(String.valueOf(result.value()), Color.WHITE);
+					value.setFont(BOLD.deriveFont(20f));
 					panel.add(value);
 					panel.add(nextStepLabel(line));
 					for (JLabel comparison : withoutBuffLabels(line))
@@ -1982,13 +1909,13 @@ class QuestpathPanel extends PluginPanel
 				}
 				else
 				{
-					panel.add(tinted(wrap(result.reason()), ColorScheme.PROGRESS_ERROR_COLOR));
+					panel.add(tinted(wrap(result.reason()), PROGRESS_ERROR_COLOR));
 				}
 				break;
 			}
 		}
 
-		panel.add(Box.createVerticalStrut(2));
+		panel.add(gap(2));
 		panel.add(controls);
 
 		if (line.kind() == LockedGear.StyleLine.Kind.RESULT && line.result().isKnown()
@@ -2003,7 +1930,7 @@ class QuestpathPanel extends PluginPanel
 				}
 				names.append(effect.label());
 			}
-			panel.add(Box.createVerticalStrut(2));
+			panel.add(gap(2));
 			panel.add(muted("Not applied: " + names));
 		}
 
@@ -2061,7 +1988,7 @@ class QuestpathPanel extends PluginPanel
 		JComboBox<AttackStyle> styleCombo = enumCombo(AttackStyle.values(), style, AttackStyle::label);
 		JComboBox<StrengthPrayer> prayerCombo = enumCombo(StrengthPrayer.values(), prayer, StrengthPrayer::label);
 
-		java.awt.event.ActionListener listener = e ->
+		ActionListener listener = e ->
 		{
 			AttackStyle chosenStyle = (AttackStyle) styleCombo.getSelectedItem();
 			StrengthPrayer chosenPrayer = (StrengthPrayer) prayerCombo.getSelectedItem();
@@ -2098,11 +2025,9 @@ class QuestpathPanel extends PluginPanel
 			lockedGearActions.meleePotionChanged.accept(loadout.name(), chosenPotion.name());
 		});
 
-		JPanel column = new JPanel();
-		column.setLayout(new BoxLayout(column, BoxLayout.Y_AXIS));
-		column.setAlignmentX(Component.LEFT_ALIGNMENT);
+		JPanel column = column();
 		column.add(comboRow(styleCombo, prayerCombo));
-		column.add(Box.createVerticalStrut(4));
+		column.add(gap(4));
 		column.add(potionCombo);
 		return column;
 	}
@@ -2116,7 +2041,7 @@ class QuestpathPanel extends PluginPanel
 		JComboBox<RangedStyle> styleCombo = enumCombo(RangedStyle.values(), style, RangedStyle::label);
 		JComboBox<RangedPrayer> prayerCombo = enumCombo(RangedPrayer.values(), prayer, RangedPrayer::label);
 
-		java.awt.event.ActionListener listener = e ->
+		ActionListener listener = e ->
 		{
 			RangedStyle chosenStyle = (RangedStyle) styleCombo.getSelectedItem();
 			RangedPrayer chosenPrayer = (RangedPrayer) prayerCombo.getSelectedItem();
@@ -2142,7 +2067,7 @@ class QuestpathPanel extends PluginPanel
 		JComboBox<Spell> spellCombo = enumCombo(Spell.values(), spell, Spell::label);
 		JComboBox<MagicPrayer> prayerCombo = enumCombo(MagicPrayer.values(), prayer, MagicPrayer::label);
 
-		java.awt.event.ActionListener listener = e ->
+		ActionListener listener = e ->
 		{
 			Spell chosenSpell = (Spell) spellCombo.getSelectedItem();
 			MagicPrayer chosenPrayer = (MagicPrayer) prayerCombo.getSelectedItem();
@@ -2159,11 +2084,11 @@ class QuestpathPanel extends PluginPanel
 		return comboRow(spellCombo, prayerCombo);
 	}
 
-	private static JPanel comboRow(JComponent first, JComponent second)
+	private static JPanel comboRow(Component first, Component second)
 	{
 		JPanel row = new JPanel();
 		row.setLayout(new BoxLayout(row, BoxLayout.X_AXIS));
-		row.setAlignmentX(Component.LEFT_ALIGNMENT);
+		row.setAlignmentX(LEFT_ALIGNMENT);
 		row.add(first);
 		row.add(Box.createHorizontalStrut(4));
 		row.add(second);
@@ -2178,7 +2103,7 @@ class QuestpathPanel extends PluginPanel
 	 * harmless since no listener is attached until after this returns.
 	 */
 	private static <E extends Enum<E>> JComboBox<E> enumCombo(E[] values, E selected,
-		java.util.function.Function<E, String> labeler)
+		Function<E, String> labeler)
 	{
 		JComboBox<E> combo = new JComboBox<>(values);
 		combo.setRenderer(new DefaultListCellRenderer()
@@ -2197,11 +2122,7 @@ class QuestpathPanel extends PluginPanel
 		{
 			combo.setSelectedItem(selected);
 		}
-		combo.setBackground(ColorScheme.DARKER_GRAY_COLOR);
-		combo.setForeground(Color.WHITE);
-		combo.setFont(FontManager.getRunescapeSmallFont());
-		combo.setMaximumSize(new Dimension(105, 22));
-		combo.setAlignmentX(Component.LEFT_ALIGNMENT);
+		styled(combo, null).setMaximumSize(new Dimension(105, 22));
 		return combo;
 	}
 
@@ -2231,31 +2152,19 @@ class QuestpathPanel extends PluginPanel
 	private JPanel itemListSection(Loadout loadout)
 	{
 		JPanel panel = column();
-
-		JCheckBox toggle = new JCheckBox("Items (" + loadout.items().size() + ")");
-		toggle.setForeground(Color.WHITE);
-		toggle.setFont(FontManager.getRunescapeSmallFont());
-		toggle.setFocusPainted(false);
-		toggle.setOpaque(false);
-		toggle.setAlignmentX(Component.LEFT_ALIGNMENT);
-		toggle.setSelected(lockedGearItemsExpanded);
-
 		JPanel items = column();
 		items.setVisible(lockedGearItemsExpanded);
 		for (LoadoutItem item : loadout.items())
 		{
 			items.add(row(item.name().isEmpty() ? ("item " + item.itemId()) : item.name()));
 		}
-
-		toggle.addActionListener(e ->
+		panel.add(check("Items (" + loadout.items().size() + ")", lockedGearItemsExpanded, Color.WHITE, e ->
 		{
-			lockedGearItemsExpanded = toggle.isSelected();
+			lockedGearItemsExpanded = ((JCheckBox) e.getSource()).isSelected();
 			items.setVisible(lockedGearItemsExpanded);
 			revalidate();
 			repaint();
-		});
-
-		panel.add(toggle);
+		}));
 		panel.add(items);
 		return panel;
 	}
@@ -2295,9 +2204,9 @@ class QuestpathPanel extends PluginPanel
 			return panel;
 		}
 
-		panel.add(Box.createVerticalStrut(4));
+		panel.add(gap(4));
 		panel.add(buildRulesToggle());
-		panel.add(Box.createVerticalStrut(4));
+		panel.add(gap(4));
 
 		boolean showAll = config.buildRulesShowAll();
 		List<BuildRule> shown = showAll ? rules : blockingRulesOf(rules);
@@ -2318,13 +2227,13 @@ class QuestpathPanel extends PluginPanel
 		int hidden = rules.size() - shown.size();
 		if (hidden > 0)
 		{
-			panel.add(Box.createVerticalStrut(4));
+			panel.add(gap(4));
 			panel.add(muted(hidden + (hidden == 1
 				? " non-blocking rule hidden"
 				: " non-blocking rules hidden")));
 		}
 
-		panel.add(Box.createVerticalStrut(6));
+		panel.add(gap(6));
 		panel.add(buildRulesEditorBlock());
 		return panel;
 	}
@@ -2387,16 +2296,10 @@ class QuestpathPanel extends PluginPanel
 	 */
 	private JCheckBox buildRulesToggle()
 	{
-		JCheckBox box = new JCheckBox("Show all rules");
+		JCheckBox box = check("Show all rules", config.buildRulesShowAll(), Color.WHITE,
+			e -> onBuildRulesShowAllToggled(((JCheckBox) e.getSource()).isSelected()));
 		box.setToolTipText("Off shows only rules that would end the build."
 			+ " On also lists goals and soft caps, which only inform.");
-		box.setSelected(config.buildRulesShowAll());
-		box.setForeground(Color.WHITE);
-		box.setFont(FontManager.getRunescapeSmallFont());
-		box.setFocusPainted(false);
-		box.setOpaque(false);
-		box.setAlignmentX(Component.LEFT_ALIGNMENT);
-		box.addActionListener(e -> onBuildRulesShowAllToggled(box.isSelected()));
 		return box;
 	}
 
@@ -2409,7 +2312,7 @@ class QuestpathPanel extends PluginPanel
 	 */
 	private void onBuildRulesShowAllToggled(boolean showAll)
 	{
-		configManager.setConfiguration(QuestpathConfig.GROUP, "buildRulesShowAll", showAll);
+		setConfig("buildRulesShowAll", showAll);
 		if (lastStats == null)
 		{
 			// Nothing has rendered yet -- the first real render will already
@@ -2417,7 +2320,7 @@ class QuestpathPanel extends PluginPanel
 			return;
 		}
 		rebuildCombatTab();
-		lastCombatSignature = java.util.Arrays.asList(lastStats, lastXp.signature(), lastRules, showAll);
+		lastCombatSignature = Arrays.asList(lastStats, lastXp.signature(), lastRules, showAll);
 	}
 
 	/**
@@ -2485,7 +2388,7 @@ class QuestpathPanel extends PluginPanel
 		if (note != null)
 		{
 			panel.add(muted(note));
-			panel.add(Box.createVerticalStrut(6));
+			panel.add(gap(6));
 		}
 	}
 
@@ -2512,12 +2415,9 @@ class QuestpathPanel extends PluginPanel
 			// so every count below is inventory and equipment only. Without
 			// saying so, a row reading "none" claims you do not own something
 			// that may be sitting in a bank nobody has looked in.
-			JLabel warning = new JLabel(wrap("Bank not read this session, so these"
-				+ " counts are what you are carrying. Open your bank once."));
-			warning.setFont(FontManager.getRunescapeSmallFont());
-			warning.setForeground(ColorScheme.PROGRESS_INPROGRESS_COLOR);
-			panel.add(warning);
-			panel.add(Box.createVerticalStrut(6));
+			panel.add(note("Bank not read this session, so these"
+				+ " counts are what you are carrying. Open your bank once.", PROGRESS_INPROGRESS_COLOR));
+			panel.add(gap(6));
 		}
 		addGroupStorageNote(panel, items);
 
@@ -2535,22 +2435,17 @@ class QuestpathPanel extends PluginPanel
 		// moment you leave.
 		if (!filtering && !items.pickups().isEmpty())
 		{
-			JLabel pickupHeading = new JLabel("GET WHILE YOU ARE HERE");
-			pickupHeading.setFont(FontManager.getRunescapeSmallFont().deriveFont(Font.BOLD));
-			pickupHeading.setForeground(ColorScheme.PROGRESS_COMPLETE_COLOR);
-			panel.add(pickupHeading);
+			panel.add(bold("GET WHILE YOU ARE HERE", PROGRESS_COMPLETE_COLOR));
 
 			for (QuestItems.Pickup pickup : items.pickups())
 			{
-				JLabel row = row(pickup.itemName() + " — in " + pickup.questName());
-				row.setFont(FontManager.getRunescapeSmallFont());
-				row.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
+				JLabel row = small(pickup.itemName() + " — in " + pickup.questName(), LIGHT_GRAY_COLOR);
 				row.setToolTipText("You are partway through " + pickup.questName()
 					+ ", the wiki says this can be picked up during it, and "
 					+ pickup.alsoWantedBy() + " quest(s) on your list want it.");
 				panel.add(row);
 			}
-			panel.add(Box.createVerticalStrut(12));
+			panel.add(gap(12));
 		}
 
 		if (!filtering && geAvailable.getAsBoolean())
@@ -2561,7 +2456,7 @@ class QuestpathPanel extends PluginPanel
 			// ironman can never reach this branch regardless of anything a
 			// player could toggle.
 			panel.add(grandExchangeBlock(items));
-			panel.add(Box.createVerticalStrut(8));
+			panel.add(gap(8));
 		}
 
 		if (!filtering)
@@ -2575,16 +2470,13 @@ class QuestpathPanel extends PluginPanel
 				panel.add(cancelShopRouteButton());
 			}
 			panel.add(skipRow(items));
-			panel.add(Box.createVerticalStrut(8));
+			panel.add(gap(8));
 		}
 
 		// One shopping list first, the per-quest breakdown after. Coins wanted
 		// by two quests is one trip to the bank for the sum, not two lines to
 		// add up in your head.
-		JLabel totalsHeading = new JLabel("EVERYTHING YOU NEED");
-		totalsHeading.setFont(FontManager.getRunescapeSmallFont().deriveFont(Font.BOLD));
-		totalsHeading.setForeground(ColorScheme.BRAND_ORANGE);
-		panel.add(totalsHeading);
+		panel.add(bold("EVERYTHING YOU NEED", BRAND_ORANGE));
 
 		JPanel totalsGrid = grid();
 		int shownTotals = 0;
@@ -2618,12 +2510,9 @@ class QuestpathPanel extends PluginPanel
 			panel.add(muted("No item matches that."));
 		}
 
-		panel.add(Box.createVerticalStrut(12));
-		JLabel perQuest = new JLabel("BY QUEST  ·  " + items.quests().size());
-		perQuest.setFont(FontManager.getRunescapeSmallFont().deriveFont(Font.BOLD));
-		perQuest.setForeground(ColorScheme.BRAND_ORANGE);
-		panel.add(perQuest);
-		panel.add(Box.createVerticalStrut(4));
+		panel.add(gap(12));
+		panel.add(bold("BY QUEST  ·  " + items.quests().size(), BRAND_ORANGE));
+		panel.add(gap(4));
 
 		boolean first = true;
 		int questsShown = 0;
@@ -2660,25 +2549,20 @@ class QuestpathPanel extends PluginPanel
 			}
 			if (!first)
 			{
-				panel.add(Box.createVerticalStrut(10));
+				panel.add(gap(10));
 			}
 			first = false;
 
-			JLabel title = row((needs.questName()
-				+ "  ·  " + needs.have() + "/" + needs.needed()));
-			title.setFont(FontManager.getRunescapeSmallFont().deriveFont(Font.BOLD));
-			title.setForeground(needs.ready()
-				? ColorScheme.PROGRESS_COMPLETE_COLOR
-				: ColorScheme.BRAND_ORANGE);
-			panel.add(title);
+			panel.add(bold(needs.questName() + "  ·  " + needs.have() + "/" + needs.needed(),
+				needs.ready() ? PROGRESS_COMPLETE_COLOR : BRAND_ORANGE));
 
 			JPanel grid = grid();
 			for (QuestItems.Line line : shownLines)
 			{
 				String label = line.optional() ? line.name() + " (optional)" : line.name();
 				addRow(grid, label, line.describe(), line.held()
-					? ColorScheme.PROGRESS_COMPLETE_COLOR
-					: ColorScheme.LIGHT_GRAY_COLOR,
+					? PROGRESS_COMPLETE_COLOR
+					: LIGHT_GRAY_COLOR,
 					itemTooltip(line.members().size() > 1
 						? "Any of: " + String.join(", ", line.members()) : null,
 						RouteSources.dropsOnly(dropLocator).annotate(line.sources())));
@@ -2692,7 +2576,7 @@ class QuestpathPanel extends PluginPanel
 		{
 			// Said, not silently dropped. A list that stops at eight without
 			// mentioning the other fifty-nine reads as the whole answer.
-			panel.add(Box.createVerticalStrut(8));
+			panel.add(gap(8));
 			panel.add(muted(questsLeft + " more quests on your plan need items."
 				+ " Search above to see any of them."));
 		}
@@ -2728,22 +2612,14 @@ class QuestpathPanel extends PluginPanel
 	private JPanel grandExchangeBlock(QuestItems items)
 	{
 		JPanel panel = column();
+		panel.add(bold("GRAND EXCHANGE LIST", BRAND_ORANGE));
 
-		JLabel heading = new JLabel("GRAND EXCHANGE LIST");
-		heading.setFont(FontManager.getRunescapeSmallFont().deriveFont(Font.BOLD));
-		heading.setForeground(ColorScheme.BRAND_ORANGE);
-		panel.add(heading);
-
-		boolean includeRecommended = config != null && config.recommendedItems();
-		JCheckBox recommendedBox = new JCheckBox("Include recommended items", includeRecommended);
-		recommendedBox.setFont(FontManager.getRunescapeSmallFont());
-		recommendedBox.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
-		recommendedBox.setOpaque(false);
-		recommendedBox.addActionListener(e -> {
-			configManager.setConfiguration(QuestpathConfig.GROUP, "recommendedItems", recommendedBox.isSelected());
+		boolean includeRecommended = includeRecommended();
+		panel.add(check("Include recommended items", includeRecommended, LIGHT_GRAY_COLOR, e ->
+		{
+			setConfig("recommendedItems", ((JCheckBox) e.getSource()).isSelected());
 			fillItemResults(lastItems);
-		});
-		panel.add(recommendedBox);
+		}));
 
 		TeleportForm form = config == null ? TeleportForm.TABLET : config.recommendedTeleportForm();
 		if (includeRecommended)
@@ -2752,18 +2628,15 @@ class QuestpathPanel extends PluginPanel
 			// A checkbox rather than a two-item combo because the sidebar is
 			// narrow and "runes instead" is the whole question; the Settings
 			// tab carries the same key as a combo for anyone who looks there.
-			JCheckBox runesBox = new JCheckBox("Runes instead of teleport tablets",
-				form == TeleportForm.RUNES);
-			runesBox.setFont(FontManager.getRunescapeSmallFont());
-			runesBox.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
-			runesBox.setOpaque(false);
+			JCheckBox runesBox = check("Runes instead of teleport tablets", form == TeleportForm.RUNES,
+				LIGHT_GRAY_COLOR, e ->
+				{
+					setConfig("recommendedTeleportForm",
+						((JCheckBox) e.getSource()).isSelected() ? TeleportForm.RUNES : TeleportForm.TABLET);
+					fillItemResults(lastItems);
+				});
 			runesBox.setToolTipText("Camelot: 5 air and 1 law per cast. Offered only when your Magic"
 				+ " level can cast the spell; otherwise the tablet stays listed.");
-			runesBox.addActionListener(e -> {
-				configManager.setConfiguration(QuestpathConfig.GROUP, "recommendedTeleportForm",
-					runesBox.isSelected() ? TeleportForm.RUNES : TeleportForm.TABLET);
-				fillItemResults(lastItems);
-			});
 			panel.add(runesBox);
 
 			if (!items.graphCarriesRecommended())
@@ -2778,7 +2651,7 @@ class QuestpathPanel extends PluginPanel
 					+ " Quest Route (graph version 13 or later) to list them here."));
 			}
 		}
-		panel.add(Box.createVerticalStrut(2));
+		panel.add(gap(2));
 
 		List<GrandExchangeShoppingList.Line> lines = GrandExchangeShoppingList.of(
 			items.grandExchangeTotals(includeRecommended, form));
@@ -2789,48 +2662,48 @@ class QuestpathPanel extends PluginPanel
 			return panel;
 		}
 
-		JLabel hint = new JLabel(wrap("Click an item to search for it at the Grand Exchange."
-			+ " Only does anything while the Grand Exchange window is open."));
-		hint.setFont(FontManager.getRunescapeSmallFont());
-		hint.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
-		panel.add(hint);
-		panel.add(Box.createVerticalStrut(4));
+		panel.add(note("Click an item to search for it at the Grand Exchange."
+			+ " Only does anything while the Grand Exchange window is open.", LIGHT_GRAY_COLOR));
+		panel.add(gap(4));
 
 		List<GrandExchangeShoppingList.Line> required = GrandExchangeShoppingList.required(lines);
 		List<GrandExchangeShoppingList.Line> recommended = GrandExchangeShoppingList.recommended(lines);
 
 		if (!required.isEmpty())
 		{
-			JPanel geGrid = grid();
-			for (GrandExchangeShoppingList.Line line : required)
-			{
-				JLabel left = addRow(geGrid, line.name(), String.valueOf(line.outstanding()),
-					ColorScheme.LIGHT_GRAY_COLOR, null);
-				attachGrandExchangeSearch(left, line.itemId(), line.name());
-			}
-			panel.add(geGrid);
+			panel.add(geGrid(required));
 		}
 
 		if (!recommended.isEmpty())
 		{
-			panel.add(Box.createVerticalStrut(6));
-			JLabel recHeading = new JLabel("RECOMMENDED");
-			recHeading.setFont(FontManager.getRunescapeSmallFont().deriveFont(Font.BOLD));
-			recHeading.setForeground(ColorScheme.BRAND_ORANGE);
-			panel.add(recHeading);
-
-			JPanel recGrid = grid();
-			for (GrandExchangeShoppingList.Line line : recommended)
-			{
-				JLabel left = addRow(recGrid, line.name(), String.valueOf(line.outstanding()),
-					ColorScheme.LIGHT_GRAY_COLOR, null);
-				attachGrandExchangeSearch(left, line.itemId(), line.name());
-			}
-			panel.add(recGrid);
+			panel.add(gap(6));
+			panel.add(bold("RECOMMENDED", BRAND_ORANGE));
+			panel.add(geGrid(recommended));
 		}
 		addRecommendedCoins(panel, items, includeRecommended);
 
 		return panel;
+	}
+
+	private JPanel geGrid(List<GrandExchangeShoppingList.Line> lines)
+	{
+		JPanel grid = grid();
+		for (GrandExchangeShoppingList.Line line : lines)
+		{
+			JLabel left = addRow(grid, line.name(), String.valueOf(line.outstanding()), LIGHT_GRAY_COLOR, null);
+			attachGrandExchangeSearch(left, line.itemId(), line.name());
+		}
+		return grid;
+	}
+
+	private boolean includeRecommended()
+	{
+		return config != null && config.recommendedItems();
+	}
+
+	private void setConfig(String key, Object value)
+	{
+		configManager.setConfiguration(QuestpathConfig.GROUP, key, value);
 	}
 
 	/**
@@ -2845,7 +2718,7 @@ class QuestpathPanel extends PluginPanel
 		{
 			return;
 		}
-		panel.add(Box.createVerticalStrut(4));
+		panel.add(gap(4));
 		panel.add(muted("Also bring " + String.format("%,d", items.recommendedCoins())
 			+ " coins -- recommended across the route, not something to buy."));
 	}
@@ -2870,17 +2743,16 @@ class QuestpathPanel extends PluginPanel
 		}
 		row.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 		row.setToolTipText("Click to show \"" + itemName + "\" in the Grand Exchange search.");
-		row.addMouseListener(new java.awt.event.MouseAdapter()
+		row.addMouseListener(new MouseAdapter()
 		{
 			@Override
-			public void mouseClicked(java.awt.event.MouseEvent event)
+			public void mouseClicked(MouseEvent event)
 			{
-				if (event.getButton() != java.awt.event.MouseEvent.BUTTON1)
+				if (event.getButton() == MouseEvent.BUTTON1)
 				{
-					return;
+					geSearchBridge.search(itemId, outcome ->
+						SwingUtilities.invokeLater(() -> reportGrandExchangeOutcome(outcome, itemName)));
 				}
-				geSearchBridge.search(itemId, outcome ->
-					SwingUtilities.invokeLater(() -> reportGrandExchangeOutcome(outcome, itemName)));
 			}
 		});
 	}
@@ -2930,51 +2802,31 @@ class QuestpathPanel extends PluginPanel
 	 */
 	private JButton syncNowButton()
 	{
-		JButton button = new JButton("Sync with Quest Route");
-		button.setFont(FontManager.getRunescapeSmallFont());
-		button.setAlignmentX(Component.LEFT_ALIGNMENT);
+		JButton button = button("Sync with Quest Route", event -> onSyncNow.run());
 		button.setToolTipText("<html><body style='width:220px'>Pushes this account to Quest Route"
 			+ " and applies whatever comes back -- build rules, your saved plan, and the items"
 			+ " Quest Route holds for you.<br><br>Automatic sync only fires when something changes"
 			+ " in-game, so this is how a plan you edited on the website arrives without waiting"
 			+ " for your next level-up.</body></html>");
-		button.addActionListener(event -> onSyncNow.run());
 		return button;
 	}
 
 	private JButton cancelShopRouteButton()
 	{
-		JButton button = new JButton("Stop the shop route");
-		button.setFont(FontManager.getRunescapeSmallFont());
-		button.setAlignmentX(Component.LEFT_ALIGNMENT);
-		button.addActionListener(event ->
+		return button("Stop the shop route", event ->
 		{
 			onCancelShopRoute.run();
 			repaintAll();
 		});
-		return button;
 	}
 
 	private JButton shopRouteButton(QuestItems items)
 	{
-		Set<WorldPoint> destinations = shopDestinations(items);
-
-		JButton button = new JButton();
-		button.setFont(FontManager.getRunescapeSmallFont());
-		button.setAlignmentX(Component.LEFT_ALIGNMENT);
-
-		if (destinations.isEmpty())
+		if (shopDestinations(items).isEmpty())
 		{
-			button.setText("No known shop sells what you still need");
-			button.setEnabled(false);
-			return button;
+			return disabled("No known shop sells what you still need");
 		}
-
-		ShortestPathBridge.Availability availability = shortestPathBridge.availability();
-		button.setText(availability.menuLabel());
-		button.setEnabled(availability == ShortestPathBridge.Availability.AVAILABLE);
-		button.addActionListener(event -> sendShopRoute(items, true));
-		return button;
+		return routeButton("", event -> sendShopRoute(items, true));
 	}
 
 	/**
@@ -3001,16 +2853,11 @@ class QuestpathPanel extends PluginPanel
 		Set<WorldPoint> destinations = shopDestinations(items);
 		ShopRouteStops.Destination named = null;
 		String stopName = "nothing";
-		boolean includeRecommended = config != null && config.recommendedItems();
-		for (ShopRouteStops.Stop stop : ShopRouteStops.tour(items.totals(includeRecommended), shopItemSkips, shopLocator,
-			dropLocator, playerLocation.get()))
+		QuestItems.Total current = currentStop(items);
+		if (current != null)
 		{
-			if (stop.current())
-			{
-				stopName = stop.total().name();
-				named = ShopRouteStops.destinationOf(stop.total(), shopLocator, dropLocator, null);
-				break;
-			}
+			stopName = current.name();
+			named = ShopRouteStops.destinationOf(current, shopLocator, dropLocator, null);
 		}
 		// Named in the log, not just counted. A count alone said "29" three
 		// skips running while the stop never moved, which read as working.
@@ -3092,12 +2939,12 @@ class QuestpathPanel extends PluginPanel
 		// Make-from-owned reads as in progress: nothing to fetch, one thing
 		// to do with what is already in the bank.
 		Color totalColour = skipped
-			? ColorScheme.MEDIUM_GRAY_COLOR
+			? MEDIUM_GRAY_COLOR
 			: total.satisfied()
-				? ColorScheme.PROGRESS_COMPLETE_COLOR
+				? PROGRESS_COMPLETE_COLOR
 				: total.inProgress() || total.makeFromOwned()
-					? ColorScheme.PROGRESS_INPROGRESS_COLOR
-					: ColorScheme.LIGHT_GRAY_COLOR;
+					? PROGRESS_INPROGRESS_COLOR
+					: LIGHT_GRAY_COLOR;
 		String label = skipped ? total.name() + "  (skipped)" : total.displayName();
 		addRow(totalsGrid, label, total.describe(), totalColour,
 			itemTooltip(sharedNote, RouteSources.dropsOnly(dropLocator).annotate(total.sources())));
@@ -3141,44 +2988,19 @@ class QuestpathPanel extends PluginPanel
 		// the path went to the swamp, and skipping did nothing visible
 		// because every following item was unroutable too and the route never
 		// moved off Bones.
-		QuestItems.Total current = null;
-		boolean includeRecommended = config != null && config.recommendedItems();
-		for (ShopRouteStops.Stop stop : ShopRouteStops.tour(items.totals(includeRecommended), shopItemSkips,
-			shopLocator, dropLocator, playerLocation.get()))
-		{
-			if (stop.current())
-			{
-				current = stop.total();
-				break;
-			}
-		}
-
+		QuestItems.Total current = currentStop(items);
 		if (current != null)
 		{
 			String currentName = current.name();
 			// Where this stop is and what it is for, before the buttons that
 			// act on it: the shop with its town, and what else it supplies.
-			JLabel where = new JLabel("<html>" + ShopRouteStops.destinationLine(current,
-				shopLocator, dropLocator, playerLocation.get(), items.totals(includeRecommended),
-				shopItemSkips).replace("&", "&amp;").replace("<", "&lt;") + "</html>");
-			where.setFont(FontManager.getRunescapeSmallFont());
-			where.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
-			where.setAlignmentX(Component.LEFT_ALIGNMENT);
+			JLabel where = tinted("<html>" + escape(ShopRouteStops.destinationLine(current,
+				shopLocator, dropLocator, playerLocation.get(), items.totals(includeRecommended()),
+				shopItemSkips)) + "</html>", LIGHT_GRAY_COLOR);
+			where.setFont(SMALL);
 			panel.add(where);
-			JButton skip =new JButton("Skip \"" + currentName + "\" (move to back)");
-			skip.setFont(FontManager.getRunescapeSmallFont());
-			skip.setAlignmentX(Component.LEFT_ALIGNMENT);
-			skip.addActionListener(event ->
-			{
-				shopItemSkips.skip(currentName);
-				fillItemResults(lastItems);
-				repaintAll();
-				if (shopRouteActive.getAsBoolean())
-				{
-					sendShopRoute(lastItems, false);
-				}
-			});
-			panel.add(skip);
+			panel.add(button("Skip \"" + currentName + "\" (move to back)",
+				event -> reskip(() -> shopItemSkips.skip(currentName))));
 
 			JButton again = sayAgainButton(current);
 			if (again != null)
@@ -3190,38 +3012,50 @@ class QuestpathPanel extends PluginPanel
 		List<String> skipped = shopItemSkips.names();
 		if (!skipped.isEmpty())
 		{
-			panel.add(Box.createVerticalStrut(4));
-			JLabel heading = new JLabel("SKIPPED THIS TRIP  ·  " + skipped.size());
-			heading.setFont(FontManager.getRunescapeSmallFont().deriveFont(Font.BOLD));
-			heading.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
-			panel.add(heading);
+			panel.add(gap(4));
+			panel.add(bold("SKIPPED THIS TRIP  ·  " + skipped.size(), LIGHT_GRAY_COLOR));
 			// Each its own small button rather than one combined "restore
 			// all": a skip is reversible one at a time because it was made
 			// one at a time, and a player who skipped three items to get to
 			// a fourth should not have to give all three back to undo one.
 			for (String skippedName : skipped)
 			{
-				JButton undo = new JButton(skippedName + "  ·  restore");
-				undo.setFont(FontManager.getRunescapeSmallFont());
-				undo.setAlignmentX(Component.LEFT_ALIGNMENT);
-				undo.addActionListener(event ->
-				{
-					shopItemSkips.unskip(skippedName);
-					fillItemResults(lastItems);
-					repaintAll();
-					// Restoring puts a stop back on the trip, so the line on
-					// the ground has to learn about it too -- the same reason
-					// the skip above re-sends.
-					if (shopRouteActive.getAsBoolean())
-					{
-						sendShopRoute(lastItems, false);
-					}
-				});
-				panel.add(undo);
+				panel.add(button(skippedName + "  ·  restore",
+					event -> reskip(() -> shopItemSkips.unskip(skippedName))));
 			}
 		}
 
 		return panel;
+	}
+
+	/** The stop the trip is walking to: the first unsatisfied, unskipped, placeable total. */
+	private QuestItems.Total currentStop(QuestItems items)
+	{
+		for (ShopRouteStops.Stop stop : ShopRouteStops.tour(items.totals(includeRecommended()), shopItemSkips,
+			shopLocator, dropLocator, playerLocation.get()))
+		{
+			if (stop.current())
+			{
+				return stop.total();
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * A skip or an undo: redraw now (a skip changes nothing the items
+	 * signature covers), and re-send the route so the line on the ground
+	 * agrees with the list.
+	 */
+	private void reskip(Runnable change)
+	{
+		change.run();
+		fillItemResults(lastItems);
+		repaintAll();
+		if (shopRouteActive.getAsBoolean())
+		{
+			sendShopRoute(lastItems, false);
+		}
 	}
 
 	/**
@@ -3231,7 +3065,7 @@ class QuestpathPanel extends PluginPanel
 	 */
 	private JButton sayAgainButton(QuestItems.Total current)
 	{
-		java.util.function.Consumer<String> say = sayShopAgain;
+		Consumer<String> say = sayShopAgain;
 		ShopRouteStops.Destination dest = ShopRouteStops.destinationOf(current, shopLocator, dropLocator,
 			playerLocation.get());
 		if (say == null || dest == null || dest.monster())
@@ -3239,12 +3073,9 @@ class QuestpathPanel extends PluginPanel
 			return null;
 		}
 		String shopName = dest.shopName();
-		JButton again = new JButton("Say again: " + dest.label());
-		again.setFont(FontManager.getRunescapeSmallFont());
-		again.setAlignmentX(Component.LEFT_ALIGNMENT);
+		JButton again = button("Say again: " + dest.label(), event -> say.accept(shopName));
 		again.setToolTipText("Say every item still needed from " + shopName + ", out loud if the"
 			+ " voice is on, in chat if not.");
-		again.addActionListener(event -> say.accept(shopName));
 		return again;
 	}
 
@@ -3270,9 +3101,8 @@ class QuestpathPanel extends PluginPanel
 		{
 			return Collections.emptySet();
 		}
-		boolean includeRecommended = config != null && config.recommendedItems();
-		return ShopRouteStops.destinations(items.totals(includeRecommended), shopItemSkips, shopLocator, dropLocator,
-			playerLocation.get());
+		return ShopRouteStops.destinations(items.totals(includeRecommended()), shopItemSkips, shopLocator,
+			dropLocator, playerLocation.get());
 	}
 
 	/**
@@ -3346,26 +3176,21 @@ class QuestpathPanel extends PluginPanel
 				panel.add(muted("No route saved in Quest Route. Save a plan there and it will show up here."));
 				return panel;
 			case ALL_DONE:
-				JLabel done = new JLabel(wrap("Nothing left to do \u2014 every quest on your route is finished."));
-				done.setFont(FontManager.getRunescapeSmallFont());
-				done.setForeground(ColorScheme.PROGRESS_COMPLETE_COLOR);
-				panel.add(done);
-				panel.add(Box.createVerticalStrut(6));
-				panel.add(routeProgress(next));
-				panel.add(routeList(next));
-				return panel;
+				panel.add(note("Nothing left to do \u2014 every quest on your route is finished.",
+					PROGRESS_COMPLETE_COLOR));
+				break;
 			case NEXT:
-				JLabel value = new JLabel(wrap(next.questName()));
-				value.setFont(FontManager.getRunescapeBoldFont());
-				value.setForeground(Color.WHITE);
+				JLabel value = tinted(wrap(next.questName()), Color.WHITE);
+				value.setFont(BOLD);
 				panel.add(value);
-				panel.add(Box.createVerticalStrut(6));
-				panel.add(routeProgress(next));
-				panel.add(routeList(next));
-				return panel;
+				break;
 			default:
 				return panel;
 		}
+		panel.add(gap(6));
+		panel.add(routeProgress(next));
+		panel.add(routeList(next));
+		return panel;
 	}
 
 	/**
@@ -3378,22 +3203,18 @@ class QuestpathPanel extends PluginPanel
 	private static JPanel routeProgress(NextQuestStatus next)
 	{
 		JPanel panel = column();
-
-		JLabel count = new JLabel(wrap(next.doneCount() + " of " + next.size()
-			+ " done  \u00b7  " + next.remaining() + " to go"));
-		count.setFont(FontManager.getRunescapeSmallFont());
-		count.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
-		panel.add(count);
+		panel.add(note(next.doneCount() + " of " + next.size()
+			+ " done  \u00b7  " + next.remaining() + " to go", LIGHT_GRAY_COLOR));
 
 		JProgressBar bar = new JProgressBar(0, Math.max(1, next.size()));
 		bar.setValue(next.doneCount());
-		bar.setForeground(ColorScheme.PROGRESS_COMPLETE_COLOR);
-		bar.setBackground(ColorScheme.DARKER_GRAY_COLOR);
+		bar.setForeground(PROGRESS_COMPLETE_COLOR);
+		bar.setBackground(DARKER_GRAY_COLOR);
 		bar.setBorderPainted(false);
 		bar.setStringPainted(false);
 		bar.setMaximumSize(new Dimension(Integer.MAX_VALUE, 6));
 		bar.setPreferredSize(new Dimension(0, 6));
-		bar.setAlignmentX(Component.LEFT_ALIGNMENT);
+		bar.setAlignmentX(LEFT_ALIGNMENT);
 		panel.add(bar);
 
 		return panel;
@@ -3413,7 +3234,7 @@ class QuestpathPanel extends PluginPanel
 	private JPanel routeList(NextQuestStatus next)
 	{
 		JPanel panel = column();
-		panel.add(Box.createVerticalStrut(8));
+		panel.add(gap(8));
 
 		boolean marked = false;
 		for (NextQuestStatus.Step step : next.route())
@@ -3429,7 +3250,7 @@ class QuestpathPanel extends PluginPanel
 				// plain ASCII is certain to be there, another Unicode pick
 				// would only be a second gamble.
 				prefix = "x  ";
-				color = ColorScheme.PROGRESS_COMPLETE_COLOR.darker();
+				color = PROGRESS_COMPLETE_COLOR.darker();
 			}
 			else if (!marked)
 			{
@@ -3445,13 +3266,10 @@ class QuestpathPanel extends PluginPanel
 				// it -- verified, not just assumed innocent because it
 				// looked simpler than the other two.
 				prefix = "\u00b7  ";
-				color = ColorScheme.LIGHT_GRAY_COLOR;
+				color = LIGHT_GRAY_COLOR;
 			}
 
-			JLabel row = row(prefix + step.questName());
-			row.setFont(FontManager.getRunescapeSmallFont());
-			row.setForeground(color);
-			panel.add(row);
+			panel.add(small(prefix + step.questName(), color));
 		}
 
 		return panel;
@@ -3481,19 +3299,14 @@ class QuestpathPanel extends PluginPanel
 		JPanel panel = column();
 
 		List<RouteWork.Outstanding> outstanding = work.outstanding();
-		JLabel summary = new JLabel(wrap(outstanding.size() + " of the "
+		panel.add(note(outstanding.size() + " of the "
 			+ work.considered() + " unfinished on your plan "
-			+ (outstanding.size() == 1 ? "needs" : "need") + " something first."));
-		summary.setFont(FontManager.getRunescapeSmallFont());
-		summary.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
-		panel.add(summary);
-		panel.add(Box.createVerticalStrut(6));
+			+ (outstanding.size() == 1 ? "needs" : "need") + " something first.", LIGHT_GRAY_COLOR));
+		panel.add(gap(6));
 
 		for (RouteWork.Outstanding entry : outstanding)
 		{
-			JLabel row = row(outstandingPrefix(entry) + entry.questName());
-			row.setFont(FontManager.getRunescapeSmallFont());
-			row.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
+			JLabel row = small(outstandingPrefix(entry) + entry.questName(), LIGHT_GRAY_COLOR);
 			// Null when there is nothing to say, so a row never trails an
 			// empty tooltip around -- see blockerTooltip.
 			row.setToolTipText(blockerTooltip(entry.questName(), entry.blockers()));
@@ -3545,18 +3358,13 @@ class QuestpathPanel extends PluginPanel
 	{
 		JPanel panel = column();
 
-		JLabel summary = new JLabel(wrap("Play these part of the way and stop."
-			+ " Finishing one breaks your build, so they are not on the plan above."));
-		summary.setFont(FontManager.getRunescapeSmallFont());
-		summary.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
-		panel.add(summary);
-		panel.add(Box.createVerticalStrut(6));
+		panel.add(note("Play these part of the way and stop."
+			+ " Finishing one breaks your build, so they are not on the plan above.", LIGHT_GRAY_COLOR));
+		panel.add(gap(6));
 
 		for (PartialRun run : work.partial())
 		{
-			JLabel row = row("!  " + run.name());
-			row.setFont(FontManager.getRunescapeSmallFont());
-			row.setForeground(Color.WHITE);
+			JLabel row = small("!  " + run.name(), Color.WHITE);
 			row.setToolTipText(partialTooltip(run));
 			panel.add(row);
 
@@ -3564,12 +3372,10 @@ class QuestpathPanel extends PluginPanel
 			// It is the one of the three that decides whether to bother at
 			// all, and a section whose rows are bare names is a section you
 			// have to hover every line of to read.
-			JLabel forWhat = row("      " + run.forWhat());
-			forWhat.setFont(FontManager.getRunescapeSmallFont());
-			forWhat.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
+			JLabel forWhat = small("      " + run.forWhat(), LIGHT_GRAY_COLOR);
 			forWhat.setToolTipText(partialTooltip(run));
 			panel.add(forWhat);
-			panel.add(Box.createVerticalStrut(4));
+			panel.add(gap(4));
 		}
 
 		return panel;
@@ -3633,9 +3439,8 @@ class QuestpathPanel extends PluginPanel
 			String distance = stop.distanceTiles() == Integer.MAX_VALUE
 				? ""
 				: "  (" + stop.distanceTiles() + " tiles)";
-			JLabel label = row(task.diary() + " " + task.tier() + ": " + task.text() + distance);
-			label.setFont(FontManager.getRunescapeSmallFont());
-			label.setForeground(i == 0 ? Color.WHITE : ColorScheme.LIGHT_GRAY_COLOR);
+			JLabel label = small(task.diary() + " " + task.tier() + ": " + task.text() + distance,
+				i == 0 ? Color.WHITE : LIGHT_GRAY_COLOR);
 			if (!stop.warnings().isEmpty())
 			{
 				label.setToolTipText(String.join("; ", stop.warnings()));
@@ -3648,27 +3453,22 @@ class QuestpathPanel extends PluginPanel
 		}
 		if (!stops.isEmpty())
 		{
-			panel.add(Box.createVerticalStrut(6));
+			panel.add(gap(6));
 			panel.add(diaryRouteButton(stops.get(0)));
 		}
 
 		for (QuestGraph.DiaryTask task : locationUnknown)
 		{
-			JLabel label = row(task.diary() + " " + task.tier() + ": " + task.text() + "  -- location unknown");
-			label.setFont(FontManager.getRunescapeSmallFont());
-			label.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
-			panel.add(label);
+			panel.add(small(task.diary() + " " + task.tier() + ": " + task.text() + "  -- location unknown",
+				LIGHT_GRAY_COLOR));
 		}
 
 		for (DiaryRouteStops.Unmatched entry : unmatched)
 		{
 			// A graph/server mismatch, not a location gap -- see
 			// DiaryRouteStops.Unmatched's own class doc.
-			JLabel label = row("Tier " + entry.tierId() + " task #" + entry.ordinal()
-				+ "  -- not in this plugin's quest graph (server/graph mismatch)");
-			label.setFont(FontManager.getRunescapeSmallFont());
-			label.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
-			panel.add(label);
+			panel.add(small("Tier " + entry.tierId() + " task #" + entry.ordinal()
+				+ "  -- not in this plugin's quest graph (server/graph mismatch)", LIGHT_GRAY_COLOR));
 		}
 
 		return panel;
@@ -3683,22 +3483,16 @@ class QuestpathPanel extends PluginPanel
 	 */
 	private JButton diaryRouteButton(DiaryRouteStops.Stop stop)
 	{
-		JButton button = new JButton();
-		button.setFont(FontManager.getRunescapeSmallFont());
-		button.setAlignmentX(Component.LEFT_ALIGNMENT);
-
-		ShortestPathBridge.Availability availability = shortestPathBridge.availability();
-		button.setText(availability == ShortestPathBridge.Availability.AVAILABLE
-			? "Send diary route to Shortest Path"
-			: availability.menuLabel());
-		button.setEnabled(availability == ShortestPathBridge.Availability.AVAILABLE);
-
 		QuestGraph.Location destination = stop.destination();
-		button.addActionListener(event ->
+		JButton button = routeButton("", event ->
 		{
 			WorldPoint point = new WorldPoint(destination.x(), destination.y(), destination.plane());
 			shortestPathBridge.route(Set.of(point), outcome -> repaintAll());
 		});
+		if (button.isEnabled())
+		{
+			button.setText("Send diary route to Shortest Path");
+		}
 		return button;
 	}
 
@@ -3735,7 +3529,7 @@ class QuestpathPanel extends PluginPanel
 					+ " that supports diary routing."
 				: "Diary progress not synced yet -- Quest Route has not read this account's"
 					+ " per-task diary progress."));
-			panel.add(Box.createVerticalStrut(6));
+			panel.add(gap(6));
 		}
 
 		List<QuestGraph.DiaryTask> graphTasks = diaryGraphTasks.get();
@@ -3749,7 +3543,7 @@ class QuestpathPanel extends PluginPanel
 		for (DiaryJournal.Area area : areas)
 		{
 			panel.add(diaryAreaGroup(area));
-			panel.add(Box.createVerticalStrut(4));
+			panel.add(gap(4));
 		}
 		return panel;
 	}
@@ -3763,24 +3557,21 @@ class QuestpathPanel extends PluginPanel
 	 */
 	private CollapsibleGroup diaryAreaGroup(DiaryJournal.Area area)
 	{
-		JLabel header = new JLabel(area.name());
-		header.setFont(FontManager.getRunescapeBoldFont());
-		header.setForeground(Color.WHITE);
-		header.setAlignmentX(Component.LEFT_ALIGNMENT);
+		JLabel header = tinted(area.name(), Color.WHITE);
+		header.setFont(BOLD);
 
 		JPanel body = column();
 		body.setBorder(BorderFactory.createEmptyBorder(4, 10, 0, 0));
 		for (DiaryJournal.Tier tier : area.tiers())
 		{
-			JLabel tierLabel = row(tier.name());
-			tierLabel.setFont(FontManager.getRunescapeBoldFont());
-			tierLabel.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
+			JLabel tierLabel = row(tier.name(), LIGHT_GRAY_COLOR);
+			tierLabel.setFont(BOLD);
 			body.add(tierLabel);
 			for (DiaryJournal.Entry entry : tier.entries())
 			{
 				body.add(diaryTaskRow(entry));
 			}
-			body.add(Box.createVerticalStrut(6));
+			body.add(gap(6));
 		}
 
 		CollapsibleGroup group = new CollapsibleGroup(header, body, false);
@@ -3799,9 +3590,7 @@ class QuestpathPanel extends PluginPanel
 			text.append("  -- location unknown");
 		}
 
-		JLabel label = row(text.toString());
-		label.setFont(FontManager.getRunescapeSmallFont());
-		label.setForeground(diaryStateColor(entry.state()));
+		JLabel label = small(text.toString(), diaryStateColor(entry.state()));
 		String tooltip = diaryStateTooltip(entry);
 		if (tooltip != null)
 		{
@@ -3841,17 +3630,17 @@ class QuestpathPanel extends PluginPanel
 		switch (state)
 		{
 			case DONE:
-				return ColorScheme.PROGRESS_COMPLETE_COLOR;
+				return PROGRESS_COMPLETE_COLOR;
 			case DOABLE:
 				return Color.WHITE;
 			case BLOCKED:
-				return ColorScheme.PROGRESS_ERROR_COLOR;
+				return PROGRESS_ERROR_COLOR;
 			case UNKNOWN:
-				return ColorScheme.PROGRESS_INPROGRESS_COLOR;
+				return PROGRESS_INPROGRESS_COLOR;
 			case DEFERRED:
 			case NOT_SYNCED:
 			default:
-				return ColorScheme.LIGHT_GRAY_COLOR;
+				return LIGHT_GRAY_COLOR;
 		}
 	}
 
@@ -3948,21 +3737,14 @@ class QuestpathPanel extends PluginPanel
 			// Without rules nothing can be BUILD_BLOCKED, so every verdict
 			// below is "as far as I know". A pure's quest list rendered as a
 			// main's is exactly the mistake this plugin exists to prevent.
-			JLabel warning = new JLabel(wrap("No build rules yet, so nothing can be"
-				+ " judged against them. Turn on sync to get them from Quest Route."));
-			warning.setFont(FontManager.getRunescapeSmallFont());
-			warning.setForeground(ColorScheme.PROGRESS_ERROR_COLOR);
-			panel.add(warning);
-			panel.add(Box.createVerticalStrut(6));
+			panel.add(note("No build rules yet, so nothing can be"
+				+ " judged against them. Turn on sync to get them from Quest Route.", PROGRESS_ERROR_COLOR));
+			panel.add(gap(6));
 		}
 
 		String needle = filter == null ? "" : filter.trim().toLowerCase();
 		boolean filtering = !needle.isEmpty();
-
-		JLabel done = new JLabel(wrap(verdicts.count(QuestStatus.COMPLETE) + " done"));
-		done.setFont(FontManager.getRunescapeSmallFont());
-		done.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
-		panel.add(done);
+		panel.add(note(verdicts.count(QuestStatus.COMPLETE) + " done", LIGHT_GRAY_COLOR));
 
 		// A status picked from the combo narrows the sections shown to that one
 		// group, on top of whatever text filter is also active. Left at "All
@@ -3989,7 +3771,7 @@ class QuestpathPanel extends PluginPanel
 				continue;
 			}
 			matched += shown.size();
-			panel.add(Box.createVerticalStrut(8));
+			panel.add(gap(8));
 
 			// The heading shows how many matched out of the group when
 			// filtering, so a filter never makes a group look smaller than it
@@ -3997,10 +3779,7 @@ class QuestpathPanel extends PluginPanel
 			String count = filtering
 				? shown.size() + " of " + verdicts.count(status)
 				: String.valueOf(verdicts.count(status));
-			JLabel groupHeading = new JLabel(QuestVerdicts.label(status) + "  ·  " + count);
-			groupHeading.setFont(FontManager.getRunescapeSmallFont().deriveFont(Font.BOLD));
-			groupHeading.setForeground(statusColor(status));
-			panel.add(groupHeading);
+			panel.add(bold(QuestVerdicts.label(status) + "  ·  " + count, statusColor(status)));
 
 			// Every quest, not the first eight. The panel scrolls, and "and 49
 			// more" was a list of 49 things you could not read -- the group
@@ -4008,16 +3787,13 @@ class QuestpathPanel extends PluginPanel
 			// nothing the heading did not.
 			for (QuestGraph.Quest quest : shown)
 			{
-				JLabel row = row(quest.name());
-				row.setFont(FontManager.getRunescapeSmallFont());
-				row.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
-				panel.add(row);
+				panel.add(small(quest.name(), LIGHT_GRAY_COLOR));
 			}
 		}
 
 		if ((filtering || statusFilter != null) && matched == 0)
 		{
-			panel.add(Box.createVerticalStrut(8));
+			panel.add(gap(8));
 			panel.add(muted("No quest matches that."));
 		}
 
@@ -4046,11 +3822,9 @@ class QuestpathPanel extends PluginPanel
 		toast.setModal(false);
 		toast.setFocusableWindowState(false);
 
-		JLabel label = new JLabel(wrap(message));
-		label.setFont(FontManager.getRunescapeSmallFont());
-		label.setForeground(Color.WHITE);
+		JLabel label = note(message, Color.WHITE);
 		label.setOpaque(true);
-		label.setBackground(ColorScheme.PROGRESS_COMPLETE_COLOR.darker());
+		label.setBackground(PROGRESS_COMPLETE_COLOR.darker());
 		label.setBorder(BorderFactory.createEmptyBorder(6, 10, 6, 10));
 
 		toast.getContentPane().add(label);
@@ -4072,13 +3846,13 @@ class QuestpathPanel extends PluginPanel
 	{
 		if (status.permanent())
 		{
-			return ColorScheme.PROGRESS_ERROR_COLOR;
+			return PROGRESS_ERROR_COLOR;
 		}
 		if (status.doable())
 		{
-			return ColorScheme.PROGRESS_COMPLETE_COLOR;
+			return PROGRESS_COMPLETE_COLOR;
 		}
-		return ColorScheme.PROGRESS_INPROGRESS_COLOR;
+		return PROGRESS_INPROGRESS_COLOR;
 	}
 
 	/**
@@ -4114,11 +3888,11 @@ class QuestpathPanel extends PluginPanel
 	 * have hundreds of new children added into it one at a time, which is the
 	 * identical per-child cost on the add side instead of the remove side.
 	 */
-	private void clearBodies(PanelSections.Tab... tabs)
+	private void clearBodies(Tab... tabs)
 	{
-		for (PanelSections.Tab tab : tabs)
+		for (Tab tab : tabs)
 		{
-			JPanel body = tabBodies.get(tab);
+			JPanel body = body(tab);
 			if (body.isShowing())
 			{
 				body.setVisible(false);
@@ -4139,11 +3913,11 @@ class QuestpathPanel extends PluginPanel
 	 * forcing it visible here would show it underneath whichever tab
 	 * CardLayout actually has selected.
 	 */
-	private void showBodies(PanelSections.Tab... tabs)
+	private void showBodies(Tab... tabs)
 	{
-		for (PanelSections.Tab tab : tabs)
+		for (Tab tab : tabs)
 		{
-			JPanel body = tabBodies.get(tab);
+			JPanel body = body(tab);
 			if (!body.isVisible())
 			{
 				body.setVisible(true);
@@ -4168,16 +3942,11 @@ class QuestpathPanel extends PluginPanel
 	 * becomes live only has to change its status — it does not also have to be
 	 * deleted from a hand-maintained list here.
 	 */
-	private void renderPlannedSections()
+	private void renderPlannedSectionsFor(Tab... tabs)
 	{
-		renderPlannedSectionsFor(PanelSections.Tab.values());
-	}
-
-	private void renderPlannedSectionsFor(PanelSections.Tab... tabs)
-	{
-		for (PanelSections.Tab tab : tabs)
+		for (Tab tab : tabs)
 		{
-			JPanel bodyForTab = tabBodies.get(tab);
+			JPanel bodyForTab = body(tab);
 			boolean anyAlready = bodyForTab.getComponentCount() > 0;
 			for (PanelSections section : PanelSections.values())
 			{
@@ -4187,7 +3956,7 @@ class QuestpathPanel extends PluginPanel
 				}
 				if (anyAlready)
 				{
-					bodyForTab.add(Box.createVerticalStrut(14));
+					bodyForTab.add(gap(14));
 				}
 				bodyForTab.add(heading(section.title()));
 				bodyForTab.add(notBuiltBlock(section));
@@ -4220,14 +3989,14 @@ class QuestpathPanel extends PluginPanel
 	private void quickenTooltips()
 	{
 		ToolTipManager tooltips = ToolTipManager.sharedInstance();
-		addMouseListener(new java.awt.event.MouseAdapter()
+		addMouseListener(new MouseAdapter()
 		{
 			private int initial;
 			private int dismiss;
 			private boolean saved;
 
 			@Override
-			public void mouseEntered(java.awt.event.MouseEvent event)
+			public void mouseEntered(MouseEvent event)
 			{
 				if (!saved)
 				{
@@ -4240,7 +4009,7 @@ class QuestpathPanel extends PluginPanel
 			}
 
 			@Override
-			public void mouseExited(java.awt.event.MouseEvent event)
+			public void mouseExited(MouseEvent event)
 			{
 				if (saved)
 				{
@@ -4272,15 +4041,15 @@ class QuestpathPanel extends PluginPanel
 		}
 		skillChoice.setFocusable(false);
 		skillChoice.setMaximumSize(new Dimension(Integer.MAX_VALUE, 24));
-		skillChoice.setAlignmentX(Component.LEFT_ALIGNMENT);
+		skillChoice.setAlignmentX(LEFT_ALIGNMENT);
 		skillChoice.addActionListener(event -> renderSkillPlan());
 
 		skillTarget.setMaximumSize(new Dimension(Integer.MAX_VALUE, 24));
-		skillTarget.setAlignmentX(Component.LEFT_ALIGNMENT);
+		skillTarget.setAlignmentX(LEFT_ALIGNMENT);
 		skillTarget.addChangeListener(event -> renderSkillPlan());
 
 		skillResults.setLayout(new BoxLayout(skillResults, BoxLayout.Y_AXIS));
-		skillResults.setAlignmentX(Component.LEFT_ALIGNMENT);
+		skillResults.setAlignmentX(LEFT_ALIGNMENT);
 
 		addSkillFurniture();
 	}
@@ -4296,27 +4065,19 @@ class QuestpathPanel extends PluginPanel
 	 */
 	private void addSkillFurniture()
 	{
-		JPanel body = tabBodies.get(PanelSections.Tab.SKILLS);
+		JPanel body = body(Tab.SKILLS);
 		body.add(heading(PanelSections.SKILL_PLAN.title()));
 		body.add(skillChoice);
-		body.add(Box.createVerticalStrut(4));
+		body.add(gap(4));
 		body.add(labelled("Target level", skillTarget));
-		body.add(Box.createVerticalStrut(8));
+		body.add(gap(8));
 		body.add(skillResults);
 	}
 
 	private static JPanel labelled(String text, Component control)
 	{
-		JPanel row = new JPanel();
-		row.setLayout(new BoxLayout(row, BoxLayout.X_AXIS));
-		row.setAlignmentX(Component.LEFT_ALIGNMENT);
+		JPanel row = comboRow(small(text, LIGHT_GRAY_COLOR), control);
 		row.setMaximumSize(new Dimension(Integer.MAX_VALUE, 24));
-		JLabel caption = new JLabel(text);
-		caption.setFont(FontManager.getRunescapeSmallFont());
-		caption.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
-		row.add(caption);
-		row.add(Box.createHorizontalStrut(6));
-		row.add(control);
 		return row;
 	}
 
@@ -4367,12 +4128,9 @@ class QuestpathPanel extends PluginPanel
 		{
 			// Said first and in red. Every number below it is arithmetic about
 			// something this account has decided it will not do.
-			JLabel warning = new JLabel(wrap("Your build caps " + plan.skill() + " at "
-				+ plan.cappedAt() + ". Level " + plan.targetLevel() + " would end it."));
-			warning.setFont(FontManager.getRunescapeSmallFont());
-			warning.setForeground(ColorScheme.PROGRESS_ERROR_COLOR);
-			panel.add(warning);
-			panel.add(Box.createVerticalStrut(6));
+			panel.add(note("Your build caps " + plan.skill() + " at "
+				+ plan.cappedAt() + ". Level " + plan.targetLevel() + " would end it.", PROGRESS_ERROR_COLOR));
+			panel.add(gap(6));
 		}
 
 		if (plan.reached())
@@ -4384,27 +4142,27 @@ class QuestpathPanel extends PluginPanel
 
 		JPanel summary = grid();
 		addRow(summary, "Now", plan.currentLevel() + " -> " + plan.targetLevel(),
-			ColorScheme.LIGHT_GRAY_COLOR);
+			LIGHT_GRAY_COLOR);
 		addRow(summary, "Experience", XpTable.format(plan.xpNeeded()),
-			ColorScheme.LIGHT_GRAY_COLOR);
+			LIGHT_GRAY_COLOR);
 		addRow(summary, "From quests now", XpTable.format(plan.readyXp()),
-			ColorScheme.PROGRESS_COMPLETE_COLOR);
+			PROGRESS_COMPLETE_COLOR);
 		addRow(summary, "From quests later", XpTable.format(plan.laterXp()),
-			ColorScheme.BRAND_ORANGE);
+			BRAND_ORANGE);
 		// Two training figures, and the first is the one that decides tonight.
 		// "After everything" prices work the account has not agreed to do --
 		// for a long prerequisite chain it is months out -- so it is shown
 		// second and as the floor it is.
 		addRow(summary, "Train, ready only", XpTable.format(plan.xpToTrainFromReadyOnly()),
 			plan.readyQuestsAreEnough()
-				? ColorScheme.PROGRESS_COMPLETE_COLOR
-				: ColorScheme.LIGHT_GRAY_COLOR,
+				? PROGRESS_COMPLETE_COLOR
+				: LIGHT_GRAY_COLOR,
 			"If you only do the quests you can start right now and nothing else,"
 				+ " this is what is left to train.");
 		addRow(summary, "Train, after all", XpTable.format(plan.xpToTrain()),
 			plan.questsAreEnough()
-				? ColorScheme.PROGRESS_COMPLETE_COLOR
-				: ColorScheme.LIGHT_GRAY_COLOR,
+				? PROGRESS_COMPLETE_COLOR
+				: LIGHT_GRAY_COLOR,
 			"The floor: what is left once every quest you could ever reach has"
 				+ " paid out. The gap between these two is what unblocking the"
 				+ " list below is worth.");
@@ -4412,12 +4170,12 @@ class QuestpathPanel extends PluginPanel
 
 		if (plan.readyQuestsAreEnough())
 		{
-			panel.add(Box.createVerticalStrut(6));
+			panel.add(gap(6));
 			panel.add(muted("The quests you can start today get you there on their own."));
 		}
 		else if (plan.questsAreEnough())
 		{
-			panel.add(Box.createVerticalStrut(6));
+			panel.add(gap(6));
 			panel.add(muted("Quests alone get you there, but not without"
 				+ " unblocking some first."));
 		}
@@ -4426,18 +4184,14 @@ class QuestpathPanel extends PluginPanel
 		{
 			// The one number only this plugin can produce, and the reason the
 			// training figure above is bigger than a skill guide would say.
-			panel.add(Box.createVerticalStrut(6));
-			JLabel lost = new JLabel(wrap(XpTable.format(plan.lostXp())
-				+ " is off the table for this build, across "
-				+ plan.lost().size() + " quest(s)."));
-			lost.setFont(FontManager.getRunescapeSmallFont());
-			lost.setForeground(ColorScheme.PROGRESS_ERROR_COLOR);
-			panel.add(lost);
+			panel.add(gap(6));
+			panel.add(note(XpTable.format(plan.lostXp()) + " is off the table for this build, across "
+				+ plan.lost().size() + " quest(s).", PROGRESS_ERROR_COLOR));
 		}
 
-		band(panel, "READY NOW", plan.ready(), ColorScheme.PROGRESS_COMPLETE_COLOR);
-		band(panel, "AFTER MORE WORK", plan.later(), ColorScheme.BRAND_ORANGE);
-		band(panel, "OFF THE TABLE", plan.lost(), ColorScheme.PROGRESS_ERROR_COLOR);
+		band(panel, "READY NOW", plan.ready(), PROGRESS_COMPLETE_COLOR);
+		band(panel, "AFTER MORE WORK", plan.later(), BRAND_ORANGE);
+		band(panel, "OFF THE TABLE", plan.lost(), PROGRESS_ERROR_COLOR);
 
 		return panel;
 	}
@@ -4451,11 +4205,8 @@ class QuestpathPanel extends PluginPanel
 		{
 			return;
 		}
-		panel.add(Box.createVerticalStrut(10));
-		JLabel bandHeading = new JLabel(title + "  ·  " + entries.size());
-		bandHeading.setFont(FontManager.getRunescapeSmallFont().deriveFont(Font.BOLD));
-		bandHeading.setForeground(colour);
-		panel.add(bandHeading);
+		panel.add(gap(10));
+		panel.add(bold(title + "  ·  " + entries.size(), colour));
 
 		JPanel rows = grid();
 		int shown = Math.min(entries.size(), MAX_PLAN_ROWS);
@@ -4463,7 +4214,7 @@ class QuestpathPanel extends PluginPanel
 		{
 			SkillPlan.Entry entry = entries.get(i);
 			addRow(rows, entry.questName(), XpTable.format(Math.round(entry.xp())),
-				ColorScheme.LIGHT_GRAY_COLOR, blockerTooltip(entry));
+				LIGHT_GRAY_COLOR, blockerTooltip(entry));
 		}
 		panel.add(rows);
 
@@ -4629,9 +4380,8 @@ class QuestpathPanel extends PluginPanel
 		JPanel panel = column();
 
 		int level = CombatMath.combatLevel(stats);
-		JLabel value = new JLabel(String.valueOf(level));
-		value.setFont(FontManager.getRunescapeBoldFont().deriveFont(24f));
-		value.setForeground(Color.WHITE);
+		JLabel value = tinted(String.valueOf(level), Color.WHITE);
+		value.setFont(BOLD.deriveFont(24f));
 		panel.add(value);
 
 		int percent = (int) Math.round(CombatMath.combatProgress(stats) * 100.0);
@@ -4639,8 +4389,8 @@ class QuestpathPanel extends PluginPanel
 		bar.setValue(percent);
 		bar.setStringPainted(true);
 		bar.setString(percent + "% to " + (level + 1));
-		bar.setForeground(ColorScheme.BRAND_ORANGE);
-		bar.setBackground(ColorScheme.DARKER_GRAY_COLOR);
+		bar.setForeground(BRAND_ORANGE);
+		bar.setBackground(DARKER_GRAY_COLOR);
 		bar.setMaximumSize(new Dimension(Integer.MAX_VALUE, 16));
 		panel.add(bar);
 
@@ -4659,11 +4409,9 @@ class QuestpathPanel extends PluginPanel
 	{
 		JPanel panel = column();
 
-		JLabel summary = new JLabel("Ceiling " + ceiling
-			+ " — at Attack " + stats.get(Skill.ATTACK) + ", Strength " + stats.get(Skill.STRENGTH));
-		summary.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
-		panel.add(summary);
-		panel.add(Box.createVerticalStrut(4));
+		panel.add(tinted("Ceiling " + ceiling + " — at Attack " + stats.get(Skill.ATTACK) + ", Strength "
+			+ stats.get(Skill.STRENGTH), LIGHT_GRAY_COLOR));
+		panel.add(gap(4));
 
 		JPanel grid = grid();
 		addCeilingRow(grid, xp, Skill.RANGED, stats.get(Skill.RANGED), ceiling);
@@ -4671,13 +4419,11 @@ class QuestpathPanel extends PluginPanel
 		panel.add(grid);
 
 		CombatMath.CeilingStep step = CombatMath.nextCeilingStep(stats.get(Skill.ATTACK), stats.get(Skill.STRENGTH));
-		panel.add(Box.createVerticalStrut(4));
-		JLabel next = new JLabel(wrap(step == null
+		panel.add(gap(4));
+		panel.add(note(step == null
 			? "No Strength level raises it further."
-			: "Strength " + step.atStrength + " raises it to " + step.ceiling + " (+" + step.gained + ")"));
-		next.setFont(FontManager.getRunescapeSmallFont());
-		next.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
-		panel.add(next);
+			: "Strength " + step.atStrength + " raises it to " + step.ceiling + " (+" + step.gained + ")",
+			LIGHT_GRAY_COLOR));
 
 		return panel;
 	}
@@ -4690,17 +4436,17 @@ class QuestpathPanel extends PluginPanel
 		if (headroom > 0)
 		{
 			detail = "+" + headroom + " free" + xpSuffix(xp, skill, ceiling);
-			color = ColorScheme.PROGRESS_COMPLETE_COLOR;
+			color = PROGRESS_COMPLETE_COLOR;
 		}
 		else if (headroom == 0)
 		{
 			detail = "at the ceiling";
-			color = ColorScheme.PROGRESS_INPROGRESS_COLOR;
+			color = PROGRESS_INPROGRESS_COLOR;
 		}
 		else
 		{
 			detail = (-headroom) + " past the ceiling";
-			color = ColorScheme.PROGRESS_ERROR_COLOR;
+			color = PROGRESS_ERROR_COLOR;
 		}
 
 		addRow(grid, skillName(skill) + " " + current, detail, color);
@@ -4793,20 +4539,14 @@ class QuestpathPanel extends PluginPanel
 		JPanel panel = column();
 
 		panel.add(syncNowButton());
-		panel.add(Box.createVerticalStrut(6));
+		panel.add(gap(6));
 
-		JLabel line = new JLabel(wrap(sync.describe(Instant.now())));
-		line.setForeground(sync.needsAttention()
-			? ColorScheme.PROGRESS_ERROR_COLOR
-			: ColorScheme.LIGHT_GRAY_COLOR);
-		panel.add(line);
+		panel.add(tinted(wrap(sync.describe(Instant.now())),
+			sync.needsAttention() ? PROGRESS_ERROR_COLOR : LIGHT_GRAY_COLOR));
 
 		if (sync.state() == SyncStatus.State.NO_TOKEN)
 		{
-			JLabel hint = new JLabel(wrap("Get this token from your Quest Route server"));
-			hint.setFont(FontManager.getRunescapeSmallFont());
-			hint.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
-			panel.add(hint);
+			panel.add(note("Get this token from your Quest Route server", LIGHT_GRAY_COLOR));
 		}
 
 		// The settings themselves, not only their effect. RuneLite's config
@@ -4815,19 +4555,15 @@ class QuestpathPanel extends PluginPanel
 		// first thing anyone checks when it went somewhere unexpected.
 		if (settings != null)
 		{
-			panel.add(Box.createVerticalStrut(8));
+			panel.add(gap(8));
 			JPanel grid = grid();
 			addRow(grid, "Sending", settings.enabled() ? "on" : "off",
-				settings.enabled() ? ColorScheme.PROGRESS_COMPLETE_COLOR : ColorScheme.LIGHT_GRAY_COLOR);
-			addRow(grid, "Server", settings.serverUrl(), ColorScheme.LIGHT_GRAY_COLOR);
+				settings.enabled() ? PROGRESS_COMPLETE_COLOR : LIGHT_GRAY_COLOR);
+			addRow(grid, "Server", settings.serverUrl(), LIGHT_GRAY_COLOR);
 			addRow(grid, "Token", settings.hasToken() ? "set" : "not set",
-				settings.hasToken() ? ColorScheme.PROGRESS_COMPLETE_COLOR : ColorScheme.PROGRESS_ERROR_COLOR);
+				settings.hasToken() ? PROGRESS_COMPLETE_COLOR : PROGRESS_ERROR_COLOR);
 			panel.add(grid);
-
-			JLabel where = new JLabel(wrap("Change these under Settings, Quest Route."));
-			where.setFont(FontManager.getRunescapeSmallFont());
-			where.setForeground(ColorScheme.MEDIUM_GRAY_COLOR);
-			panel.add(where);
+			panel.add(note("Change these under Settings, Quest Route.", MEDIUM_GRAY_COLOR));
 		}
 
 		// Who is being sent, and what. The tab used to be able to say only
@@ -4838,43 +4574,34 @@ class QuestpathPanel extends PluginPanel
 		// sync from inside the game.
 		if (report != null)
 		{
-			panel.add(Box.createVerticalStrut(10));
-			JLabel who = new JLabel(wrap(report.characterName()));
-			who.setFont(FontManager.getRunescapeBoldFont());
-			who.setForeground(Color.WHITE);
+			panel.add(gap(10));
+			JLabel who = tinted(wrap(report.characterName()), Color.WHITE);
+			who.setFont(BOLD);
 			panel.add(who);
-
-			JLabel whoNote = new JLabel(wrap("This is the account every push is attributed to."));
-			whoNote.setFont(FontManager.getRunescapeSmallFont());
-			whoNote.setForeground(ColorScheme.MEDIUM_GRAY_COLOR);
-			panel.add(whoNote);
-
-			panel.add(Box.createVerticalStrut(6));
+			panel.add(note("This is the account every push is attributed to.", MEDIUM_GRAY_COLOR));
+			panel.add(gap(6));
 			JPanel sent = grid();
-			addRow(sent, "Combat", String.valueOf(report.combatLevel()), ColorScheme.LIGHT_GRAY_COLOR);
-			addRow(sent, "Quest points", String.valueOf(report.questPoints()), ColorScheme.LIGHT_GRAY_COLOR);
-			addRow(sent, "Total level", String.valueOf(report.totalLevel()), ColorScheme.LIGHT_GRAY_COLOR);
-			addRow(sent, "Total xp", XpTable.format(report.totalXp()), ColorScheme.LIGHT_GRAY_COLOR);
+			addRow(sent, "Combat", String.valueOf(report.combatLevel()), LIGHT_GRAY_COLOR);
+			addRow(sent, "Quest points", String.valueOf(report.questPoints()), LIGHT_GRAY_COLOR);
+			addRow(sent, "Total level", String.valueOf(report.totalLevel()), LIGHT_GRAY_COLOR);
+			addRow(sent, "Total xp", XpTable.format(report.totalXp()), LIGHT_GRAY_COLOR);
 			addRow(sent, "Quests done", report.questsComplete() + " of " + report.questsKnown(),
-				ColorScheme.LIGHT_GRAY_COLOR);
+				LIGHT_GRAY_COLOR);
 			addRow(sent, "Quests started", String.valueOf(report.questsInProgress()),
-				ColorScheme.LIGHT_GRAY_COLOR);
+				LIGHT_GRAY_COLOR);
 			// Two facts, not one. Zero stacks with the bank seen is an empty
 			// bank; zero stacks without it is a bank nobody has opened, and
 			// questpath's item answers are working from an older upload until
 			// they are.
 			addRow(sent, "Item stacks", String.valueOf(report.itemStacks()),
-				report.itemStacks() > 0 ? ColorScheme.LIGHT_GRAY_COLOR : ColorScheme.MEDIUM_GRAY_COLOR);
+				report.itemStacks() > 0 ? LIGHT_GRAY_COLOR : MEDIUM_GRAY_COLOR);
 			addRow(sent, "Bank", report.bankSeen() ? "seen this session" : "not opened yet",
-				report.bankSeen() ? ColorScheme.PROGRESS_COMPLETE_COLOR : ColorScheme.PROGRESS_INPROGRESS_COLOR);
+				report.bankSeen() ? PROGRESS_COMPLETE_COLOR : PROGRESS_INPROGRESS_COLOR);
 			panel.add(sent);
 
 			if (!report.bankSeen())
 			{
-				JLabel hint = new JLabel(wrap("Open your bank once and the item lists fill in."));
-				hint.setFont(FontManager.getRunescapeSmallFont());
-				hint.setForeground(ColorScheme.MEDIUM_GRAY_COLOR);
-				panel.add(hint);
+				panel.add(note("Open your bank once and the item lists fill in.", MEDIUM_GRAY_COLOR));
 			}
 		}
 
@@ -4883,18 +4610,12 @@ class QuestpathPanel extends PluginPanel
 		// and which is the only part that leads anywhere.
 		if (!unmatchedQuests.isEmpty())
 		{
-			panel.add(Box.createVerticalStrut(6));
-			JLabel header = new JLabel(wrap(unmatchedQuests.size()
-				+ " quest names Quest Route did not recognise:"));
-			header.setFont(FontManager.getRunescapeSmallFont());
-			header.setForeground(ColorScheme.PROGRESS_INPROGRESS_COLOR);
-			panel.add(header);
+			panel.add(gap(6));
+			panel.add(note(unmatchedQuests.size() + " quest names Quest Route did not recognise:",
+				PROGRESS_INPROGRESS_COLOR));
 			for (String name : unmatchedQuests)
 			{
-				JLabel row = row(name);
-				row.setFont(FontManager.getRunescapeSmallFont());
-				row.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
-				panel.add(row);
+				panel.add(small(name, LIGHT_GRAY_COLOR));
 			}
 		}
 		return panel;
@@ -4944,23 +4665,23 @@ class QuestpathPanel extends PluginPanel
 	{
 		if (!rule.blocking())
 		{
-			return ColorScheme.LIGHT_GRAY_COLOR;
+			return LIGHT_GRAY_COLOR;
 		}
 		if (level < 0 || !rule.hasValue())
 		{
 			// NO_XP, or a skill outside the combat seven. It blocks, but there
 			// is no distance to render.
-			return ColorScheme.PROGRESS_INPROGRESS_COLOR;
+			return PROGRESS_INPROGRESS_COLOR;
 		}
 		if (level >= rule.value())
 		{
-			return ColorScheme.PROGRESS_ERROR_COLOR;
+			return PROGRESS_ERROR_COLOR;
 		}
 		if (level >= rule.value() - 1)
 		{
-			return ColorScheme.PROGRESS_INPROGRESS_COLOR;
+			return PROGRESS_INPROGRESS_COLOR;
 		}
-		return ColorScheme.PROGRESS_COMPLETE_COLOR;
+		return PROGRESS_COMPLETE_COLOR;
 	}
 
 	/**
@@ -4985,38 +4706,9 @@ class QuestpathPanel extends PluginPanel
 	private static JPanel notBuiltBlock(PanelSections section)
 	{
 		JPanel panel = column();
-
-		JLabel badge = new JLabel("Not built yet");
-		badge.setFont(FontManager.getRunescapeSmallFont().deriveFont(Font.BOLD));
-		badge.setForeground(ColorScheme.BRAND_ORANGE.darker());
-		panel.add(badge);
-
-		JLabel plan = new JLabel(wrap(section.plan()));
-		plan.setFont(FontManager.getRunescapeSmallFont());
-		plan.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
-		panel.add(plan);
-
+		panel.add(bold("Not built yet", BRAND_ORANGE.darker()));
+		panel.add(note(section.plan(), LIGHT_GRAY_COLOR));
 		return panel;
-	}
-
-	/**
-	 * Swing labels do not wrap, and the sidebar is narrow. HTML is the
-	 * supported way to get a multi-line label, with the width pinned so it
-	 * does not grow the panel wider than the sidebar allows.
-	 */
-	private static String wrap(String text)
-	{
-		return "<html><body style='width:150px'>" + escape(text) + "</body></html>";
-	}
-
-	/**
-	 * These strings are ours, not user input, but a stray angle bracket in one
-	 * would be swallowed as markup by the HTML label above and quietly delete
-	 * the rest of the sentence.
-	 */
-	private static String escape(String text)
-	{
-		return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
 	}
 
 	/**
@@ -5028,13 +4720,13 @@ class QuestpathPanel extends PluginPanel
 	{
 		if (delta <= 1)
 		{
-			return ColorScheme.PROGRESS_ERROR_COLOR;
+			return PROGRESS_ERROR_COLOR;
 		}
 		if (delta <= 3)
 		{
-			return ColorScheme.PROGRESS_INPROGRESS_COLOR;
+			return PROGRESS_INPROGRESS_COLOR;
 		}
-		return ColorScheme.PROGRESS_COMPLETE_COLOR;
+		return PROGRESS_COMPLETE_COLOR;
 	}
 
 	/**
@@ -5094,7 +4786,7 @@ class QuestpathPanel extends PluginPanel
 		c.insets = new Insets(1, 0, 1, 6);
 
 		JLabel left = new JLabel(label);
-		left.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
+		left.setForeground(LIGHT_GRAY_COLOR);
 		grid.add(left, c);
 
 		c.gridx = 1;
@@ -5117,68 +4809,16 @@ class QuestpathPanel extends PluginPanel
 		return name.substring(0, 1).toUpperCase() + name.substring(1).toLowerCase();
 	}
 
-	/**
-	 * A one-line row label, in plain text rather than HTML.
-	 *
-	 * This exists because every label in this panel used to be an HTML one.
-	 * wrap() returns "<html><body style='width:150px'>...", which makes Swing
-	 * build a whole document model per label -- fine for a sentence, ruinous
-	 * in a loop. The quest browser lists all 218 quests, the route lists 91,
-	 * and the item lists hundreds more, so switching to those tabs was laying
-	 * out and painting several hundred HTML documents at once. That is what
-	 * made the tab strip stutter.
-	 *
-	 * A plain JLabel clips with an ellipsis on its own when the column is too
-	 * narrow, so nothing is lost visually; the full text goes on the tooltip,
-	 * which is better than wrapping for a list you are scanning anyway.
-	 *
-	 * wrap() is still right for prose -- warnings, explanations, the states
-	 * that need a sentence. Those are counted in ones, not hundreds.
-	 */
-	private static JLabel row(String text)
+	private JPanel body(Tab tab)
 	{
-		JLabel label = new JLabel(text);
-		label.setToolTipText(text);
-		label.setAlignmentX(Component.LEFT_ALIGNMENT);
-		return label;
+		return tabBodies.get(tab);
 	}
 
-	private static JLabel muted(String text)
+	/** A heading, then its block, then the gap before the next section. */
+	private static void section(JPanel into, PanelSections section, Component block)
 	{
-		return tinted(wrap(text), ColorScheme.LIGHT_GRAY_COLOR);
-	}
-
-	private static JLabel tinted(String text, Color colour)
-	{
-		JLabel label = new JLabel(text);
-		label.setForeground(colour);
-		label.setAlignmentX(Component.LEFT_ALIGNMENT);
-		return label;
-	}
-
-	private static JPanel column()
-	{
-		JPanel panel = new JPanel();
-		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-		panel.setAlignmentX(Component.LEFT_ALIGNMENT);
-		return panel;
-	}
-
-	private static JPanel grid()
-	{
-		JPanel panel = new JPanel(new GridBagLayout());
-		panel.setAlignmentX(Component.LEFT_ALIGNMENT);
-		return panel;
-	}
-
-	private static Component heading(String text)
-	{
-		JLabel label = new JLabel(text.toUpperCase());
-		label.setFont(FontManager.getRunescapeSmallFont().deriveFont(Font.BOLD));
-		label.setForeground(ColorScheme.BRAND_ORANGE);
-		label.setAlignmentX(Component.LEFT_ALIGNMENT);
-		label.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, ColorScheme.DARK_GRAY_COLOR));
-		label.setMaximumSize(new Dimension(Integer.MAX_VALUE, label.getPreferredSize().height + 3));
-		return label;
+		into.add(heading(section.title()));
+		into.add(block);
+		into.add(gap(14));
 	}
 }
