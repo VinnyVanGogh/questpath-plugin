@@ -4,10 +4,11 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
-import java.awt.Font;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Consumer;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
-import javax.swing.BoxLayout;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
@@ -16,12 +17,14 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JSpinner;
 import javax.swing.SpinnerNumberModel;
+import net.runelite.client.config.ConfigDescriptor;
+import net.runelite.client.config.ConfigItemDescriptor;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.ui.ColorScheme;
-import net.runelite.client.ui.FontManager;
 import net.runelite.client.ui.components.ColorJButton;
 import net.runelite.client.ui.components.colorpicker.ColorPickerManager;
 import net.runelite.client.ui.components.colorpicker.RuneliteColorPicker;
+import static com.vinnyvangogh.questpath.Ui.*;
 
 /**
  * The overlay/shop/ground-item settings, rendered as real controls inside the
@@ -36,50 +39,41 @@ import net.runelite.client.ui.components.colorpicker.RuneliteColorPicker;
  * <p>It reads and writes through {@link ConfigManager} directly rather than
  * caching values locally, so it always agrees with whatever RuneLite's own
  * config panel shows -- there is exactly one source of truth for each key,
- * and it is not this class.
+ * and it is not this class. The same goes for the words: every control's
+ * tooltip, and the third-party warning on {@code syncEnabled}, is the
+ * {@code @ConfigItem}'s own description and warning, read off the config
+ * descriptor RuneLite builds for its own panel, so the two surfaces cannot
+ * drift.
  *
  * <p>Controls are grouped two levels deep, both levels built from the same
  * {@link CollapsibleGroup}: a header row a player can click to hide a body
  * once they know it's set the way they want. Collapsing is view state only
  * -- it never calls {@code ConfigManager}.
  *
- * <p>The outer level is three named sections -- SHARED, OVERLAYS, EXTRAS --
+ * <p>The outer level is named sections -- SYNC, SHARED, OVERLAYS, EXTRAS --
  * each headed by a plain uppercase label with no checkbox of its own, since
- * a section groups several toggles rather than gating one. All three always
- * start expanded regardless of what their children start as: collapsing an
- * entire section is a different intent from collapsing one overlay inside
- * it, so the two must not follow the same rule.
+ * a section groups several toggles rather than gating one. They always start
+ * expanded regardless of what their children start as.
  *
- * <p>The inner level is the ten feature groups -- six overlays under
- * OVERLAYS, Shops, Ground items, Bank and "Open Quest Helper on arrival"
- * under EXTRAS, plus Shared's own controls (which have no further nesting;
- * Shared has no per-feature toggles to group). Every one of those ten is
- * headed by its own enable checkbox
- * rather than a plain label, and starts expanded only if that checkbox is
- * already ticked -- collapsed otherwise. That checkbox's own listener also
- * expands or collapses the group afterwards ("smart-close"), so ticking a
- * feature on always shows you its settings and one click puts them away
- * again once you're done. The checkbox itself lives in the header row, so it
- * stays visible and clickable whether the group is collapsed or not.
+ * <p>The inner level is the feature groups, each headed by its own enable
+ * checkbox rather than a plain label, and starting expanded only if that
+ * checkbox is already ticked. That checkbox's own listener also expands or
+ * collapses the group afterwards ("smart-close"), so ticking a feature on
+ * always shows you its settings and one click puts them away again.
  */
 class OverlaySettingsPanel extends JPanel
 {
-	private static final Dimension CONTROL_MAX = new Dimension(Integer.MAX_VALUE, 22);
-	private static final java.awt.Insets INDENT = new java.awt.Insets(0, 14, 0, 0);
-
 	private final ConfigManager configManager;
 	private final ColorPickerManager colorPickerManager;
 
+	/** Each key's own description and warning, from the config descriptor. */
+	private final Map<String, String> descriptions = new HashMap<>();
+	private final Map<String, String> warnings = new HashMap<>();
+
 	/**
 	 * True only while the constructor is populating controls with their
-	 * stored values.
-	 *
-	 * Every control's listener checks this before writing. Without it,
-	 * simply opening this tab would call {@code setSelectedItem}/{@code
-	 * setSelected} on all of them, each firing a change event that writes
-	 * the value straight back -- stamping every default as an explicit saved
-	 * setting the first time anyone looks at the tab, which is not a write
-	 * the player asked for.
+	 * stored values: every control's listener checks this before writing, or
+	 * opening this tab would stamp every default as an explicit saved setting.
 	 */
 	private boolean populating = true;
 
@@ -87,12 +81,19 @@ class OverlaySettingsPanel extends JPanel
 	{
 		this.configManager = configManager;
 		// RuneliteColorPicker's own constructor is package-private to
-		// RuneLite; ColorPickerManager is the way in, and it asks only for
-		// the ConfigManager we already have -- nothing here needs Guice
-		// injection.
+		// RuneLite; ColorPickerManager is the way in.
 		this.colorPickerManager = new ColorPickerManager(configManager);
+		ConfigDescriptor descriptor = configManager.getConfigDescriptor(config);
+		if (descriptor != null)
+		{
+			for (ConfigItemDescriptor item : descriptor.getItems())
+			{
+				descriptions.put(item.getItem().keyName(), item.getItem().description());
+				warnings.put(item.getItem().keyName(), item.getItem().warning());
+			}
+		}
 
-		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+		setLayout(new javax.swing.BoxLayout(this, javax.swing.BoxLayout.Y_AXIS));
 		setBackground(ColorScheme.DARK_GRAY_COLOR);
 		// Deeper at the bottom than the sides on purpose: the last control in
 		// the last group otherwise ends flush against the scroll viewport's
@@ -112,131 +113,60 @@ class OverlaySettingsPanel extends JPanel
 	}
 
 	/**
-	 * The SYNC top-level section: the settings that leave the client at all
-	 * -- see this file's own class doc's second paragraph, and {@link
-	 * QuestpathConfig}'s.
-	 *
-	 * <p>{@code syncEnabled} lives here.
-	 * {@code serverUrl} and {@code pairingToken} are the two settings this
-	 * file deliberately never duplicates -- a URL and a secret token are
-	 * exactly the free-text and masked-field controls RuneLite's own config
-	 * panel already renders correctly, and {@link
-	 * OverlaySettingsPanelConfigParityTest} enforces that exemption by name
-	 * rather than by a filter nobody has to notice growing. The two toggles
-	 * do not get the same pass: each is a plain on/off switch, exactly the
-	 * shape every other toggle in this panel already is, and each is
-	 * something a player would look here for first -- "am I sending my data
-	 * anywhere", "is my graph actually current" -- and not find, because it
-	 * used to live only behind RuneLite's own gear icon.
+	 * The SYNC section: the settings that leave the client at all. {@code
+	 * serverUrl} and {@code pairingToken} are deliberately never duplicated
+	 * here -- a URL and a secret token are exactly the free-text and masked
+	 * controls RuneLite's own config panel already renders correctly, and
+	 * {@link OverlaySettingsPanelConfigParityTest} enforces that exemption by
+	 * name.
 	 */
 	private CollapsibleGroup syncSection(QuestpathConfig config)
 	{
 		JPanel panel = column();
-		panel.add(warningToggle(
-			"Send my account state",
-			"Push quest completion, levels and diaries to your Quest Route server when they"
-				+ " change. Quest Route then stops polling WikiSync for this account.",
-			"This feature submits your IP address to a 3rd-party server not controlled or"
-				+ " verified by RuneLite developers.\n\nTurn it on anyway?",
-			config.syncEnabled(), "syncEnabled"));
-		panel.add(Box.createRigidArea(new Dimension(0, 6)));
-		panel.add(toggle(
-			"Share with my party",
-			"Send your finished quests, levels, build rules and counts of quest items you hold to"
-				+ " RuneLite party members who also run Quest Route, for the Group tab. RuneLite's own"
-				+ " party service only -- never a Quest Route server. Nothing is sent while this is off.",
-			config.partyShare(), "partyShare"));
-		panel.add(Box.createRigidArea(new Dimension(0, 6)));
-		panel.add(toggle(
-			"Group needs in shop alerts",
-			"When you come up on a shop that sells something your party is still short of, say so in"
-				+ " chat with how many more the group needs. Uses what party members share; once per visit.",
-			config.groupShopAlert(), "groupShopAlert"));
-		panel.add(Box.createRigidArea(new Dimension(0, 6)));
-		JLabel note = new JLabel(wrap("The address to push to, and the pairing token"
+		panel.add(toggle("Send my account state", config.syncEnabled(), "syncEnabled"));
+		panel.add(spacer(6));
+		panel.add(toggle("Share with my party", config.partyShare(), "partyShare"));
+		panel.add(spacer(6));
+		panel.add(toggle("Group needs in shop alerts", config.groupShopAlert(), "groupShopAlert"));
+		panel.add(spacer(6));
+		panel.add(note("The address to push to, and the pairing token"
 			+ " from the Quest Route server, are set in RuneLite's own Configuration panel for this"
-			+ " plugin -- not duplicated here."));
-		note.setFont(FontManager.getRunescapeSmallFont());
-		note.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
-		note.setAlignmentX(LEFT_ALIGNMENT);
-		panel.add(note);
+			+ " plugin -- not duplicated here.", ColorScheme.LIGHT_GRAY_COLOR));
 		return sectionGroup("Sync", panel);
 	}
 
-	/**
-	 * The SHARED top-level section: the five settings shared by every
-	 * overlay, unless a panel overrides its own width/length above.
-	 *
-	 * <p>Unlike OVERLAYS and EXTRAS, Shared has no per-feature toggles to
-	 * nest -- these five controls are its entire body, not a further layer
-	 * of {@link #toggleGroup}s.
-	 */
+	/** The SHARED section: the settings every overlay follows unless it overrides its own. */
 	private CollapsibleGroup sharedGroup(QuestpathConfig config)
 	{
 		JPanel panel = column();
-		addField(panel, "Show",
-			combo(OverlayDisplayMode.values(), config.overlayDisplayMode(),
-				"Whether overlay rows carry the item pictures, the words, or both.",
-				"overlayDisplayMode"));
-		addField(panel, "Width",
-			combo(OverlayWidth.values(), config.overlayWidth(),
-				"How wide the overlay panels may be.",
-				"overlayWidth"));
+		addField(panel, "Show", combo(OverlayDisplayMode.values(), config.overlayDisplayMode(), "overlayDisplayMode"));
+		addField(panel, "Width", combo(OverlayWidth.values(), config.overlayWidth(), "overlayWidth"));
 		addField(panel, "List length",
-			combo(OverlayListLength.values(), config.overlayListLength(),
-				"How much of a capped list each overlay draws.",
-				"overlayListLength"));
-		panel.add(toggle(
-			"Smaller text",
-			"Set overlay rows in the game's small font, fitting about a third more of them"
-				+ " in the same panel.",
-			config.overlayCompactText(), "overlayCompactText"));
-		panel.add(toggle(
-			"Say when a list is cut short",
-			"Show the \"...and 58 more\" line at the end of a capped list.",
-			config.overlayShowOverflow(), "overlayShowOverflow"));
-
+			combo(OverlayListLength.values(), config.overlayListLength(), "overlayListLength"));
+		panel.add(toggle("Smaller text", config.overlayCompactText(), "overlayCompactText"));
+		panel.add(toggle("Say when a list is cut short", config.overlayShowOverflow(), "overlayShowOverflow"));
 		return sectionGroup("Shared", panel);
 	}
 
-	/**
-	 * A top-level section heading: SHARED, OVERLAYS or EXTRAS.
-	 *
-	 * <p>None of the three has an enable checkbox of its own -- a section
-	 * groups several toggles rather than gating one -- so the header is a
-	 * plain label, wired to collapse the same way the caret does. It always
-	 * starts expanded, independent of {@code body}'s own children: see
-	 * {@link CollapsibleGroup}'s {@code startExpanded} javadoc for why that
-	 * must not follow the same rule as a feature group.
-	 */
+	/** A top-level section heading: a plain label, always starting expanded. */
 	private CollapsibleGroup sectionGroup(String name, JPanel body)
 	{
-		JLabel header = headingLabel(name);
+		JLabel header = bold(name.toUpperCase(), ColorScheme.BRAND_ORANGE);
 		CollapsibleGroup group = new CollapsibleGroup(header, body, true);
 		group.alsoToggleOn(header);
 		return group;
 	}
 
 	/**
-	 * A group headed by its own enable checkbox: one of the six overlays,
-	 * Shops, or Ground items.
-	 *
-	 * <p>The checkbox doubles as the group's heading -- it already carries
-	 * the feature's name, so a second label saying the same thing would just
-	 * be noise in a column this narrow -- and its own listener greys out
-	 * {@code extras} while off (existing behaviour, kept) and smart-closes
-	 * the group to match (new behaviour): unticked collapses it, ticked
-	 * expands it. The checkbox lives in the header row, so it stays visible
-	 * and clickable either way.
+	 * A group headed by its own enable checkbox. Its listener greys out
+	 * {@code extras} while off and smart-closes the group to match.
 	 */
-	private CollapsibleGroup toggleGroup(String name, String tooltip, boolean enabled, String toggleKey,
-		java.util.function.Consumer<JPanel> extras)
+	private CollapsibleGroup toggleGroup(String name, boolean enabled, String toggleKey, Consumer<JPanel> extras)
 	{
-		JCheckBox header = toggle(name, tooltip, enabled, toggleKey);
-		header.setFont(FontManager.getRunescapeBoldFont());
+		JCheckBox header = toggle(name, enabled, toggleKey);
+		header.setFont(BOLD);
 
-		JPanel sub = column();
-		sub.setBorder(BorderFactory.createEmptyBorder(INDENT.top, INDENT.left, INDENT.bottom, INDENT.right));
+		JPanel sub = indented();
 		extras.accept(sub);
 		setEnabledDeep(sub, enabled);
 
@@ -249,652 +179,264 @@ class OverlaySettingsPanel extends JPanel
 		return group;
 	}
 
-	/**
-	 * The OVERLAYS top-level section: the five panel groups, each a
-	 * self-contained {@link #toggleGroup}, nested under one shared heading.
-	 */
+	private static JPanel indented()
+	{
+		JPanel sub = column();
+		sub.setBorder(BorderFactory.createEmptyBorder(0, 14, 0, 0));
+		return sub;
+	}
+
+	/** The OVERLAYS section: one {@link #toggleGroup} per panel. */
 	private CollapsibleGroup overlaysSection(QuestpathConfig config)
 	{
 		JPanel body = column();
-		body.add(toggleGroup(
-			"Next on your route",
-			"The next quests on your saved Quest Route route, and how far through it you are.",
-			config.overlayNextQuest(), "overlayNextQuest",
-			sub ->
-			{
-				addField(sub, "Width", widthCombo(config.overlayNextQuestWidth(), "overlayNextQuestWidth"));
-				addField(sub, "Length", lengthCombo(config.overlayNextQuestLength(), "overlayNextQuestLength"));
-				sub.add(toggle(
-					"List its own items",
-					"List the next quest's own items under it, ticked against what you hold.",
-					config.overlayNextQuestItems(), "overlayNextQuestItems"));
-			}));
+		body.add(toggleGroup("Next on your route", config.overlayNextQuest(), "overlayNextQuest", sub ->
+		{
+			sizeFields(sub, config.overlayNextQuestWidth(), "overlayNextQuestWidth",
+				config.overlayNextQuestLength(), "overlayNextQuestLength");
+			sub.add(toggle("List its own items", config.overlayNextQuestItems(), "overlayNextQuestItems"));
+		}));
 		body.add(spacer());
-		body.add(toggleGroup(
-			"Get while you're here",
-			"Items you can pick up during a quest you are already on, that other quests also want.",
-			config.overlayPickups(), "overlayPickups",
-			sub ->
-			{
-				addField(sub, "Width", widthCombo(config.overlayPickupsWidth(), "overlayPickupsWidth"));
-				addField(sub, "Length", lengthCombo(config.overlayPickupsLength(), "overlayPickupsLength"));
-				addField(sub, "How far ahead",
-					intField(config.pickupsLookahead(), 1, 12,
-						"How many quests down the route count as \"here\": the one in hand plus the"
-							+ " next few. Higher catches more detours worth making; lower keeps the"
-							+ " list about where you actually are.",
-						"pickupsLookahead"));
-			}));
+		body.add(toggleGroup("Get while you're here", config.overlayPickups(), "overlayPickups", sub ->
+		{
+			sizeFields(sub, config.overlayPickupsWidth(), "overlayPickupsWidth",
+				config.overlayPickupsLength(), "overlayPickupsLength");
+			addField(sub, "How far ahead", intField(config.pickupsLookahead(), 1, 12, "pickupsLookahead"));
+		}));
 		body.add(spacer());
-		body.add(toggleGroup(
-			"Everything you need",
-			"Every item your doable quests need, ticked against what the client can see you hold.",
-			config.overlayItems(), "overlayItems",
-			sub ->
-			{
-				addField(sub, "Width", widthCombo(config.overlayItemsWidth(), "overlayItemsWidth"));
-				addField(sub, "Length", lengthCombo(config.overlayItemsLength(), "overlayItemsLength"));
-				sub.add(toggle(
-					"Hide items you already hold",
-					"Drop the \"already held\" section, leaving only what you are short of."
-						+ " The running total still counts them.",
-					config.overlayItemsHideHeld(), "overlayItemsHideHeld"));
-			}));
+		body.add(toggleGroup("Everything you need", config.overlayItems(), "overlayItems", sub ->
+		{
+			sizeFields(sub, config.overlayItemsWidth(), "overlayItemsWidth",
+				config.overlayItemsLength(), "overlayItemsLength");
+			sub.add(toggle("Hide items you already hold", config.overlayItemsHideHeld(), "overlayItemsHideHeld"));
+		}));
 		body.add(spacer());
-		body.add(toggleGroup(
-			"Shop route: where and why",
-			"While a shop route sent to Shortest Path is active, the next few stops:"
-				+ " the item, how many short you are, the shop it sends you to, and which"
-				+ " quest wants it. Replaces \"Everything you need\" for as long as the"
-				+ " route is active.",
-			config.overlayShopRoute(), "overlayShopRoute",
-			sub ->
-			{
-				addField(sub, "Width", widthCombo(config.overlayShopRouteWidth(), "overlayShopRouteWidth"));
-				addField(sub, "Length", lengthCombo(config.overlayShopRouteLength(), "overlayShopRouteLength"));
-			}));
+		body.add(toggleGroup("Shop route: where and why", config.overlayShopRoute(), "overlayShopRoute", sub ->
+			sizeFields(sub, config.overlayShopRouteWidth(), "overlayShopRouteWidth",
+				config.overlayShopRouteLength(), "overlayShopRouteLength")));
 		body.add(spacer());
 		body.add(diaryRouteGroup(config));
 		body.add(spacer());
-		body.add(toggleGroup(
-			"Grand Exchange: queued, next, left",
-			"While the Grand Exchange is open: the one item to buy next and how many,"
-				+ " what you already have on offer and how far along it is, and what is"
-				+ " still left after that. Never shown to an ironman, who has no Grand"
-				+ " Exchange to use.",
-			config.overlayGrandExchange(), "overlayGrandExchange",
-			sub ->
+		body.add(toggleGroup("Grand Exchange: queued, next, left", config.overlayGrandExchange(),
+			"overlayGrandExchange", sub ->
 			{
-				addField(sub, "Width",
-					widthCombo(config.overlayGrandExchangeWidth(), "overlayGrandExchangeWidth"));
-				addField(sub, "Length",
-					lengthCombo(config.overlayGrandExchangeLength(), "overlayGrandExchangeLength"));
-				sub.add(toggle(
-					"Recommended items",
-					"Include each quest's recommended items (teleports, potions, gear) in the"
-						+ " shopping lists and routes, after the required ones. Recommended coins"
-						+ " are shown as a balance to bring, never as something to buy.",
-					config.recommendedItems(), "recommendedItems"));
+				sizeFields(sub, config.overlayGrandExchangeWidth(), "overlayGrandExchangeWidth",
+					config.overlayGrandExchangeLength(), "overlayGrandExchangeLength");
+				sub.add(toggle("Recommended items", config.recommendedItems(), "recommendedItems"));
 				addField(sub, "Teleports as",
-					combo(TeleportForm.values(), config.recommendedTeleportForm(),
-						"Tablet, or the runes to cast the spell. Runes are only offered when your"
-							+ " Magic level can cast it.",
-						"recommendedTeleportForm"));
+					combo(TeleportForm.values(), config.recommendedTeleportForm(), "recommendedTeleportForm"));
 			}));
 		body.add(spacer());
-		body.add(toggleGroup(
-			"Combat XP to next level",
-			"What each stat would cost to buy the next combat level, cheapest first.",
-			config.overlayCombatXp(), "overlayCombatXp",
-			sub ->
-			{
-				addField(sub, "Width", widthCombo(config.overlayCombatXpWidth(), "overlayCombatXpWidth"));
-				addField(sub, "Length", lengthCombo(config.overlayCombatXpLength(), "overlayCombatXpLength"));
-			}));
+		body.add(toggleGroup("Combat XP to next level", config.overlayCombatXp(), "overlayCombatXp", sub ->
+			sizeFields(sub, config.overlayCombatXpWidth(), "overlayCombatXpWidth",
+				config.overlayCombatXpLength(), "overlayCombatXpLength")));
 		body.add(spacer());
-		body.add(toggleGroup(
-			"Build rules",
-			"Your declared caps and no-xp skills, and how much headroom is left in each.",
-			config.overlayBuildRules(), "overlayBuildRules",
-			sub ->
-			{
-				addField(sub, "Width", widthCombo(config.overlayBuildRulesWidth(), "overlayBuildRulesWidth"));
-				addField(sub, "Length", lengthCombo(config.overlayBuildRulesLength(), "overlayBuildRulesLength"));
-				addField(sub, "Which rules",
-					combo(BuildRuleSections.values(), config.overlayBuildRulesSections(),
-						"Blocking rules are walls; informational ones are goals and soft caps.",
-						"overlayBuildRulesSections"));
-			}));
+		body.add(toggleGroup("Build rules", config.overlayBuildRules(), "overlayBuildRules", sub ->
+		{
+			sizeFields(sub, config.overlayBuildRulesWidth(), "overlayBuildRulesWidth",
+				config.overlayBuildRulesLength(), "overlayBuildRulesLength");
+			addField(sub, "Which rules",
+				combo(BuildRuleSections.values(), config.overlayBuildRulesSections(), "overlayBuildRulesSections"));
+		}));
 		return sectionGroup("Overlays", body);
 	}
 
 	/**
-	 * The diary route overlay's own group -- unlike every other one in
-	 * {@link #overlaysSection}, it has no enable checkbox of its own any
-	 * more. {@link QuestpathConfig#questJournalFilter()} is now this
-	 * overlay's entire on/off switch (Diaries or All turns it on, Quests
-	 * turns it off), the same filter that also drives the Quests tab's own
-	 * diary sections -- see {@link QuestJournalFilter}'s class doc. Folding
-	 * a second on/off into that one setting is why this group is a plain
-	 * {@link #sectionGroup}, its first field the filter combo itself, rather
-	 * than a {@link #toggleGroup}: there is no longer a boolean of its own
-	 * left to head one with.
+	 * The diary route overlay's own group. It has no enable checkbox: {@link
+	 * QuestpathConfig#questJournalFilter()} is its entire on/off switch, the
+	 * same filter that drives the Quests tab's own diary sections.
 	 */
 	private CollapsibleGroup diaryRouteGroup(QuestpathConfig config)
 	{
-		JPanel sub = column();
-		sub.setBorder(BorderFactory.createEmptyBorder(INDENT.top, INDENT.left, INDENT.bottom, INDENT.right));
+		JPanel sub = indented();
 		addField(sub, "Quests tab shows",
-			combo(QuestJournalFilter.values(), config.questJournalFilter(),
-				"Quests: this overlay is off, and so is the rest of the Diaries side of the Quests"
-					+ " tab. Diaries or All: this overlay is on. The same filter as the combo at the"
-					+ " top of the Quests tab itself -- changing it here changes it there too.",
-				"questJournalFilter"));
-		addField(sub, "Width", widthCombo(config.overlayDiaryRouteWidth(), "overlayDiaryRouteWidth"));
-		addField(sub, "Length", lengthCombo(config.overlayDiaryRouteLength(), "overlayDiaryRouteLength"));
+			combo(QuestJournalFilter.values(), config.questJournalFilter(), "questJournalFilter"));
+		sizeFields(sub, config.overlayDiaryRouteWidth(), "overlayDiaryRouteWidth",
+			config.overlayDiaryRouteLength(), "overlayDiaryRouteLength");
 		return sectionGroup("Diary route: nearest task", sub);
 	}
 
-	/**
-	 * The EXTRAS top-level section: the marker groups -- Shops, Ground items,
-	 * Bank, Lamps -- plus the item-done chat line, nested under one shared
-	 * heading.
-	 */
+	/** The EXTRAS section: the marker groups, voice, lamps, and the flat chat toggles. */
 	private CollapsibleGroup extrasSection(QuestpathConfig config)
 	{
 		JPanel body = column();
-		body.add(shopsGroup(config));
+		body.add(toggleGroup("Shops", config.shopHighlight(), "shopHighlight", sub ->
+		{
+			sub.add(toggle("Show how many to buy", config.shopHighlightCounts(), "shopHighlightCounts"));
+			addField(sub, "Outline colour",
+				colorField(config.shopHighlightColour(), "Shop outline colour", "shopHighlightColour"));
+			sub.add(toggle("Say when a shop sells what you need", config.shopArrivalPrompt(), "shopArrivalPrompt"));
+		}));
 		body.add(spacer());
-		body.add(groundItemsGroup(config));
-		body.add(dropSourcesGroup(config));
+		body.add(toggleGroup("Ground items", config.groundHighlight(), "groundHighlight", sub ->
+		{
+			sub.add(toggle("Show how many to pick up", config.groundHighlightCounts(), "groundHighlightCounts"));
+			addField(sub, "Marker colour",
+				colorField(config.groundHighlightColour(), "Ground marker colour", "groundHighlightColour"));
+			sub.add(toggle("Left-click take items you need", config.groundTakeLeftClick(), "groundTakeLeftClick"));
+			sub.add(toggle("Bouncing arrow over needed items", config.floorItemArrow(), "floorItemArrow"));
+			addField(sub, "Floor-item range (tiles)", intField(config.floorItemRadius(), 1, 15, "floorItemRadius"));
+		}));
+		body.add(toggleGroup("Drop sources", config.dropHighlight(), "dropHighlight", sub ->
+		{
+			sub.add(toggle("Show what it drops", config.dropHighlightLabels(), "dropHighlightLabels"));
+			addField(sub, "Outline colour",
+				colorField(config.dropHighlightColour(), "Drop source colour", "dropHighlightColour"));
+			sub.add(toggle("Whole route, not just this quest", config.dropHighlightWholeRoute(),
+				"dropHighlightWholeRoute"));
+		}));
 		body.add(spacer());
-		body.add(voiceGroup(config));
+		body.add(toggleGroup("Voice", config.voiceEnabled(), "voiceEnabled", sub ->
+		{
+			addField(sub, "Volume", intField(config.voiceVolume(), 0, 100, "voiceVolume"));
+			sub.add(toggle("Say what to buy near a shop", config.voiceShops(), "voiceShops"));
+			sub.add(toggle("Say needed items on the floor", config.voiceFloorItems(), "voiceFloorItems"));
+		}));
 		body.add(spacer());
-		body.add(bankGroup(config));
+		body.add(toggleGroup("Bank", config.bankHighlight(), "bankHighlight", sub ->
+		{
+			sub.add(toggle("Show how many more to find", config.bankHighlightCounts(), "bankHighlightCounts"));
+			sub.add(toggle("Only mark what you are short of", config.bankHighlightShortOnly(),
+				"bankHighlightShortOnly"));
+			sub.add(toggle("Rearrange the bank itself", config.bankTab(), "bankTab"));
+			sub.add(toggle("Show the bank title-bar button", config.bankButton(), "bankButton"));
+			sub.add(toggle("Show the ordered list too", config.bankList(), "bankList"));
+			addField(sub, "Marker colour",
+				colorField(config.bankHighlightColour(), "Bank marker colour", "bankHighlightColour"));
+		}));
 		body.add(spacer());
-		body.add(lampsGroup(config));
+		body.add(toggleGroup("Experience lamps", config.lampAdvisor(), "lampAdvisor", sub ->
+		{
+			sub.add(toggle("Grey out skills a rule closes", config.lampGreyBlocked(), "lampGreyBlocked"));
+			addField(sub, "Suggest", combo(LampSuggestions.values(), config.lampSuggestions(), "lampSuggestions"));
+			addField(sub, "Best target",
+				colorField(config.lampBestColour(), "Best lamp target colour", "lampBestColour"));
+			addField(sub, "Runner-up",
+				colorField(config.lampNextColour(), "Runner-up lamp target colour", "lampNextColour"));
+		}));
 		body.add(spacer());
 		// Flat rather than a group of its own: one checkbox behind a
 		// collapsible header is a header that costs more rows than it hides.
-		body.add(toggle(
-			"Chat when an item is done",
-			"Print a line in the game chat the moment you have all of something your plan"
-				+ " needs, naming the quest it is for. Said once, at the moment it happens,"
-				+ " because that is when you are looking at the ground rather than at a panel.",
-			config.chatOnItemComplete(), "chatOnItemComplete"));
-		body.add(toggle(
-			"Float a note where it happened",
-			"Show a short line in the world, above where you are standing, the moment you"
-				+ " finish gathering something. Fades after a few seconds, never more than"
-				+ " three at once.",
-			config.floatingNotes(), "floatingNotes"));
-		body.add(toggle(
-			"Say when a shop nearby has what you need",
-			"As you come up on a shop stocking something your plan still needs, once, in chat"
-				+ " and over the shopkeeper -- whether or not it is the next stop on your route.",
-			config.shopNearbyPrompt(), "shopNearbyPrompt"));
+		body.add(toggle("Chat when an item is done", config.chatOnItemComplete(), "chatOnItemComplete"));
+		body.add(toggle("Float a note where it happened", config.floatingNotes(), "floatingNotes"));
+		body.add(toggle("Say when a shop nearby has what you need", config.shopNearbyPrompt(), "shopNearbyPrompt"));
 		addField(body, "Float notes",
-			combo(NotePlacement.values(), config.floatingNotePlacement(),
-				"Where a floating note appears. Above the shopkeeper reads as that NPC"
-					+ " speaking. There is not always one -- items get finished by chopping"
-					+ " trees too -- so the shopkeeper options fall back to above you rather"
-					+ " than showing nothing.",
-				"floatingNotePlacement"));
+			combo(NotePlacement.values(), config.floatingNotePlacement(), "floatingNotePlacement"));
 		return sectionGroup("Extras", body);
 	}
 
-	/**
-	 * Lamp mark-up, the same dependent shape as Bank and Shops: everything
-	 * inside means nothing with the advisor itself off.
-	 *
-	 * <p>The greying and the suggestions are two settings rather than one,
-	 * and that split is deliberate. The greying is the part that stops an
-	 * irreversible mistake; the boxes are an opinion about which of the
-	 * remaining squares is best. Someone who finds the opinion noisy must be
-	 * able to switch it off without also switching off the warning, which is
-	 * exactly what one combined setting would make them do.
-	 */
-	private CollapsibleGroup lampsGroup(QuestpathConfig config)
+	/** A panel's own width and length overrides, under its toggle. */
+	private void sizeFields(JPanel sub, PanelWidth width, String widthKey, PanelListLength length, String lengthKey)
 	{
-		return toggleGroup(
-			"Experience lamps",
-			"When a lamp asks which skill to put its experience in, grey the skills your build"
-				+ " rules close and box the ones worth choosing. The interface shows"
-				+ " twenty-four identical squares for a choice that cannot be taken back.",
-			config.lampAdvisor(), "lampAdvisor",
-			sub ->
-			{
-				sub.add(toggle(
-					"Grey out skills a rule closes",
-					"Wash out any skill your rules forbid -- no experience at all, a cap this"
-						+ " lamp would cross, a cap already reached, or a level the lamp itself"
-						+ " requires. A skill Quest Route cannot price the lamp against is left"
-						+ " alone and says \"amount unknown\" on hover, rather than being"
-						+ " greyed on a guess.",
-					config.lampGreyBlocked(), "lampGreyBlocked"));
-				addField(sub, "Suggest",
-					combo(LampSuggestions.values(), config.lampSuggestions(),
-						"How many targets to box. Off leaves the greying on: deciding for"
-							+ " yourself is not the same as wanting no warnings.",
-						"lampSuggestions"));
-				addField(sub, "Best target",
-					colorField(config.lampBestColour(),
-						"The colour the single best skill is boxed in.",
-						"Best lamp target colour", "lampBestColour"));
-				addField(sub, "Runner-up",
-					colorField(config.lampNextColour(),
-						"The colour the second and third choices are boxed in.",
-						"Runner-up lamp target colour", "lampNextColour"));
-			});
+		addField(sub, "Width", combo(PanelWidth.values(), width, widthKey));
+		addField(sub, "Length", combo(PanelListLength.values(), length, lengthKey));
 	}
 
-	/**
-	 * Bank marking, the same dependent-trio shape as Shops and Ground items:
-	 * the count, the colour and the list all mean nothing with the highlight
-	 * itself off.
-	 *
-	 * <p>The in-bank button is the day-to-day control and this group is not a
-	 * substitute for it -- switching the feature off here removes the button
-	 * too, which is the honest behaviour but not the one to reach for when
-	 * you only want the marks gone for one trip.
-	 */
-	private CollapsibleGroup bankGroup(QuestpathConfig config)
-	{
-		return toggleGroup(
-			"Bank",
-			"Mark what you need in the bank: while the bank is open, outline the items your"
-				+ " plan still needs and show how many more to find. Toggled per trip from"
-				+ " the Quest Route button in the bank's title bar.",
-			config.bankHighlight(), "bankHighlight",
-			sub ->
-			{
-				sub.add(toggle(
-					"Show how many more to find",
-					"Print the outstanding count above a marked slot.",
-					config.bankHighlightCounts(), "bankHighlightCounts"));
-				sub.add(toggle(
-					"Only mark what you are short of",
-					"Leave items you already have enough of unmarked. Off, they are outlined"
-						+ " in green so you can see the plan is covered without counting.",
-					config.bankHighlightShortOnly(), "bankHighlightShortOnly"));
-				sub.add(toggle(
-					"Rearrange the bank itself",
-					"Group the bank's own grid by what your plan needs. Items you own stay"
-						+ " withdrawable; ones you own none of are shown greyed, which is the"
-						+ " one thing outlining a slot can never tell you.",
-					config.bankTab(), "bankTab"));
-				sub.add(toggle(
-					"Show the bank title-bar button",
-					"The button on the bank's title row that toggles the needs marks. Turn it"
-						+ " off if another plugin needs that space.",
-					config.bankButton(), "bankButton"));
-				sub.add(toggle(
-					"Show the ordered list too",
-					"Alongside the marks, list what the plan needs beside the bank: what you"
-						+ " ran out of first, then what you are short of, then what you have.",
-					config.bankList(), "bankList"));
-				addField(sub, "Marker colour",
-					colorField(config.bankHighlightColour(),
-						"The colour an item you still need is outlined in.",
-						"Bank marker colour", "bankHighlightColour"));
-			});
-	}
-
-	/**
-	 * Shop marking is two independent toggle-shaped config items plus a
-	 * colour, but one dependent trio in practice: the count and the outline
-	 * colour mean nothing if the highlight itself is off.
-	 *
-	 * <p>Displayed as "Shops" rather than the fuller "Mark what you need in
-	 * shops" -- that longer name was already being cut off in the sidebar
-	 * before this group had a section to sit under. The long form survives
-	 * as the checkbox's tooltip, where truncation is not a problem.
-	 */
-	private CollapsibleGroup shopsGroup(QuestpathConfig config)
-	{
-		return toggleGroup(
-			"Shops",
-			"Mark what you need in shops: while a shop is open, outline the items your quests"
-				+ " still need and show how many to buy. Works whether or not \"Everything you"
-				+ " need\" is on.",
-			config.shopHighlight(), "shopHighlight",
-			sub ->
-			{
-				sub.add(toggle(
-					"Show how many to buy",
-					"Print the outstanding count on the marked item, rather than only outlining it.",
-					config.shopHighlightCounts(), "shopHighlightCounts"));
-				addField(sub, "Outline colour",
-					colorField(config.shopHighlightColour(),
-						"The colour a needed item is outlined in. The buy count is drawn in green"
-							+ " above the slot regardless.",
-						"Shop outline colour", "shopHighlightColour"));
-				sub.add(toggle(
-					"Say when a shop sells what you need",
-					"One chat line the moment you open a shop selling something your plan still"
-						+ " needs. Not distance-based -- this only notices a shop once its interface"
-						+ " is open -- and it says so once per visit, not every tick.",
-					config.shopArrivalPrompt(), "shopArrivalPrompt"));
-			});
-	}
-
-	/**
-	 * Ground-item marking: the same on/count/colour shape as Shops, for
-	 * items already lying on the floor rather than sitting in a shop's
-	 * stock.
-	 *
-	 * <p>Displayed as "Ground items" rather than "Mark what you need on the
-	 * ground", for the same fit reason as {@link #shopsGroup}.
-	 */
-	private CollapsibleGroup groundItemsGroup(QuestpathConfig config)
-	{
-		return toggleGroup(
-			"Ground items",
-			"Mark what you need on the ground: outline items lying on the floor that your plan"
-				+ " still needs, so you pick them up in passing instead of buying them later.",
-			config.groundHighlight(), "groundHighlight",
-			sub ->
-			{
-				sub.add(toggle(
-					"Show how many to pick up",
-					"Print the outstanding count beside the item name.",
-					config.groundHighlightCounts(), "groundHighlightCounts"));
-				addField(sub, "Marker colour",
-					colorField(config.groundHighlightColour(),
-						"The colour a needed item on the floor is marked in.",
-						"Ground marker colour", "groundHighlightColour"));
-				sub.add(toggle(
-					"Left-click take items you need",
-					"Make \"Take\" the left-click option for a ground item your plan still needs,"
-						+ " so picking it up in passing does not need a right click. Never hides or"
-						+ " reorders anything for an item you do not need.",
-					config.groundTakeLeftClick(), "groundTakeLeftClick"));
-				sub.add(toggle(
-					"Bouncing arrow over needed items",
-					"Draw a bouncing arrow above a needed item lying within the floor-item range,"
-						+ " on top of the outline.",
-					config.floorItemArrow(), "floorItemArrow"));
-				addField(sub, "Floor-item range (tiles)",
-					intField(config.floorItemRadius(), 1, 15,
-						"How close a needed item on the floor must be for the arrow and for"
-							+ " \"<item> nearby\" to be said.",
-						"floorItemRadius"));
-			});
-	}
-
-	/** Outlines on the NPCs and objects that drop what the route still needs. */
-	private CollapsibleGroup dropSourcesGroup(QuestpathConfig config)
-	{
-		return toggleGroup(
-			"Drop sources",
-			"Outline the NPCs and objects that are the only source of an item your route still"
-				+ " needs, such as imps for a bead. Outline only; stops once you have enough.",
-			config.dropHighlight(), "dropHighlight",
-			sub ->
-			{
-				sub.add(toggle(
-					"Show what it drops",
-					"Print \"drops White bead\" above the outlined NPC or object.",
-					config.dropHighlightLabels(), "dropHighlightLabels"));
-				addField(sub, "Outline colour",
-					colorField(config.dropHighlightColour(),
-						"The colour a drop source is outlined in.",
-						"Drop source colour", "dropHighlightColour"));
-				sub.add(toggle(
-					"Whole route, not just this quest",
-					"Off: only the quest you are on. On: every quest your route covers.",
-					config.dropHighlightWholeRoute(), "dropHighlightWholeRoute"));
-			});
-	}
-
-	/**
-	 * Voice: the master switch in the header, the volume and the two spoken
-	 * alerts under it.
-	 */
-	private CollapsibleGroup voiceGroup(QuestpathConfig config)
-	{
-		return toggleGroup(
-			"Voice",
-			"Speak Quest Route's reminders out loud. Off silences every spoken line below.",
-			config.voiceEnabled(), "voiceEnabled",
-			sub ->
-			{
-				addField(sub, "Volume",
-					intField(config.voiceVolume(), 0, 100, "How loud the voice is, 0 to 100.", "voiceVolume"));
-				sub.add(toggle(
-					"Say what to buy near a shop",
-					"As you come up on a shop, say every item your plan still needs from it.",
-					config.voiceShops(), "voiceShops"));
-				sub.add(toggle(
-					"Say needed items on the floor",
-					"Say \"Bucket nearby\" once when an item your plan still needs is lying within"
-						+ " the floor-item range.",
-					config.voiceFloorItems(), "voiceFloorItems"));
-			});
-	}
-
-	/**
-	 * A per-panel width control.
-	 *
-	 * PanelWidth rather than OverlayWidth: only a panel can offer to match the
-	 * shared setting, because the shared setting is the thing being matched.
-	 */
-	private JComboBox<PanelWidth> widthCombo(PanelWidth initial, String keyName)
-	{
-		return combo(PanelWidth.values(), initial,
-			"Leave this matching the shared setting unless you want this one panel narrower"
-				+ " or wider than the rest.",
-			keyName);
-	}
-
-	/** A per-panel length control. See {@link #widthCombo} on the type. */
-	private JComboBox<PanelListLength> lengthCombo(PanelListLength initial, String keyName)
-	{
-		return combo(PanelListLength.values(), initial,
-			"Leave this matching the shared setting unless this panel wants a different"
-				+ " amount shown.",
-			keyName);
-	}
-
-	/**
-	 * A spinner wired straight to a bounded {@code int} config key.
-	 *
-	 * <p>Used by the panel's numeric setting, {@code pickupsLookahead}; its
-	 * own method rather than folded into {@link #toggle}/{@link #combo} so the
-	 * next numeric key reuses it.
-	 */
-	private JSpinner intField(int initial, int min, int max, String tooltip, String keyName)
+	/** A spinner wired straight to a bounded {@code int} config key. */
+	private JSpinner intField(int initial, int min, int max, String keyName)
 	{
 		JSpinner spinner = new JSpinner(new SpinnerNumberModel(initial, min, max, 1));
-		spinner.setToolTipText(tooltip);
-		spinner.setFont(FontManager.getRunescapeSmallFont());
+		spinner.setToolTipText(descriptions.get(keyName));
+		spinner.setFont(SMALL);
 		spinner.setAlignmentX(LEFT_ALIGNMENT);
 		spinner.setMaximumSize(CONTROL_MAX);
-		spinner.addChangeListener(e ->
-		{
-			if (populating)
-			{
-				return;
-			}
-			configManager.setConfiguration(QuestpathConfig.GROUP, keyName, (Integer) spinner.getValue());
-		});
+		spinner.addChangeListener(e -> write(keyName, spinner.getValue()));
 		return spinner;
 	}
 
-	/**
-	 * A stacked label-then-control block.
-	 *
-	 * <p>At 225px a label and its combo do not fit side by side once the
-	 * label says anything longer than "On" -- this was checked against the
-	 * actual sidebar width rather than assumed, and stacking is what fits.
-	 */
-	private void addField(JPanel target, String label, JComponent control)
+	/** A stacked label-then-control block: at 225px the two do not fit side by side. */
+	private static void addField(JPanel target, String label, JComponent control)
 	{
-		JLabel fieldLabel = new JLabel(label);
-		fieldLabel.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
-		fieldLabel.setFont(FontManager.getRunescapeSmallFont());
-		fieldLabel.setAlignmentX(LEFT_ALIGNMENT);
-
-		target.add(fieldLabel);
-		target.add(Box.createRigidArea(new Dimension(0, 2)));
+		target.add(small(label, ColorScheme.LIGHT_GRAY_COLOR));
+		target.add(spacer(2));
 		target.add(control);
-		target.add(Box.createRigidArea(new Dimension(0, 6)));
+		target.add(spacer(6));
 	}
 
 	/**
-	 * A checkbox wired straight to a boolean config key.
-	 *
-	 * Writes happen on every user click, immediately -- there is no Save
-	 * button anywhere in this panel, matching how RuneLite's own config
-	 * panel behaves.
+	 * A checkbox wired straight to a boolean config key. Writes happen on
+	 * every click, immediately -- there is no Save button, matching RuneLite's
+	 * own config panel. A key carrying a {@code warning} (a third-party
+	 * server) confirms it first, exactly like RuneLite's own panel, and is
+	 * written only if the player agrees; switching it off never asks.
 	 */
-	private JCheckBox toggle(String label, String tooltip, boolean initial, String keyName)
+	private JCheckBox toggle(String label, boolean initial, String keyName)
 	{
-		JCheckBox box = new JCheckBox(label);
-		box.setToolTipText(tooltip);
-		box.setSelected(initial);
-		box.setForeground(Color.WHITE);
-		box.setBackground(ColorScheme.DARK_GRAY_COLOR);
-		box.setFont(FontManager.getRunescapeSmallFont());
-		box.setFocusPainted(false);
-		box.setAlignmentX(LEFT_ALIGNMENT);
-		box.setMaximumSize(CONTROL_MAX);
-		box.addActionListener(e ->
+		String warning = warnings.get(keyName);
+		JCheckBox box = check(label, initial, Color.WHITE, e ->
 		{
+			JCheckBox source = (JCheckBox) e.getSource();
 			if (populating)
 			{
 				return;
 			}
-			configManager.setConfiguration(QuestpathConfig.GROUP, keyName, box.isSelected());
-		});
-		return box;
-	}
-
-	/**
-	 * A checkbox wired to a boolean config key that submits data to a
-	 * third-party server, gated the same way RuneLite's own config panel
-	 * gates any {@code @ConfigItem} carrying a {@code warning}: switching it
-	 * on shows that exact warning as a confirm dialog first, and the config
-	 * is written only if the player confirms. Switching it back off never
-	 * asks -- there is nothing to warn about in stopping a push.
-	 *
-	 * <p>{@code syncEnabled} is the only key this panel uses this for today.
-	 * If a future key needs it too, keep the warning text passed in here in
-	 * sync with that key's own {@code @ConfigItem(warning = ...)} by hand --
-	 * the annotation value is not read reflectively, so RuneLite's own
-	 * config panel and this dialog can drift if one changes without the
-	 * other.
-	 */
-	private JCheckBox warningToggle(String label, String tooltip, String warning, boolean initial, String keyName)
-	{
-		JCheckBox box = new JCheckBox(label);
-		box.setToolTipText(tooltip);
-		box.setSelected(initial);
-		box.setForeground(Color.WHITE);
-		box.setBackground(ColorScheme.DARK_GRAY_COLOR);
-		box.setFont(FontManager.getRunescapeSmallFont());
-		box.setFocusPainted(false);
-		box.setAlignmentX(LEFT_ALIGNMENT);
-		box.setMaximumSize(CONTROL_MAX);
-		box.addActionListener(e ->
-		{
-			if (populating)
+			if (source.isSelected() && warning != null && !warning.isEmpty())
 			{
-				return;
-			}
-			if (box.isSelected())
-			{
-				int choice = JOptionPane.showConfirmDialog(this, warning, "Quest Route",
-					JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE);
+				int choice = JOptionPane.showConfirmDialog(this, warning + "\n\nTurn it on anyway?",
+					"Quest Route", JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE);
 				if (choice != JOptionPane.OK_OPTION)
 				{
-					// Declined: the checkbox must not visibly stay ticked for
-					// a setting that was not actually turned on.
-					box.setSelected(false);
+					// Declined: the box must not stay ticked for a setting
+					// that was not actually turned on.
+					source.setSelected(false);
 					return;
 				}
 			}
-			configManager.setConfiguration(QuestpathConfig.GROUP, keyName, box.isSelected());
+			write(keyName, source.isSelected());
 		});
+		box.setToolTipText(descriptions.get(keyName));
+		box.setMaximumSize(CONTROL_MAX);
 		return box;
 	}
 
 	/**
-	 * A combo wired straight to an enum config key.
-	 *
-	 * The enum's own {@code toString()} is what RuneLite renders in its
-	 * config panel too, so using it here keeps the two surfaces reading the
-	 * same words for the same setting.
+	 * A combo wired straight to an enum config key. The enum's own
+	 * {@code toString()} is what RuneLite renders in its config panel too.
 	 */
-	private <E extends Enum<E>> JComboBox<E> combo(E[] values, E initial, String tooltip, String keyName)
+	private <E extends Enum<E>> JComboBox<E> combo(E[] values, E initial, String keyName)
 	{
-		JComboBox<E> box = new JComboBox<>(values);
+		JComboBox<E> box = styled(new JComboBox<>(values), descriptions.get(keyName));
 		box.setSelectedItem(initial);
-		box.setToolTipText(tooltip);
-		box.setBackground(ColorScheme.DARKER_GRAY_COLOR);
-		box.setForeground(Color.WHITE);
-		box.setFont(FontManager.getRunescapeSmallFont());
-		box.setAlignmentX(LEFT_ALIGNMENT);
-		box.setMaximumSize(CONTROL_MAX);
-		box.addActionListener(e ->
-		{
-			if (populating)
-			{
-				return;
-			}
-			@SuppressWarnings("unchecked")
-			E selected = (E) box.getSelectedItem();
-			configManager.setConfiguration(QuestpathConfig.GROUP, keyName, selected);
-		});
+		box.addActionListener(e -> write(keyName, box.getSelectedItem()));
 		return box;
 	}
 
 	/**
 	 * A colour swatch button wired to a {@code Color} config key through
-	 * RuneLite's own colour picker dialog.
-	 *
-	 * <p>The dialog reports every slider drag through {@code onColorChange}
-	 * -- writing config on each of those would be dozens of writes for one
-	 * decision. Only the swatch updates live; the write to {@code
-	 * ConfigManager} happens once, when the dialog closes, matching the
-	 * one-write-per-decision the rest of this panel keeps.
-	 *
-	 * <p>Alpha is hidden: every colour this panel offers is an opaque
-	 * outline or marker, never a translucent fill, so a fourth slider would
-	 * only be a way to accidentally pick an invisible colour.
+	 * RuneLite's own colour picker. Only the swatch updates live; the write
+	 * happens once, when the dialog closes. Alpha is hidden: every colour here
+	 * is an opaque outline or marker.
 	 */
-	private ColorJButton colorField(Color initial, String tooltip, String dialogTitle, String keyName)
+	private ColorJButton colorField(Color initial, String dialogTitle, String keyName)
 	{
 		ColorJButton button = new ColorJButton("", initial);
-		button.setToolTipText(tooltip);
+		button.setToolTipText(descriptions.get(keyName));
 		button.setFocusPainted(false);
 		button.setAlignmentX(LEFT_ALIGNMENT);
 		button.setMaximumSize(CONTROL_MAX);
 		button.addActionListener(e ->
 		{
-			RuneliteColorPicker picker = colorPickerManager.create(
-				button, button.getColor(), dialogTitle, true);
+			RuneliteColorPicker picker = colorPickerManager.create(button, button.getColor(), dialogTitle, true);
 			picker.setOnColorChange(button::setColor);
 			picker.setOnClose(chosen ->
 			{
 				button.setColor(chosen);
-				if (!populating)
-				{
-					configManager.setConfiguration(QuestpathConfig.GROUP, keyName, chosen);
-				}
+				write(keyName, chosen);
 			});
 			picker.setVisible(true);
 		});
 		return button;
 	}
 
-	/**
-	 * Disables (or re-enables) an entire subtree.
-	 *
-	 * A panel's own options are meaningless while its toggle is off, and
-	 * greying them out rather than hiding them is what keeps the layout
-	 * stable as the player clicks toggles on and off -- nothing jumps.
-	 */
+	private void write(String keyName, Object value)
+	{
+		if (!populating)
+		{
+			configManager.setConfiguration(QuestpathConfig.GROUP, keyName, value);
+		}
+	}
+
+	/** Disables (or re-enables) a subtree: greyed, not hidden, so nothing jumps. */
 	private static void setEnabledDeep(Component component, boolean enabled)
 	{
 		component.setEnabled(enabled);
@@ -907,44 +449,13 @@ class OverlaySettingsPanel extends JPanel
 		}
 	}
 
-	private static JPanel column()
-	{
-		JPanel panel = new JPanel();
-		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-		panel.setBackground(ColorScheme.DARK_GRAY_COLOR);
-		panel.setAlignmentX(LEFT_ALIGNMENT);
-		return panel;
-	}
-
-	/** A group heading's label, styled to match the panel's one look. */
-	private static JLabel headingLabel(String text)
-	{
-		JLabel label = new JLabel(text.toUpperCase());
-		label.setFont(FontManager.getRunescapeSmallFont().deriveFont(Font.BOLD));
-		label.setForeground(ColorScheme.BRAND_ORANGE);
-		label.setAlignmentX(LEFT_ALIGNMENT);
-		return label;
-	}
-
 	private static Component spacer()
 	{
-		return Box.createRigidArea(new Dimension(0, 10));
+		return spacer(10);
 	}
 
-	/**
-	 * Forces a plain label to wrap at the sidebar's own width, matching
-	 * {@code QuestpathPanel}'s own {@code wrap}: Swing only wraps a label's
-	 * HTML at a width the markup states explicitly, never at whatever the
-	 * container happens to be.
-	 */
-	private static String wrap(String text)
+	private static Component spacer(int height)
 	{
-		return "<html><body style='width:150px'>" + escape(text) + "</body></html>";
-	}
-
-	/** A stray angle bracket in one of this file's own strings would otherwise be read as markup. */
-	private static String escape(String text)
-	{
-		return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
+		return Box.createRigidArea(new Dimension(0, height));
 	}
 }
