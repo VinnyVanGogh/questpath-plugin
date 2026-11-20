@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 - A "Skiller" build preset (no XP in any of the seven combat skills, Hitpoints included), in the sidebar setup and in the web app's `internal/builds/presets.go` under the same slug (RUNELITE-468).
 - A "What's new" button beside "Account setup" at the top of the sidebar replays the update notes in chat; the "Show what's new" momentary checkbox is retired and its key cleared once at start-up. Notes added for the setup builds and limits, the Account setup button, quick settings and drop highlights (RUNELITE-468).
+- The web app's per-quest route marks in the sidebar: right-click a quest on the Quests tab to refuse it (never do it; it and whatever needs it leave the route, and it lists under "Refused"), pin it to the front of the route, or do it later; a "Hide quests your build has closed off" filter. Saved per account in the local profile (`refused_quests`, `pinned_quests`, `deferred_quests`, `hide_blocked`), applied by `LocalRoute` the way the web planner applies pins and defers: only among the quests legal at that point (RUNELITE-468).
 - A headless scenario test for the bank button's click sequence (`BankTabState`, `BankTabScenarioTest`): "Hide tab" leaves the tab, the op-listener echo on the same tick does not reopen it, and a real tab's click leaves ours without being consumed (RUNELITE-468).
 
 ### Changed

@@ -819,6 +819,7 @@ public class QuestpathPlugin extends Plugin
 		panel.setSayShopAgain(this::sayShopAgain);
 		panel.setOnOpenSetup(this::openSetup);
 		panel.setOnWhatsNew(this::showWhatsNew);
+		panel.setQuestMarks(() -> localProfile, this::markQuest);
 		// The retired "Reset account setup" checkbox: read once, then cleared,
 		// so a box ticked before this update still opens setup rather than
 		// being silently dropped.
@@ -1380,6 +1381,25 @@ public class QuestpathPlugin extends Plugin
 		clientThread.invokeLater(this::refresh);
 	}
 
+	/**
+	 * Swing thread, from a quest row's menu: flips one of the player's own
+	 * marks (refuse, pin, defer, hide blocked) and rebuilds the route. The
+	 * marks are saved whatever supplies the route; they shape it only while
+	 * the local route is in force.
+	 */
+	private void markQuest(String quest, LocalProfile.Mark mark)
+	{
+		LocalProfile current = localProfile;
+		if (current == null)
+		{
+			return;
+		}
+		LocalProfile updated = current.toggled(mark, quest);
+		localProfile = updated;
+		saveProfileAsync(updated);
+		clientThread.invokeLater(this::refresh);
+	}
+
 	private void saveProfileAsync(LocalProfile profile)
 	{
 		String key = profileKey;
@@ -1416,7 +1436,7 @@ public class QuestpathPlugin extends Plugin
 		{
 			return;
 		}
-		List<String> computed = LocalRoute.of(questGraph, accountSnapshot, profile.questTypes());
+		List<String> computed = LocalRoute.of(questGraph, accountSnapshot, profile.questTypes(), profile);
 		routeOrder = computed;
 		if (computed.equals(profile.route()))
 		{

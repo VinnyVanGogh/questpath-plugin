@@ -50,8 +50,10 @@ import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JProgressBar;
 import javax.swing.JSpinner;
 import javax.swing.JViewport;
@@ -452,6 +454,27 @@ class QuestpathPanel extends PluginPanel
 
 	private volatile Runnable onWhatsNew;
 
+	/**
+	 * The player's own marks on quests -- see {@link LocalProfile.Mark} --
+	 * read off the profile the plugin holds (replaced wholesale on every
+	 * change, so its identity rides the Quests tab's signature) and written
+	 * back through {@code onMark}.
+	 */
+	void setQuestMarks(Supplier<LocalProfile> profile, BiConsumer<String, LocalProfile.Mark> onMark)
+	{
+		this.questProfile = profile;
+		this.onQuestMark = onMark;
+	}
+
+	private volatile Supplier<LocalProfile> questProfile;
+	private volatile BiConsumer<String, LocalProfile.Mark> onQuestMark;
+
+	private LocalProfile profile()
+	{
+		Supplier<LocalProfile> supplier = questProfile;
+		return supplier == null ? null : supplier.get();
+	}
+
 	/** Makes the Quests tab the one on screen; setup lives there. */
 	void showQuestsTab()
 	{
@@ -731,12 +754,20 @@ class QuestpathPanel extends PluginPanel
 			return;
 		}
 		rebuildQuestsTab(lastVerdicts, lastNextQuest, lastRouteWork);
-		lastVerdictSignature = Arrays.asList(
-			lastVerdicts == null ? null : lastVerdicts.signature(),
-			lastNextQuest == null ? null : lastNextQuest.hashCode(),
-			lastRouteWork == null ? null : routeWorkSignature(lastRouteWork),
+		lastVerdictSignature = questsSignature(lastVerdicts, lastNextQuest, lastRouteWork, filter);
+	}
+
+	/** What the Quests tab is drawn from; a change in any of it is a rebuild. */
+	private Object questsSignature(QuestVerdicts verdicts, NextQuestStatus nextQuest, RouteWork routeWork,
+		QuestJournalFilter filter)
+	{
+		return Arrays.asList(
+			verdicts == null ? null : verdicts.signature(),
+			nextQuest == null ? null : nextQuest.hashCode(),
+			routeWork == null ? null : routeWorkSignature(routeWork),
 			diaryPush.get(),
-			filter);
+			filter,
+			setupNote, setupRevision, profile());
 	}
 
 	/**
@@ -993,13 +1024,7 @@ class QuestpathPanel extends PluginPanel
 		// which rebuilds immediately on its own) still reaches this tab on
 		// the next tick instead of sitting stale until something else
 		// invalidates it.
-		Object questsSignature = Arrays.asList(
-			verdicts == null ? null : verdicts.signature(),
-			nextQuest == null ? null : nextQuest.hashCode(),
-			routeWork == null ? null : routeWorkSignature(routeWork),
-			diaryPush.get(),
-			config.questJournalFilter(),
-			setupNote, setupRevision);
+		Object questsSignature = questsSignature(verdicts, nextQuest, routeWork, config.questJournalFilter());
 		if (!Objects.equals(questsSignature, lastVerdictSignature))
 		{
 			rebuildQuestsTab(verdicts, nextQuest, routeWork);
@@ -3764,6 +3789,16 @@ class QuestpathPanel extends PluginPanel
 		String needle = filter == null ? "" : filter.trim().toLowerCase();
 		boolean filtering = !needle.isEmpty();
 		panel.add(note(verdicts.count(QuestStatus.COMPLETE) + " done", LIGHT_GRAY_COLOR));
+		LocalProfile marks = profile();
+		boolean hideBlocked = marks != null && marks.hideBlocked();
+		if (marks != null)
+		{
+			JCheckBox hide = check("Hide quests your build has closed off", hideBlocked, LIGHT_GRAY_COLOR,
+				e -> onQuestMark.accept("", LocalProfile.Mark.HIDE_BLOCKED));
+			hide.setToolTipText("Leave out the \"Breaks your build\", \"Blocked by a prerequisite\" and"
+				+ " refused groups. Right-click a quest to refuse it, pin it to the front or do it later.");
+			panel.add(hide);
+		}
 
 		// A status picked from the combo narrows the sections shown to that one
 		// group, on top of whatever text filter is also active. Left at "All
@@ -3775,12 +3810,28 @@ class QuestpathPanel extends PluginPanel
 			: (filtering ? QuestVerdicts.searchSections() : QuestVerdicts.sections());
 
 		int matched = 0;
+		List<QuestGraph.Quest> refused = new ArrayList<>();
 		for (QuestStatus status : toRender)
 		{
+			if (hideBlocked && statusFilter == null && status.permanent())
+			{
+				continue;
+			}
 			List<QuestGraph.Quest> shown = new ArrayList<>();
 			for (QuestGraph.Quest quest : verdicts.quests(status))
 			{
-				if (!filtering || quest.name().toLowerCase().contains(needle))
+				if (filtering && !quest.name().toLowerCase().contains(needle))
+				{
+					continue;
+				}
+				// A refused quest is listed under its own heading, not the
+				// verdict it would otherwise have had: "never" outranks "can
+				// do now", the same precedence the web app's classifier keeps.
+				if (marks != null && marks.has(LocalProfile.Mark.REFUSED, quest.name()))
+				{
+					refused.add(quest);
+				}
+				else
 				{
 					shown.add(quest);
 				}
@@ -3790,24 +3841,19 @@ class QuestpathPanel extends PluginPanel
 				continue;
 			}
 			matched += shown.size();
-			panel.add(gap(8));
-
 			// The heading shows how many matched out of the group when
 			// filtering, so a filter never makes a group look smaller than it
 			// is.
 			String count = filtering
 				? shown.size() + " of " + verdicts.count(status)
 				: String.valueOf(verdicts.count(status));
-			panel.add(bold(QuestVerdicts.label(status) + "  ·  " + count, statusColor(status)));
-
-			// Every quest, not the first eight. The panel scrolls, and "and 49
-			// more" was a list of 49 things you could not read -- the group
-			// counts already gave the summary, so a truncated list gave
-			// nothing the heading did not.
-			for (QuestGraph.Quest quest : shown)
-			{
-				panel.add(small(quest.name(), LIGHT_GRAY_COLOR));
-			}
+			questGroup(panel, QuestVerdicts.label(status) + "  ·  " + count, statusColor(status), shown, marks);
+		}
+		if (!refused.isEmpty() && !hideBlocked)
+		{
+			matched += refused.size();
+			questGroup(panel, QuestVerdicts.label(QuestStatus.REFUSED) + "  ·  " + refused.size(),
+				PROGRESS_ERROR_COLOR, refused, marks);
 		}
 
 		if ((filtering || statusFilter != null) && matched == 0)
@@ -3817,6 +3863,64 @@ class QuestpathPanel extends PluginPanel
 		}
 
 		return panel;
+	}
+
+	/**
+	 * One verdict group: its heading, then every quest, not the first eight.
+	 * The panel scrolls, and "and 49 more" was a list of 49 things you could
+	 * not read. A pinned or deferred quest says so on its row.
+	 */
+	private void questGroup(JPanel panel, String heading, Color colour, List<QuestGraph.Quest> quests,
+		LocalProfile marks)
+	{
+		panel.add(gap(8));
+		panel.add(bold(heading, colour));
+		for (QuestGraph.Quest quest : quests)
+		{
+			String suffix = marks == null ? ""
+				: marks.has(LocalProfile.Mark.PINNED, quest.name()) ? "  (pinned first)"
+				: marks.has(LocalProfile.Mark.DEFERRED, quest.name()) ? "  (later)" : "";
+			JLabel row = small(quest.name() + suffix, LIGHT_GRAY_COLOR);
+			if (marks != null)
+			{
+				row.addMouseListener(new MouseAdapter()
+				{
+					@Override
+					public void mousePressed(MouseEvent e)
+					{
+						mouseReleased(e);
+					}
+
+					@Override
+					public void mouseReleased(MouseEvent e)
+					{
+						if (e.isPopupTrigger())
+						{
+							questMenu(quest.name()).show(row, e.getX(), e.getY());
+						}
+					}
+				});
+			}
+			panel.add(row);
+		}
+	}
+
+	/** Right-click on a quest: the web app's own per-quest choices, each a toggle. */
+	private JPopupMenu questMenu(String quest)
+	{
+		JPopupMenu menu = new JPopupMenu();
+		markItem(menu, quest, LocalProfile.Mark.PINNED, "Pin to the front of the route", "Unpin");
+		markItem(menu, quest, LocalProfile.Mark.DEFERRED, "Do it later", "Do it in order again");
+		markItem(menu, quest, LocalProfile.Mark.REFUSED, "Refuse: never do this quest", "Stop refusing it");
+		return menu;
+	}
+
+	private void markItem(JPopupMenu menu, String quest, LocalProfile.Mark mark, String on, String off)
+	{
+		LocalProfile marks = profile();
+		JMenuItem item = new JMenuItem(marks != null && marks.has(mark, quest) ? off : on);
+		item.addActionListener(e -> onQuestMark.accept(quest, mark));
+		menu.add(item);
 	}
 
 	private void warn(String message)
