@@ -3048,10 +3048,6 @@ public class QuestpathPlugin extends Plugin
 			return;
 		}
 		bankNeedsShown = on;
-		if (bankButton != null)
-		{
-			bankButton.refresh();
-		}
 		if (bankTab == null)
 		{
 			return;
