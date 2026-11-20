@@ -8,10 +8,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- Build rules now live in the separate Build Guard plugin, reached over `PluginMessage` only (`BuildGuardLink`, namespace `build-guard` out and `quest-route` in, `v=1`; `hello`/`present`, `rules`, `rules-request`, `open-panel`, `check`/`check-result`, and `import-rules` for the one-time hand-over). With Build Guard installed, quest verdicts use its rules and Account setup's build step opens its panel. Without it (no reply within 5 seconds of start), setup offers three read-only starter builds: 60 Attack zerker (60 Attack, 45 Defence), 60 Attack pure (60 Attack, no Defence XP) and Maxed main (no limits), plus an Ironman toggle, and an expandable "Get more with Build Guard" section. Rules saved here before are sent to Build Guard once per account when it is installed, and otherwise stay as a read-only "Your saved build". Config key `buildRulesMigrated` (per account) appended; nothing renamed (RUNELITE-507).
 - A "Skiller" build preset (no XP in any of the seven combat skills, Hitpoints included), in the sidebar setup and in the web app's `internal/builds/presets.go` under the same slug (RUNELITE-468).
 - A "What's new" button beside "Account setup" at the top of the sidebar replays the update notes in chat; the "Show what's new" momentary checkbox is retired and its key cleared once at start-up. Notes added for the setup builds and limits, the Account setup button, quick settings and drop highlights (RUNELITE-468).
 - The web app's per-quest route marks in the sidebar: right-click a quest on the Quests tab to refuse it (never do it; it and whatever needs it leave the route, and it lists under "Refused"), pin it to the front of the route, or do it later; a "Hide quests your build has closed off" filter. Saved per account in the local profile (`refused_quests`, `pinned_quests`, `deferred_quests`, `hide_blocked`), applied by `LocalRoute` the way the web planner applies pins and defers: only among the quests legal at that point (RUNELITE-468).
 - A headless scenario test for the bank button's click sequence (`BankTabState`, `BankTabScenarioTest`): "Hide tab" leaves the tab, the op-listener echo on the same tick does not reopen it, and a real tab's click leaves ours without being consumed (RUNELITE-468).
+
+### Removed
+
+- Moved to Build Guard: the sidebar rules editor and its storage, the in-game Build rules overlay and its settings, the experience-lamp advisor and its settings (`overlayBuildRules*`, `lamp*` config items are gone; their stored values are simply no longer read), and the 33 named build presets, replaced by the three starters above. Main code is about 10,000 estimated tokens smaller (198,195 to 188,210 by `tools/tokcount.py`) (RUNELITE-507).
 
 ### Changed
 

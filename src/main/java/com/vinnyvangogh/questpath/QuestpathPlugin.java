@@ -12,6 +12,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
@@ -89,6 +91,7 @@ import net.runelite.client.callback.ClientThread;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.events.ConfigChanged;
 import net.runelite.client.events.PartyChanged;
+import net.runelite.client.events.PluginMessage;
 import net.runelite.client.game.SkillIconManager;
 import net.runelite.client.party.PartyMember;
 import net.runelite.client.party.PartyService;
@@ -279,7 +282,6 @@ public class QuestpathPlugin extends Plugin
 
 	private BankNeedsOverlay bankOverlay;
 	private BankListOverlay bankListOverlay;
-	private LampOverlay lampOverlay;
 	private BankButton bankButton;
 	private BankTabLayout bankTab;
 
@@ -628,38 +630,18 @@ public class QuestpathPlugin extends Plugin
 	 */
 	private volatile List<BuildRule> buildRules = Collections.emptyList();
 	/**
-	 * The rules the player wrote here, merged over the pushed ones wherever
-	 * both name a skill.
-	 *
-	 * <p>Read through {@link #effectiveBuildRules()} rather than used
-	 * directly, because every consumer of a rule -- the verdict engine, the
-	 * lamp advisor, the panel -- has to see the same merged set. A caller
-	 * that reached for {@link #buildRules} alone would be a guard that is
-	 * silently off for anyone who has never run questpath, which is the
-	 * situation this whole store exists to fix.
+	 * Rules this plugin saved before Build Guard took over editing them.
+	 * Read-only: handed to Build Guard once, or kept as "Your saved build".
 	 */
 	@Inject
 	private LocalBuildRules localBuildRules;
 	/**
-	 * Every lamp questpath can price, loaded once from the bundle.
-	 *
-	 * <p>Never null after startUp: a bundle that fails to load leaves an
-	 * empty catalogue, which makes every lamp unmodelled rather than making
-	 * the advisor throw. An unmodelled lamp still greys NO_XP skills, so the
-	 * part that prevents an irreversible mistake survives a broken bundle.
+	 * The conversation with Build Guard, which owns the build rules. Built in
+	 * startUp because it needs the event bus.
 	 */
-	private volatile LampCatalogue lampCatalogue = LampCatalogue.empty();
-	private final LampWatcher lampWatcher = new LampWatcher();
-	/**
-	 * What the lamp overlay draws, recomputed when the interface opens rather
-	 * than per frame.
-	 *
-	 * <p>Per frame would mean re-running the advisor sixty times a second for
-	 * an answer that cannot change while one interface is open -- and
-	 * AGENTS.md is explicit that overlay work is kept to a minimum because it
-	 * runs every frame.
-	 */
-	private volatile List<LampVerdict> lampVerdicts = Collections.emptyList();
+	private BuildGuardLink buildGuard;
+	/** Cancelled on shutdown; decides "Build Guard is not installed" after a few seconds of silence. */
+	private ScheduledFuture<?> buildGuardTimeout;
 	/**
 	 * What this account has declared it will not do. questpath owns these
 	 * exactly as it owns the build rules, and the push response is the only
@@ -757,6 +739,7 @@ public class QuestpathPlugin extends Plugin
 	protected void startUp()
 	{
 		migrateDiaryRouteToggle();
+		startBuildGuardLink();
 		watchdog = new EdtWatchdog(scheduler);
 		watchdog.start();
 		shortestPathBridge = new ShortestPathBridge(pluginManager::getPlugins,
@@ -815,7 +798,7 @@ public class QuestpathPlugin extends Plugin
 			this::cancelShopRoute,
 			this::shopRouteActive, this::syncNow,
 			shopItemSkips, this::diaryGraphTasks, this::diaryPush, lockedGearActions(),
-			localBuildRules, this::onLocalRulesEdited);
+			localBuildRules, buildGuard);
 		panel.setSayShopAgain(this::sayShopAgain);
 		panel.setOnOpenSetup(this::openSetup);
 		panel.setOnWhatsNew(this::showWhatsNew);
@@ -848,30 +831,14 @@ public class QuestpathPlugin extends Plugin
 			this::diaryPush, this::playerLocation));
 		overlays.add(new GrandExchangeOverlay(this, config, overlayIcons, client, this::grandExchangeList));
 		overlays.add(new CombatXpOverlay(this, config, overlayIcons));
-		overlays.add(new BuildRulesOverlay(this, config, overlayIcons));
-		// The lamp catalogue is bundled, so a failure here is a broken jar
-		// rather than a missing server. Logged and carried on with an empty
-		// catalogue: every lamp then reads as unmodelled, which still greys
-		// NO_XP skills and still refuses to rank. A broken bundle must not
-		// take the advisor's only irreversible-mistake guard down with it.
-		try
-		{
-			lampCatalogue = LampCatalogue.load(gson);
-		}
-		catch (IOException e)
-		{
-			log.debug("lamp catalogue unavailable; every lamp will read as unmodelled", e);
-			lampCatalogue = LampCatalogue.empty();
-		}
 		shopOverlay = new ShopItemOverlay(this, config, itemManager, client, tooltipManager);
 		groundOverlay = new GroundItemOverlay(this, config, client, tooltipManager);
 		dropTargetOverlay = new DropTargetOverlay(this, config, client);
 		floatingNoteOverlay = new FloatingNoteOverlay(this, config, client, floatingNotes);
 		bankOverlay = new BankNeedsOverlay(this, config, client, tooltipManager);
 		bankListOverlay = new BankListOverlay(this, config, overlayIcons, client);
-		lampOverlay = new LampOverlay(this, config, client, tooltipManager);
 		Collections.addAll(markerOverlays, shopOverlay, groundOverlay, dropTargetOverlay, floatingNoteOverlay,
-			bankOverlay, bankListOverlay, lampOverlay);
+			bankOverlay, bankListOverlay);
 		for (Overlay overlay : overlays)
 		{
 			overlayManager.add(overlay);
@@ -1136,7 +1103,6 @@ public class QuestpathPlugin extends Plugin
 		dropTargetOverlay = null;
 		bankOverlay = null;
 		bankListOverlay = null;
-		lampOverlay = null;
 		// Emptied as well as unregistered: notes are timed from wall clock,
 		// so a handful left over from a previous session would otherwise be
 		// waiting, already expired, for the next one to read them.
@@ -1150,8 +1116,7 @@ public class QuestpathPlugin extends Plugin
 		}
 		floorSpawns.clear();
 		floorAnnouncer.clear();
-		lampWatcher.interfaceClosed();
-		lampVerdicts = Collections.emptyList();
+		stopBuildGuardLink();
 		if (bankButton != null)
 		{
 			bankButton.detach();
@@ -1314,6 +1279,8 @@ public class QuestpathPlugin extends Plugin
 					return;
 				}
 				applyLoadedProfile(loaded);
+				// The account is known now, so its saved rules can be read.
+				migrateSavedRules();
 				if (legacyResetRequested)
 				{
 					// The retired checkbox was ticked: open setup, as it meant to.
@@ -1368,16 +1335,13 @@ public class QuestpathPlugin extends Plugin
 	}
 
 	/** Swing thread, from the setup panel's button. */
-	private void onSetupChosen(LocalProfile chosen, List<BuildRule> rules)
+	private void onSetupChosen(LocalProfile chosen)
 	{
 		LocalProfile previous = localProfile;
 		LocalProfile profile = previous == null ? chosen : previous.withSetup(chosen);
 		localProfile = profile;
 		panel.setSetup(null, null);
 		saveProfileAsync(profile);
-		// The limits are the build: written as this account's own rules, which
-		// the verdicts, the lamp advisor and the route all read.
-		localBuildRules.replaceAll(rules);
 		clientThread.invokeLater(this::refresh);
 	}
 
@@ -1854,12 +1818,6 @@ public class QuestpathPlugin extends Plugin
 		// shop interface is open right now, which has nothing to do with
 		// whether the account's own state changed this tick.
 		checkShopArrival();
-
-		// Whether the lamp interface is still up. There is no reliable
-		// "widget closed" event for this group, and a stale verdict list
-		// would keep the overlay drawing boxes over whatever interface
-		// happened to open next.
-		checkLampInterfaceClosed();
 
 		// Refreshes the cached position the panel reads -- see
 		// lastKnownPlayerLocation for why the panel cannot ask for itself.
@@ -3139,22 +3097,6 @@ public class QuestpathPlugin extends Plugin
 	@Subscribe
 	public void onMenuOptionClicked(MenuOptionClicked event)
 	{
-		// Lamp tracking first, and before the bank guard below, because a
-		// lamp is rubbed from the inventory with the bank shut. RuneLite
-		// delivers one MenuOptionClicked per class, so the two features
-		// share this method rather than each having their own -- see
-		// OSRS-RUNELITE.md on subscriber naming.
-		//
-		// Any item click is recorded, with no list of menu verbs: most lamps
-		// are "Rub" and a Book of Knowledge is "Read", and a hardcoded verb
-		// list goes quietly out of date the first time a lamp ships with a
-		// fourth word on it. It is the interface opening that decides one of
-		// these clicks was a lamp.
-		if (event.getItemId() > 0)
-		{
-			lampWatcher.itemClicked(event.getItemId(), event.getMenuTarget(), client.getTickCount());
-		}
-
 		// Our own button's "Hide tab" is consumed here rather than left to the
 		// widget's op listener: the listener is the path that opens the tab,
 		// and relying on it a second time to close it left the tab stuck on
@@ -3968,16 +3910,6 @@ public class QuestpathPlugin extends Plugin
 	@Subscribe
 	public void onWidgetLoaded(WidgetLoaded event)
 	{
-		if (event.getGroupId() == LampSkillWidgets.group())
-		{
-			// A lamp's skill-choice interface has opened. Which lamp it is
-			// comes from the item the player just clicked, never from this
-			// interface: every lamp opens this same group with this same
-			// title, and the amounts differ by two orders of magnitude.
-			lampWatcher.interfaceOpened(client.getTickCount());
-			refreshLampAdvice();
-			return;
-		}
 		if (event.getGroupId() == InterfaceID.CHATBOX)
 		{
 			if (geButton != null)
@@ -4010,177 +3942,104 @@ public class QuestpathPlugin extends Plugin
 	}
 
 	// -----------------------------------------------------------------------
-	// Experience lamps
+	// Build Guard: where the build rules come from
 	// -----------------------------------------------------------------------
 
+	/** How long to wait for Build Guard's reply before deciding it is not installed. */
+	private static final long BUILD_GUARD_REPLY_SECONDS = 5;
+
 	/**
-	 * Every rule that applies to this account: the ones questpath pushed,
-	 * with the ones the player wrote here laid over the top.
-	 *
-	 * <p>Local wins on a skill both name, and the direction is the decision.
-	 * A pushed rule can be minutes stale and arrives without the player doing
-	 * anything; a local rule is something they typed. When the two disagree
-	 * the typed one is the more recent statement of intent, and it is the one
-	 * they would be surprised to find ignored.
-	 *
-	 * <p>Everything that consults a rule goes through here, so the guard
-	 * cannot be accidentally half-applied -- a caller reading the pushed list
-	 * alone would be silently unprotected for anyone who has never run
-	 * questpath at all.
+	 * Announces this plugin to Build Guard, asks for its rules, and starts the
+	 * clock on "not installed". Build Guard installed later announces itself,
+	 * which flips presence without another call here.
+	 */
+	private void startBuildGuardLink()
+	{
+		buildGuard = new BuildGuardLink(
+			ShortestPathBridge.clientThreadEventPoster(clientThread::invoke, eventBus::post));
+		buildGuard.sendStartup();
+		// Silence means "not installed": the panel already shows the starter
+		// builds until a reply flips presence, so this only redraws once.
+		buildGuardTimeout = scheduler.schedule(() -> clientThread.invokeLater(this::refresh),
+			BUILD_GUARD_REPLY_SECONDS, TimeUnit.SECONDS);
+	}
+
+	private void stopBuildGuardLink()
+	{
+		if (buildGuardTimeout != null)
+		{
+			buildGuardTimeout.cancel(false);
+			buildGuardTimeout = null;
+		}
+		if (buildGuard != null)
+		{
+			buildGuard.reset();
+		}
+	}
+
+	/** Build Guard's answers arrive here, on the client thread. */
+	@Subscribe
+	public void onPluginMessage(PluginMessage event)
+	{
+		if (buildGuard == null)
+		{
+			return;
+		}
+		if (buildGuard.handle(event.getNamespace(), event.getName(), event.getData()))
+		{
+			// Not assumed to be on the client thread: Build Guard posts from
+			// wherever it likes, and both calls read the client.
+			clientThread.invokeLater(() ->
+			{
+				migrateSavedRules();
+				refresh();
+			});
+		}
+	}
+
+	/**
+	 * Whether Build Guard is supplying the rules. False in the first seconds
+	 * after start, before it has had the chance to answer.
+	 */
+	boolean buildGuardPresent()
+	{
+		return buildGuard != null && buildGuard.present();
+	}
+
+	/**
+	 * The rules the verdicts use: Build Guard's when it is installed, else the
+	 * chosen starter build (or the read-only saved build), laid over anything
+	 * questpath pushed. Everything that consults a rule goes through here.
 	 */
 	List<BuildRule> effectiveBuildRules()
 	{
-		List<BuildRule> local = localBuildRules == null
-			? Collections.emptyList() : localBuildRules.all();
-		if (local.isEmpty())
+		List<BuildRule> local;
+		if (buildGuard != null && buildGuard.present())
 		{
-			return buildRules;
+			local = buildGuard.rules();
 		}
-		return BuildRuleCodec.merge(buildRules, local);
-	}
-
-	/** The store behind the sidebar's build-rules editor. */
-	LocalBuildRules localBuildRules()
-	{
-		return localBuildRules;
-	}
-
-	/**
-	 * Recomputes everything after the player writes a rule in the sidebar.
-	 *
-	 * <p>Called from the EDT (a button click), so the work is queued onto the
-	 * client thread rather than run inline -- {@link #refresh()} reads levels
-	 * and quest varbits straight from {@code Client}, and reading those from
-	 * Swing is the threading bug this indirection exists to avoid.
-	 *
-	 * <p>It has to run at all because a rule changes every verdict on every
-	 * tab. A saved rule against a stale panel is a panel confidently telling
-	 * the player a quest is fine when they have just declared it is not.
-	 */
-	private void onLocalRulesEdited()
-	{
-		clientThread.invoke(this::refresh);
+		else
+		{
+			LocalProfile profile = localProfile;
+			local = BuildPresets.localRules(profile == null ? null : profile.buildPreset(),
+				localBuildRules == null ? null : localBuildRules.all());
+		}
+		return local.isEmpty() ? buildRules : BuildRuleCodec.merge(buildRules, local);
 	}
 
 	/**
-	 * Drops the lamp advice once its interface is gone.
-	 *
-	 * <p>Checked on the tick rather than from a close event, because the
-	 * interface is torn down without one this plugin can rely on. Leaving the
-	 * verdicts in place would have the overlay draw boxes at the coordinates
-	 * of squares that no longer exist -- and those coordinates belong to
-	 * whatever interface opened next.
+	 * Hands the rules saved here to Build Guard, once per account, so nothing
+	 * is lost when it takes over. Without Build Guard the rules stay as the
+	 * read-only "Your saved build".
 	 */
-	private void checkLampInterfaceClosed()
+	private void migrateSavedRules()
 	{
-		if (!lampWatcher.open())
+		if (buildGuard == null || localBuildRules == null || client.getGameState() != GameState.LOGGED_IN
+			|| profileKey == null)
 		{
 			return;
 		}
-		Widget root = client.getWidget(LampSkillWidgets.componentFor("attack"));
-		if (root == null || root.isHidden())
-		{
-			lampWatcher.interfaceClosed();
-			lampVerdicts = Collections.emptyList();
-		}
-	}
-
-	/**
-	 * What {@link LampOverlay} draws. Read on the client thread during
-	 * render, so it is computed elsewhere and only read here.
-	 */
-	List<LampVerdict> lampVerdicts()
-	{
-		return lampVerdicts;
-	}
-
-	/**
-	 * Recomputes lamp advice for the interface that has just opened.
-	 *
-	 * <p>Once per opening rather than per frame. The answer cannot change
-	 * while one interface is up -- the account's levels are fixed for the
-	 * duration of the decision -- and AGENTS.md is explicit that overlay work
-	 * runs every frame and must stay minimal.
-	 *
-	 * <p>Runs on the client thread, from the widget-loaded event, because it
-	 * reads levels and experience straight from the client.
-	 */
-	private void refreshLampAdvice()
-	{
-		Lamp lamp = lampWatcher.lamp(lampCatalogue);
-		if (lamp == null)
-		{
-			lampVerdicts = Collections.emptyList();
-			return;
-		}
-
-		PlayerState account = playerState(completedQuestNames());
-
-		LampAdvisor.Inputs inputs = new LampAdvisor.Inputs();
-		// The free Ranged/Magic ceiling, from the same CombatMath the combat
-		// panel uses -- so the advisor and the panel can never disagree about
-		// where the ceiling is. Supplied only when the levels are real:
-		// passing a ceiling derived from a not-yet-loaded account would flag
-		// every Ranged square on a false premise.
-		int attack = client.getRealSkillLevel(Skill.ATTACK);
-		int strength = client.getRealSkillLevel(Skill.STRENGTH);
-		if (attack > 0 && strength > 0)
-		{
-			inputs.freeCeiling(CombatMath.freeRangedCeiling(attack, strength));
-		}
-		inputs.routeNeeds(routeSkillNeeds());
-
-		lampVerdicts = LampAdvisor.advise(lamp, account, LampSkillWidgets.skills(), inputs);
-	}
-
-	/**
-	 * The levels the saved route is still waiting on, by skill.
-	 *
-	 * <p>Empty without a sync, and empty is the correct answer then rather
-	 * than a problem to work around: with no route there is no gate for a
-	 * lamp to remove, so every legal skill is simply ranked on what the lamp
-	 * buys. The advice is weaker and still true.
-	 */
-	private Map<String, Integer> routeSkillNeeds()
-	{
-		Map<String, Integer> needs = new HashMap<>();
-		QuestGraph graph = questGraph;
-		PlayerState account = accountSnapshot;
-		if (graph == null || account == null || routeOrder.isEmpty())
-		{
-			return needs;
-		}
-		// routeOrder carries quest names, not ids -- the two id spaces (the
-		// client's and questpath's) have nothing to do with each other, and
-		// the name is the one identity both sides genuinely share. See
-		// PlayerState's own note on why comparing the ids produced a
-		// completed set that was pure coincidence.
-		for (String questName : routeOrder)
-		{
-			QuestGraph.Quest quest = graph.byName(questName);
-			if (quest == null || account.isComplete(quest.name()))
-			{
-				continue;
-			}
-			for (QuestGraph.Requirement requirement : quest.requirements())
-			{
-				int have = account.levelIn(requirement.skill());
-				if (have >= requirement.level())
-				{
-					continue;
-				}
-				// The highest level any outstanding route quest asks for, so
-				// a lamp is credited against the gate that is actually
-				// furthest away rather than whichever quest came first.
-				String key = Lamp.normalise(requirement.skill());
-				Integer existing = needs.get(key);
-				if (existing == null || requirement.level() > existing)
-				{
-					needs.put(key, requirement.level());
-				}
-			}
-		}
-		return needs;
+		buildGuard.migrateOnce(localBuildRules.all(), localBuildRules.migrated(), localBuildRules::markMigrated);
 	}
 
 	/** The logged-in character, or null when there is not one. */

@@ -8,40 +8,25 @@ import javax.inject.Singleton;
 import net.runelite.client.config.ConfigManager;
 
 /**
- * The build rules the player writes in the plugin itself.
+ * The build rules this plugin saved before Build Guard took over editing them.
  *
- * <p><b>Why this exists.</b> Until now a build rule could only reach the
- * plugin through a push from a running questpath instance, held in a volatile
- * field and cleared on logout. That is fine for a plugin that is a companion
- * to the web app and fatal for one that has to stand alone: with no rules, the
- * verdict engine never returns BUILD_BLOCKED and the lamp advisor greys
- * nothing — the guard is not merely reduced, it is absent, and it is absent
- * silently, which is worse. The player sees an interface with no warnings on
- * it and reasonably concludes there is nothing to warn about.
+ * <p>Read-only now. They stay in the per-account config pair they were written
+ * to ({@code getRSProfileConfiguration}, never the profile-scoped pair, which
+ * a second account under the same RuneLite profile would share), so nothing is
+ * lost: with Build Guard installed they are handed over once, and without it
+ * they remain as the read-only "Your saved build".
  *
- * <p>Stored per RuneScape account, not per RuneLite profile, through
- * {@code getRSProfileConfiguration}/{@code setRSProfileConfiguration} for
- * exactly the reason {@link LoadoutStore} documents at length: the plain
- * pair keys off the active RuneLite profile, so a second account logged in
- * later under the same profile would see and overwrite the first account's
- * rules. A build belongs to the account that is holding it.
- *
- * <p>A thin adapter over {@link ConfigManager} and nothing else. All the
- * logic — parsing, merging, one-rule-per-skill — is in {@link
- * BuildRuleCodec}, where it can be tested without faking a class whose only
- * constructor is private.
+ * <p>Both config keys are frozen; renaming either would silently drop a
+ * player's rules.
  */
 @Singleton
 class LocalBuildRules
 {
-	/**
-	 * The config key the rules live under.
-	 *
-	 * <p>Frozen at first release along with the config group: renaming it
-	 * silently resets every player's rules, and these are rules whose whole
-	 * purpose is to stop an irreversible mistake.
-	 */
+	/** Where the rules were written. */
 	static final String KEY = "localBuildRules";
+
+	/** Set once the rules have been sent to Build Guard, per account. */
+	static final String MIGRATED_KEY = "buildRulesMigrated";
 
 	private final ConfigManager configManager;
 	private final Gson gson;
@@ -54,12 +39,8 @@ class LocalBuildRules
 	}
 
 	/**
-	 * Every rule this account has written here.
-	 *
-	 * <p>Empty before an account has finished logging in, because
-	 * {@code getRSProfileKey()} is null until then and there is no honest
-	 * answer to "which account's rules" yet. Empty is correct: it is the
-	 * absence of a claim, not a claim that the account has no rules.
+	 * Every rule this account saved here. Empty before the account has finished
+	 * logging in, which is the absence of a claim rather than a claim of none.
 	 */
 	synchronized List<BuildRule> all()
 	{
@@ -67,52 +48,22 @@ class LocalBuildRules
 		{
 			return Collections.emptyList();
 		}
-		String stored = configManager.getRSProfileConfiguration(QuestpathConfig.GROUP, KEY);
-		return BuildRuleCodec.decode(gson, stored);
+		return BuildRuleCodec.decode(gson, configManager.getRSProfileConfiguration(QuestpathConfig.GROUP, KEY));
 	}
 
-	/** Whether this account has written any rules of its own. */
-	synchronized boolean any()
+	/** Whether the saved rules have already gone to Build Guard. */
+	synchronized boolean migrated()
 	{
-		return !all().isEmpty();
+		return configManager != null && configManager.getRSProfileKey() != null
+			&& Boolean.parseBoolean(configManager.getRSProfileConfiguration(QuestpathConfig.GROUP, MIGRATED_KEY));
 	}
 
-	/**
-	 * Sets or replaces the rule on one skill.
-	 *
-	 * @return the rules as they now stand, so a caller can refresh without a
-	 *     second read
-	 */
-	synchronized List<BuildRule> set(String skill, String type, int value, String note)
+	/** Records the hand-over. The rules themselves are left where they are. */
+	synchronized void markMigrated()
 	{
-		return save(BuildRuleCodec.set(all(), skill, type, value, note));
-	}
-
-	/** Removes this account's rule on one skill. */
-	synchronized List<BuildRule> clear(String skill)
-	{
-		return save(BuildRuleCodec.clear(all(), skill));
-	}
-
-	/** Replaces this account's rules with exactly these (what setup saves). */
-	synchronized List<BuildRule> replaceAll(List<BuildRule> rules)
-	{
-		return save(rules == null ? Collections.<BuildRule>emptyList() : rules);
-	}
-
-	private List<BuildRule> save(List<BuildRule> rules)
-	{
-		if (configManager == null || configManager.getRSProfileKey() == null)
+		if (configManager != null && configManager.getRSProfileKey() != null)
 		{
-			// Nothing to key the write against. Dropped rather than written
-			// to the profile-scoped store as a fallback: that store is shared
-			// between accounts, and silently putting one account's caps where
-			// another account will read them is the exact failure the
-			// RSProfile pair exists to prevent.
-			return Collections.emptyList();
+			configManager.setRSProfileConfiguration(QuestpathConfig.GROUP, MIGRATED_KEY, "true");
 		}
-		configManager.setRSProfileConfiguration(
-			QuestpathConfig.GROUP, KEY, BuildRuleCodec.encode(gson, rules));
-		return rules;
 	}
 }

@@ -93,7 +93,7 @@ public class QuestpathConfigProxyTest
 	{
 		assertTrue("QuestpathConfig must be public for RuneLite to proxy it",
 			Modifier.isPublic(QuestpathConfig.class.getModifiers()));
-		assertTrue("LampSuggestions is a @ConfigItem return type and must be public",
-			Modifier.isPublic(LampSuggestions.class.getModifiers()));
+		assertTrue("QuestJournalFilter is a @ConfigItem return type and must be public",
+			Modifier.isPublic(QuestJournalFilter.class.getModifiers()));
 	}
 }

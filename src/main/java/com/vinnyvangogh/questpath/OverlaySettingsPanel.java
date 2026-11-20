@@ -230,14 +230,6 @@ class OverlaySettingsPanel extends JPanel
 		body.add(toggleGroup("Combat XP to next level", config.overlayCombatXp(), "overlayCombatXp", sub ->
 			sizeFields(sub, config.overlayCombatXpWidth(), "overlayCombatXpWidth",
 				config.overlayCombatXpLength(), "overlayCombatXpLength")));
-		body.add(spacer());
-		body.add(toggleGroup("Build rules", config.overlayBuildRules(), "overlayBuildRules", sub ->
-		{
-			sizeFields(sub, config.overlayBuildRulesWidth(), "overlayBuildRulesWidth",
-				config.overlayBuildRulesLength(), "overlayBuildRulesLength");
-			addField(sub, "Which rules",
-				combo(BuildRuleSections.values(), config.overlayBuildRulesSections(), "overlayBuildRulesSections"));
-		}));
 		return sectionGroup("Overlays", body);
 	}
 
@@ -256,7 +248,7 @@ class OverlaySettingsPanel extends JPanel
 		return sectionGroup("Diary route: nearest task", sub);
 	}
 
-	/** The EXTRAS section: the marker groups, voice, lamps, and the flat chat toggles. */
+	/** The EXTRAS section: the marker groups, voice, and the flat chat toggles. */
 	private CollapsibleGroup extrasSection(QuestpathConfig config)
 	{
 		JPanel body = column();
@@ -303,16 +295,6 @@ class OverlaySettingsPanel extends JPanel
 			sub.add(toggle("Show the ordered list too", config.bankList(), "bankList"));
 			addField(sub, "Marker colour",
 				colorField(config.bankHighlightColour(), "Bank marker colour", "bankHighlightColour"));
-		}));
-		body.add(spacer());
-		body.add(toggleGroup("Experience lamps", config.lampAdvisor(), "lampAdvisor", sub ->
-		{
-			sub.add(toggle("Grey out skills a rule closes", config.lampGreyBlocked(), "lampGreyBlocked"));
-			addField(sub, "Suggest", combo(LampSuggestions.values(), config.lampSuggestions(), "lampSuggestions"));
-			addField(sub, "Best target",
-				colorField(config.lampBestColour(), "Best lamp target colour", "lampBestColour"));
-			addField(sub, "Runner-up",
-				colorField(config.lampNextColour(), "Runner-up lamp target colour", "lampNextColour"));
 		}));
 		body.add(spacer());
 		// Flat rather than a group of its own: one checkbox behind a
