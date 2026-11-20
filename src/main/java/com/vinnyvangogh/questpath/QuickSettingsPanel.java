@@ -46,15 +46,10 @@ import net.runelite.client.ui.FontManager;
  * bank features.</li>
  * <li>{@code voiceEnabled}: spoken prompts, the setting most likely to be
  * muted on short notice.</li>
- * <li>{@code syncEnabled}: server or local mode. Turning it on is gated by
- * the same third-party-server warning RuneLite's config panel shows.</li>
  * </ul>
  */
 class QuickSettingsPanel extends JPanel
 {
-	static final String SYNC_WARNING = "This feature submits your IP address to a 3rd-party server not"
-		+ " controlled or verified by RuneLite developers.\n\nTurn it on anyway?";
-
 	/** Where a toggle writes to; {@code ConfigManager} in the plugin, a map in tests. */
 	interface Store
 	{
@@ -98,9 +93,6 @@ class QuickSettingsPanel extends JPanel
 			"Highlight the items you need in your bank.", config::bankHighlight, null));
 		rows.add(new Row("voiceEnabled", "Spoken prompts",
 			"Speak shop and floor item prompts aloud.", config::voiceEnabled, null));
-		rows.add(new Row("syncEnabled", "Server mode (send account state)",
-			"Push quest completion, levels and diaries to your Quest Route server. Off keeps"
-				+ " everything local.", config::syncEnabled, SYNC_WARNING));
 		return Collections.unmodifiableList(rows);
 	}
 
