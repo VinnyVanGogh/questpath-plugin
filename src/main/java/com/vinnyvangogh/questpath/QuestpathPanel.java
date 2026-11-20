@@ -236,13 +236,14 @@ class QuestpathPanel extends PluginPanel
 		SwingUtilities.invokeLater(quickSettings::refresh);
 	}
 
-	/** The quick settings' "All settings" link: scrolls the full settings into view. */
+	/** The quick settings' "All settings" link: opens the View tab and scrolls the full settings into view. */
 	private void scrollToAllSettings()
 	{
 		if (overlaySettings == null)
 		{
 			return;
 		}
+		tabGroup.select(materialTabs.get(Tab.VIEW));
 		Container viewport = SwingUtilities.getAncestorOfClass(JViewport.class, overlaySettings);
 		if (viewport instanceof JViewport)
 		{
@@ -443,6 +444,14 @@ class QuestpathPanel extends PluginPanel
 		this.onOpenSetup = onOpenSetup;
 	}
 
+	/** Wires the "What's new" button beside it. */
+	void setOnWhatsNew(Runnable onWhatsNew)
+	{
+		this.onWhatsNew = onWhatsNew;
+	}
+
+	private volatile Runnable onWhatsNew;
+
 	/** Makes the Quests tab the one on screen; setup lives there. */
 	void showQuestsTab()
 	{
@@ -453,21 +462,27 @@ class QuestpathPanel extends PluginPanel
 		}
 	}
 
+	/** "Account setup" and "What's new", above the tabs so they are one click from every page. */
 	private JPanel setupHeader()
 	{
-		JButton button = button("Account setup", event ->
-		{
-			Runnable open = onOpenSetup;
-			if (open != null)
-			{
-				open.run();
-			}
-		});
-		button.setToolTipText("Account type, build, skill caps and quest filters. Opens setup from any page.");
-		JPanel row = new JPanel(new BorderLayout());
+		JButton setup = button("Account setup", event -> run(onOpenSetup));
+		setup.setToolTipText("Account type, build, skill caps and quest filters. Opens setup from any page.");
+		JButton whatsNew = button("What's new", event -> run(onWhatsNew));
+		whatsNew.setToolTipText("Print this version's update notes in the game chat again.");
+		JPanel row = new JPanel(new GridLayout(1, 2, 4, 0));
+		row.setAlignmentX(LEFT_ALIGNMENT);
 		row.setBorder(BorderFactory.createEmptyBorder(0, 0, 6, 0));
-		row.add(button, BorderLayout.CENTER);
+		row.add(setup);
+		row.add(whatsNew);
 		return row;
+	}
+
+	private static void run(Runnable action)
+	{
+		if (action != null)
+		{
+			action.run();
+		}
 	}
 
 	/** Wires the shop stop's "Say again" button to the plugin's voice. */
@@ -574,18 +589,23 @@ class QuestpathPanel extends PluginPanel
 		// else.
 		if (overlaySettings != null)
 		{
-			body(Tab.VIEW).add(quickSettings);
 			body(Tab.VIEW).add(overlaySettings);
 		}
 
 		buildSkillTab();
 		quickenTooltips();
 
-		// The setup button sits above the tabs, not inside one, so it is the
-		// same one click from every page.
-		JPanel top = new JPanel(new BorderLayout());
-		top.add(setupHeader(), BorderLayout.NORTH);
-		top.add(tabGroup, BorderLayout.CENTER);
+		// The setup buttons and the quick settings sit above the tabs, not
+		// inside one, so they are the same one click from every page. The
+		// quick settings start folded: eight rows on every page would push
+		// the tabs off the top of a 225px sidebar.
+		JLabel quickHeader = bold("Quick settings", BRAND_ORANGE);
+		CollapsibleGroup quick = new CollapsibleGroup(quickHeader, quickSettings, false);
+		quick.alsoToggleOn(quickHeader);
+		JPanel top = column();
+		top.add(setupHeader());
+		top.add(quick);
+		top.add(tabGroup);
 		this.tabGroup = tabGroup;
 		add(top, BorderLayout.NORTH);
 		add(display, BorderLayout.CENTER);
@@ -890,7 +910,6 @@ class QuestpathPanel extends PluginPanel
 				// Settings are about the client, not the account, so they stay
 				// readable and editable while logged out -- which is exactly
 				// when someone is most likely to be setting them up.
-				body(Tab.VIEW).add(quickSettings);
 				body(Tab.VIEW).add(overlaySettings);
 			}
 			body(Tab.COMBAT).add(muted("Log in to see your levels."));

@@ -300,20 +300,8 @@ public class QuestpathPlugin extends Plugin
 	 */
 	private final GrandExchangeOffers geOffers = new GrandExchangeOffers();
 
-	/**
-	 * Whether questpath's bank layout is the one on screen.
-	 *
-	 * <p>Off by default, and that is the important half. This is a tab, not a
-	 * filter: switched on it replaces what the grid shows, so defaulting it on
-	 * meant opening tab nine and being handed questpath's list with the title
-	 * still claiming to be tab nine. A bank tab you did not choose is a broken
-	 * bank.
-	 *
-	 * <p>Session state rather than config for the same reason a real tab is:
-	 * you pick one for a trip, and a setting that survived logout would start
-	 * every visit in whichever state the last one ended.
-	 */
-	private boolean bankNeedsShown;
+	/** Whether questpath's bank layout is the one on screen, and what each click does to that. */
+	private final BankTabState bankTabState = new BankTabState();
 
 	/**
 	 * The six in-game overlays, held so they can be removed again.
@@ -830,6 +818,7 @@ public class QuestpathPlugin extends Plugin
 			localBuildRules, this::onLocalRulesEdited);
 		panel.setSayShopAgain(this::sayShopAgain);
 		panel.setOnOpenSetup(this::openSetup);
+		panel.setOnWhatsNew(this::showWhatsNew);
 		// The retired "Reset account setup" checkbox: read once, then cleared,
 		// so a box ticked before this update still opens setup rather than
 		// being silently dropped.
@@ -838,6 +827,9 @@ public class QuestpathPlugin extends Plugin
 			legacyResetRequested = true;
 		}
 		configManager.unsetConfiguration(QuestpathConfig.GROUP, "resetAccountSetup");
+		// The retired "Show what's new" momentary checkbox: the sidebar button
+		// replaced it, so a stale value is cleared rather than left to confuse.
+		configManager.unsetConfiguration(QuestpathConfig.GROUP, "showWhatsNew");
 		navButton = NavigationButton.builder()
 			.tooltip("Quest Route")
 			.icon(icon())
@@ -980,6 +972,18 @@ public class QuestpathPlugin extends Plugin
 			configManager.setConfiguration(QuestpathConfig.GROUP, QuestpathConfig.LAST_SEEN_BUILD, build);
 		}
 		postNoteLines(lines);
+	}
+
+	/** The sidebar's "What's new" button: the notes again, in chat, while logged in. Any thread. */
+	void showWhatsNew()
+	{
+		clientThread.invokeLater(() ->
+		{
+			if (client.getGameState() == GameState.LOGGED_IN)
+			{
+				postNoteLines(UpdateNotes.replay());
+			}
+		});
 	}
 
 	/** One console line each, title highlighted. Local only: nothing is typed or sent. */
@@ -1434,19 +1438,6 @@ public class QuestpathPlugin extends Plugin
 		if (panel != null)
 		{
 			panel.refreshQuickSettings();
-		}
-		if ("showWhatsNew".equals(event.getKey()) && Boolean.parseBoolean(event.getNewValue()))
-		{
-			// A momentary switch: put it back, then replay the notes.
-			configManager.setConfiguration(QuestpathConfig.GROUP, "showWhatsNew", false);
-			clientThread.invokeLater(() ->
-			{
-				if (client.getGameState() == GameState.LOGGED_IN)
-				{
-					postNoteLines(UpdateNotes.replay());
-				}
-			});
-			return;
 		}
 		if (!"partyShare".equals(event.getKey()))
 		{
@@ -2992,53 +2983,28 @@ public class QuestpathPlugin extends Plugin
 	/** Whether the bank marks and list are currently switched on. */
 	boolean bankNeedsShown()
 	{
-		return bankNeedsShown;
+		return bankTabState.shown();
 	}
 
-	private final BankToggleGuard bankToggleGuard = new BankToggleGuard();
-
-	/**
-	 * The button's own op listener. It and {@link #onMenuOptionClicked} both
-	 * see one click on the button, and whichever runs second must not undo the
-	 * first: a "Hide tab" click that was consumed here and then re-delivered to
-	 * the listener would turn the tab straight back on, which reads as "Hide
-	 * tab does nothing".
-	 */
+	/** The button's own op listener -- see {@link BankTabState#buttonPressed}. */
 	private void toggleBankNeeds()
 	{
-		if (bankToggleGuard.isEcho(bankNeedsShown, client.getTickCount()))
+		if (bankTabState.buttonPressed(client.getTickCount()))
 		{
-			return;
-		}
-		setBankTab(!bankNeedsShown);
-	}
-
-	/** Leaves the tab because the button said "Hide tab". */
-	private void hideBankTabFromButton()
-	{
-		bankToggleGuard.left(client.getTickCount());
-		setBankTab(false);
-		if (bankButton != null)
-		{
-			bankButton.refresh();
+			applyBankTab(bankTabState.shown());
 		}
 	}
 
 	/**
-	 * Selects or leaves questpath's bank tab.
+	 * Rebuilds the bank grid for a tab just selected or left.
 	 *
 	 * <p>Turning it on deselects whichever real tab was open, the same way
 	 * clicking a real tab deselects the last one. Without that the bank still
 	 * believes tab nine is showing -- it keeps tab nine's title, and its next
 	 * rebuild puts tab nine's items back underneath.
 	 */
-	private void setBankTab(boolean on)
+	private void applyBankTab(boolean on)
 	{
-		if (bankNeedsShown == on)
-		{
-			return;
-		}
-		bankNeedsShown = on;
 		if (bankTab == null)
 		{
 			return;
@@ -3229,38 +3195,19 @@ public class QuestpathPlugin extends Plugin
 			lampWatcher.itemClicked(event.getItemId(), event.getMenuTarget(), client.getTickCount());
 		}
 
-		if (!bankNeedsShown)
+		// Our own button's "Hide tab" is consumed here rather than left to the
+		// widget's op listener: the listener is the path that opens the tab,
+		// and relying on it a second time to close it left the tab stuck on
+		// whenever the client did not deliver the op. Picking a real tab
+		// leaves ours too -- see BankTabState.
+		boolean wasShown = bankTabState.shown();
+		if (bankTabState.menuClicked(event.getMenuOption(), event.getMenuTarget(), client.getTickCount()))
 		{
-			return;
+			event.consume();
 		}
-		String option = event.getMenuOption();
-		if (option == null)
+		if (wasShown && !bankTabState.shown())
 		{
-			return;
-		}
-		String target = event.getMenuTarget();
-		if (target != null && target.contains("Quest Route"))
-		{
-			// Our own button. It carries a "View tab" option so it reads like
-			// the bank's tabs, which means without this it would match the
-			// rule below and close the tab it had just opened.
-			//
-			// While the tab is open a click on the button leaves it. That is
-			// done here, and the click consumed, rather than left to the
-			// widget's op listener: the listener is the path that opens the
-			// tab, and relying on it a second time to close it left the tab
-			// stuck on whenever the client did not deliver the op.
-			if (option.equals(BankButton.ACTION_HIDE))
-			{
-				event.consume();
-				hideBankTabFromButton();
-			}
-			return;
-		}
-		if (option.startsWith("View tab") || option.startsWith("View tag tab")
-			|| option.equals("View all items") || option.startsWith("Potion store"))
-		{
-			setBankTab(false);
+			applyBankTab(false);
 			if (bankButton != null)
 			{
 				bankButton.refresh();
@@ -4032,11 +3979,11 @@ public class QuestpathPlugin extends Plugin
 		{
 			bankTab.onBankBuilt();
 		}
-		else if (event.getScriptId() == ScriptID.BANKMAIN_SEARCH_TOGGLE && bankNeedsShown)
+		else if (event.getScriptId() == ScriptID.BANKMAIN_SEARCH_TOGGLE && bankTabState.set(false))
 		{
 			// Searching is the bank's own view of itself, which this layout is
 			// not. Stand down rather than fight it for the grid.
-			setBankTab(false);
+			applyBankTab(false);
 		}
 		else if (event.getScriptId() == ScriptID.BANKMAIN_SEARCHING && bankTab.active())
 		{

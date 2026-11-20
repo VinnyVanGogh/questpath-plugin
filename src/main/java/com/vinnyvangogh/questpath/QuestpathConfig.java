@@ -1154,20 +1154,6 @@ public interface QuestpathConfig extends Config
 		return true;
 	}
 
-	@ConfigItem(
-		keyName = "showWhatsNew",
-		name = "Show what's new",
-		description = "Tick to print the latest update notes in the game chat again. The box un-ticks itself.",
-		section = chatSection,
-		position = 3
-	)
-	default boolean showWhatsNew()
-	{
-		// A momentary switch, not a setting: the plugin turns it back off
-		// as soon as it has been handled.
-		return false;
-	}
-
 	/** The last version whose update notes were handled; written by the plugin, never shown. */
 	@ConfigItem(
 		keyName = LAST_SEEN_VERSION,

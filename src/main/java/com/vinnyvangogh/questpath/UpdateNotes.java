@@ -26,17 +26,21 @@ final class UpdateNotes
 
 	static final String TITLE = "Quest Route " + VERSION + ". What's new:";
 
-	/** Where the setting and the replay are, as the settings panel titles them. */
+	/** Where the setting is, as the settings panel titles it. */
 	static final String CONFIGURE = "Configure Quest Route > Chat";
 
 	/** Plain player language, one short line each. */
 	static final List<String> NOTES = Collections.unmodifiableList(Arrays.asList(
 		"Quest Route now works with no server: pick your account type once in the sidebar and it builds your route.",
 		"Your route follows your skill caps: no quest that would push a capped skill past its limit.",
+		"Account setup is a button at the top of the sidebar: pick a named build, or set a limit per skill.",
+		"A Skiller build: no combat experience at all, Hitpoints included.",
+		"Quick settings at the top of the sidebar: the eight most-used switches, one click each.",
+		"The monsters and objects that drop something your route still needs are outlined in the world.",
 		"A bank button opens the Quest Route tab, and a second click puts it away again.",
 		"Items you can get from any tier now fill from whichever tier you own.",
 		"New sidebar icon, and a spoken heads-up near shops and for needed floor items.",
-		"Turn these notes off, or replay them, in " + CONFIGURE + "."
+		"Turn these notes off in " + CONFIGURE + "; the What's new button beside Account setup replays them."
 	));
 
 	static final String WELCOME = "Quest Route " + VERSION
@@ -91,7 +95,7 @@ final class UpdateNotes
 		return replay();
 	}
 
-	/** The whole list, title first: what the "Show what's new" switch posts. */
+	/** The whole list, title first: what the sidebar's "What's new" button posts. */
 	static List<String> replay()
 	{
 		final List<String> lines = new ArrayList<>(NOTES.size() + 1);

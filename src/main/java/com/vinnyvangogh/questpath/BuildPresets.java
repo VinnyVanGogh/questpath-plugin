@@ -150,6 +150,9 @@ final class BuildPresets
 			no("Attack"), no("Strength"), no("Ranged"), no("Magic"), no("Prayer"), goal("Defence", 75)),
 		new Preset("members_medium_level_build", "Medium level build", Category.MEMBERS,
 			cap("Defence", 70), cap("Attack", 75), goal("Strength", 99), goal("Prayer", 77)),
+		new Preset("skiller", "Skiller (no combat XP)", Category.MEMBERS,
+			no("Attack"), no("Strength"), no("Defence"), no("Hitpoints"), no("Ranged"), no("Magic"),
+			no("Prayer")),
 		new Preset("owner_pure", "Owner pure", Category.MEMBERS,
 			no("Attack"), no("Defence"), no("Prayer"), cap("Hitpoints", 28), cap("Strength", 84),
 			cap("Ranged", 55), cap("Magic", 55))));

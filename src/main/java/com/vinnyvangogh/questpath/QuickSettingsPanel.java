@@ -21,8 +21,8 @@ import net.runelite.client.ui.ColorScheme;
 import net.runelite.client.ui.FontManager;
 
 /**
- * The handful of settings players change most, as checkboxes at the top of the
- * sidebar's settings tab, with an "All settings" link down to the full panel.
+ * The handful of settings players change most, as checkboxes in a folding
+ * block at the top of the sidebar, with an "All settings" link to the full panel.
  *
  * <p>Each checkbox writes the real config key through {@link Store}, the same
  * key {@link OverlaySettingsPanel} and RuneLite's own config panel use, so the
@@ -134,15 +134,8 @@ class QuickSettingsPanel extends JPanel
 		this.store = store;
 		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 		setBackground(ColorScheme.DARK_GRAY_COLOR);
-		setBorder(BorderFactory.createEmptyBorder(8, 8, 0, 8));
+		setBorder(BorderFactory.createEmptyBorder(4, 8, 4, 8));
 		setAlignmentX(LEFT_ALIGNMENT);
-
-		JLabel heading = new JLabel("QUICK SETTINGS");
-		heading.setFont(smallFont().deriveFont(Font.BOLD));
-		heading.setForeground(ColorScheme.BRAND_ORANGE);
-		heading.setAlignmentX(LEFT_ALIGNMENT);
-		add(heading);
-		add(Box.createRigidArea(new Dimension(0, 4)));
 
 		for (Row row : rows)
 		{
