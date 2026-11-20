@@ -183,12 +183,11 @@ class QuestpathPanel extends PluginPanel
 	private SkillXp lastXp;
 	private List<BuildRule> lastRules;
 	/**
-	 * The store behind the sidebar's own rules editor, and what to run after
-	 * an edit. Null in a preview harness, which the editor block renders as
-	 * "unavailable" rather than as a form that silently does nothing.
+	 * Rules saved here before Build Guard (read-only) and the link to Build
+	 * Guard itself. Either may be null in a preview harness or test.
 	 */
 	private final LocalBuildRules localBuildRules;
-	private final Runnable onRulesEdited;
+	private final BuildGuardLink buildGuard;
 
 	/**
 	 * The quest search box, and the last verdicts it filters.
@@ -412,7 +411,7 @@ class QuestpathPanel extends PluginPanel
 	 */
 	private volatile String setupNote;
 	private volatile LocalProfile setupCurrent;
-	private volatile BiConsumer<LocalProfile, List<BuildRule>> onSetupDone;
+	private volatile Consumer<LocalProfile> onSetupDone;
 	private volatile Runnable onSetupCancel;
 	private volatile Runnable onOpenSetup;
 	/** Bumped on every setSetup, so reopening setup rebuilds the tab even with an unchanged note. */
@@ -421,7 +420,7 @@ class QuestpathPanel extends PluginPanel
 	private MaterialTabGroup tabGroup;
 
 	/** Shows ({@code note != null}) or hides first-run setup; takes effect on the next render. */
-	void setSetup(String note, BiConsumer<LocalProfile, List<BuildRule>> onDone)
+	void setSetup(String note, Consumer<LocalProfile> onDone)
 	{
 		setSetup(note, null, onDone, null);
 	}
@@ -431,7 +430,7 @@ class QuestpathPanel extends PluginPanel
 	 * cancel that leaves the saved answers alone ({@code onCancel} null hides it).
 	 */
 	void setSetup(String note, LocalProfile current,
-		BiConsumer<LocalProfile, List<BuildRule>> onDone, Runnable onCancel)
+		Consumer<LocalProfile> onDone, Runnable onCancel)
 	{
 		this.setupNote = note;
 		this.setupCurrent = current;
@@ -528,10 +527,10 @@ class QuestpathPanel extends PluginPanel
 		Supplier<List<QuestGraph.DiaryTask>> diaryGraphTasks,
 		Supplier<PushResponse.Diary> diaryPush,
 		LockedGearActions lockedGearActions,
-		LocalBuildRules localBuildRules, Runnable onRulesEdited)
+		LocalBuildRules localBuildRules, BuildGuardLink buildGuard)
 	{
 		this.localBuildRules = localBuildRules;
-		this.onRulesEdited = onRulesEdited;
+		this.buildGuard = buildGuard;
 		this.lockedGearActions = lockedGearActions;
 		this.onSyncNow = onSyncNow;
 		this.config = config;
@@ -767,7 +766,7 @@ class QuestpathPanel extends PluginPanel
 			routeWork == null ? null : routeWorkSignature(routeWork),
 			diaryPush.get(),
 			filter,
-			setupNote, setupRevision, profile());
+			setupNote, setupRevision, profile(), buildGuard != null && buildGuard.present());
 	}
 
 	/**
@@ -1117,7 +1116,8 @@ class QuestpathPanel extends PluginPanel
 		{
 			quests.add(new SetupPanel(setup, setupCurrent,
 				localBuildRules == null ? Collections.<BuildRule>emptyList() : localBuildRules.all(),
-				onSetupDone, onSetupCancel));
+				buildGuard != null && buildGuard.present(),
+				() -> buildGuard.openPanel(BuildGuardLink.SECTION_RULES), onSetupDone, onSetupCancel));
 			showBodies(Tab.QUESTS);
 			// Setup is on the Quests tab; wherever the player was, take them to it.
 			showQuestsTab();
@@ -2242,35 +2242,22 @@ class QuestpathPanel extends PluginPanel
 	}
 
 	/**
-	 * The editor for rules written here rather than pushed.
-	 *
-	 * <p>Always present, not only when the pushed list is empty. A player who
-	 * has synced once can still want a rule questpath does not know about,
-	 * and hiding the editor the moment a push lands would mean the way to add
-	 * one disappears exactly when the tab starts looking useful.
+	 * Where to change the rules. They are Build Guard's to edit: with it
+	 * installed a button opens its panel, without it the starter build chosen
+	 * in Account setup applies and cannot be edited here.
 	 */
 	private JPanel buildRulesEditorBlock()
 	{
 		JPanel block = column();
-		if (localBuildRules == null)
+		if (buildGuard != null && buildGuard.present())
 		{
-			// No store -- a preview or a test harness. Saying so beats
-			// rendering a form whose buttons quietly do nothing.
-			block.add(muted("The rules editor is unavailable in this context."));
-			return block;
+			block.add(button("Edit rules in Build Guard",
+				e -> buildGuard.openPanel(BuildGuardLink.SECTION_RULES)));
 		}
-		block.add(muted("Your own rules"));
-		block.add(new BuildRulesEditor(localBuildRules, rules ->
+		else
 		{
-			// Every verdict on every tab is derived from the rules, so a rule
-			// saved against a panel still showing the old answers is a panel
-			// confidently wrong about which quests the account can do --
-			// which is the one thing it exists to be right about.
-			if (onRulesEdited != null)
-			{
-				onRulesEdited.run();
-			}
-		}));
+			block.add(muted("Rules come from your starter build (Account setup). Build Guard lets you set your own."));
+		}
 		return block;
 	}
 
@@ -3735,13 +3722,19 @@ class QuestpathPanel extends PluginPanel
 			return panel;
 		}
 
-		if (!verdicts.rulesKnown())
+		// No rules is a deliberate answer for "Maxed main", and for a Build
+		// Guard that has said it holds none; anywhere else it means no build
+		// has been chosen yet.
+		LocalProfile chosen = profile();
+		boolean noLimitsOnPurpose = (chosen != null && BuildPresets.MAXED.slug().equals(chosen.buildPreset()))
+			|| (buildGuard != null && buildGuard.rulesKnown());
+		if (!verdicts.rulesKnown() && !noLimitsOnPurpose)
 		{
 			// Without rules nothing can be BUILD_BLOCKED, so every verdict
 			// below is "as far as I know". A pure's quest list rendered as a
 			// main's is exactly the mistake this plugin exists to prevent.
-			panel.add(note("No build rules yet, so nothing can be"
-				+ " judged against them. Turn on sync to get them from Quest Route.", PROGRESS_ERROR_COLOR));
+			panel.add(note("No build chosen yet, so nothing can be judged against one."
+				+ " Pick a build in Account setup, or install Build Guard.", PROGRESS_ERROR_COLOR));
 			panel.add(gap(6));
 		}
 

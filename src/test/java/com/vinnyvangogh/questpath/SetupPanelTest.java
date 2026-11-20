@@ -1,119 +1,226 @@
 package com.vinnyvangogh.questpath;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.awt.Component;
 import java.awt.Container;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
 import javax.swing.JButton;
-import javax.swing.JComboBox;
+import javax.swing.JCheckBox;
+import javax.swing.JLabel;
+import javax.swing.JRadioButton;
 import org.junit.Test;
 
 public class SetupPanelTest
 {
-	private static List<Object[]> saved = new ArrayList<>();
+	private static final List<LocalProfile> saved = new ArrayList<>();
+	private static boolean opened;
 
-	private static SetupPanel panel(LocalProfile current, List<BuildRule> rules, Runnable cancel)
+	private static SetupPanel panel(LocalProfile current, List<BuildRule> savedRules, boolean buildGuard,
+		Runnable cancel)
 	{
 		saved.clear();
-		return new SetupPanel("note", current, rules,
-			(profile, built) -> saved.add(new Object[]{profile, built}), cancel);
+		opened = false;
+		return new SetupPanel("note", current, savedRules, buildGuard, () -> opened = true, saved::add, cancel);
+	}
+
+	private static SetupPanel panel(LocalProfile current)
+	{
+		return panel(current, Collections.emptyList(), false, null);
+	}
+
+	private static <T extends Component> List<T> all(Container root, Class<T> type)
+	{
+		List<T> out = new ArrayList<>();
+		for (Component c : root.getComponents())
+		{
+			if (type.isInstance(c))
+			{
+				out.add(type.cast(c));
+			}
+			if (c instanceof Container)
+			{
+				out.addAll(all((Container) c, type));
+			}
+		}
+		return out;
 	}
 
 	private static JButton button(Container root, String text)
 	{
-		for (Component c : root.getComponents())
+		for (JButton b : all(root, JButton.class))
 		{
-			if (c instanceof JButton && text.equals(((JButton) c).getText()))
+			if (text.equals(b.getText()))
 			{
-				return (JButton) c;
-			}
-			if (c instanceof Container)
-			{
-				JButton inner = button((Container) c, text);
-				if (inner != null)
-				{
-					return inner;
-				}
+				return b;
 			}
 		}
 		return null;
 	}
 
-	@SuppressWarnings("unchecked")
-	private static JComboBox<Object> buildCombo(Container root)
+	private static JRadioButton radio(Container root, String startsWith)
 	{
-		for (Component c : root.getComponents())
+		for (JRadioButton r : all(root, JRadioButton.class))
 		{
-			if (c instanceof JComboBox && ((JComboBox<?>) c).getItemAt(0) instanceof String)
+			if (r.getText().startsWith("<html>" + startsWith))
 			{
-				return (JComboBox<Object>) c;
+				return r;
 			}
 		}
 		return null;
+	}
+
+	private static JCheckBox check(Container root, String text)
+	{
+		for (JCheckBox c : all(root, JCheckBox.class))
+		{
+			if (text.equals(c.getText()))
+			{
+				return c;
+			}
+		}
+		return null;
+	}
+
+	private static boolean mentions(Container root, String fragment)
+	{
+		for (JLabel l : all(root, JLabel.class))
+		{
+			if (l.getText() != null && l.getText().contains(fragment))
+			{
+				return true;
+			}
+		}
+		return false;
 	}
 
 	@Test
-	public void defaultsMatchTheWebsite()
+	public void withoutBuildGuardTheThreeStartersAreOffered()
 	{
-		SetupPanel panel = panel(null, Collections.emptyList(), null);
+		SetupPanel panel = panel(null);
+		assertEquals(3, all(panel, JRadioButton.class).size());
+		assertNotNull(radio(panel, "60 Attack zerker"));
+		assertNotNull(radio(panel, "60 Attack pure"));
+		assertNotNull(radio(panel, "Maxed main"));
+		assertNull("no editor here", button(panel, "Open Build Guard"));
+	}
+
+	@Test
+	public void maxedMainIsTheDefaultAndAMainIsTheDefaultAccount()
+	{
+		SetupPanel panel = panel(null);
+		assertTrue(radio(panel, "Maxed main").isSelected());
+		assertFalse(check(panel, "Ironman").isSelected());
 		button(panel, "Save and show my route").doClick();
-		LocalProfile profile = (LocalProfile) saved.get(0)[0];
+		LocalProfile profile = saved.get(0);
+		assertEquals(BuildPresets.MAXED.slug(), profile.buildPreset());
 		assertEquals(LocalProfile.AccountType.MAIN, profile.accountType());
 		assertEquals(2, profile.questTypes().size());
-		assertTrue(((List<?>) saved.get(0)[1]).isEmpty());
-		assertEquals(null, profile.buildPreset());
 	}
 
 	@Test
-	public void pickingABuildFillsTheLimitsAndSavesItsSlug()
+	public void pickingAStarterSavesItsSlugAndTheIronmanToggleSetsTheAccount()
 	{
-		SetupPanel panel = panel(null, Collections.emptyList(), null);
-		JComboBox<Object> combo = buildCombo(panel);
-		combo.setSelectedItem(BuildPresets.find("members_obsidian_mauler_1def"));
+		SetupPanel panel = panel(null);
+		radio(panel, "60 Attack pure").setSelected(true);
+		check(panel, "Ironman").setSelected(true);
 		button(panel, "Save and show my route").doClick();
-		LocalProfile profile = (LocalProfile) saved.get(0)[0];
-		assertEquals("members_obsidian_mauler_1def", profile.buildPreset());
-		@SuppressWarnings("unchecked")
-		List<BuildRule> rules = (List<BuildRule>) saved.get(0)[1];
-		assertEquals(4, rules.size());
+		LocalProfile profile = saved.get(0);
+		assertEquals(BuildPresets.PURE.slug(), profile.buildPreset());
+		assertEquals(LocalProfile.AccountType.IRONMAN, profile.accountType());
 	}
 
 	@Test
-	public void editingAfterPickingABuildMakesItCustom()
-	{
-		SetupPanel panel = panel(null, Collections.emptyList(), null);
-		JComboBox<Object> combo = buildCombo(panel);
-		combo.setSelectedItem(BuildPresets.find("members_void_pure"));
-		List<BuildRule> edited = BuildRuleCodec.set(panel.collectRules(), "Attack", BuildRule.HARD_CAP, 30, "");
-		panel.fill(edited);
-		button(panel, "Save and show my route").doClick();
-		assertEquals(null, ((LocalProfile) saved.get(0)[0]).buildPreset());
-	}
-
-	@Test
-	public void savedLimitsAndAccountComeBack()
+	public void anUntouchedToggleKeepsAHardcoreGroupAccount()
 	{
 		LocalProfile current = LocalProfile.create(LocalProfile.AccountType.HCGIM,
-			java.util.EnumSet.of(LocalProfile.QuestType.FREE_TO_PLAY), null);
-		List<BuildRule> rules = Collections.singletonList(
-			BuildRule.local("Defence", BuildRule.HARD_CAP, 13, ""));
-		SetupPanel panel = panel(current, rules, () ->
+			EnumSet.of(LocalProfile.QuestType.FREE_TO_PLAY), BuildPresets.ZERKER.slug());
+		SetupPanel panel = panel(current, Collections.emptyList(), false, () ->
 		{
 		});
+		assertTrue(check(panel, "Ironman").isSelected());
+		assertTrue(radio(panel, "60 Attack zerker").isSelected());
 		assertNotNull(button(panel, "Cancel"));
 		button(panel, "Save and show my route").doClick();
-		LocalProfile profile = (LocalProfile) saved.get(0)[0];
+		LocalProfile profile = saved.get(0);
 		assertEquals(LocalProfile.AccountType.HCGIM, profile.accountType());
 		assertEquals(1, profile.questTypes().size());
-		@SuppressWarnings("unchecked")
-		List<BuildRule> out = (List<BuildRule>) saved.get(0)[1];
-		assertEquals(1, out.size());
-		assertEquals(13, out.get(0).value());
+	}
+
+	@Test
+	public void turningIronmanOffGoesToMain()
+	{
+		LocalProfile current = LocalProfile.create(LocalProfile.AccountType.UIM,
+			EnumSet.allOf(LocalProfile.QuestType.class), null);
+		SetupPanel panel = panel(current);
+		check(panel, "Ironman").setSelected(false);
+		button(panel, "Save and show my route").doClick();
+		assertEquals(LocalProfile.AccountType.MAIN, saved.get(0).accountType());
+	}
+
+	@Test
+	public void savedRulesAppearAsAReadOnlyYourSavedBuild()
+	{
+		List<BuildRule> rules = Collections.singletonList(BuildRule.local("Defence", BuildRule.HARD_CAP, 13, ""));
+		LocalProfile current = LocalProfile.create(LocalProfile.AccountType.MAIN,
+			EnumSet.allOf(LocalProfile.QuestType.class), "members_13_defence_pure");
+		SetupPanel panel = panel(current, rules, false, null);
+		assertEquals(4, all(panel, JRadioButton.class).size());
+		assertTrue("an old slug falls back to the saved build", radio(panel, "Your saved build").isSelected());
+		button(panel, "Save and show my route").doClick();
+		assertEquals(BuildPresets.SAVED, saved.get(0).buildPreset());
+	}
+
+	@Test
+	public void noSavedRulesMeansNoSavedBuildEntry()
+	{
+		assertNull(radio(panel(null), "Your saved build"));
+	}
+
+	@Test
+	public void theGetMoreSectionSaysWhatBuildGuardAddsAndHowToInstallIt()
+	{
+		SetupPanel panel = panel(null);
+		assertTrue(mentions(panel, "Get more with Build Guard"));
+		for (String benefit : SetupPanel.BUILD_GUARD_BENEFITS)
+		{
+			assertTrue(benefit, mentions(panel, benefit));
+		}
+		assertTrue(mentions(panel, "Plugin Hub"));
+		assertTrue(mentions(panel, "Install"));
+		String all = String.join(" ", SetupPanel.BUILD_GUARD_BENEFITS).toLowerCase();
+		assertTrue(all.contains("custom caps"));
+		assertTrue(all.contains("warnings"));
+		assertTrue(all.contains("lamp"));
+		assertTrue(all.contains("other plugins"));
+	}
+
+	@Test
+	public void withBuildGuardTheBuildStepOpensItInstead()
+	{
+		SetupPanel panel = panel(null, Collections.emptyList(), true, null);
+		assertEquals(0, all(panel, JRadioButton.class).size());
+		assertFalse(mentions(panel, "Get more with Build Guard"));
+		button(panel, "Open Build Guard").doClick();
+		assertTrue(opened);
+		assertTrue("opening it does not save", saved.isEmpty());
+	}
+
+	@Test
+	public void savingWithBuildGuardKeepsTheStoredBuild()
+	{
+		LocalProfile current = LocalProfile.create(LocalProfile.AccountType.MAIN,
+			EnumSet.allOf(LocalProfile.QuestType.class), BuildPresets.PURE.slug());
+		SetupPanel panel = panel(current, Collections.emptyList(), true, null);
+		button(panel, "Save and show my route").doClick();
+		assertEquals(BuildPresets.PURE.slug(), saved.get(0).buildPreset());
 	}
 
 	@Test
@@ -121,7 +228,7 @@ public class SetupPanelTest
 	{
 		boolean[] cancelled = {false};
 		SetupPanel panel = panel(LocalProfile.create(LocalProfile.AccountType.MAIN,
-			java.util.EnumSet.allOf(LocalProfile.QuestType.class)), Collections.emptyList(), () -> cancelled[0] = true);
+			EnumSet.allOf(LocalProfile.QuestType.class)), Collections.emptyList(), false, () -> cancelled[0] = true);
 		button(panel, "Cancel").doClick();
 		assertTrue(cancelled[0]);
 		assertTrue(saved.isEmpty());
@@ -130,22 +237,16 @@ public class SetupPanelTest
 	@Test
 	public void firstRunHasNoCancel()
 	{
-		assertEquals(null, button(panel(null, Collections.emptyList(), null), "Cancel"));
+		assertNull(button(panel(null), "Cancel"));
 	}
 
 	@Test
 	public void noQuestTypeIsRefusedNotSaved()
 	{
 		LocalProfile current = LocalProfile.create(LocalProfile.AccountType.MAIN,
-			java.util.EnumSet.of(LocalProfile.QuestType.MEMBERS));
-		SetupPanel panel = panel(current, Collections.emptyList(), null);
-		for (Component c : panel.getComponents())
-		{
-			if (c instanceof javax.swing.JCheckBox)
-			{
-				((javax.swing.JCheckBox) c).setSelected(false);
-			}
-		}
+			EnumSet.of(LocalProfile.QuestType.MEMBERS));
+		SetupPanel panel = panel(current);
+		check(panel, "Members quests").setSelected(false);
 		button(panel, "Save and show my route").doClick();
 		assertTrue(saved.isEmpty());
 	}

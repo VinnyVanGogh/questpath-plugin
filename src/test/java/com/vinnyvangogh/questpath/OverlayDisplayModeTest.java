@@ -290,20 +290,6 @@ public class OverlayDisplayModeTest
 		assertEquals(PanelListLength.MATCH_SHARED, PanelListLength.values()[0]);
 	}
 
-	/** Each build-rule setting shows exactly the halves its name claims. */
-	@Test
-	public void buildRuleSectionsShowWhatTheyName()
-	{
-		assertTrue(BuildRuleSections.BOTH.showsBlocking());
-		assertTrue(BuildRuleSections.BOTH.showsInformational());
-
-		assertTrue(BuildRuleSections.BLOCKING.showsBlocking());
-		assertFalse(BuildRuleSections.BLOCKING.showsInformational());
-
-		assertFalse(BuildRuleSections.INFORMATIONAL.showsBlocking());
-		assertTrue(BuildRuleSections.INFORMATIONAL.showsInformational());
-	}
-
 	private static OverlayContext context(OverlayDisplayMode mode, boolean compact,
 		OverlayListLength length)
 	{

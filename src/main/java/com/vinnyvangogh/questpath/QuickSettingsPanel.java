@@ -38,8 +38,6 @@ import net.runelite.client.ui.FontManager;
  * visible, often hidden once the shopping is done.</li>
  * <li>{@code overlayShopRoute}: the shopping route overlay, only wanted
  * during a shopping run.</li>
- * <li>{@code lampAdvisor}: lamp advice, the feature a capped account either
- * relies on or finds noisy.</li>
  * <li>{@code bankTab}: the Quest Route bank tab, a bank-layout change players
  * want to switch off quickly.</li>
  * <li>{@code bankHighlight}: bank item highlighting, the other half of the
@@ -90,8 +88,6 @@ class QuickSettingsPanel extends JPanel
 			"Show the items-you-still-need overlay in the game.", config::overlayItems, null));
 		rows.add(new Row("overlayShopRoute", "Shopping route overlay",
 			"Show the shopping route overlay in the game.", config::overlayShopRoute, null));
-		rows.add(new Row("lampAdvisor", "Lamp advice",
-			"Show which skill to spend an XP lamp on.", config::lampAdvisor, null));
 		rows.add(new Row("bankTab", "Quest Route bank tab",
 			"Add the Quest Route tab to your bank.", config::bankTab, null));
 		rows.add(new Row("bankHighlight", "Bank highlights",
