@@ -44,6 +44,23 @@ public class QuestVerdictsTest
 			0, verdicts.count(QuestStatus.BUILD_BLOCKED));
 	}
 
+	/** Every blocked-by-levels quest says which skill is short and by how much. */
+	@Test
+	public void skillBlockedQuestsCarryAShortfall() throws Exception
+	{
+		QuestVerdicts verdicts = QuestVerdicts.of(graph(), freshAccount(Collections.emptyList()));
+		for (QuestGraph.Quest quest : verdicts.quests(QuestStatus.SKILL_BLOCKED))
+		{
+			String detail = verdicts.detail(quest);
+			assertFalse(quest.name() + " names no shortfall", detail.isEmpty());
+			assertTrue(detail, detail.matches(".*\\d+/\\d+.*"));
+		}
+		for (QuestGraph.Quest quest : verdicts.quests(QuestStatus.ELIGIBLE))
+		{
+			assertTrue(verdicts.detail(quest).isEmpty());
+		}
+	}
+
 	/**
 	 * A fresh account with no rules is short of levels and prerequisites, not
 	 * blocked by its build. If this ever came back all-ELIGIBLE the engine

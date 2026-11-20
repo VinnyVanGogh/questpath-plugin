@@ -3806,13 +3806,13 @@ class QuestpathPanel extends PluginPanel
 			String count = filtering
 				? shown.size() + " of " + verdicts.count(status)
 				: String.valueOf(verdicts.count(status));
-			questGroup(panel, QuestVerdicts.label(status) + "  ·  " + count, statusColor(status), shown, marks);
+			questGroup(panel, QuestVerdicts.label(status) + "  ·  " + count, statusColor(status), shown, marks, verdicts);
 		}
 		if (!refused.isEmpty() && !hideBlocked)
 		{
 			matched += refused.size();
 			questGroup(panel, QuestVerdicts.label(QuestStatus.REFUSED) + "  ·  " + refused.size(),
-				PROGRESS_ERROR_COLOR, refused, marks);
+				PROGRESS_ERROR_COLOR, refused, marks, verdicts);
 		}
 
 		if ((filtering || statusFilter != null) && matched == 0)
@@ -3830,7 +3830,7 @@ class QuestpathPanel extends PluginPanel
 	 * not read. A pinned or deferred quest says so on its row.
 	 */
 	private void questGroup(JPanel panel, String heading, Color colour, List<QuestGraph.Quest> quests,
-		LocalProfile marks)
+		LocalProfile marks, QuestVerdicts verdicts)
 	{
 		panel.add(gap(8));
 		panel.add(bold(heading, colour));
@@ -3861,6 +3861,12 @@ class QuestpathPanel extends PluginPanel
 				});
 			}
 			panel.add(row);
+			// Which skills are short, by how much, and what boosts them.
+			String detail = verdicts.detail(quest);
+			if (!detail.isEmpty())
+			{
+				panel.add(note("Short: " + detail, LIGHT_GRAY_COLOR));
+			}
 		}
 	}
 

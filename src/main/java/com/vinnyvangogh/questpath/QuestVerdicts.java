@@ -18,6 +18,7 @@ import java.util.Map;
 class QuestVerdicts
 {
 	private final Map<QuestStatus, List<QuestGraph.Quest>> byStatus = new EnumMap<>(QuestStatus.class);
+	private final Map<Long, String> details = new java.util.HashMap<>();
 	private final boolean rulesKnown;
 
 	private QuestVerdicts(boolean rulesKnown)
@@ -36,13 +37,64 @@ class QuestVerdicts
 	{
 		QuestVerdicts verdicts = new QuestVerdicts(account.hasRules());
 		QuestClassifier classifier = new QuestClassifier(graph, account);
+		Boosts boosts = new Boosts(graph.boosts());
 
 		for (QuestGraph.Quest quest : graph.quests())
 		{
 			QuestStatus status = classifier.classify(quest);
 			verdicts.byStatus.computeIfAbsent(status, key -> new ArrayList<>()).add(quest);
+			if (status == QuestStatus.BOOSTABLE || status == QuestStatus.SKILL_BLOCKED)
+			{
+				String detail = shortfall(quest, account, boosts);
+				if (!detail.isEmpty())
+				{
+					verdicts.details.put(quest.id(), detail);
+				}
+			}
 		}
 		return verdicts;
+	}
+
+	/**
+	 * Which skills are short for a quest, by how much, and what boosts them.
+	 *
+	 * <p>"Cooking 38/40 (+2: Summer pie)" for a gap a boost covers, and
+	 * "Cooking 30/40 (-10)" for one it does not. Only the quest's own skill
+	 * requirements are listed; a quest short a prerequisite as well still
+	 * reports its own levels, the same precedence the classifier uses.
+	 */
+	static String shortfall(QuestGraph.Quest quest, PlayerState account, Boosts boosts)
+	{
+		List<String> parts = new ArrayList<>();
+		for (QuestGraph.Requirement requirement : quest.requirements())
+		{
+			int have = account.levelIn(requirement.skill());
+			int need = requirement.level();
+			if (have >= need)
+			{
+				continue;
+			}
+			String text = requirement.skill() + " " + have + "/" + need;
+			Boosts.Best best = requirement.boostable() ? boosts.bestFor(requirement.skill(), have) : Boosts.NONE;
+			if (best.levels() >= need - have)
+			{
+				text += " (boost +" + best.levels() + ": " + best.item() + ")";
+			}
+			else
+			{
+				text += " (" + (have - need) + (best.levels() > 0
+					? ", " + best.item() + " only +" + best.levels() : "") + ")";
+			}
+			parts.add(text);
+		}
+		return String.join(", ", parts);
+	}
+
+	/** The shortfall line for a BOOSTABLE or SKILL_BLOCKED quest, or empty. */
+	String detail(QuestGraph.Quest quest)
+	{
+		String found = details.get(quest.id());
+		return found == null ? "" : found;
 	}
 
 	/**
@@ -78,6 +130,8 @@ class QuestVerdicts
 	int signature()
 	{
 		int hash = rulesKnown ? 1 : 0;
+		// Levels moving changes a shortfall without moving any count.
+		hash = hash * 31 + details.hashCode();
 		for (QuestStatus status : QuestStatus.values())
 		{
 			hash = hash * 31 + count(status);
