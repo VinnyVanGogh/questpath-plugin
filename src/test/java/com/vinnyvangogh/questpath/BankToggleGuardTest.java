@@ -36,4 +36,13 @@ public class BankToggleGuardTest
 		guard.left(10);
 		assertFalse(guard.isEcho(true, 10));
 	}
+
+	@Test
+	public void hideTabIsHandledEvenWhenTheFlagAlreadyDropped()
+	{
+		assertTrue(BankToggleGuard.handles(false, true, BankButton.ACTION_HIDE));
+		assertTrue(BankToggleGuard.handles(true, false, "Withdraw-1"));
+		assertFalse(BankToggleGuard.handles(false, true, BankButton.ACTION_VIEW));
+		assertFalse(BankToggleGuard.handles(false, false, BankButton.ACTION_HIDE));
+	}
 }

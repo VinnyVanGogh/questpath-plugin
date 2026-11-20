@@ -3048,6 +3048,12 @@ public class QuestpathPlugin extends Plugin
 			return;
 		}
 		bankNeedsShown = on;
+		if (bankButton != null)
+		{
+			// Keep the menu text ("View tab"/"Hide tab") in step with the flag
+			// whichever path flipped it.
+			bankButton.refresh();
+		}
 		if (bankTab == null)
 		{
 			return;
@@ -3238,17 +3244,22 @@ public class QuestpathPlugin extends Plugin
 			lampWatcher.itemClicked(event.getItemId(), event.getMenuTarget(), client.getTickCount());
 		}
 
-		if (!bankNeedsShown)
-		{
-			return;
-		}
 		String option = event.getMenuOption();
 		if (option == null)
 		{
 			return;
 		}
 		String target = event.getMenuTarget();
-		if (target != null && target.contains("Quest Route"))
+		boolean ours = target != null && target.contains("Quest Route");
+		if (!BankToggleGuard.handles(bankNeedsShown, ours, option))
+		{
+			// "Hide tab" is handled even with the flag already off: the flag
+			// can drop (search toggle) while the button still reads "Hide
+			// tab", and letting that click through to the op listener would
+			// switch the tab ON instead.
+			return;
+		}
+		if (ours)
 		{
 			// Our own button. It carries a "View tab" option so it reads like
 			// the bank's tabs, which means without this it would match the
