@@ -39,8 +39,7 @@ RuneLite implements `@ConfigGroup` interfaces at runtime using a JDK dynamic pro
 ### Threading and performance
 
 - **Client thread vs. Swing EDT:** Never call `Client` methods (such as `getLocalPlayer()`, varbit reads, or script execution) on the Swing Event Dispatch Thread. Cache state on the client thread during `GameTick` or dispatch mutations via `ClientThread.invokeLater`.
-- **Network I/O:** All HTTP calls in `AccountStateSender` and `QuestGraphFetcher` must run asynchronously via OkHttp's `enqueue()`, never on the client thread or EDT.
-- **Sync cadence:** The plugin pushes structural changes (quests, levels, bank/inventory) immediately and experience changes on a two-minute timer. The companion server holds a push live for five minutes before resuming background polling; the plugin's experience timer must stay shorter than that five-minute window.
+- **Network I/O:** The plugin makes no HTTP calls (the server sync lives on the `feature/server-sync` branch). `StartUpThreadingTest` fails the build if `src/main` imports OkHttp.
 
 ### Plugin Hub compliance
 
@@ -48,5 +47,5 @@ All changes must adhere to Jagex's Third-Party Client Guidelines and the RuneLit
 
 - Java 11 source and target compatibility; no reflection, JNI/JNA, subprocess execution, or serialization.
 - Use `net.runelite.api.gameval` constants (`ItemID`, `InterfaceID`, `ObjectID`, `SpriteID`) rather than raw numeric IDs.
-- Third-party server features (`syncEnabled`, `fetchQuestGraph`) must remain disabled by default and retain the required RuneLite IP warning string.
+- Any future third-party server feature must be disabled by default and carry the required RuneLite IP warning string.
 - Never automate game input or interact with the live game client programmatically; in-game behaviour must be verified manually by a player in the developer client.
