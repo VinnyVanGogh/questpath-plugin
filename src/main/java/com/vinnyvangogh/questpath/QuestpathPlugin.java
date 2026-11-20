@@ -3222,17 +3222,9 @@ public class QuestpathPlugin extends Plugin
 	@Subscribe
 	public void onMenuOptionClicked(MenuOptionClicked event)
 	{
-		// Lamp tracking first, and before the bank guard below, because a
-		// lamp is rubbed from the inventory with the bank shut. RuneLite
-		// delivers one MenuOptionClicked per class, so the two features
-		// share this method rather than each having their own -- see
-		// OSRS-RUNELITE.md on subscriber naming.
-		//
-		// Any item click is recorded, with no list of menu verbs: most lamps
-		// are "Rub" and a Book of Knowledge is "Read", and a hardcoded verb
-		// list goes quietly out of date the first time a lamp ships with a
-		// fourth word on it. It is the interface opening that decides one of
-		// these clicks was a lamp.
+		// Lamp tracking runs before the bank guard: lamps are rubbed with the
+		// bank shut. Any item click is recorded, no verb list; the interface
+		// opening decides it was a lamp.
 		if (event.getItemId() > 0)
 		{
 			lampWatcher.itemClicked(event.getItemId(), event.getMenuTarget(), client.getTickCount());
@@ -3243,23 +3235,15 @@ public class QuestpathPlugin extends Plugin
 		{
 			return;
 		}
-		String target = event.getMenuTarget();
-		boolean ours = target != null && target.contains("Quest Route");
+		boolean ours = String.valueOf(event.getMenuTarget()).contains("Quest Route");
 		if (!BankToggleGuard.handles(bankNeedsShown, ours, option))
 		{
 			return;
 		}
 		if (ours)
 		{
-			// Our own button. It carries a "View tab" option so it reads like
-			// the bank's tabs, which means without this it would match the
-			// rule below and close the tab it had just opened.
-			//
-			// While the tab is open a click on the button leaves it. That is
-			// done here, and the click consumed, rather than left to the
-			// widget's op listener: the listener is the path that opens the
-			// tab, and relying on it a second time to close it left the tab
-			// stuck on whenever the client did not deliver the op.
+			// Our own button ("View tab" would match the rule below). "Hide tab"
+			// is handled here and consumed, not via the widget op listener.
 			if (option.equals(BankButton.ACTION_HIDE))
 			{
 				event.consume();
