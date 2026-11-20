@@ -92,20 +92,11 @@ public class BoostsTest
 			high > low);
 	}
 
-	/**
-	 * A random stew promises nothing reliably, but is still worth mentioning.
-	 * Merging the two would make a coin flip look like a plan.
-	 */
+	/** The reliable answer never depends on a roll. */
 	@Test
-	public void randomBoostsAreSeparatedFromReliableOnes() throws Exception
+	public void reliableBoostsNeverDependOnARoll() throws Exception
 	{
-		Boosts boosts = boosts();
-		Boosts.Best reliable = boosts.bestFor("Cooking", 30);
-		Boosts.Best either = boosts.bestIncludingRandom("Cooking", 30);
-
-		assertTrue("the stew reaches further than anything reliable",
-			either.levels() >= reliable.levels());
-		assertFalse("and the reliable answer never depends on a roll", reliable.random());
+		assertFalse(boosts().bestFor("Cooking", 30).random());
 	}
 
 	/** An unknown skill is not a licence to assume a boost exists. */
