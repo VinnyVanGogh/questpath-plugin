@@ -6,23 +6,16 @@ import java.util.List;
 import net.runelite.api.MenuAction;
 import net.runelite.client.ui.overlay.OverlayPosition;
 
-/**
- * The popup for a quest the account cannot finish yet.
- *
- * <p>Warn only: it draws, and its right-click menu is RuneLite's own overlay
- * menu ("Dismiss", "Don't warn again for this quest"), never an entry on the
- * game's menus. It stays until dismissed.
- */
+/** The dismissable popup; its menu is RuneLite's own overlay menu, never the game's. */
 class QuestWarningOverlay extends QuestpathOverlay
 {
-	static final String DISMISS = "Dismiss";
 	static final String MUTE = "Don't warn again for this quest";
 
 	QuestWarningOverlay(QuestpathPlugin plugin, QuestpathConfig config, OverlayIcons icons)
 	{
 		super(plugin, config, icons, "Quest warning");
 		setPosition(OverlayPosition.TOP_CENTER);
-		addMenuEntry(MenuAction.RUNELITE_OVERLAY, DISMISS, "Quest warning");
+		addMenuEntry(MenuAction.RUNELITE_OVERLAY, "Dismiss", "Quest warning");
 		addMenuEntry(MenuAction.RUNELITE_OVERLAY, MUTE, "Quest warning");
 	}
 
@@ -62,7 +55,6 @@ class QuestWarningOverlay extends QuestpathOverlay
 		{
 			rows.add(OverlayRow.note(line, OverlayTheme.MUTED));
 		}
-		rows.add(OverlayRow.note("Right-click this box to dismiss it.", OverlayTheme.MUTED));
 		return rows;
 	}
 }

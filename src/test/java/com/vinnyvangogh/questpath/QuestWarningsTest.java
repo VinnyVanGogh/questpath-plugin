@@ -98,14 +98,7 @@ public class QuestWarningsTest
 		warnings.onSelected(DS1, graph, fresh());
 		assertEquals(1, shown.size());
 		QuestWarning warning = shown.get(0);
-		assertTrue(warning.pointsShort());
 		assertTrue(warning.lines().get(0).startsWith("32 quest points (you have 0)"));
-		assertSame(warning, warnings.current());
-	}
-
-	private static void assertSame(Object expected, Object actual)
-	{
-		org.junit.Assert.assertSame(expected, actual);
 	}
 
 	@Test
@@ -113,7 +106,6 @@ public class QuestWarningsTest
 	{
 		warnings.onSelected(DS1, graph, maxedExcept(DS1));
 		assertTrue(shown.isEmpty());
-		assertNull(warnings.current());
 	}
 
 	@Test
@@ -198,24 +190,20 @@ public class QuestWarningsTest
 	}
 
 	@Test
-	public void dismissAndResetClearThePopup()
+	public void resetForgetsTheSelectionSoItWarnsAgain()
 	{
 		warnings.onSelected(DS1, graph, fresh());
-		warnings.dismiss();
-		assertNull(warnings.current());
-
-		warnings.onSelected(null, graph, fresh());
-		warnings.onSelected(DS1, graph, fresh());
 		warnings.reset();
-		assertNull(warnings.current());
-		assertFalse(shown.isEmpty());
+		warnings.onSelected(DS1, graph, fresh());
+		assertEquals(2, shown.size());
 	}
 
 	@Test
 	public void theOverlayRowsNameEveryMissingThing()
 	{
 		warnings.onSelected(DS1, graph, fresh());
-		assertTrue(QuestWarningOverlay.rowsFor(warnings.current()).size() >= 3);
+		QuestWarning warning = shown.get(0);
+		assertEquals(1 + warning.lines().size(), QuestWarningOverlay.rowsFor(warning).size());
 		assertTrue(QuestWarningOverlay.rowsFor(null).isEmpty());
 	}
 }

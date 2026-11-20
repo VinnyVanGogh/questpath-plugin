@@ -4018,11 +4018,7 @@ public class QuestpathPlugin extends Plugin
 		return overlaySnapshot;
 	}
 
-	// -----------------------------------------------------------------------
-	// Quest warnings
-	// -----------------------------------------------------------------------
-
-	/** The warning the popup draws; written on the client thread, read on the render thread. */
+	/** The warning the popup draws. */
 	private volatile QuestWarning questWarning;
 
 	private final QuestWarnings questWarnings = new QuestWarnings(
@@ -4053,11 +4049,7 @@ public class QuestpathPlugin extends Plugin
 		}
 	}
 
-	/**
-	 * Quest Helper's selection, over the plugin bus. No reflection and no
-	 * dependency: until Quest Helper sends this (Zoinkwiz/quest-helper#2846)
-	 * the handler never runs, and the quest-state fallback below covers it.
-	 */
+	/** Quest Helper's selection over the plugin bus (quest-helper#2846); inert until it sends one. */
 	@Subscribe
 	public void onPluginMessage(PluginMessage message)
 	{
@@ -4077,7 +4069,6 @@ public class QuestpathPlugin extends Plugin
 		});
 	}
 
-	/** The popup's own right-click menu. */
 	@Subscribe
 	public void onOverlayMenuClicked(OverlayMenuClicked event)
 	{
@@ -4093,10 +4084,9 @@ public class QuestpathPlugin extends Plugin
 				muted.isEmpty() ? shown.questName() : muted + "|" + shown.questName());
 		}
 		questWarning = null;
-		questWarnings.dismiss();
 	}
 
-	/** Fallback: a quest that went from not started to started, read once per changed tick. */
+	/** Fallback: quests newly started, read once per tick after a varbit change. */
 	private void checkQuestStarts()
 	{
 		if (!questStatesDirty)
