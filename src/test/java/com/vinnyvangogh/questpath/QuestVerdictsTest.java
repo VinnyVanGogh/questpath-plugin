@@ -61,6 +61,21 @@ public class QuestVerdictsTest
 		}
 	}
 
+	/** Skill-blocked quests list closest first: total gap never decreases down the list. */
+	@Test
+	public void skillBlockedQuestsAreSortedByTotalGap() throws Exception
+	{
+		PlayerState account = freshAccount(Collections.emptyList());
+		QuestVerdicts verdicts = QuestVerdicts.of(graph(), account);
+		int previous = -1;
+		for (QuestGraph.Quest quest : verdicts.quests(QuestStatus.SKILL_BLOCKED))
+		{
+			int gap = QuestVerdicts.totalGap(quest, account);
+			assertTrue(quest.name() + " out of order", gap >= previous);
+			previous = gap;
+		}
+	}
+
 	/**
 	 * A fresh account with no rules is short of levels and prerequisites, not
 	 * blocked by its build. If this ever came back all-ELIGIBLE the engine

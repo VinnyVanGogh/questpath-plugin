@@ -3866,6 +3866,7 @@ class QuestpathPanel extends PluginPanel
 			if (!detail.isEmpty())
 			{
 				panel.add(note("Short: " + detail, LIGHT_GRAY_COLOR));
+				row.setToolTipText("<html>" + quest.name() + "<br>" + detail.replace(", ", "<br>") + "</html>");
 			}
 		}
 	}

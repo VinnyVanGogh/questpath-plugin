@@ -52,7 +52,24 @@ class QuestVerdicts
 				}
 			}
 		}
+		// Closest quests first: smallest total level gap at the top.
+		List<QuestGraph.Quest> blocked = verdicts.byStatus.get(QuestStatus.SKILL_BLOCKED);
+		if (blocked != null)
+		{
+			blocked.sort(java.util.Comparator.comparingInt(q -> totalGap(q, account)));
+		}
 		return verdicts;
+	}
+
+	/** Sum of levels short across a quest's own skill requirements. */
+	static int totalGap(QuestGraph.Quest quest, PlayerState account)
+	{
+		int gap = 0;
+		for (QuestGraph.Requirement requirement : quest.requirements())
+		{
+			gap += Math.max(0, requirement.level() - account.levelIn(requirement.skill()));
+		}
+		return gap;
 	}
 
 	/**
