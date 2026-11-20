@@ -180,6 +180,14 @@ the quest that wanted it.
   back once Quest Helper accepts a start request from other plugins
   ([quest-helper#2756](https://github.com/Zoinkwiz/quest-helper/pull/2756)).
   Quest Route works the same with or without Quest Helper installed.
+- **Quest warning.** Start a quest you can't finish yet and a dismissable
+  popup (plus a chat line) lists what's missing: quest points, prerequisite
+  quests, and levels, noting where a boost covers a gap. It reads the game's
+  own quest state, and also listens for Quest Helper's "selected quest"
+  message once Quest Helper sends one
+  ([quest-helper#2846](https://github.com/Zoinkwiz/quest-helper/pull/2846)).
+  Warns only; it never blocks anything. Off switch and "don't warn again for
+  this quest" are in the config and the popup's right-click menu.
 - **Diary route.** The nearest diary tasks you can actually do, sent to Shortest
   Path like the shop run, with a chat nudge when one is within 12 tiles, a
   searchable diary journal on the Quests tab, and a Quests / Diaries / All

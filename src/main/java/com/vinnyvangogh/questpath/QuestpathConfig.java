@@ -1154,6 +1154,32 @@ public interface QuestpathConfig extends Config
 		return true;
 	}
 
+	@ConfigItem(
+		keyName = "questWarnings",
+		name = "Warn about quests you can't finish",
+		description = "When you pick a quest in Quest Helper, or start one, and Quest Route says"
+			+ " you are missing quest points, quests or levels for it, show a dismissable popup"
+			+ " and a chat line. Warns only; nothing is ever blocked.",
+		section = chatSection,
+		position = 3
+	)
+	default boolean questWarnings()
+	{
+		return true;
+	}
+
+	/** Quests the player chose not to be warned about again, joined by '|'; written by the plugin, never shown. */
+	@ConfigItem(
+		keyName = "questWarningMuted",
+		name = "",
+		description = "",
+		hidden = true
+	)
+	default String questWarningMuted()
+	{
+		return "";
+	}
+
 	/** The last version whose update notes were handled; written by the plugin, never shown. */
 	@ConfigItem(
 		keyName = LAST_SEEN_VERSION,
