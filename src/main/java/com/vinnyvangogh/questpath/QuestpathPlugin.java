@@ -7,7 +7,30 @@ import java.awt.Polygon;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.util.EnumMap;
+import java.util.EnumSet;
+import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.function.BooleanSupplier;
+import java.util.function.Consumer;
+import java.util.function.UnaryOperator;
+import net.runelite.api.Item;
+import net.runelite.api.ItemContainer;
+import net.runelite.api.WorldType;
+import net.runelite.api.events.GameObjectDespawned;
+import net.runelite.api.events.GameObjectSpawned;
+import net.runelite.api.events.NpcDespawned;
+import net.runelite.api.events.NpcSpawned;
+import net.runelite.api.gameval.InventoryID;
+import net.runelite.api.vars.AccountType;
+import net.runelite.client.chat.ChatMessageManager;
+import net.runelite.client.game.ItemEquipmentStats;
+import net.runelite.client.game.ItemManager;
+import net.runelite.client.game.ItemStats;
+import net.runelite.client.game.SpriteManager;
+import net.runelite.client.ui.overlay.Overlay;
+import net.runelite.client.ui.overlay.tooltip.TooltipManager;
 import com.google.gson.Gson;
 import com.google.inject.Provides;
 import com.vinnyvangogh.questpath.groupshop.AccountKind;
@@ -23,7 +46,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import javax.inject.Inject;
@@ -128,10 +150,10 @@ public class QuestpathPlugin extends Plugin
 	 * What each other party member last sent, by party member id. Written
 	 * from the party socket's thread, read from the client thread.
 	 */
-	private final Map<Long, GroupMember> partyMembers = new java.util.concurrent.ConcurrentHashMap<>();
+	private final Map<Long, GroupMember> partyMembers = new ConcurrentHashMap<>();
 
 	/** When each entry in {@link #partyMembers} last arrived; see {@link GroupBroadcaster#stale}. */
-	private final Map<Long, Instant> partyHeardAt = new java.util.concurrent.ConcurrentHashMap<>();
+	private final Map<Long, Instant> partyHeardAt = new ConcurrentHashMap<>();
 
 	/**
 	 * Group storage as this account last saw it open, lower-cased name to
@@ -202,7 +224,7 @@ public class QuestpathPlugin extends Plugin
 	 * still used inside the overlays, where a row really is about a skill.
 	 */
 	@Inject
-	private net.runelite.client.game.SpriteManager sprites;
+	private SpriteManager sprites;
 
 	@Inject
 	private Gson gson;
@@ -221,7 +243,7 @@ public class QuestpathPlugin extends Plugin
 	private ConfigManager configManager;
 
 	@Inject
-	private net.runelite.client.game.ItemManager itemManager;
+	private ItemManager itemManager;
 
 	/**
 	 * Persists named gear loadouts. Guice hands out the one {@code
@@ -239,15 +261,15 @@ public class QuestpathPlugin extends Plugin
 	 * tooltip -- not adding one is how a tooltip goes away.
 	 */
 	@Inject
-	private net.runelite.client.ui.overlay.tooltip.TooltipManager tooltipManager;
+	private TooltipManager tooltipManager;
 
 	/** Prints questpath's own lines into the game chat. */
 	@Inject
-	private net.runelite.client.chat.ChatMessageManager chatMessageManager;
+	private ChatMessageManager chatMessageManager;
 
 	/** RuneLite's shared scheduler. The watchdog samples on it. */
 	@Inject
-	private java.util.concurrent.ScheduledExecutorService scheduler;
+	private ScheduledExecutorService scheduler;
 
 	/**
 	 * Held so shutDown can stop it. A poller nobody can cancel would outlive
@@ -278,20 +300,8 @@ public class QuestpathPlugin extends Plugin
 	 */
 	private final GrandExchangeOffers geOffers = new GrandExchangeOffers();
 
-	/**
-	 * Whether questpath's bank layout is the one on screen.
-	 *
-	 * <p>Off by default, and that is the important half. This is a tab, not a
-	 * filter: switched on it replaces what the grid shows, so defaulting it on
-	 * meant opening tab nine and being handed questpath's list with the title
-	 * still claiming to be tab nine. A bank tab you did not choose is a broken
-	 * bank.
-	 *
-	 * <p>Session state rather than config for the same reason a real tab is:
-	 * you pick one for a trip, and a setting that survived logout would start
-	 * every visit in whichever state the last one ended.
-	 */
-	private boolean bankNeedsShown;
+	/** Whether questpath's bank layout is the one on screen, and what each click does to that. */
+	private final BankTabState bankTabState = new BankTabState();
 
 	/**
 	 * The six in-game overlays, held so they can be removed again.
@@ -301,7 +311,10 @@ public class QuestpathPlugin extends Plugin
 	 * frame, whereas adding and removing them as toggles change would mean
 	 * reacting to config events and getting the ordering right for no gain.
 	 */
-	private final List<QuestpathOverlay> overlays = new java.util.ArrayList<>();
+	private final List<QuestpathOverlay> overlays = new ArrayList<>();
+
+	/** The markers that draw into the world or an interface rather than owning a panel. */
+	private final List<Overlay> markerOverlays = new ArrayList<>();
 
 	/**
 	 * What the overlays draw, rebuilt whenever the panel is.
@@ -522,7 +535,7 @@ public class QuestpathPlugin extends Plugin
 	 * {@code client} for this directly, the same reasoning applies here.
 	 * Null before the client has read one, e.g. at the login screen.
 	 */
-	private net.runelite.api.vars.AccountType accountType;
+	private AccountType accountType;
 
 	/**
 	 * Whether any quest on the account's saved route is currently {@code
@@ -805,6 +818,8 @@ public class QuestpathPlugin extends Plugin
 			localBuildRules, this::onLocalRulesEdited);
 		panel.setSayShopAgain(this::sayShopAgain);
 		panel.setOnOpenSetup(this::openSetup);
+		panel.setOnWhatsNew(this::showWhatsNew);
+		panel.setQuestMarks(() -> localProfile, this::markQuest);
 		// The retired "Reset account setup" checkbox: read once, then cleared,
 		// so a box ticked before this update still opens setup rather than
 		// being silently dropped.
@@ -813,6 +828,9 @@ public class QuestpathPlugin extends Plugin
 			legacyResetRequested = true;
 		}
 		configManager.unsetConfiguration(QuestpathConfig.GROUP, "resetAccountSetup");
+		// The retired "Show what's new" momentary checkbox: the sidebar button
+		// replaced it, so a stale value is cleared rather than left to confuse.
+		configManager.unsetConfiguration(QuestpathConfig.GROUP, "showWhatsNew");
 		navButton = NavigationButton.builder()
 			.tooltip("Quest Route")
 			.icon(icon())
@@ -845,29 +863,23 @@ public class QuestpathPlugin extends Plugin
 			log.debug("lamp catalogue unavailable; every lamp will read as unmodelled", e);
 			lampCatalogue = LampCatalogue.empty();
 		}
-		for (QuestpathOverlay overlay : overlays)
+		shopOverlay = new ShopItemOverlay(this, config, itemManager, client, tooltipManager);
+		groundOverlay = new GroundItemOverlay(this, config, client, tooltipManager);
+		dropTargetOverlay = new DropTargetOverlay(this, config, client);
+		floatingNoteOverlay = new FloatingNoteOverlay(this, config, client, floatingNotes);
+		bankOverlay = new BankNeedsOverlay(this, config, client, tooltipManager);
+		bankListOverlay = new BankListOverlay(this, config, overlayIcons, client);
+		lampOverlay = new LampOverlay(this, config, client, tooltipManager);
+		Collections.addAll(markerOverlays, shopOverlay, groundOverlay, dropTargetOverlay, floatingNoteOverlay,
+			bankOverlay, bankListOverlay, lampOverlay);
+		for (Overlay overlay : overlays)
 		{
 			overlayManager.add(overlay);
 		}
-
-		shopOverlay = new ShopItemOverlay(this, config, itemManager, client, tooltipManager);
-		overlayManager.add(shopOverlay);
-
-		groundOverlay = new GroundItemOverlay(this, config, client, tooltipManager);
-		overlayManager.add(groundOverlay);
-		dropTargetOverlay = new DropTargetOverlay(this, config, client);
-		overlayManager.add(dropTargetOverlay);
-		floatingNoteOverlay = new FloatingNoteOverlay(this, config, client, floatingNotes);
-		overlayManager.add(floatingNoteOverlay);
-
-		bankOverlay = new BankNeedsOverlay(this, config, client, tooltipManager);
-		overlayManager.add(bankOverlay);
-
-		bankListOverlay = new BankListOverlay(this, config, overlayIcons, client);
-		overlayManager.add(bankListOverlay);
-
-		lampOverlay = new LampOverlay(this, config, client, tooltipManager);
-		overlayManager.add(lampOverlay);
+		for (Overlay overlay : markerOverlays)
+		{
+			overlayManager.add(overlay);
+		}
 
 		voiceLines = VoiceLines.load();
 		voicePlayer = new VoicePlayer(audioPlayer);
@@ -963,19 +975,32 @@ public class QuestpathPlugin extends Plugin
 		postNoteLines(lines);
 	}
 
+	/** The sidebar's "What's new" button: the notes again, in chat, while logged in. Any thread. */
+	void showWhatsNew()
+	{
+		clientThread.invokeLater(() ->
+		{
+			if (client.getGameState() == GameState.LOGGED_IN)
+			{
+				postNoteLines(UpdateNotes.replay());
+			}
+		});
+	}
+
 	/** One console line each, title highlighted. Local only: nothing is typed or sent. */
-	private void postNoteLines(List<String> lines)
+	void postNoteLines(List<String> lines)
 	{
 		for (int i = 0; i < lines.size(); i++)
 		{
-			chatMessageManager.queue(QueuedMessage.builder()
-				.type(ChatMessageType.CONSOLE)
-				.runeLiteFormattedMessage(new ChatMessageBuilder()
-					.append(i == 0 ? ChatColorType.HIGHLIGHT : ChatColorType.NORMAL)
-					.append(lines.get(i))
-					.build())
-				.build());
+			queue(ChatMessageType.CONSOLE, new ChatMessageBuilder()
+				.append(i == 0 ? ChatColorType.HIGHLIGHT : ChatColorType.NORMAL)
+				.append(lines.get(i)));
 		}
+	}
+
+	private void queue(ChatMessageType type, ChatMessageBuilder line)
+	{
+		chatMessageManager.queue(QueuedMessage.builder().type(type).runeLiteFormattedMessage(line.build()).build());
 	}
 
 	/** Package-private so a test can pin that startUp never refreshes inline. */
@@ -988,8 +1013,7 @@ public class QuestpathPlugin extends Plugin
 	 * Hands refresh to the client thread instead of running it, and skips it
 	 * if the plugin was switched off again before the client thread got there.
 	 */
-	static void deferRefresh(java.util.function.Consumer<Runnable> onClientThread,
-		java.util.function.BooleanSupplier stillRunning, Runnable refresh)
+	static void deferRefresh(Consumer<Runnable> onClientThread, BooleanSupplier stillRunning, Runnable refresh)
 	{
 		onClientThread.accept(() ->
 		{
@@ -1092,21 +1116,27 @@ public class QuestpathPlugin extends Plugin
 	@Override
 	protected void shutDown()
 	{
-		for (QuestpathOverlay overlay : overlays)
+		for (Overlay overlay : overlays)
+		{
+			overlayManager.remove(overlay);
+		}
+		for (Overlay overlay : markerOverlays)
 		{
 			overlayManager.remove(overlay);
 		}
 		overlays.clear();
-		if (shopOverlay != null)
+		markerOverlays.clear();
+		if (dropTargetOverlay != null)
 		{
-			overlayManager.remove(shopOverlay);
-			shopOverlay = null;
+			dropTargetOverlay.clear();
 		}
-		if (floatingNoteOverlay != null)
-		{
-			overlayManager.remove(floatingNoteOverlay);
-			floatingNoteOverlay = null;
-		}
+		shopOverlay = null;
+		floatingNoteOverlay = null;
+		groundOverlay = null;
+		dropTargetOverlay = null;
+		bankOverlay = null;
+		bankListOverlay = null;
+		lampOverlay = null;
 		// Emptied as well as unregistered: notes are timed from wall clock,
 		// so a handful left over from a previous session would otherwise be
 		// waiting, already expired, for the next one to read them.
@@ -1120,32 +1150,6 @@ public class QuestpathPlugin extends Plugin
 		}
 		floorSpawns.clear();
 		floorAnnouncer.clear();
-		if (groundOverlay != null)
-		{
-			overlayManager.remove(groundOverlay);
-			groundOverlay = null;
-		}
-		if (dropTargetOverlay != null)
-		{
-			overlayManager.remove(dropTargetOverlay);
-			dropTargetOverlay.clear();
-			dropTargetOverlay = null;
-		}
-		if (bankOverlay != null)
-		{
-			overlayManager.remove(bankOverlay);
-			bankOverlay = null;
-		}
-		if (bankListOverlay != null)
-		{
-			overlayManager.remove(bankListOverlay);
-			bankListOverlay = null;
-		}
-		if (lampOverlay != null)
-		{
-			overlayManager.remove(lampOverlay);
-			lampOverlay = null;
-		}
 		lampWatcher.interfaceClosed();
 		lampVerdicts = Collections.emptyList();
 		if (bankButton != null)
@@ -1377,6 +1381,25 @@ public class QuestpathPlugin extends Plugin
 		clientThread.invokeLater(this::refresh);
 	}
 
+	/**
+	 * Swing thread, from a quest row's menu: flips one of the player's own
+	 * marks (refuse, pin, defer, hide blocked) and rebuilds the route. The
+	 * marks are saved whatever supplies the route; they shape it only while
+	 * the local route is in force.
+	 */
+	private void markQuest(String quest, LocalProfile.Mark mark)
+	{
+		LocalProfile current = localProfile;
+		if (current == null)
+		{
+			return;
+		}
+		LocalProfile updated = current.toggled(mark, quest);
+		localProfile = updated;
+		saveProfileAsync(updated);
+		clientThread.invokeLater(this::refresh);
+	}
+
 	private void saveProfileAsync(LocalProfile profile)
 	{
 		String key = profileKey;
@@ -1413,7 +1436,7 @@ public class QuestpathPlugin extends Plugin
 		{
 			return;
 		}
-		List<String> computed = LocalRoute.of(questGraph, accountSnapshot, profile.questTypes());
+		List<String> computed = LocalRoute.of(questGraph, accountSnapshot, profile.questTypes(), profile);
 		routeOrder = computed;
 		if (computed.equals(profile.route()))
 		{
@@ -1435,19 +1458,6 @@ public class QuestpathPlugin extends Plugin
 		if (panel != null)
 		{
 			panel.refreshQuickSettings();
-		}
-		if ("showWhatsNew".equals(event.getKey()) && Boolean.parseBoolean(event.getNewValue()))
-		{
-			// A momentary switch: put it back, then replay the notes.
-			configManager.setConfiguration(QuestpathConfig.GROUP, "showWhatsNew", false);
-			clientThread.invokeLater(() ->
-			{
-				if (client.getGameState() == GameState.LOGGED_IN)
-				{
-					postNoteLines(UpdateNotes.replay());
-				}
-			});
-			return;
 		}
 		if (!"partyShare".equals(event.getKey()))
 		{
@@ -1496,8 +1506,8 @@ public class QuestpathPlugin extends Plugin
 			// done nothing.
 			return null;
 		}
-		Map<String, Integer> levels = new java.util.LinkedHashMap<>();
-		Map<String, Integer> experience = new java.util.LinkedHashMap<>();
+		Map<String, Integer> levels = new LinkedHashMap<>();
+		Map<String, Integer> experience = new LinkedHashMap<>();
 		for (Skill skill : Skill.values())
 		{
 			if (skill.getName() == null)
@@ -1531,9 +1541,9 @@ public class QuestpathPlugin extends Plugin
 	 * <p>Only a group ironman has storage, and only quest items are kept --
 	 * the same filter {@link #groupRelevantItems} puts on what is shared.
 	 */
-	private boolean recordGroupStorage(net.runelite.api.ItemContainer container)
+	private boolean recordGroupStorage(ItemContainer container)
 	{
-		if (container == null || container.getId() != net.runelite.api.gameval.InventoryID.INV_GROUP_TEMP)
+		if (container == null || container.getId() != InventoryID.INV_GROUP_TEMP)
 		{
 			return false;
 		}
@@ -1584,11 +1594,11 @@ public class QuestpathPlugin extends Plugin
 	}
 
 	/** A container's quest items, lower-cased name to count. Client thread. */
-	private Map<String, Long> questItemCounts(net.runelite.api.ItemContainer container)
+	private Map<String, Long> questItemCounts(ItemContainer container)
 	{
 		Map<String, Long> counts = new HashMap<>();
 		Set<String> relevant = groupRelevantItems();
-		for (net.runelite.api.Item item : container.getItems())
+		for (Item item : container.getItems())
 		{
 			if (item == null || item.getId() <= 0 || item.getQuantity() <= 0)
 			{
@@ -1662,13 +1672,13 @@ public class QuestpathPlugin extends Plugin
 			return;
 		}
 
-		List<GroupMember> others = new java.util.ArrayList<>(partyMembers.values());
+		List<GroupMember> others = new ArrayList<>(partyMembers.values());
 		others.sort(java.util.Comparator.comparing(GroupMember::name, String.CASE_INSENSITIVE_ORDER));
-		List<GroupMember> members = new java.util.ArrayList<>();
+		List<GroupMember> members = new ArrayList<>();
 		members.add(self);
 		members.addAll(others);
 
-		List<String> notSharing = new java.util.ArrayList<>();
+		List<String> notSharing = new ArrayList<>();
 		for (PartyMember member : partyService.getMembers())
 		{
 			if ((local != null && member.getMemberId() == local.getMemberId())
@@ -1757,7 +1767,7 @@ public class QuestpathPlugin extends Plugin
 			public List<String> drops(String item)
 			{
 				QuestGraph.Item known = questItemNamed(item);
-				List<String> out = new java.util.ArrayList<>();
+				List<String> out = new ArrayList<>();
 				for (String source : known == null ? Collections.<String>emptyList() : known.dropSourceNames())
 				{
 					if (routeSources.apply(source) != null)
@@ -1987,8 +1997,7 @@ public class QuestpathPlugin extends Plugin
 		{
 			return true;
 		}
-		boolean includeRecommended = config != null && config.recommendedItems();
-		for (ShopRouteStops.Stop stop : ShopRouteStops.tour(items.totals(includeRecommended), shopItemSkips,
+		for (ShopRouteStops.Stop stop : ShopRouteStops.tour(items.totals(includeRecommended()), shopItemSkips,
 			shopPlaces, routeSources, playerLocation()))
 		{
 			if (!stop.current())
@@ -2122,71 +2131,11 @@ public class QuestpathPlugin extends Plugin
 	 */
 	private LockedGear.ItemStatsView itemStatsView(int itemId)
 	{
-		net.runelite.client.game.ItemStats stats = itemManager.getItemStats(itemId);
-		if (stats == null || !stats.isEquipable())
-		{
-			return UNKNOWN_ITEM_STATS;
-		}
-		net.runelite.client.game.ItemEquipmentStats equipment = stats.getEquipment();
-		if (equipment == null)
-		{
-			return UNKNOWN_ITEM_STATS;
-		}
-		return new LockedGear.ItemStatsView()
-		{
-			@Override
-			public boolean known()
-			{
-				return true;
-			}
-
-			@Override
-			public int str()
-			{
-				return equipment.getStr();
-			}
-
-			@Override
-			public int rstr()
-			{
-				return equipment.getRstr();
-			}
-
-			@Override
-			public int mdmg()
-			{
-				return Math.round(equipment.getMdmg());
-			}
-		};
+		ItemStats stats = itemManager.getItemStats(itemId);
+		ItemEquipmentStats equipment = stats == null || !stats.isEquipable() ? null : stats.getEquipment();
+		return equipment == null ? LockedGear.ItemStats.UNKNOWN
+			: new LockedGear.ItemStats(true, equipment.getStr(), equipment.getRstr(), Math.round(equipment.getMdmg()));
 	}
-
-	/** Shared, since every field on it is a constant -- no need for a fresh instance per unknown item. */
-	private static final LockedGear.ItemStatsView UNKNOWN_ITEM_STATS = new LockedGear.ItemStatsView()
-	{
-		@Override
-		public boolean known()
-		{
-			return false;
-		}
-
-		@Override
-		public int str()
-		{
-			return 0;
-		}
-
-		@Override
-		public int rstr()
-		{
-			return 0;
-		}
-
-		@Override
-		public int mdmg()
-		{
-			return 0;
-		}
-	};
 
 	/**
 	 * "Lock current gear": snapshots whatever is currently worn under {@code
@@ -2292,7 +2241,7 @@ public class QuestpathPlugin extends Plugin
 	 * before anything has ever been explicitly selected, the first-by-name
 	 * fallback {@link LockedGear#resolve} applies on its own.
 	 */
-	private void editLoadout(String loadoutName, java.util.function.UnaryOperator<Loadout> edit)
+	private void editLoadout(String loadoutName, UnaryOperator<Loadout> edit)
 	{
 		if (loadoutName == null)
 		{
@@ -2388,8 +2337,8 @@ public class QuestpathPlugin extends Plugin
 		// Re-reading the bank is the one event that genuinely supersedes the
 		// tally: at that moment the bank's own count includes whatever was
 		// collected into it.
-		net.runelite.api.ItemContainer changed = event.getItemContainer();
-		if (changed != null && changed.getId() == net.runelite.api.gameval.InventoryID.BANK)
+		ItemContainer changed = event.getItemContainer();
+		if (changed != null && changed.getId() == InventoryID.BANK)
 		{
 			geOffers.forgetCollected();
 		}
@@ -2417,7 +2366,7 @@ public class QuestpathPlugin extends Plugin
 	}
 
 	@Subscribe
-	public void onNpcSpawned(net.runelite.api.events.NpcSpawned event)
+	public void onNpcSpawned(NpcSpawned event)
 	{
 		if (dropTargetOverlay != null)
 		{
@@ -2426,7 +2375,7 @@ public class QuestpathPlugin extends Plugin
 	}
 
 	@Subscribe
-	public void onNpcDespawned(net.runelite.api.events.NpcDespawned event)
+	public void onNpcDespawned(NpcDespawned event)
 	{
 		if (dropTargetOverlay != null)
 		{
@@ -2435,7 +2384,7 @@ public class QuestpathPlugin extends Plugin
 	}
 
 	@Subscribe
-	public void onGameObjectSpawned(net.runelite.api.events.GameObjectSpawned event)
+	public void onGameObjectSpawned(GameObjectSpawned event)
 	{
 		if (dropTargetOverlay != null)
 		{
@@ -2444,7 +2393,7 @@ public class QuestpathPlugin extends Plugin
 	}
 
 	@Subscribe
-	public void onGameObjectDespawned(net.runelite.api.events.GameObjectDespawned event)
+	public void onGameObjectDespawned(GameObjectDespawned event)
 	{
 		if (dropTargetOverlay != null)
 		{
@@ -2488,20 +2437,12 @@ public class QuestpathPlugin extends Plugin
 			lastSyncOutcome = null;
 			// The next login may be another account with different limits.
 			// Showing the previous one's would be worse than showing none.
-			buildRules = Collections.emptyList();
-			unmatchedQuests = Collections.emptyList();
-			routeOrder = Collections.emptyList();
-			partialRuns = Collections.emptyList();
-			knownItems = Collections.emptyMap();
-			itemPlan = null;
+			forgetServerState();
 			// Another account may log in next, with its own local profile.
 			routeFromServer = false;
 			localProfile = null;
 			profileKey = null;
 			panel.setSetup(null, null);
-			// The next login may be a different account, with a different
-			// diary verdict entirely -- see diaryPush's own doc.
-			diaryPush = null;
 			// Same reasoning: a cooldown recorded against this account's
 			// nearby tasks has nothing to say about the next one's.
 			diaryNudgedAt.clear();
@@ -2544,6 +2485,24 @@ public class QuestpathPlugin extends Plugin
 			// re-reads it.
 			accountType = null;
 		}
+	}
+
+	/**
+	 * Drops everything questpath told this session about an account: on
+	 * logout (the next login may be another account) and on a rejected push
+	 * (questpath is not confirming this one). A stale rule, route, item plan
+	 * or diary verdict shown against the wrong account is the most convincing
+	 * way to be wrong available to this plugin.
+	 */
+	private void forgetServerState()
+	{
+		buildRules = Collections.emptyList();
+		unmatchedQuests = Collections.emptyList();
+		routeOrder = Collections.emptyList();
+		partialRuns = Collections.emptyList();
+		knownItems = Collections.emptyMap();
+		itemPlan = null;
+		diaryPush = null;
 	}
 
 	private void refresh()
@@ -2608,7 +2567,7 @@ public class QuestpathPlugin extends Plugin
 		// own field doc for what this gates.
 		routeQuestInProgress = routeQuestInProgress(route);
 
-		java.util.List<ItemCompletionWatcher.Completion> justCompleted = completions.observe(items);
+		List<ItemCompletionWatcher.Completion> justCompleted = completions.observe(items);
 		announce(justCompleted);
 		advanceShopRoute(justCompleted, items);
 		floatCompletions(justCompleted);
@@ -2641,13 +2600,7 @@ public class QuestpathPlugin extends Plugin
 	/** One plain line in the game chat, questpath's own message colour. */
 	private void chat(String message)
 	{
-		ChatMessageBuilder line = new ChatMessageBuilder()
-			.append(ChatColorType.NORMAL)
-			.append(message);
-		chatMessageManager.queue(QueuedMessage.builder()
-			.type(ChatMessageType.GAMEMESSAGE)
-			.runeLiteFormattedMessage(line.build())
-			.build());
+		queue(ChatMessageType.GAMEMESSAGE, new ChatMessageBuilder().append(ChatColorType.NORMAL).append(message));
 	}
 
 	/**
@@ -2675,7 +2628,7 @@ public class QuestpathPlugin extends Plugin
 	 * a tree has no NPC in the picture, and a note that simply failed to
 	 * appear at those moments would read as the feature being broken.
 	 */
-	private void floatCompletions(java.util.List<ItemCompletionWatcher.Completion> completed)
+	private void floatCompletions(List<ItemCompletionWatcher.Completion> completed)
 	{
 		if (completed.isEmpty() || config == null || !config.floatingNotes())
 		{
@@ -2797,7 +2750,7 @@ public class QuestpathPlugin extends Plugin
 	 * standing rule that a missing answer never gets to look like a
 	 * satisfied one.
 	 */
-	java.util.List<GrandExchangeShoppingList.Line> grandExchangeList()
+	List<GrandExchangeShoppingList.Line> grandExchangeList()
 	{
 		if (!grandExchangeAvailable())
 		{
@@ -2808,10 +2761,14 @@ public class QuestpathPlugin extends Plugin
 		{
 			return null;
 		}
-		boolean includeRecommended = config != null && config.recommendedItems();
 		TeleportForm form = config == null ? TeleportForm.TABLET : config.recommendedTeleportForm();
-		return GrandExchangeShoppingList.of(snapshot.items().grandExchangeTotals(includeRecommended, form),
+		return GrandExchangeShoppingList.of(snapshot.items().grandExchangeTotals(includeRecommended(), form),
 			geOffers, this::tradeability);
+	}
+
+	private boolean includeRecommended()
+	{
+		return config != null && config.recommendedItems();
 	}
 
 	/**
@@ -2883,8 +2840,8 @@ public class QuestpathPlugin extends Plugin
 	 */
 	private boolean onMembersWorld()
 	{
-		java.util.EnumSet<net.runelite.api.WorldType> types = client.getWorldType();
-		return types == null || types.isEmpty() || types.contains(net.runelite.api.WorldType.MEMBERS);
+		EnumSet<WorldType> types = client.getWorldType();
+		return types == null || types.isEmpty() || types.contains(WorldType.MEMBERS);
 	}
 
 	/**
@@ -2897,7 +2854,7 @@ public class QuestpathPlugin extends Plugin
 	 * is done" -- and a player who has switched that off is not asking for a
 	 * route to move under them either.
 	 */
-	private void advanceShopRoute(java.util.List<ItemCompletionWatcher.Completion> completed,
+	private void advanceShopRoute(List<ItemCompletionWatcher.Completion> completed,
 		QuestItems items)
 	{
 		if (config == null || !config.chatOnItemComplete() || items == null
@@ -2917,7 +2874,7 @@ public class QuestpathPlugin extends Plugin
 			// see ShopRouteOverlay#isShowing.
 			shopRouteSentAt = null;
 			shopTripActive = false;
-			shopTripChat("Quest Route: shopping done -- nothing left on this trip.");
+			chat("Quest Route: shopping done -- nothing left on this trip.");
 			return;
 		}
 
@@ -2934,7 +2891,7 @@ public class QuestpathPlugin extends Plugin
 				// advancing looks exactly like one that finished, and the
 				// player is standing in a shop either way with no way to
 				// tell the difference.
-				shopTripChat("Quest Route: could not move on to the next stop.");
+				chat("Quest Route: could not move on to the next stop.");
 				return;
 			}
 			shopRouteSentAt = Instant.now();
@@ -2947,23 +2904,11 @@ public class QuestpathPlugin extends Plugin
 			}
 			line.append(" -- ").append(decision.remaining()).append(" stop")
 				.append(decision.remaining() == 1 ? "" : "s").append(" left.");
-			shopTripChat(line.toString());
+			chat(line.toString());
 		});
 	}
 
-	/** One plain chat line about a shop trip. */
-	private void shopTripChat(String text)
-	{
-		chatMessageManager.queue(QueuedMessage.builder()
-			.type(ChatMessageType.GAMEMESSAGE)
-			.runeLiteFormattedMessage(new ChatMessageBuilder()
-				.append(ChatColorType.NORMAL)
-				.append(text)
-				.build())
-			.build());
-	}
-
-	private void announce(java.util.List<ItemCompletionWatcher.Completion> completed)
+	private void announce(List<ItemCompletionWatcher.Completion> completed)
 	{
 		if (completed.isEmpty() || config == null || !config.chatOnItemComplete())
 		{
@@ -2990,10 +2935,7 @@ public class QuestpathPlugin extends Plugin
 				line.append(" -- for ").append(ChatColorType.HIGHLIGHT).append(quests)
 					.append(ChatColorType.NORMAL).append(".");
 			}
-			chatMessageManager.queue(QueuedMessage.builder()
-				.type(ChatMessageType.GAMEMESSAGE)
-				.runeLiteFormattedMessage(line.build())
-				.build());
+			queue(ChatMessageType.GAMEMESSAGE, line);
 		}
 	}
 
@@ -3001,53 +2943,28 @@ public class QuestpathPlugin extends Plugin
 	/** Whether the bank marks and list are currently switched on. */
 	boolean bankNeedsShown()
 	{
-		return bankNeedsShown;
+		return bankTabState.shown();
 	}
 
-	private final BankToggleGuard bankToggleGuard = new BankToggleGuard();
-
-	/**
-	 * The button's own op listener. It and {@link #onMenuOptionClicked} both
-	 * see one click on the button, and whichever runs second must not undo the
-	 * first: a "Hide tab" click that was consumed here and then re-delivered to
-	 * the listener would turn the tab straight back on, which reads as "Hide
-	 * tab does nothing".
-	 */
+	/** The button's own op listener -- see {@link BankTabState#buttonPressed}. */
 	private void toggleBankNeeds()
 	{
-		if (bankToggleGuard.isEcho(bankNeedsShown, client.getTickCount()))
+		if (bankTabState.buttonPressed(client.getTickCount()))
 		{
-			return;
-		}
-		setBankTab(!bankNeedsShown);
-	}
-
-	/** Leaves the tab because the button said "Hide tab". */
-	private void hideBankTabFromButton()
-	{
-		bankToggleGuard.left(client.getTickCount());
-		setBankTab(false);
-		if (bankButton != null)
-		{
-			bankButton.refresh();
+			applyBankTab(bankTabState.shown());
 		}
 	}
 
 	/**
-	 * Selects or leaves questpath's bank tab.
+	 * Rebuilds the bank grid for a tab just selected or left.
 	 *
 	 * <p>Turning it on deselects whichever real tab was open, the same way
 	 * clicking a real tab deselects the last one. Without that the bank still
 	 * believes tab nine is showing -- it keeps tab nine's title, and its next
 	 * rebuild puts tab nine's items back underneath.
 	 */
-	private void setBankTab(boolean on)
+	private void applyBankTab(boolean on)
 	{
-		if (bankNeedsShown == on)
-		{
-			return;
-		}
-		bankNeedsShown = on;
 		if (bankTab == null)
 		{
 			return;
@@ -3143,7 +3060,7 @@ public class QuestpathPlugin extends Plugin
 			return;
 		}
 
-		List<GroundItemTakePriority.Candidate> candidates = new java.util.ArrayList<>();
+		List<GroundItemTakePriority.Candidate> candidates = new ArrayList<>();
 		for (int i = 0; i < entries.length; i++)
 		{
 			MenuEntry entry = entries[i];
@@ -3238,38 +3155,19 @@ public class QuestpathPlugin extends Plugin
 			lampWatcher.itemClicked(event.getItemId(), event.getMenuTarget(), client.getTickCount());
 		}
 
-		if (!bankNeedsShown)
+		// Our own button's "Hide tab" is consumed here rather than left to the
+		// widget's op listener: the listener is the path that opens the tab,
+		// and relying on it a second time to close it left the tab stuck on
+		// whenever the client did not deliver the op. Picking a real tab
+		// leaves ours too -- see BankTabState.
+		boolean wasShown = bankTabState.shown();
+		if (bankTabState.menuClicked(event.getMenuOption(), event.getMenuTarget(), client.getTickCount()))
 		{
-			return;
+			event.consume();
 		}
-		String option = event.getMenuOption();
-		if (option == null)
+		if (wasShown && !bankTabState.shown())
 		{
-			return;
-		}
-		String target = event.getMenuTarget();
-		if (target != null && target.contains("Quest Route"))
-		{
-			// Our own button. It carries a "View tab" option so it reads like
-			// the bank's tabs, which means without this it would match the
-			// rule below and close the tab it had just opened.
-			//
-			// While the tab is open a click on the button leaves it. That is
-			// done here, and the click consumed, rather than left to the
-			// widget's op listener: the listener is the path that opens the
-			// tab, and relying on it a second time to close it left the tab
-			// stuck on whenever the client did not deliver the op.
-			if (option.equals(BankButton.ACTION_HIDE))
-			{
-				event.consume();
-				hideBankTabFromButton();
-			}
-			return;
-		}
-		if (option.startsWith("View tab") || option.startsWith("View tag tab")
-			|| option.equals("View all items") || option.startsWith("Potion store"))
-		{
-			setBankTab(false);
+			applyBankTab(false);
 			if (bankButton != null)
 			{
 				bankButton.refresh();
@@ -3637,17 +3535,13 @@ public class QuestpathPlugin extends Plugin
 		// highlighted half: the offer text says what it wants, the
 		// name says where to walk, and only one of those is worth
 		// finding again after the line has scrolled.
-		chatMessageManager.queue(QueuedMessage.builder()
-			.type(ChatMessageType.GAMEMESSAGE)
-			.runeLiteFormattedMessage(new ChatMessageBuilder()
-				.append(ChatColorType.NORMAL)
-				.append("Quest Route: ")
-				.append(ChatColorType.HIGHLIGHT)
-				.append(shopLabel(shopName))
-				.append(ChatColorType.NORMAL)
-				.append(" -- " + what)
-				.build())
-			.build());
+		queue(ChatMessageType.GAMEMESSAGE, new ChatMessageBuilder()
+			.append(ChatColorType.NORMAL)
+			.append("Quest Route: ")
+			.append(ChatColorType.HIGHLIGHT)
+			.append(shopLabel(shopName))
+			.append(ChatColorType.NORMAL)
+			.append(" -- " + what));
 	}
 
 
@@ -3725,15 +3619,6 @@ public class QuestpathPlugin extends Plugin
 		return dropRegionsByName.getOrDefault(sourceName.toLowerCase(), "");
 	}
 
-	/**
-	 * A region worth naming beside a destination, or empty. Handed to the
-	 * overlay so a warned region is said out loud rather than walked into.
-	 */
-	String dropRegionNote(String sourceName)
-	{
-		return DropRegionPolicy.noteFor(dropRegion(sourceName), constraints);
-	}
-
 	/** The route tables for whichever graph is live, rebuilt when it changes. */
 	private RouteSources.Index currentRouteIndex()
 	{
@@ -3775,7 +3660,7 @@ public class QuestpathPlugin extends Plugin
 	 */
 	private List<String> groupHoldersOf(String item)
 	{
-		List<String> out = new java.util.ArrayList<>();
+		List<String> out = new ArrayList<>();
 		for (GroupMember member : partyMembers.values())
 		{
 			long count = member.held(item);
@@ -3853,7 +3738,7 @@ public class QuestpathPlugin extends Plugin
 	/** Why the account cannot use a shop (e.g. a stall's Thieving level), or empty. */
 	private String shopBlockReason(String shopName)
 	{
-		QuestGraph.Shop shop = questGraph == null || shopName == null ? null : questGraph.shop(shopName);
+		QuestGraph.Shop shop = shop(shopName);
 		if (shop == null || accountSnapshot == null)
 		{
 			return "";
@@ -3865,8 +3750,13 @@ public class QuestpathPlugin extends Plugin
 	/** The town or area the bundle files a shop under, or empty. */
 	private String shopTown(String shopName)
 	{
-		QuestGraph.Shop shop = questGraph == null || shopName == null ? null : questGraph.shop(shopName);
+		QuestGraph.Shop shop = shop(shopName);
 		return shop == null ? "" : shop.town();
+	}
+
+	private QuestGraph.Shop shop(String shopName)
+	{
+		return questGraph == null || shopName == null ? null : questGraph.shop(shopName);
 	}
 
 	/** "Shop (Town)" for chat and speech-fallback text. */
@@ -3877,11 +3767,7 @@ public class QuestpathPlugin extends Plugin
 
 	private WorldPoint shopLocation(String shopName)
 	{
-		if (questGraph == null || shopName == null)
-		{
-			return null;
-		}
-		QuestGraph.Shop shop = questGraph.shop(shopName);
+		QuestGraph.Shop shop = shop(shopName);
 		if (shop == null)
 		{
 			return null;
@@ -4053,11 +3939,11 @@ public class QuestpathPlugin extends Plugin
 		{
 			bankTab.onBankBuilt();
 		}
-		else if (event.getScriptId() == ScriptID.BANKMAIN_SEARCH_TOGGLE && bankNeedsShown)
+		else if (event.getScriptId() == ScriptID.BANKMAIN_SEARCH_TOGGLE && bankTabState.set(false))
 		{
 			// Searching is the bank's own view of itself, which this layout is
 			// not. Stand down rather than fight it for the grid.
-			setBankTab(false);
+			applyBankTab(false);
 		}
 		else if (event.getScriptId() == ScriptID.BANKMAIN_SEARCHING && bankTab.active())
 		{
@@ -4228,16 +4114,7 @@ public class QuestpathPlugin extends Plugin
 			return;
 		}
 
-		Map<String, Integer> levels = new HashMap<>();
-		Map<String, Long> experience = new HashMap<>();
-		for (Skill skill : Skill.values())
-		{
-			levels.put(skill.getName(), client.getRealSkillLevel(skill));
-			experience.put(skill.getName(), (long) client.getSkillExperience(skill));
-		}
-
-		PlayerState account = new PlayerState(levels, experience,
-			completedQuestNames(), inProgressQuestNames(), effectiveBuildRules());
+		PlayerState account = playerState(completedQuestNames());
 
 		LampAdvisor.Inputs inputs = new LampAdvisor.Inputs();
 		// The free Ranged/Magic ceiling, from the same CombatMath the combat
@@ -4517,18 +4394,7 @@ public class QuestpathPlugin extends Plugin
 					// rules already in hand belong to this account.
 					if (outcome.state() == SyncStatus.State.REJECTED)
 					{
-						buildRules = Collections.emptyList();
-						unmatchedQuests = Collections.emptyList();
-						routeOrder = Collections.emptyList();
-						partialRuns = Collections.emptyList();
-						knownItems = Collections.emptyMap();
-						itemPlan = null;
-						// A rejection means questpath is not confirming this
-						// account's state, and a stale diary verdict shown
-						// against the wrong account is exactly the kind of
-						// confident-wrong answer this project refuses
-						// elsewhere -- see buildRules' own doc just above.
-						diaryPush = null;
+						forgetServerState();
 						clientThread.invokeLater(this::refresh);
 					}
 				},
@@ -4659,31 +4525,37 @@ public class QuestpathPlugin extends Plugin
 			return null;
 		}
 
-		Map<String, Integer> levels = new HashMap<>();
-		Map<String, Long> experience = new HashMap<>();
-		for (Skill skill : Skill.values())
-		{
-			if (skill.getName() == null)
-			{
-				continue;
-			}
-			levels.put(skill.getName(), client.getRealSkillLevel(skill));
-			experience.put(skill.getName(), (long) client.getSkillExperience(skill));
-		}
-
 		// Kept for the Skills tab, which is asked its question from the event
 		// thread and must not read the client to answer it. Built here rather
 		// than there because this is already the pass that has the client's
 		// levels, and because a snapshot the panel builds itself would be a
 		// second, subtly different account.
-		// In-progress quests as well as finished ones, because a prerequisite
-		// the wiki states as "Started [[X]]" is satisfied by one of these.
-		// Passing only the completed set would judge those on completion
-		// alone and disagree with the Go planner, which has the distinction.
-		PlayerState account = new PlayerState(levels, experience, completed,
-			inProgressQuestNames(), effectiveBuildRules()).withQuestPoints(questPoints());
+		PlayerState account = playerState(completed);
 		accountSnapshot = account;
 		return QuestVerdicts.of(questGraph, account);
+	}
+
+	/**
+	 * This account as the planner judges it, read off the client now. Client
+	 * thread. In-progress quests as well as finished ones, because a
+	 * prerequisite the wiki states as "Started [[X]]" is satisfied by one of
+	 * these; passing only the completed set would disagree with the Go
+	 * planner, which has the distinction.
+	 */
+	private PlayerState playerState(Set<String> completed)
+	{
+		Map<String, Integer> levels = new HashMap<>();
+		Map<String, Long> experience = new HashMap<>();
+		for (Skill skill : Skill.values())
+		{
+			if (skill.getName() != null)
+			{
+				levels.put(skill.getName(), client.getRealSkillLevel(skill));
+				experience.put(skill.getName(), (long) client.getSkillExperience(skill));
+			}
+		}
+		return new PlayerState(levels, experience, completed, inProgressQuestNames(), effectiveBuildRules())
+			.withQuestPoints(questPoints());
 	}
 
 	/**
@@ -4801,14 +4673,14 @@ public class QuestpathPlugin extends Plugin
 	 * permanently, wherever the player actually was. What you are about to
 	 * walk through is the honest reading of "here".
 	 */
-	private java.util.Set<String> pickupScope()
+	private Set<String> pickupScope()
 	{
 		NextQuestStatus route = nextQuest();
 		if (route == null)
 		{
 			return Collections.emptySet();
 		}
-		java.util.Set<String> scope = new HashSet<>();
+		Set<String> scope = new HashSet<>();
 		for (NextQuestStatus.Step step : route.upcoming())
 		{
 			if (scope.size() >= Math.max(1, config.pickupsLookahead()))
@@ -4827,22 +4699,7 @@ public class QuestpathPlugin extends Plugin
 			return null;
 		}
 
-		Set<String> completed = completedQuestNames();
-
-		Map<String, Integer> levels = new HashMap<>();
-		Map<String, Long> experience = new HashMap<>();
-		for (Skill skill : Skill.values())
-		{
-			if (skill.getName() == null)
-			{
-				continue;
-			}
-			levels.put(skill.getName(), client.getRealSkillLevel(skill));
-			experience.put(skill.getName(), (long) client.getSkillExperience(skill));
-		}
-
-		return QuestItems.of(questGraph,
-			new PlayerState(levels, experience, completed, inProgressQuestNames(), effectiveBuildRules()),
+		return QuestItems.of(questGraph, playerState(completedQuestNames()),
 			heldIncludingCollected(), owned.bankSeen(), pickupScope(),
 			new HashSet<>(routeOrder), knownItems, owned.carriedByName(),
 			owned.bankPlaceholders(), itemPlan, groupStorageView());

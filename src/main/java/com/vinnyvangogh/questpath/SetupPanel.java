@@ -11,8 +11,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.BiConsumer;
-import javax.swing.BorderFactory;
-import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
@@ -24,7 +22,7 @@ import javax.swing.JRadioButton;
 import javax.swing.JSpinner;
 import javax.swing.SpinnerNumberModel;
 import net.runelite.api.Skill;
-import net.runelite.client.ui.ColorScheme;
+import static com.vinnyvangogh.questpath.Ui.*;
 
 /**
  * Account setup: the same route-shaping choices the Quest Route website offers,
@@ -106,9 +104,9 @@ final class SetupPanel extends JPanel
 		setAlignmentX(Component.LEFT_ALIGNMENT);
 
 		add(label("Account setup"));
-		add(Box.createVerticalStrut(4));
+		add(gap(4));
 		add(muted(note));
-		add(Box.createVerticalStrut(10));
+		add(gap(10));
 
 		add(label("Account type"));
 		ButtonGroup group = new ButtonGroup();
@@ -125,7 +123,7 @@ final class SetupPanel extends JPanel
 			? current.accountType() : LocalProfile.AccountType.MAIN;
 		accounts.get(account).setSelected(true);
 
-		add(Box.createVerticalStrut(10));
+		add(gap(10));
 		add(label("Quests to route"));
 		Set<LocalProfile.QuestType> chosenTypes = current != null && !current.questTypes().isEmpty()
 			? current.questTypes() : EnumSet.allOf(LocalProfile.QuestType.class);
@@ -138,7 +136,7 @@ final class SetupPanel extends JPanel
 			add(box);
 		}
 
-		add(Box.createVerticalStrut(10));
+		add(gap(10));
 		add(label("Build"));
 		build.setAlignmentX(Component.LEFT_ALIGNMENT);
 		build.setMaximumSize(new Dimension(Integer.MAX_VALUE, build.getPreferredSize().height));
@@ -148,10 +146,10 @@ final class SetupPanel extends JPanel
 			build.addItem(preset);
 		}
 		add(build);
-		add(Box.createVerticalStrut(4));
+		add(gap(4));
 		add(muted("Picking a build fills in the limits below. Change any of them and it becomes custom."));
 
-		add(Box.createVerticalStrut(8));
+		add(gap(8));
 		add(label("Skill limits"));
 		for (Skill skill : Skill.values())
 		{
@@ -177,11 +175,9 @@ final class SetupPanel extends JPanel
 			}
 		});
 
-		add(Box.createVerticalStrut(10));
-		JButton done = new JButton("Save and show my route");
-		done.setAlignmentX(Component.LEFT_ALIGNMENT);
-		done.setMaximumSize(new Dimension(Integer.MAX_VALUE, done.getPreferredSize().height));
+		add(gap(10));
 		JLabel warning = muted(" ");
+		JButton done = wide(button("Save and show my route", null));
 		done.addActionListener(event ->
 		{
 			Set<LocalProfile.QuestType> types = chosenQuestTypes();
@@ -198,14 +194,16 @@ final class SetupPanel extends JPanel
 		add(done);
 		if (onCancel != null)
 		{
-			JButton cancel = new JButton("Cancel");
-			cancel.setAlignmentX(Component.LEFT_ALIGNMENT);
-			cancel.setMaximumSize(new Dimension(Integer.MAX_VALUE, cancel.getPreferredSize().height));
-			cancel.addActionListener(event -> onCancel.run());
-			add(Box.createVerticalStrut(4));
-			add(cancel);
+			add(gap(4));
+			add(wide(button("Cancel", event -> onCancel.run())));
 		}
 		add(warning);
+	}
+
+	private static JButton wide(JButton button)
+	{
+		button.setMaximumSize(new Dimension(Integer.MAX_VALUE, button.getPreferredSize().height));
+		return button;
 	}
 
 	private JPanel limitRow(String skillName)
@@ -335,17 +333,6 @@ final class SetupPanel extends JPanel
 
 	private static JLabel label(String text)
 	{
-		JLabel label = new JLabel(text);
-		label.setAlignmentX(Component.LEFT_ALIGNMENT);
-		return label;
-	}
-
-	private static JLabel muted(String text)
-	{
-		JLabel label = new JLabel("<html><body style='width: 190px'>" + text + "</body></html>");
-		label.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
-		label.setAlignmentX(Component.LEFT_ALIGNMENT);
-		label.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
-		return label;
+		return tinted(text, null);
 	}
 }

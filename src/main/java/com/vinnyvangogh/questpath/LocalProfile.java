@@ -98,9 +98,95 @@ final class LocalProfile
 	@SerializedName("route")
 	private List<String> route = new ArrayList<>();
 
+	/**
+	 * The player's own say over the route, the same marks the web app's quest
+	 * pages offer: never do this, do this first, do this last, and whether the
+	 * Quests tab hides what the build has closed off. Absent in an older file,
+	 * which reads as none.
+	 */
+	@SerializedName("refused_quests")
+	private List<String> refused = new ArrayList<>();
+	@SerializedName("pinned_quests")
+	private List<String> pinned = new ArrayList<>();
+	@SerializedName("deferred_quests")
+	private List<String> deferred = new ArrayList<>();
+	@SerializedName("hide_blocked")
+	private boolean hideBlocked;
+
+	/** One of the player's marks on a quest, or the tab-wide blocked filter. */
+	enum Mark
+	{
+		REFUSED,
+		PINNED,
+		DEFERRED,
+		HIDE_BLOCKED
+	}
+
 	/** For Gson. */
 	LocalProfile()
 	{
+	}
+
+	List<String> refused()
+	{
+		return names(refused);
+	}
+
+	List<String> pinned()
+	{
+		return names(pinned);
+	}
+
+	List<String> deferred()
+	{
+		return names(deferred);
+	}
+
+	boolean hideBlocked()
+	{
+		return hideBlocked;
+	}
+
+	boolean has(Mark mark, String quest)
+	{
+		return mark != Mark.HIDE_BLOCKED && names(list(mark)).contains(quest);
+	}
+
+	/**
+	 * A copy with one mark flipped. Refusing a quest clears its pin or defer,
+	 * and pin and defer exclude each other, as the web app refuses the pair.
+	 */
+	LocalProfile toggled(Mark mark, String quest)
+	{
+		LocalProfile copy = withRoute(graphVersion, completedQuests(), route());
+		if (mark == Mark.HIDE_BLOCKED)
+		{
+			copy.hideBlocked = !hideBlocked;
+			return copy;
+		}
+		List<String> list = copy.list(mark);
+		if (!list.remove(quest))
+		{
+			for (Mark other : Mark.values())
+			{
+				if (other != mark && other != Mark.HIDE_BLOCKED)
+				{
+					copy.list(other).remove(quest);
+				}
+			}
+			list.add(quest);
+		}
+		return copy;
+	}
+
+	private List<String> list(Mark mark)
+	{
+		return mark == Mark.REFUSED ? refused : mark == Mark.PINNED ? pinned : deferred;
+	}
+
+	private static List<String> names(List<String> list)
+	{
+		return list == null ? Collections.emptyList() : Collections.unmodifiableList(list);
 	}
 
 	static LocalProfile create(AccountType accountType, Set<QuestType> questTypes)
@@ -224,6 +310,10 @@ final class LocalProfile
 		copy.graphVersion = graphVersion;
 		copy.completedQuests = new ArrayList<>(completed);
 		copy.route = new ArrayList<>(route);
+		copy.refused = new ArrayList<>(refused());
+		copy.pinned = new ArrayList<>(pinned());
+		copy.deferred = new ArrayList<>(deferred());
+		copy.hideBlocked = hideBlocked;
 		return copy;
 	}
 }

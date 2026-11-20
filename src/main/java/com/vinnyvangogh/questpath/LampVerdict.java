@@ -1,5 +1,9 @@
 package com.vinnyvangogh.questpath;
 
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.experimental.Accessors;
+
 /**
  * What the advisor says about pointing one lamp at one skill.
  *
@@ -13,6 +17,8 @@ package com.vinnyvangogh.questpath;
  * meaning anything, which is the failure the whole build-guard idea is
  * designed against.
  */
+@Getter(AccessLevel.PACKAGE)
+@Accessors(fluent = true)
 class LampVerdict
 {
 	/** The one classification a skill gets. Exactly one applies. */
@@ -110,8 +116,10 @@ class LampVerdict
 	private final int levelNow;
 	private final int levelAfter;
 	private double levelsGained;
+	@Getter(AccessLevel.NONE)
 	private final String reason;
 
+	/** 1 for the best target, 2 and 3 for the next two, 0 for unranked. */
 	private int rank;
 	private Tier tier = Tier.OTHER;
 
@@ -131,75 +139,14 @@ class LampVerdict
 		this.reason = reason;
 	}
 
-	String skill()
-	{
-		return skill;
-	}
-
-	State state()
-	{
-		return state;
-	}
-
-	Block block()
-	{
-		return block;
-	}
-
-	Risk risk()
-	{
-		return risk;
-	}
-
-	double xp()
-	{
-		return xp;
-	}
-
-	boolean xpKnown()
-	{
-		return xpKnown;
-	}
-
-	int levelNow()
-	{
-		return levelNow;
-	}
-
-	int levelAfter()
-	{
-		return levelAfter;
-	}
-
-	double levelsGained()
-	{
-		return levelsGained;
-	}
-
 	String reason()
 	{
 		return reason == null ? "" : reason;
 	}
 
-	/** 1 for the best target, 2 and 3 for the next two, 0 for unranked. */
-	int rank()
-	{
-		return rank;
-	}
-
-	Tier tier()
-	{
-		return tier;
-	}
-
 	void rankAs(int rank, Tier tier)
 	{
 		this.rank = rank;
-		this.tier = tier;
-	}
-
-	void setTier(Tier tier)
-	{
 		this.tier = tier;
 	}
 

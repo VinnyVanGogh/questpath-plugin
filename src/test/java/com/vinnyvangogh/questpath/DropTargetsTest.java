@@ -26,13 +26,32 @@ public class DropTargetsTest
 	{
 		assertEquals(List.of("Imp"), DropTargets.dropOnlyNames(IMP));
 		assertEquals(List.of("Yama", "Imp"),
-			DropTargets.dropOnlyNames(List.of("Drop: Yama#Junk (3/11)", "Drop: Imp (5/128)")));
+			DropTargets.dropOnlyNames(List.of("Drop: Yama#Main (3/11)", "Drop: Imp (5/128)")));
 		assertEquals(List.of("Cadavaberry bush"),
 			DropTargets.dropOnlyNames(List.of("Drop: Cadavaberry bush (Always)")));
 	}
 
+	/** Yama's junk table drops a black bead; nobody kills Yama for one, so it is never outlined. */
 	@Test
-	public void anItemAShopSellsIsNeverADropTarget()
+	public void aJunkTableDropIsNeverATarget()
+	{
+		assertEquals(List.of("Imp"),
+			DropTargets.dropOnlyNames(List.of("Drop: Yama#Junk (3/11)", "Drop: Imp (5/128)")));
+		assertTrue(DropTargets.dropOnlyNames(List.of("Drop: Yama#Junk (3/11)")).isEmpty());
+	}
+
+	/** The leading drops are the main sources; a shop further down does not cancel them. */
+	@Test
+	public void mainDropSourcesCountEvenWhenAShopIsListedAfterThem()
+	{
+		assertEquals(List.of("Imp"),
+			DropTargets.dropOnlyNames(List.of("Drop: Imp (5/128)", "Shop: Somewhere (1 Coins)")));
+		assertEquals(List.of("Imp"), DropTargets.dropOnlyNames(
+			List.of("Drop: Imp (5/128)", "Shop: Somewhere (1 Coins)", "Drop: Goblin (1/2)")));
+	}
+
+	@Test
+	public void anItemAShopIsTheBestSourceForIsNeverADropTarget()
 	{
 		assertTrue(DropTargets.dropOnlyNames(
 			List.of("Shop: Tynan's Fishing Supplies (2 Coins)", "Drop: Imp (5/128)")).isEmpty());

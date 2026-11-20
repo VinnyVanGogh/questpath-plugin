@@ -327,12 +327,6 @@ class GrandExchangeButton
 		return line;
 	}
 
-	/** Whether the button is currently showing questpath's list rather than the client's search. */
-	boolean isActive()
-	{
-		return active;
-	}
-
 	/**
 	 * The item ids to hand the client's own result list, in the order they
 	 * should appear.

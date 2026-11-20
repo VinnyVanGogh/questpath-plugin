@@ -11,6 +11,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.experimental.Accessors;
 
 /**
  * One party member as this client understands them: decoded from their
@@ -23,6 +26,8 @@ import java.util.TreeSet;
  * confident wrong answer and "Bob runs a Quest Route this build can't read" is
  * the truth.
  */
+@Getter(AccessLevel.PACKAGE)
+@Accessors(fluent = true)
 final class GroupMember
 {
 	/** The shape {@link #encode} writes. */
@@ -33,16 +38,25 @@ final class GroupMember
 
 	private final long memberId;
 	private final String name;
+	/** The wire version this member's client wrote. */
 	private final int version;
+	/** False when this build cannot read the member's message; such a member is never planned for. */
 	private final boolean compatible;
+	@Getter(AccessLevel.NONE)
 	private final Set<String> completed;
+	/** The member as the quest classifier sees them, build rules included. */
 	private final PlayerState state;
 	private final List<BuildRule> rules;
+	@Getter(AccessLevel.NONE)
 	private final Map<String, Long> held;
+	/** Whether the shared counts include the bank, rather than only what was carried. */
 	private final boolean bankSeen;
 	// Set once by decode, after construction; see withShopping.
+	/** Quest names on the member's active route; empty when they have none or did not say. */
 	private List<String> route = Collections.emptyList();
+	/** The member's trading rules; {@link AccountKind#UNKNOWN} from a build that does not say. */
 	private AccountKind kind = AccountKind.UNKNOWN;
+	/** The group storage this member last saw, or null. Only ever set for a group ironman. */
 	private GroupStorage groupStorage;
 
 	private GroupMember(long memberId, String name, int version, boolean compatible, Set<String> completed,
@@ -236,55 +250,16 @@ final class GroupMember
 		return new ArrayList<>(names(raw));
 	}
 
-	long memberId()
-	{
-		return memberId;
-	}
-
-	String name()
-	{
-		return name;
-	}
-
-	/** The wire version this member's client wrote. */
-	int version()
-	{
-		return version;
-	}
-
-	/** False when this build cannot read the member's message; such a member is never planned for. */
-	boolean compatible()
-	{
-		return compatible;
-	}
-
 	/** Finished quest names, as sent. */
 	Set<String> completed()
 	{
 		return Collections.unmodifiableSet(completed);
 	}
 
-	/** The member as the quest classifier sees them, build rules included. */
-	PlayerState state()
-	{
-		return state;
-	}
-
-	List<BuildRule> rules()
-	{
-		return rules;
-	}
-
 	/** Whether this member shared item counts at all. */
 	boolean itemsKnown()
 	{
 		return held != null;
-	}
-
-	/** Whether the shared counts include the bank, rather than only what was carried. */
-	boolean bankSeen()
-	{
-		return bankSeen;
 	}
 
 	/** The member's count of one item, by name; 0 when not held or not shared. */
@@ -302,23 +277,5 @@ final class GroupMember
 	Map<String, Long> heldCounts()
 	{
 		return held == null ? null : Collections.unmodifiableMap(held);
-	}
-
-	/** Quest names on the member's active route; empty when they have none or did not say. */
-	List<String> route()
-	{
-		return route;
-	}
-
-	/** The member's trading rules; {@link AccountKind#UNKNOWN} from a build that does not say. */
-	AccountKind kind()
-	{
-		return kind;
-	}
-
-	/** The group storage this member last saw, or null. Only ever set for a group ironman. */
-	GroupStorage groupStorage()
-	{
-		return groupStorage;
 	}
 }

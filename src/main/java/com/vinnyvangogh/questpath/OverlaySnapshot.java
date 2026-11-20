@@ -2,6 +2,8 @@ package com.vinnyvangogh.questpath;
 
 import java.util.Collections;
 import java.util.List;
+import lombok.Getter;
+import lombok.experimental.Accessors;
 
 /**
  * Everything the overlays draw, read once and frozen.
@@ -21,14 +23,35 @@ import java.util.List;
  * empty state. "The client has not loaded quest states yet" and "you have
  * nothing to do" are different sentences, and only one of them is ever true.
  */
+@Getter
+@Accessors(fluent = true)
 final class OverlaySnapshot
 {
+	/** Real levels, never boosted. Null before the client has reported any. */
 	private final CombatStats stats;
+	/** Experience per skill, as the client reports it. */
 	private final SkillXp xp;
+	/**
+	 * The saved route and where along it the account is, or null when that
+	 * cannot be judged yet -- a client whose quest varbits have not loaded
+	 * reports zero finished quests, which is indistinguishable from an
+	 * account that has genuinely finished none.
+	 */
 	private final NextQuestStatus route;
+	/**
+	 * What the doable quests need, ticked against the bank, or null when there
+	 * is no bundle or the client has shown no containers yet.
+	 */
 	private final QuestItems items;
+	/**
+	 * The account's declared limits. Empty means questpath has not sent them,
+	 * never that the account is unconstrained -- the plugin cannot learn them
+	 * any other way.
+	 */
 	private final List<BuildRule> buildRules;
+	/** The logged-in character, or null when there is not one. */
 	private final String characterName;
+	/** Quest points as the game itself counts them. */
 	private final int questPoints;
 
 	OverlaySnapshot(CombatStats stats, SkillXp xp, NextQuestStatus route, QuestItems items,
@@ -42,59 +65,5 @@ final class OverlaySnapshot
 			: Collections.unmodifiableList(buildRules);
 		this.characterName = characterName;
 		this.questPoints = questPoints;
-	}
-
-	/** Real levels, never boosted. Null before the client has reported any. */
-	CombatStats stats()
-	{
-		return stats;
-	}
-
-	/** Experience per skill, as the client reports it. */
-	SkillXp xp()
-	{
-		return xp;
-	}
-
-	/**
-	 * The saved route and where along it the account is, or null when that
-	 * cannot be judged yet -- a client whose quest varbits have not loaded
-	 * reports zero finished quests, which is indistinguishable from an
-	 * account that has genuinely finished none.
-	 */
-	NextQuestStatus route()
-	{
-		return route;
-	}
-
-	/**
-	 * What the doable quests need, ticked against the bank, or null when there
-	 * is no bundle or the client has shown no containers yet.
-	 */
-	QuestItems items()
-	{
-		return items;
-	}
-
-	/**
-	 * The account's declared limits. Empty means questpath has not sent them,
-	 * never that the account is unconstrained -- the plugin cannot learn them
-	 * any other way.
-	 */
-	List<BuildRule> buildRules()
-	{
-		return buildRules;
-	}
-
-	/** The logged-in character, or null when there is not one. */
-	String characterName()
-	{
-		return characterName;
-	}
-
-	/** Quest points as the game itself counts them. */
-	int questPoints()
-	{
-		return questPoints;
 	}
 }

@@ -63,10 +63,11 @@ public class OverlaySettingsPanelConfigParityTest
 	 * QuestpathPanel}'s build-rules-block rendering.
 	 */
 	private static final Set<String> EXEMPT_KEYS = Set.of("serverUrl", "pairingToken", "buildRulesShowAll",
-		// Update notes: a chat toggle and a replay switch that live in
-		// RuneLite's config panel next to the other chat settings, plus two
-		// hidden bookkeeping values the plugin writes itself.
-		"showUpdateNotes", "showWhatsNew", "lastSeenVersion", "lastSeenBuild");
+		// Update notes: a chat toggle that lives in RuneLite's config panel
+		// next to the other chat settings (the replay is the sidebar's own
+		// What's new button), plus two hidden bookkeeping values the plugin
+		// writes itself.
+		"showUpdateNotes", "lastSeenVersion", "lastSeenBuild");
 
 	private static final Path PANEL_SOURCE =
 		Path.of("src/main/java/com/vinnyvangogh/questpath/OverlaySettingsPanel.java");

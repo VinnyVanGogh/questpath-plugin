@@ -17,17 +17,21 @@ import java.util.Map;
  * {@link DropTargetOverlay}.
  *
  * <p>The source data is the bundled quest graph's own {@code sources} strings
- * ({@code "Drop: Imp (5/128)"}), which come from the OSRS wiki's quest
- * requirement tables and drop tables -- https://oldschool.runescape.wiki/ .
- * An item qualifies only when <em>every</em> listed source is a drop: if a
- * shop sells it, buying is the better answer and nothing is outlined. The
- * name is matched against NPC and object names in the scene, so a source that
- * is a world object ("Drop: Cadavaberry bush (Always)") is highlighted the
- * same way as a monster.
+ * ({@code "Drop: Imp (5/128)"}), best source first, which come from the OSRS
+ * wiki's quest requirement tables and drop tables --
+ * https://oldschool.runescape.wiki/ . The drops that lead the list are the
+ * item's main sources and are outlined; the list stops at the first source
+ * that is not a drop, because once a shop is at least as good as a monster,
+ * buying is the better answer. A drop from a monster's junk table ("Drop:
+ * Yama#Junk (3/11)") is never a target: the wiki files it under junk because
+ * it is not what you kill that monster for. The name is matched against NPC
+ * and object names in the scene, so a source that is a world object ("Drop:
+ * Cadavaberry bush (Always)") is highlighted the same way as a monster.
  */
 final class DropTargets
 {
 	private static final String DROP_PREFIX = "Drop:";
+	private static final String JUNK_TABLE = "junk";
 
 	private DropTargets()
 	{
@@ -73,15 +77,17 @@ final class DropTargets
 	}
 
 	/**
-	 * The names that drop an item, read off its source strings; empty when the
-	 * item has any other kind of source (a shop) or none at all.
+	 * The names that drop an item as its main sources: the leading drops
+	 * before the first source of any other kind (a shop), junk tables left
+	 * out; empty when the best source is not a drop, or there is none.
 	 *
-	 * <p>"Drop: Yama#Junk (3/11)" is "Yama": the wiki's table anchor and the
-	 * rate are not part of the creature's name.
+	 * <p>"Drop: Yama#Junk (3/11)" names "Yama" on its junk table: the wiki's
+	 * table anchor and the rate are not part of the creature's name, and a
+	 * junk-table drop is skipped rather than outlined.
 	 */
 	static List<String> dropOnlyNames(List<String> sources)
 	{
-		if (sources == null || sources.isEmpty())
+		if (sources == null)
 		{
 			return Collections.emptyList();
 		}
@@ -90,17 +96,21 @@ final class DropTargets
 		{
 			if (source == null || !source.startsWith(DROP_PREFIX))
 			{
-				return Collections.emptyList();
+				break;
 			}
 			String name = source.substring(DROP_PREFIX.length());
-			int cut = name.indexOf('#');
+			int cut = name.indexOf(" (");
 			if (cut >= 0)
 			{
 				name = name.substring(0, cut);
 			}
-			cut = name.indexOf(" (");
+			cut = name.indexOf('#');
 			if (cut >= 0)
 			{
+				if (JUNK_TABLE.equalsIgnoreCase(name.substring(cut + 1).trim()))
+				{
+					continue;
+				}
 				name = name.substring(0, cut);
 			}
 			name = name.trim();

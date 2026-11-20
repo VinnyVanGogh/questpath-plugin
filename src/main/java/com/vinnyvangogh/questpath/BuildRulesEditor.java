@@ -1,23 +1,24 @@
 package com.vinnyvangogh.questpath;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridLayout;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 import javax.swing.BorderFactory;
-import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JSpinner;
 import javax.swing.SpinnerNumberModel;
 import net.runelite.api.Skill;
 import net.runelite.client.ui.ColorScheme;
-import net.runelite.client.ui.FontManager;
+import static com.vinnyvangogh.questpath.Ui.*;
 
 /**
  * Writing build rules in the plugin, with no questpath instance involved.
@@ -53,7 +54,7 @@ class BuildRulesEditor extends JPanel
 	private final JComboBox<String> skillBox = new JComboBox<>();
 	private final JComboBox<String> typeBox = new JComboBox<>(TYPES);
 	private final JSpinner levelField = new JSpinner(new SpinnerNumberModel(1, 1, 99, 1));
-	private final JLabel status = new JLabel();
+	private final JLabel status = tinted("", ColorScheme.LIGHT_GRAY_COLOR);
 
 	/**
 	 * @param onChange run after any edit, so the caller can rebuild whatever
@@ -71,15 +72,13 @@ class BuildRulesEditor extends JPanel
 			skillBox.addItem(skill.getName());
 		}
 
-		typeBox.setRenderer(new javax.swing.DefaultListCellRenderer()
+		typeBox.setRenderer(new DefaultListCellRenderer()
 		{
 			@Override
-			public java.awt.Component getListCellRendererComponent(javax.swing.JList<?> list,
-				Object value, int index, boolean selected, boolean focused)
+			public Component getListCellRendererComponent(JList<?> list, Object value, int index,
+				boolean selected, boolean focused)
 			{
-				super.getListCellRendererComponent(list, label(String.valueOf(value)),
-					index, selected, focused);
-				return this;
+				return super.getListCellRendererComponent(list, label(String.valueOf(value)), index, selected, focused);
 			}
 		});
 
@@ -93,43 +92,35 @@ class BuildRulesEditor extends JPanel
 		add(field("Skill", skillBox));
 		add(field("Rule", typeBox));
 		add(field("Level", levelField));
-		add(Box.createVerticalStrut(4));
+		add(gap(4));
 
 		JPanel buttons = new JPanel(new GridLayout(1, 2, 4, 0));
 		buttons.setBackground(ColorScheme.DARK_GRAY_COLOR);
-
-		JButton save = new JButton("Save rule");
-		save.setToolTipText("Store this rule for this account. Replaces any rule already on"
-			+ " the same skill -- two rules on one skill is an ambiguity, not a richer"
-			+ " statement of intent.");
-		save.addActionListener(e ->
+		JButton save = button("Save rule", e ->
 		{
 			String skill = String.valueOf(skillBox.getSelectedItem());
 			String type = String.valueOf(typeBox.getSelectedItem());
-			int level = (Integer) levelField.getValue();
-			List<BuildRule> now = store.set(skill, type, level, "");
+			List<BuildRule> now = store.set(skill, type, (Integer) levelField.getValue(), "");
 			report(now, "Saved " + skill + ": " + label(type));
 			onChange.accept(now);
 		});
-
-		JButton clear = new JButton("Remove");
-		clear.setToolTipText("Remove this account's own rule on the selected skill. A rule"
-			+ " Quest Route pushed is untouched -- there is one editor per origin.");
-		clear.addActionListener(e ->
+		save.setToolTipText("Store this rule for this account. Replaces any rule already on"
+			+ " the same skill -- two rules on one skill is an ambiguity, not a richer"
+			+ " statement of intent.");
+		JButton clear = button("Remove", e ->
 		{
 			String skill = String.valueOf(skillBox.getSelectedItem());
 			List<BuildRule> now = store.clear(skill);
 			report(now, "Removed " + skill);
 			onChange.accept(now);
 		});
-
+		clear.setToolTipText("Remove this account's own rule on the selected skill. A rule"
+			+ " Quest Route pushed is untouched -- there is one editor per origin.");
 		buttons.add(save);
 		buttons.add(clear);
 		add(buttons);
-
-		status.setFont(FontManager.getRunescapeSmallFont());
-		status.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
-		add(Box.createVerticalStrut(4));
+		add(gap(4));
+		status.setFont(SMALL);
 		add(status);
 
 		report(store.all(), "");
@@ -157,17 +148,13 @@ class BuildRulesEditor extends JPanel
 		status.setText(action.isEmpty() ? summary : action + " -- " + summary);
 	}
 
-	private static JPanel field(String label, java.awt.Component control)
+	private static JPanel field(String label, Component control)
 	{
 		JPanel row = new JPanel(new BorderLayout(4, 0));
 		row.setBackground(ColorScheme.DARK_GRAY_COLOR);
 		row.setBorder(BorderFactory.createEmptyBorder(2, 0, 2, 0));
-
-		JLabel name = new JLabel(label);
-		name.setFont(FontManager.getRunescapeSmallFont());
-		name.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
+		JLabel name = small(label, ColorScheme.LIGHT_GRAY_COLOR);
 		name.setPreferredSize(new Dimension(48, 0));
-
 		row.add(name, BorderLayout.WEST);
 		row.add(control, BorderLayout.CENTER);
 		row.setMaximumSize(new Dimension(Integer.MAX_VALUE, 26));

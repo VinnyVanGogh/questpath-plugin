@@ -105,6 +105,70 @@ public class LocalRouteTest
 		assertTrue(LocalRoute.of(graph, null, EnumSet.allOf(LocalProfile.QuestType.class)).isEmpty());
 	}
 
+	private static LocalProfile marks(LocalProfile.Mark mark, String... quests)
+	{
+		LocalProfile profile = LocalProfile.create(LocalProfile.AccountType.MAIN,
+			EnumSet.allOf(LocalProfile.QuestType.class), null);
+		for (String quest : quests)
+		{
+			profile = profile.toggled(mark, quest);
+		}
+		return profile;
+	}
+
+	@Test
+	public void aRefusedQuestAndWhatNeedsItAreLeftOff()
+	{
+		Set<LocalProfile.QuestType> all = EnumSet.allOf(LocalProfile.QuestType.class);
+		List<String> plain = LocalRoute.of(graph, fresh(Collections.emptySet()), all);
+		assertTrue(plain.contains("Cook's Assistant"));
+
+		List<String> route = LocalRoute.of(graph, fresh(Collections.emptySet()), all,
+			marks(LocalProfile.Mark.REFUSED, "Cook's Assistant"));
+		assertFalse(route.contains("Cook's Assistant"));
+		assertFalse("Recipe for Disaster needs Cook's Assistant", route.contains("Recipe for Disaster"));
+	}
+
+	@Test
+	public void pinnedQuestsLeadInPinOrderAndDeferredOnesTrail()
+	{
+		Set<LocalProfile.QuestType> all = EnumSet.allOf(LocalProfile.QuestType.class);
+		List<String> route = LocalRoute.of(graph, fresh(Collections.emptySet()), all,
+			marks(LocalProfile.Mark.PINNED, "Sheep Shearer", "Cook's Assistant")
+				.toggled(LocalProfile.Mark.DEFERRED, "Rune Mysteries"));
+
+		assertEquals("Sheep Shearer", route.get(0));
+		assertEquals("Cook's Assistant", route.get(1));
+
+		// Deferred means "after everything that does not need it": only its
+		// own dependants (Enter the Abyss) may follow it.
+		List<String> plain = LocalRoute.of(graph, fresh(Collections.emptySet()), all);
+		int at = route.indexOf("Rune Mysteries");
+		assertTrue(at > plain.indexOf("Rune Mysteries"));
+		long runeMysteries = byName().get("Rune Mysteries").id();
+		for (String later : route.subList(at + 1, route.size()))
+		{
+			assertTrue(later + " does not need Rune Mysteries", byName().get(later).prerequisites().contains(runeMysteries));
+		}
+	}
+
+	@Test
+	public void refusingClearsAPinAndPinAndDeferExcludeEachOther()
+	{
+		LocalProfile profile = marks(LocalProfile.Mark.PINNED, "Sheep Shearer");
+		assertTrue(profile.has(LocalProfile.Mark.PINNED, "Sheep Shearer"));
+		profile = profile.toggled(LocalProfile.Mark.DEFERRED, "Sheep Shearer");
+		assertFalse(profile.has(LocalProfile.Mark.PINNED, "Sheep Shearer"));
+		assertTrue(profile.has(LocalProfile.Mark.DEFERRED, "Sheep Shearer"));
+		profile = profile.toggled(LocalProfile.Mark.REFUSED, "Sheep Shearer");
+		assertFalse(profile.has(LocalProfile.Mark.DEFERRED, "Sheep Shearer"));
+		assertTrue(profile.has(LocalProfile.Mark.REFUSED, "Sheep Shearer"));
+		assertFalse(profile.hideBlocked());
+		assertTrue(profile.toggled(LocalProfile.Mark.HIDE_BLOCKED, "").hideBlocked());
+		assertTrue("marks survive a route write",
+			profile.withRoute(1, Collections.emptyList(), Collections.emptyList()).refused().contains("Sheep Shearer"));
+	}
+
 	@Test
 	public void aBuildRuleKeepsAForbiddenQuestOffTheRoute()
 	{
