@@ -18,80 +18,20 @@ import net.runelite.api.widgets.WidgetType;
  * results with the account's buy list, every row selectable exactly the way a
  * real search result is.
  *
- * <p><b>This replaces {@code GrandExchangeSuggestionRow}, which was the wrong
- * shape twice over.</b> That class drew a single suggestion line inside the
- * box's scrolling half and tried to place itself relative to whatever the
- * client had already drawn there. The first version hung it from {@link
- * InterfaceID.Chatbox#MES_LAYER}, whose dynamic children are empty, so
- * "below everything already there" resolved to the top of the box and it
- * landed on the prompt. The second moved to {@link
- * InterfaceID.Chatbox#MES_LAYER_SCROLLCONTENTS} and gated on an empty search
- * box -- and never appeared at all, because {@code VarClientStr.INPUT_TEXT}
- * keeps the previous search's text between openings (which is exactly what
- * the box's own "Show last searched" tick is for). Both were attempts to
- * find free space in a panel that has none.
+ * <p>The client renders the list itself once handed the item ids, so nothing
+ * is drawn by hand. The mechanism follows Quest Helper's sentinel pattern
+ * (read from its bytecode, never called): write a sentinel into varcstr 359,
+ * set {@link VarClientInt#INPUT_TYPE} to 14, replay the box's key listener so
+ * it re-runs its search, then on the search event check the sentinel, consume
+ * it, and set the result index, count and ids.
  *
- * <p>The player's answer was to point at Quest Helper and ask why it was
- * anywhere else. That was right, and the mechanism turns out to be much
- * better than a drawn row: <b>the game will render the list for you if you
- * hand it the item ids.</b>
+ * <p>questpath's sentinel is {@code "questpath"}, so the two buttons never
+ * answer each other, and the button sits left of Quest Helper's fixed 480
+ * (see {@link BankButton}).
  *
- * <p><b>Everything below is disassembled from the installed {@code
- * quest-helper} jar, not inferred.</b> {@code javap -c -p} against Quest
- * Helper's {@code bank/banktab/QuestGrandExchangeInterface} and {@code
- * QuestBankTab} -- read as precedent for the sentinel pattern, never called:
- *
- * <ul>
- * <li>{@code QuestGrandExchangeInterface.init()} takes {@code
- *     client.getWidget(10616871)} -- {@code MES_LAYER} -- as its parent and
- *     builds a 20x20 {@code createChild(-1, 5)} graphic at {@code x=480,
- *     y=0}, sprite 195, with {@code setAction(1, "View missing items")},
- *     {@code setName("quest helper")} and a {@link JavaScriptCallback} op
- *     listener. A second 14x14 graphic (sprite 835) sits inside it at {@code
- *     +3, +3}. That is the button in the screenshot, tooltip and all.</li>
- * <li>{@code activateTab()} swaps the sprite to 196, writes the sentinel
- *     string {@code "quest-helper"} into varcstr 359, sets varcint 5
- *     ({@link VarClientInt#INPUT_TYPE}) to 14, and defers {@code
- *     updateSearchInterface(true)}.</li>
- * <li>{@code updateSearchInterface(boolean)} replays {@code
- *     MES_TEXT2.getOnKeyListener()} through {@code runScript} -- making the
- *     box re-run its own search against that sentinel -- then hides the
- *     input.</li>
- * <li>{@code QuestBankTab.onGrandExchangeSearched} checks varcstr 359
- *     against that same sentinel, {@code consume()}s the event, and calls
- *     {@code setGeSearchResultIndex(0)}, {@code setGeSearchResultCount(n)},
- *     {@code setGeSearchResultIds(short[])}.</li>
- * </ul>
- *
- * <p>That last step is the whole trick, and it is why the screenshot's rows
- * carry a real "Select Onion" option: <b>nothing is drawn at all</b>. The
- * client's own result list is fed a different set of ids and renders them
- * with its own widgets, its own ops, and its own scrolling. A hand-drawn row
- * could not have had any of that.
- *
- * <p><b>questpath's sentinel is {@code "questpath"}, not Quest Helper's.</b>
- * Both plugins listen to the same event and both check varcstr 359; each
- * ignores an activation that is not its own, so the two buttons coexist
- * rather than fighting over one search. The button also sits at its own
- * {@link #X}, left of Quest Helper's fixed 480 -- see {@link BankButton}'s
- * {@code BUTTON_X} doc for the time these two did share a coordinate, and
- * what that looked like.
- *
- * <p><b>Every widget call here can throw an {@code AssertionError}, not an
- * exception.</b> The client asserts it is on the client thread and that
- * assertion is an {@code Error}, so a {@code catch (RuntimeException)} lets
- * it straight through -- see {@code ShortestPathBridge}'s class doc for the
- * two separate times this project has paid for that. Everything here is
- * either called from an event subscriber or from a {@link
- * JavaScriptCallback}, both of which the client already runs on its own
- * thread, and the catches are written {@code RuntimeException | AssertionError}
- * anyway.
- *
- * <p><b>Unverified in a running client.</b> Every constant and member used
- * here was confirmed by {@code javap} against the installed jars, and the
- * sequence is Quest Helper's own working one rather than an invention -- but
- * whether the button lands beside theirs, and whether the list renders, can
- * only be established in the game.
+ * <p>Widget calls can throw {@code AssertionError}, not an exception, so
+ * catches are {@code RuntimeException | AssertionError}. Unverified in a
+ * running client.
  */
 @Slf4j
 class GrandExchangeButton

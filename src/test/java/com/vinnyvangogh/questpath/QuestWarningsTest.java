@@ -98,7 +98,7 @@ public class QuestWarningsTest
 		warnings.onSelected(DS1, graph, fresh());
 		assertEquals(1, shown.size());
 		QuestWarning warning = shown.get(0);
-		assertTrue(warning.lines().get(0).startsWith("32 quest points (you have 0)"));
+		assertTrue(warning.lines.get(0).startsWith("32 quest points (you have 0)"));
 	}
 
 	@Test
@@ -203,7 +203,7 @@ public class QuestWarningsTest
 	{
 		warnings.onSelected(DS1, graph, fresh());
 		QuestWarning warning = shown.get(0);
-		assertEquals(1 + warning.lines().size(), QuestWarningOverlay.rowsFor(warning).size());
+		assertEquals(1 + warning.lines.size(), QuestWarningOverlay.rowsFor(warning).size());
 		assertTrue(QuestWarningOverlay.rowsFor(null).isEmpty());
 	}
 }

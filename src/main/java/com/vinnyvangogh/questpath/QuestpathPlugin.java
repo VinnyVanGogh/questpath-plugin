@@ -853,11 +853,8 @@ public class QuestpathPlugin extends Plugin
 		overlays.add(new CombatXpOverlay(this, config, overlayIcons));
 		overlays.add(new BuildRulesOverlay(this, config, overlayIcons));
 		overlays.add(new QuestWarningOverlay(this, config, overlayIcons));
-		// The lamp catalogue is bundled, so a failure here is a broken jar
-		// rather than a missing server. Logged and carried on with an empty
-		// catalogue: every lamp then reads as unmodelled, which still greys
-		// NO_XP skills and still refuses to rank. A broken bundle must not
-		// take the advisor's only irreversible-mistake guard down with it.
+		// Bundled, so failure means a broken jar; an empty catalogue keeps the
+		// NO_XP guard (every lamp reads as unmodelled).
 		try
 		{
 			lampCatalogue = LampCatalogue.load(gson);
@@ -1845,19 +1842,14 @@ public class QuestpathPlugin extends Plugin
 		accountType = client.getAccountType();
 		checkQuestStarts();
 
-		// Re-announce an unchanged state now and then, so the party can tell
-		// a quiet member from a gone one; heartbeatDue reads no account
-		// state, so asking every tick costs nothing. The Group tab is redrawn
-		// with it, which is also when a silent member turns stale on screen.
+		// Heartbeat: lets the party tell a quiet member from a gone one.
 		if (groupBroadcaster != null && groupBroadcaster.heartbeatDue())
 		{
 			offerGroupState(false);
 			refreshGroup();
 		}
 
-		// Unconditional, unlike the refresh below: this is about whether a
-		// shop interface is open right now, which has nothing to do with
-		// whether the account's own state changed this tick.
+		// Unconditional: whether a shop is open is independent of account changes.
 		checkShopArrival();
 
 		// Whether the lamp interface is still up. There is no reliable
@@ -4041,12 +4033,7 @@ public class QuestpathPlugin extends Plugin
 	{
 		questWarning = warning;
 		queue(ChatMessageType.GAMEMESSAGE, new ChatMessageBuilder()
-			.append(ChatColorType.HIGHLIGHT).append(warning.headline()));
-		for (String line : warning.lines())
-		{
-			queue(ChatMessageType.GAMEMESSAGE, new ChatMessageBuilder()
-				.append(ChatColorType.NORMAL).append("  " + line));
-		}
+			.append(ChatColorType.HIGHLIGHT).append(warning.headline() + " " + String.join("; ", warning.lines)));
 	}
 
 	/** Quest Helper's selection over the plugin bus (quest-helper#2846); inert until it sends one. */
@@ -4081,7 +4068,7 @@ public class QuestpathPlugin extends Plugin
 		{
 			String muted = config.questWarningMuted();
 			configManager.setConfiguration(QuestpathConfig.GROUP, "questWarningMuted",
-				muted.isEmpty() ? shown.questName() : muted + "|" + shown.questName());
+				muted.isEmpty() ? shown.questName : muted + "|" + shown.questName);
 		}
 		questWarning = null;
 	}

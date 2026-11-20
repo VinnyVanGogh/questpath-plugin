@@ -8,12 +8,11 @@ import java.util.Map;
 /** What stands between the account and one quest; null from {@link #of} means nothing does. */
 final class QuestWarning
 {
-	/** Quest-point gates the bundled graph lacks (OSRS Wiki quest pages). */
 	private static final Map<String, Integer> POINTS = Map.of("dragon slayer i", 32, "heroes' quest", 55,
 		"legends' quest", 107, "recipe for disaster", 175, "dragon slayer ii", 200);
 
-	private final String questName;
-	private final List<String> lines;
+	final String questName;
+	final List<String> lines;
 
 	private QuestWarning(String questName, List<String> lines)
 	{
@@ -21,7 +20,6 @@ final class QuestWarning
 		this.lines = lines;
 	}
 
-	/** The graph quest a name means (case and curly apostrophes forgiven), or null if unknown. */
 	static QuestGraph.Quest resolve(QuestGraph graph, String name)
 	{
 		if (graph == null || name == null)
@@ -44,7 +42,6 @@ final class QuestWarning
 		return name.trim().replace('’', '\'').toLowerCase(Locale.ROOT);
 	}
 
-	/** The warning, or null when the quest is done or every requirement is met or boost-covered. */
 	static QuestWarning of(QuestGraph graph, PlayerState account, QuestGraph.Quest quest)
 	{
 		if (graph == null || account == null || quest == null || account.isComplete(quest.name()))
@@ -64,25 +61,14 @@ final class QuestWarning
 		{
 			lines.add("Quests first: " + String.join(", ", blockers.quests()));
 		}
-		boolean uncovered = false;
+		boolean unmet = pointsShort || !blockers.quests().isEmpty();
 		for (QuestBlockers.Gap gap : blockers.skills())
 		{
-			uncovered |= !gap.covered();
+			unmet |= !gap.covered();
 			lines.add(gap.need() + " " + gap.skill() + " (you have " + gap.have() + ")"
 				+ (gap.covered() ? ", covered by " + gap.boost().item() : ""));
 		}
-		boolean unmet = pointsShort || uncovered || !blockers.quests().isEmpty();
 		return unmet ? new QuestWarning(quest.name(), lines) : null;
-	}
-
-	String questName()
-	{
-		return questName;
-	}
-
-	List<String> lines()
-	{
-		return lines;
 	}
 
 	String headline()

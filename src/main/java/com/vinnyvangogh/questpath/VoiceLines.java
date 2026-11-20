@@ -137,19 +137,9 @@ final class VoiceLines
 		return Collections.unmodifiableMap(spoken);
 	}
 
-	boolean hasItem(String name)
+	boolean has(String kind, String name)
 	{
-		return name != null && items.containsKey(key(name));
-	}
-
-	boolean hasPlural(String name)
-	{
-		return name != null && plurals.containsKey(key(name));
-	}
-
-	boolean hasShop(String name)
-	{
-		return name != null && shops.containsKey(key(name));
+		return name != null && table(kind).containsKey(key(name));
 	}
 
 	/** The class resource path of a clip id. */

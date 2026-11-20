@@ -6,11 +6,7 @@ import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
-/**
- * When to warn, and only once. Two signals: Quest Helper's PluginMessage
- * (questhelper/selected, inert until it sends one) and a quest the client
- * newly reports as started. Warn only; client thread only.
- */
+/** Warns once per selection or newly started quest. Client thread only. */
 final class QuestWarnings
 {
 	static final String NAMESPACE = "questhelper";
@@ -30,7 +26,6 @@ final class QuestWarnings
 		this.sink = sink;
 	}
 
-	/** A selection (null or blank = cleared). The same quest twice in a row warns once. */
 	void onSelected(String name, QuestGraph graph, PlayerState account)
 	{
 		if (name == null || name.trim().isEmpty())
@@ -44,7 +39,6 @@ final class QuestWarnings
 		}
 	}
 
-	/** Quests newly in progress warn; the first look after login is only a baseline. */
 	void onQuestStates(Set<String> inProgress, QuestGraph graph, PlayerState account)
 	{
 		Set<String> before = lastInProgress;
@@ -56,11 +50,10 @@ final class QuestWarnings
 				continue;
 			}
 			QuestGraph.Quest quest = QuestWarning.resolve(graph, name);
-			if (quest != null && selected != null && selected.trim().equalsIgnoreCase(quest.name()))
+			if (quest == null || !quest.name().equalsIgnoreCase(selected))
 			{
-				continue; // already handled when selected
+				warn(quest, graph, account);
 			}
-			warn(quest, graph, account);
 		}
 	}
 

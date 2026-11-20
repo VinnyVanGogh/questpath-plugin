@@ -51,7 +51,7 @@ class QuestWarningOverlay extends QuestpathOverlay
 		}
 		List<OverlayRow> rows = new ArrayList<>();
 		rows.add(OverlayRow.hero(warning.headline(), OverlayTheme.WARN));
-		for (String line : warning.lines())
+		for (String line : warning.lines)
 		{
 			rows.add(OverlayRow.note(line, OverlayTheme.MUTED));
 		}

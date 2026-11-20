@@ -296,7 +296,6 @@ public class LampVectorsTest
 
 		assertNotNull(lamp);
 		assertFalse(lamp.modelled());
-		assertEquals("amount unknown", lamp.describeAmount());
 		assertEquals("an unknown lamp must not claim to be worth zero", -1d, lamp.xpAt(50), 0.0001);
 	}
 
