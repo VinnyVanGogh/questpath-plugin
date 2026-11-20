@@ -1858,19 +1858,13 @@ class QuestpathPanel extends PluginPanel
 			String trimmed = name.trim();
 			if (trimmed.isEmpty())
 			{
-				JOptionPane.showMessageDialog(this, "Loadout name must not be blank.", "Quest Route",
-					JOptionPane.WARNING_MESSAGE);
+				warn("Loadout name must not be blank.");
 				return;
 			}
-			if (ready && gear.loadoutNames().contains(trimmed))
+			if (ready && gear.loadoutNames().contains(trimmed)
+				&& !confirm("A loadout named \"" + trimmed + "\" already exists. Overwrite it?"))
 			{
-				int choice = JOptionPane.showConfirmDialog(this,
-					"A loadout named \"" + trimmed + "\" already exists. Overwrite it?",
-					"Quest Route", JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE);
-				if (choice != JOptionPane.OK_OPTION)
-				{
-					return;
-				}
+				return;
 			}
 			lockedGearMessage = null;
 			lockedGearActions.lockCurrentGear.accept(trimmed);
@@ -1906,10 +1900,7 @@ class QuestpathPanel extends PluginPanel
 		return button("Delete", e ->
 		{
 			String current = gear.selectedLoadout().name();
-			int choice = JOptionPane.showConfirmDialog(this,
-				"Delete loadout \"" + current + "\"? This cannot be undone.",
-				"Quest Route", JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE);
-			if (choice != JOptionPane.OK_OPTION)
+			if (!confirm("Delete loadout \"" + current + "\"? This cannot be undone."))
 			{
 				return;
 			}
@@ -2026,25 +2017,10 @@ class QuestpathPanel extends PluginPanel
 	private JPanel meleeControls(LockedGear gear)
 	{
 		Loadout loadout = gear.selectedLoadout();
-		AttackStyle style = parseOrNull(AttackStyle.class, loadout.meleeStyle());
-		StrengthPrayer prayer = parseOrNull(StrengthPrayer.class, loadout.strengthPrayer());
-
-		JComboBox<AttackStyle> styleCombo = enumCombo(AttackStyle.values(), style, AttackStyle::label);
-		JComboBox<StrengthPrayer> prayerCombo = enumCombo(StrengthPrayer.values(), prayer, StrengthPrayer::label);
-
-		ActionListener listener = e ->
-		{
-			AttackStyle chosenStyle = (AttackStyle) styleCombo.getSelectedItem();
-			StrengthPrayer chosenPrayer = (StrengthPrayer) prayerCombo.getSelectedItem();
-			if (chosenStyle == null || chosenPrayer == null)
-			{
-				return;
-			}
-			lockedGearMessage = null;
-			lockedGearActions.meleeSelectionChanged.accept(loadout.name(), chosenStyle.name(), chosenPrayer.name());
-		};
-		styleCombo.addActionListener(listener);
-		prayerCombo.addActionListener(listener);
+		JPanel column = column();
+		column.add(styleControls(loadout, AttackStyle.values(), parseOrNull(AttackStyle.class, loadout.meleeStyle()),
+			AttackStyle::label, StrengthPrayer.values(), parseOrNull(StrengthPrayer.class, loadout.strengthPrayer()),
+			StrengthPrayer::label, lockedGearActions.meleeSelectionChanged));
 
 		// Potion gets its own row and its own listener rather than a third
 		// slot on the row above: comboRow is a fixed two-up layout every
@@ -2053,24 +2029,17 @@ class QuestpathPanel extends PluginPanel
 		// unselected the way an unmade style/prayer choice can, so it needs
 		// no shared null guard with them.
 		StrengthPotion potion = parseOrNull(StrengthPotion.class, loadout.meleePotion());
-		if (potion == null)
-		{
-			potion = StrengthPotion.NONE;
-		}
-		JComboBox<StrengthPotion> potionCombo = enumCombo(StrengthPotion.values(), potion, StrengthPotion::label);
+		JComboBox<StrengthPotion> potionCombo = enumCombo(StrengthPotion.values(),
+			potion == null ? StrengthPotion.NONE : potion, StrengthPotion::label);
 		potionCombo.addActionListener(e ->
 		{
 			StrengthPotion chosenPotion = (StrengthPotion) potionCombo.getSelectedItem();
-			if (chosenPotion == null)
+			if (chosenPotion != null)
 			{
-				return;
+				lockedGearMessage = null;
+				lockedGearActions.meleePotionChanged.accept(loadout.name(), chosenPotion.name());
 			}
-			lockedGearMessage = null;
-			lockedGearActions.meleePotionChanged.accept(loadout.name(), chosenPotion.name());
 		});
-
-		JPanel column = column();
-		column.add(comboRow(styleCombo, prayerCombo));
 		column.add(gap(4));
 		column.add(potionCombo);
 		return column;
@@ -2079,53 +2048,43 @@ class QuestpathPanel extends PluginPanel
 	private JPanel rangedControls(LockedGear gear)
 	{
 		Loadout loadout = gear.selectedLoadout();
-		RangedStyle style = parseOrNull(RangedStyle.class, loadout.rangedStyle());
-		RangedPrayer prayer = parseOrNull(RangedPrayer.class, loadout.rangedPrayer());
-
-		JComboBox<RangedStyle> styleCombo = enumCombo(RangedStyle.values(), style, RangedStyle::label);
-		JComboBox<RangedPrayer> prayerCombo = enumCombo(RangedPrayer.values(), prayer, RangedPrayer::label);
-
-		ActionListener listener = e ->
-		{
-			RangedStyle chosenStyle = (RangedStyle) styleCombo.getSelectedItem();
-			RangedPrayer chosenPrayer = (RangedPrayer) prayerCombo.getSelectedItem();
-			if (chosenStyle == null || chosenPrayer == null)
-			{
-				return;
-			}
-			lockedGearMessage = null;
-			lockedGearActions.rangedSelectionChanged.accept(loadout.name(), chosenStyle.name(), chosenPrayer.name());
-		};
-		styleCombo.addActionListener(listener);
-		prayerCombo.addActionListener(listener);
-
-		return comboRow(styleCombo, prayerCombo);
+		return styleControls(loadout, RangedStyle.values(), parseOrNull(RangedStyle.class, loadout.rangedStyle()),
+			RangedStyle::label, RangedPrayer.values(), parseOrNull(RangedPrayer.class, loadout.rangedPrayer()),
+			RangedPrayer::label, lockedGearActions.rangedSelectionChanged);
 	}
 
 	private JPanel magicControls(LockedGear gear)
 	{
 		Loadout loadout = gear.selectedLoadout();
-		Spell spell = parseOrNull(Spell.class, loadout.spell());
-		MagicPrayer prayer = parseOrNull(MagicPrayer.class, loadout.magicPrayer());
+		return styleControls(loadout, Spell.values(), parseOrNull(Spell.class, loadout.spell()), Spell::label,
+			MagicPrayer.values(), parseOrNull(MagicPrayer.class, loadout.magicPrayer()), MagicPrayer::label,
+			lockedGearActions.magicSelectionChanged);
+	}
 
-		JComboBox<Spell> spellCombo = enumCombo(Spell.values(), spell, Spell::label);
-		JComboBox<MagicPrayer> prayerCombo = enumCombo(MagicPrayer.values(), prayer, MagicPrayer::label);
-
+	/**
+	 * A style (or spell) combo beside a prayer combo. Either changing reports
+	 * both to the plugin by enum name, once both have a value: an unmade
+	 * choice on one side is not a selection to save.
+	 */
+	private <S extends Enum<S>, P extends Enum<P>> JPanel styleControls(Loadout loadout, S[] styles, S style,
+		Function<S, String> styleLabel, P[] prayers, P prayer, Function<P, String> prayerLabel,
+		LockedGearActions.TriConsumer<String, String, String> onChange)
+	{
+		JComboBox<S> styleCombo = enumCombo(styles, style, styleLabel);
+		JComboBox<P> prayerCombo = enumCombo(prayers, prayer, prayerLabel);
 		ActionListener listener = e ->
 		{
-			Spell chosenSpell = (Spell) spellCombo.getSelectedItem();
-			MagicPrayer chosenPrayer = (MagicPrayer) prayerCombo.getSelectedItem();
-			if (chosenSpell == null || chosenPrayer == null)
+			Object chosenStyle = styleCombo.getSelectedItem();
+			Object chosenPrayer = prayerCombo.getSelectedItem();
+			if (chosenStyle != null && chosenPrayer != null)
 			{
-				return;
+				lockedGearMessage = null;
+				onChange.accept(loadout.name(), ((Enum<?>) chosenStyle).name(), ((Enum<?>) chosenPrayer).name());
 			}
-			lockedGearMessage = null;
-			lockedGearActions.magicSelectionChanged.accept(loadout.name(), chosenSpell.name(), chosenPrayer.name());
 		};
-		spellCombo.addActionListener(listener);
+		styleCombo.addActionListener(listener);
 		prayerCombo.addActionListener(listener);
-
-		return comboRow(spellCombo, prayerCombo);
+		return comboRow(styleCombo, prayerCombo);
 	}
 
 	private static JPanel comboRow(Component first, Component second)
@@ -3926,6 +3885,13 @@ class QuestpathPanel extends PluginPanel
 	private void warn(String message)
 	{
 		JOptionPane.showMessageDialog(this, message, "Quest Route", JOptionPane.WARNING_MESSAGE);
+	}
+
+	/** An OK/Cancel question; true only on OK. */
+	private boolean confirm(String question)
+	{
+		return JOptionPane.showConfirmDialog(this, question, "Quest Route", JOptionPane.OK_CANCEL_OPTION,
+			JOptionPane.WARNING_MESSAGE) == JOptionPane.OK_OPTION;
 	}
 
 	/** How long a toast stays up before it dismisses itself. */

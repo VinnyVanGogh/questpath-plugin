@@ -1,9 +1,14 @@
 package com.vinnyvangogh.questpath;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import net.runelite.api.gameval.ItemID;
 
 /**
@@ -150,7 +155,7 @@ class QuestItems
 		private PlanNote plan = PlanNote.NONE;
 		private long equivalentOwned;
 		private long inGroupStorage;
-		private List<String> members = java.util.Collections.emptyList();
+		private List<String> members = Collections.emptyList();
 
 		/**
 		 * Every tier of the category this line came from, in the wiki's order
@@ -168,7 +173,7 @@ class QuestItems
 		/** Records every tier of the category. Returns this line, for chaining. */
 		Line withMembers(List<String> names)
 		{
-			this.members = names == null ? java.util.Collections.emptyList() : names;
+			this.members = names == null ? Collections.emptyList() : names;
 			return this;
 		}
 
@@ -273,7 +278,7 @@ class QuestItems
 		 */
 		List<String> dropSourceNames()
 		{
-			return dropSourceNames == null ? java.util.Collections.emptyList() : dropSourceNames;
+			return dropSourceNames == null ? Collections.emptyList() : dropSourceNames;
 		}
 
 		/**
@@ -287,7 +292,7 @@ class QuestItems
 		/** The wiki's own parentheticals for this line, verbatim. */
 		List<String> notes()
 		{
-			return notes == null ? java.util.Collections.emptyList() : notes;
+			return notes == null ? Collections.emptyList() : notes;
 		}
 
 		/**
@@ -333,7 +338,7 @@ class QuestItems
 		 */
 		List<String> sources()
 		{
-			return sources == null ? java.util.Collections.emptyList() : sources;
+			return sources == null ? Collections.emptyList() : sources;
 		}
 
 		/**
@@ -343,7 +348,7 @@ class QuestItems
 		 */
 		List<String> shopNames()
 		{
-			return shopNames == null ? java.util.Collections.emptyList() : shopNames;
+			return shopNames == null ? Collections.emptyList() : shopNames;
 		}
 
 		long owned()
@@ -442,7 +447,7 @@ class QuestItems
 	static final class PlanNote
 	{
 		/** No decision: questpath sent no plan, or nothing about this line. */
-		static final PlanNote NONE = new PlanNote(null, 0L, java.util.Collections.<String>emptyList());
+		static final PlanNote NONE = new PlanNote(null, 0L, Collections.<String>emptyList());
 
 		private final ItemPlan.Item decided;
 		private final long makeQuantity;
@@ -563,16 +568,16 @@ class QuestItems
 				name = target;
 				itemId = decided.targetItemId() > 0 ? decided.targetItemId()
 					: other == null ? 0 : other.itemId();
-				sources = other == null ? java.util.Collections.<String>emptyList() : other.sources();
-				shopNames = other == null ? java.util.Collections.<String>emptyList() : other.shopNames();
-				drops = other == null ? java.util.Collections.<String>emptyList() : other.dropSourceNames();
+				sources = other == null ? Collections.<String>emptyList() : other.sources();
+				shopNames = other == null ? Collections.<String>emptyList() : other.shopNames();
+				drops = other == null ? Collections.<String>emptyList() : other.dropSourceNames();
 			}
 			if (decided.unobtainable())
 			{
 				// Shown, never routed to: no member can be reached.
-				sources = java.util.Collections.emptyList();
-				shopNames = java.util.Collections.emptyList();
-				drops = java.util.Collections.emptyList();
+				sources = Collections.emptyList();
+				shopNames = Collections.emptyList();
+				drops = Collections.emptyList();
 			}
 			note = new PlanNote(decided, decided.makeQuantityGiven(held), decided.instructionsGiven(held));
 		}
@@ -681,7 +686,7 @@ class QuestItems
 		 */
 		List<String> sources()
 		{
-			return sources == null ? java.util.Collections.emptyList() : sources;
+			return sources == null ? Collections.emptyList() : sources;
 		}
 
 		/** The game's own item id, or 0 when questpath holds none. */
@@ -709,14 +714,14 @@ class QuestItems
 
 	static QuestItems of(QuestGraph graph, PlayerState account, Map<String, Long> held, boolean bankSeen)
 	{
-		return of(graph, account, held, bankSeen, java.util.Collections.emptySet(),
-			java.util.Collections.emptySet());
+		return of(graph, account, held, bankSeen, Collections.emptySet(),
+			Collections.emptySet());
 	}
 
 	static QuestItems of(QuestGraph graph, PlayerState account, Map<String, Long> held, boolean bankSeen,
-		java.util.Set<String> upcoming)
+		Set<String> upcoming)
 	{
-		return of(graph, account, held, bankSeen, upcoming, java.util.Collections.emptySet());
+		return of(graph, account, held, bankSeen, upcoming, Collections.emptySet());
 	}
 
 	/**
@@ -727,9 +732,9 @@ class QuestItems
 	 *     whatever is doable right now.
 	 */
 	static QuestItems of(QuestGraph graph, PlayerState account, Map<String, Long> held, boolean bankSeen,
-		java.util.Set<String> upcoming, java.util.Set<String> plan)
+		Set<String> upcoming, Set<String> plan)
 	{
-		return of(graph, account, held, bankSeen, upcoming, plan, java.util.Collections.emptyMap());
+		return of(graph, account, held, bankSeen, upcoming, plan, Collections.emptyMap());
 	}
 
 	/**
@@ -738,10 +743,10 @@ class QuestItems
 	 *     session, and never to reduce a live count -- see effectiveHeld.
 	 */
 	static QuestItems of(QuestGraph graph, PlayerState account, Map<String, Long> held, boolean bankSeen,
-		java.util.Set<String> upcoming, java.util.Set<String> plan, Map<String, Long> knownItems)
+		Set<String> upcoming, Set<String> plan, Map<String, Long> knownItems)
 	{
 		return of(graph, account, held, bankSeen, upcoming, plan, knownItems,
-			java.util.Collections.emptyMap());
+			Collections.emptyMap());
 	}
 
 	/**
@@ -751,11 +756,11 @@ class QuestItems
 	 *     way; see Total.inProgress
 	 */
 	static QuestItems of(QuestGraph graph, PlayerState account, Map<String, Long> held, boolean bankSeen,
-		java.util.Set<String> upcoming, java.util.Set<String> plan, Map<String, Long> knownItems,
+		Set<String> upcoming, Set<String> plan, Map<String, Long> knownItems,
 		Map<String, Long> carried)
 	{
 		return of(graph, account, held, bankSeen, upcoming, plan, knownItems, carried,
-			java.util.Collections.<String>emptySet());
+			Collections.<String>emptySet());
 	}
 
 	/**
@@ -764,8 +769,8 @@ class QuestItems
 	 *     about anyway
 	 */
 	static QuestItems of(QuestGraph graph, PlayerState account, Map<String, Long> held, boolean bankSeen,
-		java.util.Set<String> upcoming, java.util.Set<String> plan, Map<String, Long> knownItems,
-		Map<String, Long> carried, java.util.Set<String> placeholders)
+		Set<String> upcoming, Set<String> plan, Map<String, Long> knownItems,
+		Map<String, Long> carried, Set<String> placeholders)
 	{
 		return of(graph, account, held, bankSeen, upcoming, plan, knownItems, carried, placeholders, null);
 	}
@@ -775,8 +780,8 @@ class QuestItems
 	 *     or null when there is none -- see {@link #planned}
 	 */
 	static QuestItems of(QuestGraph graph, PlayerState account, Map<String, Long> held, boolean bankSeen,
-		java.util.Set<String> upcoming, java.util.Set<String> plan, Map<String, Long> knownItems,
-		Map<String, Long> carried, java.util.Set<String> placeholders, ItemPlan itemPlan)
+		Set<String> upcoming, Set<String> plan, Map<String, Long> knownItems,
+		Map<String, Long> carried, Set<String> placeholders, ItemPlan itemPlan)
 	{
 		return of(graph, account, held, bankSeen, upcoming, plan, knownItems, carried, placeholders, itemPlan,
 			GroupStorageView.NONE);
@@ -790,8 +795,8 @@ class QuestItems
 	 *     GroupStorageView#addTo}
 	 */
 	static QuestItems of(QuestGraph graph, PlayerState account, Map<String, Long> held, boolean bankSeen,
-		java.util.Set<String> upcoming, java.util.Set<String> plan, Map<String, Long> knownItems,
-		Map<String, Long> carried, java.util.Set<String> placeholders, ItemPlan itemPlan,
+		Set<String> upcoming, Set<String> plan, Map<String, Long> knownItems,
+		Map<String, Long> carried, Set<String> placeholders, ItemPlan itemPlan,
 		GroupStorageView storage)
 	{
 		GroupStorageView view = storage == null ? GroupStorageView.NONE : storage;
@@ -816,7 +821,7 @@ class QuestItems
 				line.inGroupStorage = storage.count(line.name());
 			}
 		}
-		for (List<Total> list : java.util.Arrays.asList(totals, allTotals))
+		for (List<Total> list : Arrays.asList(totals, allTotals))
 		{
 			for (Total total : list)
 			{
@@ -836,8 +841,8 @@ class QuestItems
 	 * @param knownItems only to decide {@link Freshness}; already folded into held
 	 */
 	private static QuestItems build(QuestGraph graph, PlayerState account, Map<String, Long> held,
-		boolean bankSeen, java.util.Set<String> upcoming, java.util.Set<String> plan,
-		Map<String, Long> knownItems, Map<String, Long> carried, java.util.Set<String> placeholders,
+		boolean bankSeen, Set<String> upcoming, Set<String> plan,
+		Map<String, Long> knownItems, Map<String, Long> carried, Set<String> placeholders,
 		ItemPlan itemPlan)
 	{
 		QuestItems out = new QuestItems();
@@ -868,7 +873,7 @@ class QuestItems
 		// Falls back to doable when no route has been synced, because an
 		// account questpath has never seen a plan for still deserves a list,
 		// and "everything in the game" is not one.
-		java.util.Set<String> scope = new java.util.HashSet<>();
+		Set<String> scope = new HashSet<>();
 		for (String name : plan)
 		{
 			if (name != null)
@@ -973,7 +978,7 @@ class QuestItems
 	}
 
 	private static Total newTotal(String name, Line line, Map<String, Long> held,
-		Map<String, Long> carried, java.util.Set<String> placeholders)
+		Map<String, Long> carried, Set<String> placeholders)
 	{
 		if (line.members().isEmpty())
 		{
@@ -991,7 +996,7 @@ class QuestItems
 			.withMembers(line.members(), held);
 	}
 
-	private static boolean anyIn(List<String> names, java.util.Set<String> lowerCaseSet)
+	private static boolean anyIn(List<String> names, Set<String> lowerCaseSet)
 	{
 		for (String name : names)
 		{
@@ -1077,10 +1082,10 @@ class QuestItems
 	 * see {@link ItemGroupChoice#wieldOnlySkills} -- rather than assumed
 	 * either way.
 	 */
-	private static java.util.Map<String, Integer> levelsFor(
+	private static Map<String, Integer> levelsFor(
 		List<QuestGraph.Alternative> alternatives, PlayerState account)
 	{
-		java.util.Map<String, Integer> out = new java.util.HashMap<>();
+		Map<String, Integer> out = new HashMap<>();
 		if (alternatives == null || account == null)
 		{
 			return out;
@@ -1115,7 +1120,7 @@ class QuestItems
 	 * any item, and a quest spans a lot of ground. It is a much better proxy
 	 * than a started flag that never clears.
 	 */
-	private static List<Pickup> pickupsIn(QuestGraph graph, java.util.Set<String> upcoming, List<Total> totals)
+	private static List<Pickup> pickupsIn(QuestGraph graph, Set<String> upcoming, List<Total> totals)
 	{
 		List<Pickup> out = new ArrayList<>();
 		if (upcoming == null || upcoming.isEmpty())
@@ -1136,7 +1141,7 @@ class QuestItems
 			return out;
 		}
 
-		java.util.Set<String> lowerUpcoming = new java.util.HashSet<>();
+		Set<String> lowerUpcoming = new HashSet<>();
 		for (String name : upcoming)
 		{
 			if (name != null)
@@ -1220,7 +1225,7 @@ class QuestItems
 	 * them in would inflate every total with things nobody has to bring.
 	 */
 	private static List<Total> totalsOf(List<QuestNeeds> quests, Map<String, Long> held,
-		Map<String, Long> carried, java.util.Set<String> placeholders, int magicLevel, boolean includeRecommended)
+		Map<String, Long> carried, Set<String> placeholders, int magicLevel, boolean includeRecommended)
 	{
 		Map<String, Total> merged = new LinkedHashMap<>();
 
@@ -1384,7 +1389,7 @@ class QuestItems
 			return notes;
 		}
 
-		private final List<String> notes = new java.util.ArrayList<>();
+		private final List<String> notes = new ArrayList<>();
 
 		private final Map<String, Long> memberCounts = new LinkedHashMap<>();
 
@@ -1447,7 +1452,7 @@ class QuestItems
 		 */
 		List<String> dropSourceNames()
 		{
-			return dropSourceNames == null ? java.util.Collections.emptyList() : dropSourceNames;
+			return dropSourceNames == null ? Collections.emptyList() : dropSourceNames;
 		}
 
 		/** Convenience for callers with no placeholder to report -- mainly tests. */
@@ -1485,7 +1490,7 @@ class QuestItems
 		 */
 		List<String> sources()
 		{
-			return sources == null ? java.util.Collections.emptyList() : sources;
+			return sources == null ? Collections.emptyList() : sources;
 		}
 
 		/**
@@ -1495,7 +1500,7 @@ class QuestItems
 		 */
 		List<String> shopNames()
 		{
-			return shopNames == null ? java.util.Collections.emptyList() : shopNames;
+			return shopNames == null ? Collections.emptyList() : shopNames;
 		}
 
 		/**

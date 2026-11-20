@@ -2132,70 +2132,10 @@ public class QuestpathPlugin extends Plugin
 	private LockedGear.ItemStatsView itemStatsView(int itemId)
 	{
 		ItemStats stats = itemManager.getItemStats(itemId);
-		if (stats == null || !stats.isEquipable())
-		{
-			return UNKNOWN_ITEM_STATS;
-		}
-		ItemEquipmentStats equipment = stats.getEquipment();
-		if (equipment == null)
-		{
-			return UNKNOWN_ITEM_STATS;
-		}
-		return new LockedGear.ItemStatsView()
-		{
-			@Override
-			public boolean known()
-			{
-				return true;
-			}
-
-			@Override
-			public int str()
-			{
-				return equipment.getStr();
-			}
-
-			@Override
-			public int rstr()
-			{
-				return equipment.getRstr();
-			}
-
-			@Override
-			public int mdmg()
-			{
-				return Math.round(equipment.getMdmg());
-			}
-		};
+		ItemEquipmentStats equipment = stats == null || !stats.isEquipable() ? null : stats.getEquipment();
+		return equipment == null ? LockedGear.ItemStats.UNKNOWN
+			: new LockedGear.ItemStats(true, equipment.getStr(), equipment.getRstr(), Math.round(equipment.getMdmg()));
 	}
-
-	/** Shared, since every field on it is a constant -- no need for a fresh instance per unknown item. */
-	private static final LockedGear.ItemStatsView UNKNOWN_ITEM_STATS = new LockedGear.ItemStatsView()
-	{
-		@Override
-		public boolean known()
-		{
-			return false;
-		}
-
-		@Override
-		public int str()
-		{
-			return 0;
-		}
-
-		@Override
-		public int rstr()
-		{
-			return 0;
-		}
-
-		@Override
-		public int mdmg()
-		{
-			return 0;
-		}
-	};
 
 	/**
 	 * "Lock current gear": snapshots whatever is currently worn under {@code

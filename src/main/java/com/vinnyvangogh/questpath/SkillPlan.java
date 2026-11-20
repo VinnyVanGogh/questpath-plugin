@@ -2,6 +2,9 @@ package com.vinnyvangogh.questpath;
 
 import java.util.ArrayList;
 import java.util.List;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.experimental.Accessors;
 
 /**
  * What it would take to reach a level in one skill, and how much of it quests
@@ -31,14 +34,24 @@ import java.util.List;
  * <p>Pure: a graph, an account and a target in, a plan out. No client, no
  * Swing, no I/O.
  */
+@Getter(AccessLevel.PACKAGE)
+@Accessors(fluent = true)
 class SkillPlan
 {
 	/** One quest's contribution to a skill. */
+	@Getter(AccessLevel.PACKAGE)
+	@Accessors(fluent = true)
 	static class Entry
 	{
 		private final String questName;
 		private final double xp;
 		private final QuestStatus status;
+		/**
+		 * What stands between the account and this quest, or null when
+		 * nothing does. Computed only for quests that are actually blocked: a
+		 * ready quest has no blockers by definition, and walking its tree to
+		 * prove that would be work done to produce an empty list.
+		 */
 		private final QuestBlockers blockers;
 
 		Entry(String questName, double xp, QuestStatus status, QuestBlockers blockers)
@@ -48,38 +61,11 @@ class SkillPlan
 			this.status = status;
 			this.blockers = blockers;
 		}
-
-		/**
-		 * What stands between the account and this quest, or null when
-		 * nothing does.
-		 *
-		 * Computed only for quests that are actually blocked. A ready quest
-		 * has no blockers by definition, and walking its tree to prove that
-		 * would be work done to produce an empty list.
-		 */
-		QuestBlockers blockers()
-		{
-			return blockers;
-		}
-
-		String questName()
-		{
-			return questName;
-		}
-
-		double xp()
-		{
-			return xp;
-		}
-
-		QuestStatus status()
-		{
-			return status;
-		}
 	}
 
 	private final String skill;
 	private final int currentLevel;
+	@Getter(AccessLevel.NONE)
 	private final long currentXp;
 	private final int targetLevel;
 
@@ -87,6 +73,7 @@ class SkillPlan
 	private final List<Entry> later = new ArrayList<>();
 	private final List<Entry> lost = new ArrayList<>();
 
+	/** The build cap on this skill, or -1 when nothing caps it. See {@link #targetBreaksBuild()}. */
 	private int cappedAt = -1;
 
 	private SkillPlan(String skill, int currentLevel, long currentXp, int targetLevel)
@@ -181,50 +168,10 @@ class SkillPlan
 		return rule.value();
 	}
 
-	String skill()
-	{
-		return skill;
-	}
-
-	int currentLevel()
-	{
-		return currentLevel;
-	}
-
-	int targetLevel()
-	{
-		return targetLevel;
-	}
-
-	List<Entry> ready()
-	{
-		return ready;
-	}
-
-	List<Entry> later()
-	{
-		return later;
-	}
-
-	List<Entry> lost()
-	{
-		return lost;
-	}
-
 	/** Whether the target is already met. */
 	boolean reached()
 	{
 		return currentLevel >= targetLevel;
-	}
-
-	/**
-	 * The build cap on this skill, or -1 when nothing caps it.
-	 *
-	 * @see #targetBreaksBuild()
-	 */
-	int cappedAt()
-	{
-		return cappedAt;
 	}
 
 	/** Whether the chosen target would break the account's own rules. */
