@@ -492,7 +492,8 @@ class QuestpathPanel extends PluginPanel
 		setup.setToolTipText("Account type, build, skill caps and quest filters. Opens setup from any page.");
 		JButton whatsNew = button("What's new", event -> run(onWhatsNew));
 		whatsNew.setToolTipText("Print this version's update notes in the game chat again.");
-		JPanel row = new JPanel(new GridLayout(1, 2, 4, 0));
+		// Stacked, not side by side: at the default sidebar width two half-width buttons clip their labels.
+		JPanel row = new JPanel(new GridLayout(2, 1, 0, 4));
 		row.setAlignmentX(LEFT_ALIGNMENT);
 		row.setBorder(BorderFactory.createEmptyBorder(0, 0, 6, 0));
 		row.add(setup);
