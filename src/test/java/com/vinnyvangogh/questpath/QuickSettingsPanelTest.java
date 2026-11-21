@@ -109,6 +109,24 @@ public class QuickSettingsPanelTest
 	}
 
 	@Test
+	public void noCheckboxLabelIsClippedAtTheDefaultSidebarWidth()
+	{
+		final int sidebarWidth = 225;
+		MemoryConfig config = new MemoryConfig();
+		QuickSettingsPanel panel = new QuickSettingsPanel(QuickSettingsPanel.rows(new QuestpathConfig() {}),
+			config, () -> {});
+		for (QuickSettingsPanel.Row row : QuickSettingsPanel.rows(new QuestpathConfig() {}))
+		{
+			JCheckBox box = panel.boxFor(row.keyName);
+			// A label wider than the column is what renders as "Next quest ov...".
+			assertTrue(row.label + " is wider than the sidebar: " + box.getPreferredSize().width,
+				box.getPreferredSize().width + 16 <= sidebarWidth);
+			assertTrue(row.label + " must wrap rather than be cut", box.getText().startsWith("<html>"));
+		}
+		assertTrue("the whole panel fits", panel.getPreferredSize().width <= sidebarWidth);
+	}
+
+	@Test
 	public void serverModeCarriesTheThirdPartyWarning()
 	{
 		for (QuickSettingsPanel.Row row : QuickSettingsPanel.rows(new QuestpathConfig() {}))

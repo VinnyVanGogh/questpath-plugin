@@ -121,6 +121,20 @@ class QuickSettingsPanel extends JPanel
 		}
 	}
 
+	/**
+	 * Width a checkbox label may take before wrapping. The sidebar is 225px; the
+	 * panel border (16), the checkbox glyph and its gap (about 24) and the
+	 * scrollbar leave roughly this much for text.
+	 */
+	static final int LABEL_WIDTH = 120;
+
+	/** The label as HTML that wraps at {@link #LABEL_WIDTH} instead of being cut off with "...". */
+	static String wrapped(String label)
+	{
+		return "<html><body style='width:" + LABEL_WIDTH + "px'>" + label.replace("&", "&amp;").replace("<", "&lt;")
+			+ "</body></html>";
+	}
+
 	private final List<Row> rows;
 	private final List<JCheckBox> boxes = new ArrayList<>();
 	private final Store store;
@@ -139,14 +153,15 @@ class QuickSettingsPanel extends JPanel
 
 		for (Row row : rows)
 		{
-			JCheckBox box = new JCheckBox(row.label);
+			JCheckBox box = new JCheckBox(wrapped(row.label));
 			box.setToolTipText(row.tooltip);
 			box.setForeground(Color.WHITE);
 			box.setBackground(ColorScheme.DARK_GRAY_COLOR);
 			box.setFont(smallFont());
 			box.setFocusPainted(false);
 			box.setAlignmentX(LEFT_ALIGNMENT);
-			box.setMaximumSize(new Dimension(Integer.MAX_VALUE, 22));
+			// Rows grow to fit a wrapped second line rather than clip at a fixed height.
+			box.setMaximumSize(new Dimension(Integer.MAX_VALUE, box.getPreferredSize().height));
 			box.addActionListener(e -> onClick(row, box));
 			boxes.add(box);
 			add(box);
