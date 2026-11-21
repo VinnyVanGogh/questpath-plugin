@@ -303,6 +303,15 @@ class QuestpathPanel extends PluginPanel
 	private final ShortestPathBridge shortestPathBridge;
 
 	/**
+	 * Whether a diary or group-shop route from this panel went out and has not
+	 * been stopped since. Gates the "Stop path" button: a stop beside a start
+	 * that was never pressed does nothing. Shortest Path clears itself on
+	 * arrival with no event we can see, so this can outlive the line on the
+	 * ground; pressing Stop then is a harmless extra clear.
+	 */
+	private volatile boolean pathStartedHere;
+
+	/**
 	 * Shows a clicked item in the Grand Exchange's own search results.
 	 * Only ever reachable for an account {@link #geAvailable} reports true
 	 * for -- see {@link GrandExchangeAccounts}'s own doc.
@@ -1492,6 +1501,7 @@ class QuestpathPanel extends PluginPanel
 		}
 		body.add(gap(6));
 		body.add(groupShopRouteButton(view, lines));
+		addStopPathButton(body);
 		groupShopFootnotes(body, list);
 	}
 
@@ -1647,7 +1657,32 @@ class QuestpathPanel extends PluginPanel
 		}
 		int count = destinations.size();
 		return routeButton(" (group shops)", event -> shortestPathBridge.route(destinations, outcome ->
-			SwingUtilities.invokeLater(() -> reportRouteOutcome(outcome, count))));
+		{
+			if (outcome == ShortestPathBridge.RouteOutcome.SENT)
+			{
+				pathStartedHere = true;
+			}
+			SwingUtilities.invokeLater(() -> reportRouteOutcome(outcome, count));
+		}));
+	}
+
+	/** Adds "Stop path" to {@code parent} while a route started from here may still be drawn. */
+	private void addStopPathButton(JPanel parent)
+	{
+		if (pathStartedHere && shortestPathBridge != null)
+		{
+			parent.add(stopPathButton());
+		}
+	}
+
+	private JButton stopPathButton()
+	{
+		return button("Stop path", event ->
+		{
+			pathStartedHere = false;
+			shortestPathBridge.clear();
+			repaintAll();
+		});
 	}
 
 	private static JButton disabled(String text)
@@ -3458,6 +3493,7 @@ class QuestpathPanel extends PluginPanel
 		{
 			panel.add(gap(6));
 			panel.add(diaryRouteButton(stops.get(0)));
+			addStopPathButton(panel);
 		}
 
 		for (QuestGraph.DiaryTask task : locationUnknown)
@@ -3490,7 +3526,14 @@ class QuestpathPanel extends PluginPanel
 		JButton button = routeButton("", event ->
 		{
 			WorldPoint point = new WorldPoint(destination.x(), destination.y(), destination.plane());
-			shortestPathBridge.route(Set.of(point), outcome -> repaintAll());
+			shortestPathBridge.route(Set.of(point), outcome ->
+			{
+				if (outcome == ShortestPathBridge.RouteOutcome.SENT)
+				{
+					pathStartedHere = true;
+				}
+				repaintAll();
+			});
 		});
 		if (button.isEnabled())
 		{
