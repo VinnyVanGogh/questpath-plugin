@@ -121,7 +121,7 @@ public class QuickSettingsPanelTest
 			// A label wider than the column is what renders as "Next quest ov...".
 			assertTrue(row.label + " is wider than the sidebar: " + box.getPreferredSize().width,
 				box.getPreferredSize().width + 16 <= sidebarWidth);
-			assertTrue(row.label + " must wrap rather than be cut", box.getText().startsWith("<html>"));
+			assertFalse(row.label + " must be plain text, not HTML", box.getText().startsWith("<html>"));
 		}
 		assertTrue("the whole panel fits", panel.getPreferredSize().width <= sidebarWidth);
 	}

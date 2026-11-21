@@ -98,7 +98,7 @@ class QuickSettingsPanel extends JPanel
 			"Highlight the items you need in your bank.", config::bankHighlight, null));
 		rows.add(new Row("voiceEnabled", "Spoken prompts",
 			"Speak shop and floor item prompts aloud.", config::voiceEnabled, null));
-		rows.add(new Row("syncEnabled", "Server mode (send account state)",
+		rows.add(new Row("syncEnabled", "Server mode",
 			"Push quest completion, levels and diaries to your Quest Route server. Off keeps"
 				+ " everything local.", config::syncEnabled, SYNC_WARNING));
 		return Collections.unmodifiableList(rows);
@@ -121,20 +121,6 @@ class QuickSettingsPanel extends JPanel
 		}
 	}
 
-	/**
-	 * Width a checkbox label may take before wrapping. The sidebar is 225px; the
-	 * panel border (16), the checkbox glyph and its gap (about 24) and the
-	 * scrollbar leave roughly this much for text.
-	 */
-	static final int LABEL_WIDTH = 120;
-
-	/** The label as HTML that wraps at {@link #LABEL_WIDTH} instead of being cut off with "...". */
-	static String wrapped(String label)
-	{
-		return "<html><body style='width:" + LABEL_WIDTH + "px'>" + label.replace("&", "&amp;").replace("<", "&lt;")
-			+ "</body></html>";
-	}
-
 	private final List<Row> rows;
 	private final List<JCheckBox> boxes = new ArrayList<>();
 	private final Store store;
@@ -153,14 +139,13 @@ class QuickSettingsPanel extends JPanel
 
 		for (Row row : rows)
 		{
-			JCheckBox box = new JCheckBox(wrapped(row.label));
+			JCheckBox box = new JCheckBox(row.label);
 			box.setToolTipText(row.tooltip);
 			box.setForeground(Color.WHITE);
 			box.setBackground(ColorScheme.DARK_GRAY_COLOR);
 			box.setFont(smallFont());
 			box.setFocusPainted(false);
 			box.setAlignmentX(LEFT_ALIGNMENT);
-			// Rows grow to fit a wrapped second line rather than clip at a fixed height.
 			box.setMaximumSize(new Dimension(Integer.MAX_VALUE, box.getPreferredSize().height));
 			box.addActionListener(e -> onClick(row, box));
 			boxes.add(box);
