@@ -1,299 +1,169 @@
-# Quest Route for RuneLite
+# Quest Route
 
-**The plan, inside the game.** One shop run for every quest item, shopkeepers
-calling out when you pass something you need, your route and what it costs at a
-glance, and a warning before a build rule ends the account.
+Quest planning, item routing, combat XP maths, and build-rule guards for Old
+School RuneScape accounts inside RuneLite.
 
-> **Name.** This plugin was called *questpath* during development. That name is
-> taken on the Plugin Hub by another author's plugin, so it ships as **Quest
-> Route**. The optional server it can sync with is still the
-> [questpath](https://github.com/VinnyVanGogh) web app.
+Most quest tools check whether you *meet* a quest's requirements. Quest Route
+also checks whether the quest—or anything in its prerequisite chain—would push
+a skill past a cap you hold on purpose, then turns the items across your route
+into one trip.
 
-> **Early development.** Most overlays are opt-in, and features marked
-> *(in progress)* are partly built or next up.
-
-![In-game: walking past Agelus' Farm Shop, which calls out that it stocks the grain you still need](docs/screenshots/passing-a-shop.jpg)
-
-Walking past **Agelus' Farm Shop**. It calls out "Looking for a Grain? Say no
-more. (x10)" over the shop, and the same line lands in chat.
+> **Name.** This plugin was called *questpath* during development. Another
+> author's *QuestPath* is on the Plugin Hub, so this plugin ships as **Quest
+> Route**.
 
 ---
 
-## Why it exists
+## Features
 
-Most quest tools check whether you *meet* a quest's requirements. This one also
-checks whether the quest, or anything it depends on, would push a skill past a
-cap you're holding on purpose — the question a pure or a restricted account
-actually has.
+- **No server needed.** Ships a bundled quest graph (218 quests, 314 shops, 125
+  monster drop locations, 492 diary tasks, 300 boosts) and lamp catalogue (20
+  lamps and tomes), checked against the same 218 quest verdicts as the
+  companion planner. Everything saves in RuneLite's own per-account config; no
+  external files are written.
+- **Account setup & build presets.** First run opens **Account setup** on the
+  **Quests** tab (reachable any time from the **Account setup** button at the
+  top of the sidebar): pick your account type, free-to-play and/or members
+  quests, and one of **27 named builds** (F2P and Members 1 Defence pures,
+  Zerker, Void, Initiate, Obsidian builds, Defence tank, *Skiller (no combat
+  XP)*, and more) or custom per-skill limits (*No limit*, *No XP ever*, *Stop
+  at level*, *Warn only*, *Goal level*).
+- **Your route & quest verdicts.** Builds a prerequisite-ordered route leaving
+  out quests your build or levels forbid, lists **Still needs work** with full
+  blocker and boost chains on hover, and groups all 218 quests by verdict.
+  Right-click any quest to **Pin to the front of the route**, **Do it later**,
+  or **Refuse: never do this quest**, or tick **Hide quests your build has
+  closed off**.
 
-For an ironman it removes the chore around every quest: gathering. Instead of a
-side quest before the quest, you get one list for your whole plan, one trip to
-collect it, and a shout when you walk past something on it.
+### The shop run
 
-**It works without a server.** The plugin ships its own copy of the quest graph
-and a Java port of the [questpath](https://github.com/VinnyVanGogh) planner,
-tested against the same 218 quest verdicts as the website. Your route, build
-rules and diaries arrive when you sync.
+1. **One list across your plan.** Totals every item across your doable or
+   routed quests against your bank, inventory, worn gear, and (for Group
+   Ironmen, once opened) Group Ironman storage. Any-tier requirements (*any
+   pickaxe*, *any axe*, nails, logs, bars, light sources) fill from whichever
+   qualifying tier you already own.
+2. **Send to Shortest Path.** Orders reachable stops nearest-first from where
+   you stand, groups items sold at the same shop, and sends the target set to
+   **Shortest Path** over `PluginMessage`.
+3. **Only places you can use.** Skips locked guilds, quest-gated towns,
+   Wilderness stops you forbid, and Thieving stalls above your level. Falls
+   back to practical monster drops when no reachable shop stocks an item—never
+   a boss or a Slayer/combat-locked monster.
+4. **Spoken & overhead call-outs.** Walk within 16 tiles of a reachable shop
+   selling something you still need and Quest Route calls out the items using
+   bundled offline voice clips (with **Say again** on the active stop), even
+   when you were not routed there.
+5. **Auto-advance & skip.** Completing an item advances the trip to the next
+   stop; **Skip** moves an awkward stop to the back with one-click **restore**.
 
-First run, a sidebar setup asks your account type and which quests to route,
-then shows the route; it is saved under `.runelite/questroute/`. See
-[docs/try-it-without-a-server.md](docs/try-it-without-a-server.md).
+![Shortest Path line to Lumbridge Home Teleport beside the Shop route overlay and Items tab](docs/screenshots/shop-route-teleport.jpg)
 
----
+### Items in the world, shops, bank & Grand Exchange
 
-## The shop run
+- **Drop sources.** Outlines NPCs and world objects in view (such as Imps for
+  beads or berry bushes) when drops lead an item's sources, labelled `drops
+  <Item>`, and stops outlining as soon as you hold enough.
+- **Shops.** Outlines needed stock while a shop is open, prints how many to buy
+  in green above the slot, and names the quest on hover.
 
-1. **One list for the whole plan.** One total per item across every quest on
-   your route, counted against bank, inventory and what you're wearing (plus
-   Group Ironman storage once you or a party member has opened it).
-2. **Send it to Shortest Path.** One button builds the trip, nearest stop first,
-   with items sold in the same place grouped together. Shortest Path draws the
-   path and tells you where to teleport.
-3. **Only places you can get to.** Guilds and quest-locked towns you can't enter
-   are skipped. If no shop you can reach sells an item, the route chains its
-   recipe (missing ingredients first, then the nearest furnace, range or anvil)
-   or sends you to a monster drop you have the Slayer and combat levels for —
-   never a boss or a Slayer-locked monster.
-4. **Shopkeepers shout as you pass.** Come within 16 tiles of a shop stocking
-   something you still need and it calls out (and speaks every still-needed item
-   that shop sells, with a "Say again" button on the active stop), even if it
-   isn't your next stop.
-5. **The trip moves itself on.** When the last one lands in your bags, the route
-   jumps to the next stop and chat says where. Skip an item and it goes to the
-   back, with a restore button.
+  ![A shop with needed items outlined, buy counts above the slots, and a quest tooltip](docs/screenshots/shop-open.jpg)
 
-![In-game: the Shortest Path line leading to a Lumbridge Home Teleport, with the shop route overlay naming the next stop](docs/screenshots/shop-route-teleport.jpg)
+- **Bank.** A backpack button in the bank title bar (stepping aside cleanly for
+  other plugins, and toggling back out on **Hide tab** or any bank tab click)
+  groups your bank into *Ran out*, *Still needed*, *Ready to withdraw*, and
+  *Everything else* while keeping every owned stack withdrawable, alongside the
+  *Needed from your bank* list.
+- **Ground items.** Outlines needed items within 15 tiles with counts and quest
+  tooltips, draws a bouncing arrow and speaks `"<Item> nearby"` once per spawn
+  within *Floor-item range (tiles)*, and promotes **Take** to left-click on
+  needed items only.
 
-Shortest Path draws the line and marks the **Lumbridge Home Teleport**. The
-overlay's next stop here is a monster drop — a Lantern lens from a Wall beast —
-and the Items tab holds the trip's buttons and the 17 items skipped this trip.
+  ![Ashes on the ground outlined as 2 / 3 for Shades of Mort'ton and Desert Treasure I](docs/screenshots/ground-items.jpg)
 
----
+- **Grand Exchange.** Shown on main accounts and hidden on every ironman. Adds
+  a buy-list button inside GE item search (selecting items by ID without ever
+  typing into the chatbox) and a live **Grand Exchange: queued, next, left**
+  overlay while the GE window is open.
 
-## Items, wherever you're standing
+  ![Grand Exchange overlay beside eight buy offers showing Next, Queued, Left, and untradeable items](docs/screenshots/ge-tracker.jpg)
 
-**Shops.** Stock your quests still need is outlined, with how many to buy above
-each slot. Hover to see which quest wants it.
+### Combat, locked gear & experience lamps
 
-![A shop with a needed item outlined and a tooltip naming the quest it is for](docs/screenshots/shop-open.jpg)
+- **Combat level cost & ceiling.** Exact XP and levels required in each combat
+  stat to reach the next combat level (cheapest first), plus how many Ranged
+  and Magic levels remain free at your current Attack and Strength.
+- **Locked gear.** Save named worn-gear loadouts per account and inspect live
+  Melee, Ranged, and Magic max hits as your levels move—with attack style,
+  prayer, spell, melee strength potion, next-level max-hit breakpoints, and
+  *Without prayer* / *Without potion* comparisons.
+- **Experience lamps.** Washes skills closed by your build rules in grey, tints
+  risky soft-cap skills in amber, boxes your top safe choices, and explains
+  every verdict on hover.
 
-**Bank.** A Quest Route button in the bank title bar turns the bank into a quest
-tab: Ran out, Still needed, Ready to withdraw. Everything stays withdrawable,
-and the "Needed from your bank" overlay sits beside it.
+### Group questing (RuneLite Party)
 
-![The bank switched to the plugin's own tab, grouped into Ran out, Still needed and Ready to withdraw (captured under the plugin's development name)](docs/screenshots/bank-tab.jpg)
+For Group Ironman teams or friends questing in a RuneLite party, over
+RuneLite's built-in Party service only (*Share with my party*, off by default):
 
-**Ground.** Needed items lying within 15 tiles are outlined with how many you
-still need and which quests want them, marked with a bouncing arrow and a
-spoken `"<item> nearby"` call-out once per spawn within the floor-item radius,
-and left-clicking picks them up before the tile's other items.
-
-![Ashes on the ground outlined, reading 2 of 3 for Shades of Mort'ton and Desert Treasure I](docs/screenshots/ground-items.jpg)
-
-**On the go.** "Get while you're here" lists items you can pick up during your
-next few route quests that another quest also needs. Finish collecting one and a
-note can float up over the shopkeeper.
-
-**Grand Exchange.** For mains, and hidden automatically on every ironman
-account. The GE item search grows a buy-list button, and the list opens in place
-of the search results, so the next thing to buy is one click rather than a name
-you have to remember. Clicking an item in the sidebar's Grand Exchange list
-shows just that item the same way. Nothing is ever typed into the search box.
-
-![The buy list open inside the Grand Exchange item search, listing Steel full helm, Steel platebody and Steel platelegs, with a tooltip over the one about to be selected (captured under the plugin's development name)](docs/screenshots/ge-buy-list.jpg)
-
-An overlay follows the whole trip while the offers run: what's next, what's
-queued, what's still left, and what the GE can't sell you at all. Progress counts
-against what you *need* rather than the size of the offer, so ten of something a
-quest wants one of reads "10 of 1" instead of a tidy "10 of 10" that would hide
-nine items sitting in the collection box.
-
-![The Grand Exchange overlay beside eight running buy offers, listing Next, Queued, Left, and four items not sold here](docs/screenshots/ge-tracker.jpg)
-
-**Recommended items, if you want them.** Every quest page also lists what the
-wiki *recommends* bringing — Camelot teleports, antipoison, a few hundred coins
-— and on a main those are things you buy rather than walk for. One toggle
-(off by default, in the Items tab and in Settings) adds them to the Grand
-Exchange list and the shop route, in their own section after the required
-items so the required list never changes. A recommended teleport can be
-listed as the tablet or as the runes to cast it (Camelot: 5 air, 1 law), your
-choice; runes are only offered when your Magic level can cast the spell.
-Recommended coins are never a buy line — they show as a balance to bring.
-This needs a quest graph that carries recommended items (version 13); on an
-older graph the panel says so rather than showing an empty section.
-
-Collect, and every item the trip has now fully covered says so in chat, naming
-the quest that wanted it.
-
-![Eight chat lines reading "you now have all 1 Adamant seeds -- for Song of the Elves" and similar, one per collected item (captured under the plugin's development name)](docs/screenshots/ge-collected.jpg)
+- **Do together next** and **Done by some of you** across sharing party
+  members (`GIM1`, `GIM2`, ...).
+- **Breaks someone's build:** flags quests everyone meets requirements for that
+  would breach a teammate's cap or no-XP rule (e.g. `GIM2: 18,650 Defence xp
+  (capped at 1)`).
+- **Who brings what & Group shopping:** per-quest item splits with spare
+  hand-overs (`GIM1 gives GIM2 3`), party-wide shopping totals counting own
+  holdings, tradeable spares, and the freshest Group Ironman storage snapshot,
+  plus **Shortest Path** routing to group shops and optional near-shop group
+  alerts.
 
 ---
 
-## The sidebar
+## Sidebar
+
+Above the tab strip on every page: **Account setup**, **What's new** (replays
+update notes in chat), and a foldable **Quick settings** block for the eight
+most-used toggles with an **All settings ↓** link to the **View** tab.
 
 | Tab | What it holds |
 |---|---|
-| **Combat** | Combat level and progress, locked gear with live max hits, the free Ranged/Magic ceiling, what the next combat level costs per stat in exact XP, and your build rules |
-| **Skills** | What a level costs: XP from quests now, later, or never on this build, and what's left to train |
-| **Quests** | Next on your route with progress, your whole route in order, "Still needs work", "Start, never finish", and every quest's verdict, searchable |
-| **Items** | Get while you're here, the shop route buttons, skipped items, and everything you need counted against what you hold |
-| **Sync** | Whether the last push went out, the account it's attributed to, and what was sent |
-| **Group** | Party members and their quest counts, quests you can do together next, quests that break a member's build, per-quest item split with hand-overs, party-wide group shopping, and quests done by only some of the group |
-| **View** | Every setting, grouped and readable, instead of a 225px config column |
-
-<details>
-<summary>Screenshots of each tab</summary>
-
-**Combat**
-
-![The Combat tab: combat level, locked gear with max hits, free ceiling, cost of the next combat level, and build rules](docs/screenshots/tab-combat.jpg)
-
-**Skills**
-
-![The Skills tab: what a level costs, with ready now, after more work, and off-the-table quests](docs/screenshots/tab-skills.jpg)
-
-**Quests**
-
-![The Quests tab: next on your route, the route in order, and still needs work](docs/screenshots/tab-quests.jpg)
-
-**Items**
-
-![The Items tab: get while you are here, shop route buttons, skipped items, and everything you need](docs/screenshots/tab-items.jpg)
-
-**Sync**
-
-![The Sync tab: push status, server and token, the account attributed, and what was sent](docs/screenshots/tab-sync.jpg)
-
-**View**
-
-![The View tab: sync, shared display settings, and each overlay with its own width and length](docs/screenshots/tab-view.jpg)
-
-</details>
+| **Combat** | *Sync with Quest Route*, combat level & progress, *Locked gear* max hits, *Free Ranged / Magic* ceiling, *Cost of the next combat level*, and *Build rules* (with *Show all rules* and the per-account rules editor) |
+| **Skills** | *What a level costs*: XP needed to a target level, *From quests now* (*Ready now*), *From quests later* (*After more work*), training remainder, and XP *Off the table* for your build |
+| **Quests** | *Quests / Diaries / All* filter, search & status filter, *Hide quests your build has closed off*, *Next on your route*, *Still needs work*, *Start, never finish*, right-click quest marks (*Pin*, *Do it later*, *Refuse*), *Can I do this quest?*, *Diary route*, and *Diary journal* |
+| **Items** | Search, *Get while you are here*, *Grand Exchange list* (mains), shop route buttons (*Send*, *Stop*, *Skip*, *Say again*, *Skipped this trip*), *Everything you need*, and *By quest* |
+| **Sync** | Status of optional self-hosted server sync, configured address/token state, attributed character snapshot, and unmatched quest names |
+| **Group** | *Your group*, *Do together next*, *Breaks someone's build*, *Who brings what*, *Group shopping*, and *Done by some of you* |
+| **View** | Collapsible sidebar controls for *Sync*, *Shared*, *Overlays*, and *Extras*, kept in two-way sync with RuneLite's configuration panel |
 
 ---
 
-## Quests, diaries and combat
+## Quick start
 
-- **Next on your route.** An overlay you can leave on: the next quest, a
-  progress bar, and a preview of what's after it.
-- **Quest Helper.** Not in this version. Starting quests in Quest Helper comes
-  back once Quest Helper accepts a start request from other plugins
-  ([quest-helper#2756](https://github.com/Zoinkwiz/quest-helper/pull/2756)).
-  Quest Route works the same with or without Quest Helper installed.
-- **Diary route.** The nearest diary tasks you can actually do, sent to Shortest
-  Path like the shop run, with a chat nudge when one is within 12 tiles, a
-  searchable diary journal on the Quests tab, and a Quests / Diaries / All
-  filter that drives both the panel and the route overlays.
-- **Combat maths.** What each stat would cost to buy the next combat level, in
-  real XP, cheapest first — on a pure, one Strength level is a week of work and
-  one Defence level can end the build.
-- **Locked gear.** Save a loadout and see its melee, ranged and magic max hit at
-  your live levels, with style, prayer, spell, melee strength potion, the next
-  level that raises each max hit, and what prayer and potion each contribute.
-- **Build rules.** How much room is left before a rule breaks, editable per
-  account in the sidebar and merged over synced rules. No-XP and hard caps
-  escalate as you close in; soft caps and goals never do.
-- **Lamp advisor.** When an experience lamp or tome opens, blocked skills are
-  greyed out, the top three targets are boxed, and hovering any skill explains
-  why.
+1. Enable **Quest Route** and click the quest-scroll icon in RuneLite's
+   sidebar.
+2. On the **Quests** tab, pick your **Account type**, **Quests to route**, and
+   a **Build** preset (or custom **Skill limits**), then click **Save and show
+   my route**.
+3. Open your bank once in game so item totals include what you already own
+   (Group Ironmen: open Group Storage once as well).
+4. Open **Quick settings** at the top of the sidebar (or the **View** tab) to
+   toggle in-game overlays, spoken prompts, bank tab layout, or party sharing.
+
+**Every setting, optional self-hosted sync, friend testing, limitations, and
+building from source: [SETUP.md](SETUP.md).**
 
 ---
 
-## Syncing with a Quest Route server
+## Privacy & network
 
-Off by default, and the setting that reaches the server carries RuneLite's
-warning: **this feature submits your IP address to a 3rd-party server not
-controlled or verified by RuneLite developers.** With sync on, the plugin pushes your quests, levels, XP, bank,
-inventory and equipment to a [questpath](https://github.com/VinnyVanGogh)
-instance you host, so it stops polling third-party services for data your own
-client already has.
+By default Quest Route makes **no network connections**: planning, overlays,
+and voice clips run locally from bundled resources and RuneLite config.
 
-- The pairing token both authenticates the push and names the account it writes
-  to. Get it with `go run ./cmd/questpath -plugin-token` on the server.
-  *(Issuing it from the settings page: in progress.)*
-- Every push returns your build rules, constraints, route order, partial runs,
-  owned items and diary tasks.
-- The Sync tab says whether the last push was accepted, refused or never
-  answered. A wrong token says so rather than failing quietly.
-- A "Sync with Quest Route" button pulls a plan you just edited on the site
-  straight into the game.
-
-What ships in the bundle: 314 shops, 125 monster drop locations, 205 quest start
-points, and 492 diary tasks with 376 of them placed on the map.
-
----
-
-## Questing as a group
-
-For Group Ironman teams, or anyone questing together in a RuneLite party. It
-uses RuneLite's own Party service only: no questpath server, no third party,
-no uploads.
-
-- **Off by default.** Turn on "Share with my party" (View tab → Sync, or the
-  "Group (party)" config section). While it is off this client sends nothing.
-  Turning it off sends one "forget me" message that carries no account data.
-- **What is shared:** finished and started quests, levels, experience, your
-  build rules, your active route, your account type, counts of items that some
-  quest asks for, and (for Group Ironmen, once opened) quest items in Group
-  Ironman storage, refreshed on a 5-minute heartbeat. Never the rest of your
-  bank, and never another player's data. You only see what other members chose
-  to send.
-- **The Group tab** lists each member and how many quests they've done, then:
-  - **Do together next:** quests nobody has done that every member can start
-    now.
-  - **Breaks someone's build:** quests everyone could start, except that they
-    would give a capped member XP they don't want, or need a level above that
-    member's cap. For example, "Bob: 18,650 Defence xp (capped at 1)". It uses
-    the same build-rule check as the Quests tab.
-  - **Who brings what:** pick a group quest. Each member needs their own copy
-    of every item, so spares get handed over before anything is bought. Members
-    who shared no item counts show as unknown, not as owning nothing. Group
-    storage is not counted here; Group shopping below counts it.
-  - **Group shopping:** what the whole party still has to get across each
-    member's active route (or every unfinished quest their build allows when
-    they have none), spending each member's own holding first, then tradeable
-    spares between members who can trade, then Group Ironman storage once from
-    the freshest snapshot. Lists where you can get each remaining item (Grand
-    Exchange for normal accounts, reachable shops and monster drops for
-    ironmen), filters by quest, member, or still-needed items, and sends the
-    group's reachable shops to Shortest Path. An optional "Group needs in shop
-    alerts" toggle (off by default) adds the party's remaining needs to the
-    near-shop chat call-out once per visit.
-  - **Done by some of you:** who has finished a quest and who still needs it.
-- Party members on a Quest Route version that sends a different message shape
-  are listed as "other version". They are never shown as having done nothing.
-
----
-
-## Building
-
-```bash
-./gradlew build          # compile and test
-./gradlew run            # launch a developer client with the plugin loaded
-```
-
-Dev builds compile and run against the newest RuneLite release
-(`latest.release`), re-checked against repo.runelite.net on every build, so the
-developer client and the Plugin Hub plugins it loads are always current. The
-build prints which client it resolved (`RuneLite client: <version>`) before
-`test` and `run`. A RuneLite release can therefore break the build on a day
-nothing here changed; to compare against a known version, pin it for one
-invocation:
-
-```bash
-./gradlew build -PruneLiteVersion=1.13.6
-```
-
-`--offline` still works from Gradle's cache. None of this reaches users: the
-Plugin Hub replaces `build.gradle` at submission.
-
-The build targets Java 11 bytecode. To log in to the development client, follow
-[Using Jagex Accounts](https://github.com/runelite/runelite/wiki/Using-Jagex-Accounts).
-
-The planner here is a port of the Go one, and the two must agree:
-`PlannerVectorsTest` checks all 218 verdicts against vectors exported from the
-server. When it goes red, the answer is to close the gap — never to re-export
-the vectors, which writes the bug down as the expected result.
+- **Party sharing** (*Share with my party*, off by default) uses RuneLite's own
+  Party service only and shares quest states, levels, XP, build rules, route,
+  account type, and quest-item counts with your current RuneLite party.
+- **Self-hosted sync** (*Send my account state*, off by default) carries
+  RuneLite's third-party server IP warning and sends account state only when
+  you turn it on and configure a *Quest Route address* and *Pairing token*.
 
 ---
 
