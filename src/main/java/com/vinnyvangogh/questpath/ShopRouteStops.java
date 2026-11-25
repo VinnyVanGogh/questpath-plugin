@@ -729,7 +729,10 @@ final class ShopRouteStops
 		Destination destination = destinationOf(total, shopLocator, sources, from);
 		if (destination != null)
 		{
-			return legLine(destination) + alsoNote(alsoSupplies(destination, total, totals, skips))
+			String unconfirmed = destination.kind() == Destination.Kind.SHOP && total.mayBeOutAt(destination.shopName())
+				? " (stock unconfirmed: may be out)"
+				: "";
+			return legLine(destination) + unconfirmed + alsoNote(alsoSupplies(destination, total, totals, skips))
 				+ cannotMakeNote(total, destination, sources) + forQuest;
 		}
 		String noPractical = noPracticalSource(total, sources);

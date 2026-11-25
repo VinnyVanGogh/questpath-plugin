@@ -830,6 +830,25 @@ class QuestItems
 		}
 	}
 
+	/**
+	 * Takes every shop seen empty of an item out of that item's sources, so
+	 * the route, the labels, the shop highlights and the shopkeeper call-outs
+	 * all stop naming it -- they all read {@link Total#shopNames()}.
+	 *
+	 * @return this, for chaining
+	 */
+	QuestItems withShopStock(ShopStock stock, java.time.Instant now)
+	{
+		for (List<Total> list : Arrays.asList(totals, allTotals))
+		{
+			for (Total total : list)
+			{
+				total.applyShopStock(stock, now);
+			}
+		}
+		return this;
+	}
+
 	/** Group storage as these counts include it. */
 	GroupStorageView groupStorage()
 	{
@@ -1352,7 +1371,9 @@ class QuestItems
 		private final long carried;
 		private final boolean placeholder;
 		private final List<String> sources;
-		private final List<String> shopNames;
+		private List<String> shopNames;
+		/** Shops kept as sources whose stock of this item is unconfirmed -- see {@link ShopStock.State#MAY_BE_OUT}. */
+		private Set<String> mayBeOutShops = Collections.emptySet();
 		private final List<String> dropSourceNames;
 		private final List<String> questNames = new ArrayList<>();
 		private int wanted;
@@ -1503,6 +1524,38 @@ class QuestItems
 			return shopNames == null ? Collections.emptyList() : shopNames;
 		}
 
+		/** Whether this item's stock at the named shop was last seen empty, long enough ago to have restocked. */
+		boolean mayBeOutAt(String shopName)
+		{
+			return shopName != null && mayBeOutShops.contains(shopName);
+		}
+
+		/**
+		 * Drops every shop whose shelf for this item was seen empty, and
+		 * remembers which kept shops are unconfirmed. Replaces the list
+		 * rather than editing it: the bundled list is shared with the graph.
+		 */
+		void applyShopStock(ShopStock stock, java.time.Instant now)
+		{
+			List<String> kept = new ArrayList<>();
+			Set<String> unsure = new HashSet<>();
+			for (String shop : shopNames())
+			{
+				ShopStock.State state = stock.state(shop, name, now);
+				if (state == ShopStock.State.EMPTY)
+				{
+					continue;
+				}
+				if (state == ShopStock.State.MAY_BE_OUT)
+				{
+					unsure.add(shop);
+				}
+				kept.add(shop);
+			}
+			shopNames = kept;
+			mayBeOutShops = unsure;
+		}
+
 		/**
 		 * Folds one quest's line into the total.
 		 *
@@ -1533,6 +1586,7 @@ class QuestItems
 		{
 			Total out = new Total(name, itemId, owned, carried, placeholder, sources, shopNames,
 				dropSourceNames);
+			out.mayBeOutShops = mayBeOutShops;
 			out.wanted = wanted;
 			out.quests = quests;
 			out.anyUnstated = anyUnstated;

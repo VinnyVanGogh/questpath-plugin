@@ -339,6 +339,12 @@ public class QuestpathPlugin extends Plugin
 	private final ItemCompletionWatcher completions = new ItemCompletionWatcher();
 	private final FloatingNotes floatingNotes = new FloatingNotes();
 	private final ShopkeeperMemory shopkeeper = new ShopkeeperMemory();
+
+	/** How far from a bundled shop's tile a shop window can be opened and still be attributed to it. */
+	private static final int SHOP_WINDOW_RADIUS_TILES = 12;
+
+	/** What each shop was last seen holding -- see {@link ShopStock}. Cleared on logout. */
+	private final ShopStock shopStock = new ShopStock();
 	private Boosts cachedShopBoosts;
 	private Map<String, WorldPoint> dropsByName;
 
@@ -1038,6 +1044,7 @@ public class QuestpathPlugin extends Plugin
 		// waiting, already expired, for the next one to read them.
 		floatingNotes.clear();
 		shopkeeper.forget();
+		shopStock.clear();
 		shopApproach.clear();
 		if (voicePlayer != null)
 		{
@@ -1642,7 +1649,16 @@ public class QuestpathPlugin extends Plugin
 			public List<String> shops(String item)
 			{
 				QuestGraph.Item known = questItemNamed(item);
-				return known == null ? Collections.emptyList() : known.shopNames();
+				List<String> out = new ArrayList<>();
+				Instant now = Instant.now();
+				for (String shop : known == null ? Collections.<String>emptyList() : known.shopNames())
+				{
+					if (!shopStock.excludes(shop, item, now))
+					{
+						out.add(shop);
+					}
+				}
+				return out;
 			}
 
 			@Override
@@ -1827,6 +1843,7 @@ public class QuestpathPlugin extends Plugin
 				shopTripActive = false;
 			}
 			rememberShopkeeper();
+			recordShopStock(itemsWidget);
 			// The reminder is spent once the counter is open. Leaving it up
 			// behind the interface is a line telling you to go somewhere you
 			// are already standing.
@@ -2528,6 +2545,55 @@ public class QuestpathPlugin extends Plugin
 	 * nearest NPC: opening a shop means talking to its owner, and "nearest"
 	 * in a busy bank would pick somebody at random.
 	 */
+	private void recordShopStock(Widget itemsWidget)
+	{
+		WorldPoint here = playerLocation();
+		Widget[] slots = itemsWidget.getDynamicChildren();
+		if (here == null || slots == null || questGraph == null)
+		{
+			return;
+		}
+		String shopName = null;
+		double nearest = SHOP_WINDOW_RADIUS_TILES;
+		for (QuestGraph.Shop candidate : questGraph.shops())
+		{
+			WorldPoint at = new WorldPoint(candidate.x(), candidate.y(), candidate.plane());
+			if (at.getPlane() != here.getPlane())
+			{
+				continue;
+			}
+			double distance = at.distanceTo2D(here);
+			if (distance <= nearest)
+			{
+				nearest = distance;
+				shopName = candidate.name();
+			}
+		}
+		if (shopName == null)
+		{
+			// No bundled shop is near enough to be sure which counter this
+			// is. Recording against a guess would exclude the wrong shop.
+			return;
+		}
+		Instant now = Instant.now();
+		boolean changed = false;
+		for (Widget slot : slots)
+		{
+			if (slot == null || slot.getItemId() <= 0)
+			{
+				continue;
+			}
+			String item = itemManager.getItemComposition(slot.getItemId()).getName();
+			ShopStock.State before = shopStock.state(shopName, item, now);
+			shopStock.record(shopName, item, slot.getItemQuantity(), now);
+			changed |= before != shopStock.state(shopName, item, now);
+		}
+		if (changed)
+		{
+			refreshPending = true;
+		}
+	}
+
 	private void rememberShopkeeper()
 	{
 		if (client.getLocalPlayer() == null)
@@ -4313,7 +4379,8 @@ public class QuestpathPlugin extends Plugin
 		return QuestItems.of(questGraph, playerState(completedQuestNames()),
 			heldIncludingCollected(), owned.bankSeen(), pickupScope(),
 			new HashSet<>(routeOrder), knownItems, owned.carriedByName(),
-			owned.bankPlaceholders(), itemPlan, groupStorageView());
+			owned.bankPlaceholders(), itemPlan, groupStorageView())
+			.withShopStock(shopStock, Instant.now());
 	}
 
 	/**
