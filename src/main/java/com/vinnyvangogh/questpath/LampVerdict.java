@@ -160,6 +160,19 @@ class LampVerdict
 		this.levelsGained = levelsGained;
 	}
 
+	/** Whole levels the lamp really buys, from the levels before and after. */
+	int wholeLevelsGained()
+	{
+		return Math.max(0, levelAfter - levelNow);
+	}
+
+	/** "+1" when the lamp gains a whole level, empty when it only adds a fraction. */
+	String gainBadge()
+	{
+		int whole = wholeLevelsGained();
+		return whole > 0 ? "+" + whole : "";
+	}
+
 	boolean blocked()
 	{
 		return state == State.BLOCKED;
