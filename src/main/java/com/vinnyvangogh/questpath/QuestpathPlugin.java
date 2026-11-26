@@ -3004,17 +3004,9 @@ public class QuestpathPlugin extends Plugin
 	@Subscribe
 	public void onMenuOptionClicked(MenuOptionClicked event)
 	{
-		// Lamp tracking first, and before the bank guard below, because a
-		// lamp is rubbed from the inventory with the bank shut. RuneLite
-		// delivers one MenuOptionClicked per class, so the two features
-		// share this method rather than each having their own -- see
-		// OSRS-RUNELITE.md on subscriber naming.
-		//
-		// Any item click is recorded, with no list of menu verbs: most lamps
-		// are "Rub" and a Book of Knowledge is "Read", and a hardcoded verb
-		// list goes quietly out of date the first time a lamp ships with a
-		// fourth word on it. It is the interface opening that decides one of
-		// these clicks was a lamp.
+		// Lamp tracking runs before the bank guard: lamps are rubbed with the
+		// bank shut. Any item click is recorded, no verb list; the interface
+		// opening decides it was a lamp.
 		if (event.getItemId() > 0)
 		{
 			lampWatcher.itemClicked(event.getItemId(), event.getMenuTarget(), client.getTickCount());
