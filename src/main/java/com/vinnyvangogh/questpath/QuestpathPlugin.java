@@ -39,7 +39,6 @@ import com.vinnyvangogh.questpath.groupshop.GroupShoppingList;
 import com.vinnyvangogh.questpath.groupshop.GroupStorage;
 import com.vinnyvangogh.questpath.groupshop.ItemSources;
 import java.io.IOException;
-import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -215,9 +214,6 @@ public class QuestpathPlugin extends Plugin
 
 	@Inject
 	private QuestpathConfig config;
-
-	@Inject
-	private AccountStateSender sender;
 
 	@Inject
 	private SkillIconManager skillIcons;
@@ -498,19 +494,13 @@ public class QuestpathPlugin extends Plugin
 	private boolean haveGroundTakeLookup;
 
 	/**
-	 * The quest graph currently in use -- fetched live from questpath when
-	 * the {@link #DEV_FETCH_PROPERTY} developer flag is set and the fetch
-	 * succeeded, the bundled jar resource otherwise -- or null when neither
-	 * is available.
+	 * The bundled quest graph, or null when the jar resource is missing.
 	 *
 	 * Null is rendered as a plain failure rather than as an empty quest list:
 	 * a broken bundle and a player with nothing to do look identical
 	 * otherwise, and only one of them is worth telling someone about.
 	 */
 	private QuestGraph questGraph;
-
-	@Inject
-	private QuestGraphFetcher graphFetcher;
 
 	private QuestpathPanel panel;
 	private NavigationButton navButton;
@@ -603,25 +593,6 @@ public class QuestpathPlugin extends Plugin
 	private final OwnedItems owned = new OwnedItems();
 
 	/**
-	 * What was last sent, so an unchanged account is not pushed again. Reset
-	 * on logout because the next login may be a different account, and its
-	 * state must not be mistaken for unchanged.
-	 */
-	private int lastStructural;
-	private int lastExperience;
-	private Instant lastPushAt = Instant.EPOCH;
-	private boolean haveSent;
-
-	/**
-	 * The last thing the push did, for the panel to report.
-	 *
-	 * Written from an OkHttp callback thread and read from the client thread,
-	 * so it is volatile. A SyncStatus is immutable, so publishing the
-	 * reference safely publishes everything in it.
-	 */
-	private volatile SyncStatus lastSyncOutcome;
-
-	/**
 	 * The account's declared limits, as questpath last reported them.
 	 *
 	 * Written from an OkHttp callback and read on the client thread, so it is
@@ -669,12 +640,6 @@ public class QuestpathPlugin extends Plugin
 	 * place the plugin learns them.
 	 */
 	private volatile List<PlayerConstraint> constraints = Collections.emptyList();
-
-	/**
-	 * Quest names this plugin sent that questpath could not resolve. A real
-	 * disagreement between the two, worth showing rather than counting.
-	 */
-	private volatile List<String> unmatchedQuests = Collections.emptyList();
 
 	/**
 	 * The account's saved route from questpath, as quest names in order.
@@ -744,18 +709,6 @@ public class QuestpathPlugin extends Plugin
 	 */
 	private final Map<DiaryRouteStops.TaskKey, Instant> diaryNudgedAt = new HashMap<>();
 
-	/**
-	 * How often a push may be sent for experience alone, with no quest or
-	 * level change behind it.
-	 *
-	 * Deliberately shorter than the five minutes questpath treats a push as
-	 * live for. While the game is open the plugin has to keep re-asserting
-	 * itself, or that window lapses and questpath falls back to polling
-	 * WikiSync -- which would overwrite the plugin's own fresher data with an
-	 * older upload, the exact problem the freshness window exists to stop.
-	 */
-	private static final Duration EXPERIENCE_PUSH_INTERVAL = Duration.ofMinutes(2);
-
 	@Override
 	protected void startUp()
 	{
@@ -816,7 +769,7 @@ public class QuestpathPlugin extends Plugin
 			this::grandExchangeAvailable, shopPlaces,
 			routeSources, this::lastKnownPlayerLocation, this::onShopRouteSent,
 			this::cancelShopRoute,
-			this::shopRouteActive, this::syncNow,
+			this::shopRouteActive,
 			shopItemSkips, this::diaryGraphTasks, this::diaryPush, lockedGearActions(),
 			localBuildRules, this::onLocalRulesEdited);
 		panel.setSayShopAgain(this::sayShopAgain);
@@ -895,7 +848,7 @@ public class QuestpathPlugin extends Plugin
 		}
 		catch (IOException e)
 		{
-			// Not fatal. The combat and sync tabs need no graph, and a plugin
+			// Not fatal. The combat tab needs no graph, and a plugin
 			// that refuses to start because one tab cannot work is worse than
 			// one tab saying why.
 			questGraph = null;
@@ -905,15 +858,6 @@ public class QuestpathPlugin extends Plugin
 		// Saved in RuneLite's config, one value per account: Plugin Hub rules
 		// do not let a plugin write its own files.
 		profileStore = new LocalProfileStore(LocalProfileStore.of(configManager), gson);
-
-		// The saved "fetchQuestGraph" setting used to switch this on, and a
-		// player who had it on can no longer see it to switch it off. Clear
-		// it, and gate the fetch on a developer-only JVM flag instead.
-		configManager.unsetConfiguration(QuestpathConfig.GROUP, "fetchQuestGraph");
-		if (Boolean.getBoolean(DEV_FETCH_PROPERTY) && hasServerUrl())
-		{
-			fetchLiveQuestGraph();
-		}
 
 		// Registered whether or not sharing is on: receiving what other
 		// members chose to send is how the Group tab works for a player who
@@ -1025,9 +969,6 @@ public class QuestpathPlugin extends Plugin
 		});
 	}
 
-	/** JVM flag (-Dquestroute.fetchQuestGraph=true) that makes a developer build fetch the live quest graph. */
-	static final String DEV_FETCH_PROPERTY = "questroute.fetchQuestGraph";
-
 	/**
 	 * One-shot migration for the old {@code overlayDiaryRoute} on/off
 	 * switch, folded into {@link QuestpathConfig#questJournalFilter()} --
@@ -1068,50 +1009,6 @@ public class QuestpathPlugin extends Plugin
 				+ " Quests tab filter (set to All, so both route overlays keep showing).");
 		}
 		configManager.unsetConfiguration(QuestpathConfig.GROUP, "overlayDiaryRoute");
-	}
-
-	/**
-	 * Asks the configured questpath instance for its current quest graph,
-	 * replacing the bundled copy on success.
-	 *
-	 * <p>This is the self-updating half of {@link QuestGraph}'s own doc
-	 * comment on why a bundle goes stale: the graph loaded above only
-	 * changes when this plugin is released, and this session had four
-	 * server-side corrections -- sub-area gates, shop reachability, the
-	 * shop-source cap, the teleport rewrite -- each of which reached the web
-	 * app immediately and would otherwise have waited for that. Off by
-	 * default, opt-in the same way {@link QuestpathConfig#syncEnabled()} is:
-	 * see that field's own doc for why a plugin that must talk to a
-	 * third-party server to be useful is a harder plugin to justify than one
-	 * where doing so is an extra.
-	 *
-	 * <p>Whatever happens is said exactly once, never silently: a fetched
-	 * graph swaps in with an announcement naming it, and a failure --
-	 * unreachable server, a version this build refuses either direction,
-	 * malformed JSON -- leaves {@link #questGraph} exactly as {@link
-	 * #startUp} already set it and says why. The player reported the same
-	 * already-fixed bug twice before this existed, purely because nothing
-	 * told them their bundle was stale; a fetch that fails back to the
-	 * bundle without a word would recreate exactly that hole one layer
-	 * further out.
-	 */
-	private void fetchLiveQuestGraph()
-	{
-		graphFetcher.fetch(config.serverUrl(), outcome -> clientThread.invokeLater(() ->
-		{
-			if (outcome.succeeded())
-			{
-				questGraph = outcome.graph();
-				log.debug("quest-route: using the live quest graph ({} quests)", questGraph.quests().size());
-				refresh();
-				return;
-			}
-
-			String stillOn = questGraph == null
-				? "no quest graph at all -- the Quests tab will say so"
-				: questGraph.quests().size() + " quests bundled with this build";
-			log.debug("quest-route: could not fetch the quest graph ({}); staying on {}", outcome.reason(), stillOn);
-		}));
 	}
 
 	@Override
@@ -1191,7 +1088,6 @@ public class QuestpathPlugin extends Plugin
 		clientToolbar.removeNavigation(navButton);
 		navButton = null;
 		panel = null;
-		haveSent = false;
 		owned.clear();
 		log.debug("quest-route stopped");
 	}
@@ -1269,13 +1165,6 @@ public class QuestpathPlugin extends Plugin
 	// ------------------------------------------------------------------
 
 	private LocalProfileStore profileStore;
-
-	/** Whether a questpath address is configured. Without one the plugin never connects anywhere. */
-	private boolean hasServerUrl()
-	{
-		String url = config.serverUrl();
-		return url != null && !url.trim().isEmpty();
-	}
 
 	/** The account a profile load was started for this login; null until one is. */
 	private volatile String profileKey;
@@ -1825,7 +1714,6 @@ public class QuestpathPlugin extends Plugin
 	{
 		// Coalesced: login fires one of these per skill.
 		refreshPending = true;
-		maybeSync();
 	}
 
 	/**
@@ -2282,17 +2170,14 @@ public class QuestpathPlugin extends Plugin
 	}
 
 	/**
-	 * Quest completion moves varbits, so this is where a finished quest is
-	 * noticed. There is no "quest completed" event to subscribe to.
-	 *
-	 * Every varbit in the game arrives here, which is why the push is gated on
-	 * the payload actually differing rather than on the event firing.
+	 * Quest progress moves varbits and there is no "quest started" event, so a
+	 * varbit change only marks quest states dirty; {@link #checkQuestStarts}
+	 * re-reads them once on the next tick (the quest-warning fallback).
 	 */
 	@Subscribe
 	public void onVarbitChanged(VarbitChanged event)
 	{
 		questStatesDirty = true;
-		maybeSync();
 	}
 
 	/**
@@ -2360,7 +2245,6 @@ public class QuestpathPlugin extends Plugin
 		// yet" the moment it changes, and an answer that lags until you walk
 		// to a bank is the answer the web app already gives.
 		refreshPending = true;
-		maybeSync();
 	}
 
 	@Subscribe
@@ -2406,7 +2290,6 @@ public class QuestpathPlugin extends Plugin
 		{
 			postUpdateNotes();
 			refresh();
-			maybeSync();
 			return;
 		}
 		if (event.getGameState() == GameState.LOADING)
@@ -2432,10 +2315,6 @@ public class QuestpathPlugin extends Plugin
 			// render as a confident "combat 3" for an account that is nothing
 			// of the sort.
 			panel.showLoggedOut();
-			// The next login may be a different account, whose state must not
-			// be mistaken for "unchanged since last push".
-			haveSent = false;
-			lastSyncOutcome = null;
 			// The next login may be another account with different limits.
 			// Showing the previous one's would be worse than showing none.
 			forgetServerState();
@@ -2498,7 +2377,6 @@ public class QuestpathPlugin extends Plugin
 	private void forgetServerState()
 	{
 		buildRules = Collections.emptyList();
-		unmatchedQuests = Collections.emptyList();
 		routeOrder = Collections.emptyList();
 		partialRuns = Collections.emptyList();
 		knownItems = Collections.emptyMap();
@@ -2535,7 +2413,6 @@ public class QuestpathPlugin extends Plugin
 		SkillXp xp;
 		QuestItems items;
 		NextQuestStatus route;
-		AccountReport report;
 		QuestVerdicts questVerdicts;
 		try
 		{
@@ -2548,7 +2425,6 @@ public class QuestpathPlugin extends Plugin
 			applyLocalRoute(questVerdicts != null);
 			items = questItems();
 			route = nextQuest();
-			report = accountReport();
 		}
 		finally
 		{
@@ -2579,8 +2455,8 @@ public class QuestpathPlugin extends Plugin
 		LockedGear lockedGear =
 			LockedGear.resolve(loadoutStore.all(), selectedLoadoutName(), stats, this::itemStatsView);
 
-		panel.update(stats, xp, syncStatus(), effectiveBuildRules(), unmatchedQuests,
-			questVerdicts, items, route, routeWork(route), SyncSettings.from(config), report, lockedGear);
+		panel.update(stats, xp, effectiveBuildRules(),
+			questVerdicts, items, route, routeWork(route), lockedGear);
 
 		// The party hears about the same account state the panel just drew,
 		// and only when the player opted in; the Group tab is rebuilt from it.
@@ -4273,74 +4149,6 @@ public class QuestpathPlugin extends Plugin
 	}
 
 	/**
-	 * What the Sync tab reports about this account, or null when there is no
-	 * account to report on.
-	 *
-	 * Read from the client rather than from questpath's answer, deliberately:
-	 * the tab is showing what this client believes it is sending, so that a
-	 * disagreement with what questpath received shows up as a disagreement
-	 * rather than as agreement with itself.
-	 */
-	private AccountReport accountReport()
-	{
-		String name = characterName();
-		if (name == null || name.isEmpty())
-		{
-			return null;
-		}
-
-		int complete = 0;
-		int inProgress = 0;
-		int known = 0;
-		for (Quest quest : Quest.values())
-		{
-			QuestState state = quest.getState(client);
-			if (state == null)
-			{
-				// The client has said nothing about this one, and the push
-				// skips it for the same reason: "not started" is a claim, and
-				// this is an absence of one.
-				continue;
-			}
-			known++;
-			if (state == QuestState.FINISHED)
-			{
-				complete++;
-			}
-			else if (state == QuestState.IN_PROGRESS)
-			{
-				inProgress++;
-			}
-		}
-
-		int totalLevel = 0;
-		long totalXp = 0;
-		for (Skill skill : Skill.values())
-		{
-			if (skill.getName() == null)
-			{
-				// Skill.OVERALL is declared for binary compatibility and is
-				// null at runtime; it is also an aggregate, so counting it
-				// would double every total below.
-				continue;
-			}
-			totalLevel += client.getRealSkillLevel(skill);
-			totalXp += client.getSkillExperience(skill);
-		}
-
-		return new AccountReport(name,
-			client.getLocalPlayer().getCombatLevel(),
-			questPoints(),
-			totalLevel,
-			totalXp,
-			complete,
-			inProgress,
-			known,
-			owned.stackCount(),
-			owned.bankSeen());
-	}
-
-	/**
 	 * Quest points, as the game itself counts them.
 	 *
 	 * Read from the varp rather than counted from the quest graph: the game's
@@ -4390,192 +4198,6 @@ public class QuestpathPlugin extends Plugin
 			xp.put(skill, client.getSkillExperience(skill));
 		}
 		return SkillXp.of(levels, xp);
-	}
-
-	/**
-	 * Pushes account state to questpath when it has actually changed.
-	 *
-	 * The gate is the payload, not the event. onVarbitChanged fires for every
-	 * varbit in the game and StatChanged for every experience drop, so a push
-	 * per event would be a request per tick while training. Comparing what
-	 * would be sent means the request happens exactly when something the
-	 * server cares about moved — a quest finishing, a level going up.
-	 *
-	 * Reading the state must happen on the client thread (quest varbits), and
-	 * the request must not, which is why the read is wrapped and the send is
-	 * an enqueue inside it.
-	 */
-	private void maybeSync()
-	{
-		maybeSync(false);
-	}
-
-	/**
-	 * Pushes now, whatever the change gate thinks.
-	 *
-	 * <p>The automatic path only sends when the payload actually moved, which
-	 * is right for a background sync and useless as a button: the whole reason
-	 * to press one is that you changed something on the questpath side -- a
-	 * build rule, the plan itself -- which changes nothing about the payload
-	 * this end and so is invisible to that gate. Waiting for the next level-up
-	 * to find out whether your new plan arrived is not an answer.
-	 *
-	 * <p>Still refuses when sync is off or nobody is logged in. Those are not
-	 * gates to override, they are the absence of anything to send.
-	 */
-	void syncNow()
-	{
-		maybeSync(true);
-	}
-
-	private void maybeSync(boolean force)
-	{
-		if (!config.syncEnabled() || client.getGameState() != GameState.LOGGED_IN)
-		{
-			return;
-		}
-
-		clientThread.invokeLater(() ->
-		{
-			if (client.getGameState() != GameState.LOGGED_IN)
-			{
-				return;
-			}
-			Map<String, Object> payload = AccountState.read(client, owned);
-			if (payload == null)
-			{
-				// LOGGED_IN without a local player yet. Nothing here can be
-				// attributed to a character, and questpath refuses an
-				// unattributed push anyway -- see AccountState.read.
-				return;
-			}
-			int structural = AccountState.fingerprint(payload);
-			int experience = AccountState.experienceFingerprint(payload);
-
-			if (!force && !shouldSend(structural, experience))
-			{
-				return;
-			}
-				if (sender.send(config.serverUrl(), config.pairingToken(), payload,
-				outcome ->
-				{
-					lastSyncOutcome = outcome;
-					// A refusal means questpath is not confirming this
-					// account's state, so anything still on the Build tab is
-					// unconfirmed at best and another account's at worst --
-					// which is exactly what a 409 says it is. Holding it on
-					// screen next to this account's live levels is the most
-					// convincing way to be wrong available to this panel, so
-					// the rules go and the status line says why.
-					//
-					// Unreachable deliberately does not clear: a questpath
-					// that is not running says nothing about whether the
-					// rules already in hand belong to this account.
-					if (outcome.state() == SyncStatus.State.REJECTED)
-					{
-						forgetServerState();
-						clientThread.invokeLater(this::refresh);
-					}
-				},
-				accepted ->
-				{
-					// questpath owns the build rules; this is the only place
-					// the plugin learns them.
-					buildRules = BuildRule.ordered(accepted.buildRules());
-					constraints = accepted.constraints();
-					unmatchedQuests = accepted.unmatched();
-					// Same story for the saved route -- questpath owns the
-					// plan, and this push response is the only place it is
-					// handed over.
-					routeOrder = accepted.routeOrder();
-					// A server that answered with a plan owns the route from
-					// here; the local one steps aside for this login.
-					routeFromServer = !routeOrder.isEmpty();
-					partialRuns = accepted.partialRuns();
-					knownItems = accepted.knownItems();
-					// Replaced unconditionally, null included: a push answered
-					// without a plan means questpath made no decision this time,
-					// and the previous one is about holdings that have moved.
-					itemPlan = accepted.itemPlan();
-					// hasDiary() false (an older questpath) must leave this
-					// null, never overwrite a genuine earlier value with a
-					// misleading "no data" from a field that was never
-					// there to begin with -- but a rejection already clears
-					// it above, and a fresh accepted push from the same,
-					// newer questpath is exactly when a real change should
-					// land, so this reads accepted.diary() unconditionally
-					// once hasDiary() is confirmed.
-					diaryPush = accepted.hasDiary() ? accepted.diary() : diaryPush;
-
-					// Repaint now rather than waiting for the next game
-					// event. An earlier version left it to the next
-					// StatChanged, on the reasoning that a Swing hop from a
-					// network callback is work for a panel nobody may be
-					// looking at -- but the first push is the only time rules
-					// arrive, and a player standing still generates no events,
-					// so the Build tab sat on "not received yet" indefinitely
-					// while the rules were already in hand.
-					clientThread.invokeLater(this::refresh);
-				}))
-			{
-				// Recorded on dispatch rather than on a successful response:
-				// a questpath that is not running would otherwise mean a
-				// retry on every varbit for as long as it stays down. The
-				// next real change re-sends anyway.
-				lastStructural = structural;
-				lastExperience = experience;
-				lastPushAt = Instant.now();
-				haveSent = true;
-			}
-		});
-	}
-
-	/**
-	 * Whether this reading is worth a request.
-	 *
-	 * Two rules, because the payload has two tempos. A quest finishing or a
-	 * level landing is rare and worth sending the instant it happens.
-	 * Experience moves every few seconds while training, so it is sent on a
-	 * timer instead — often enough that questpath's stored xp is never far
-	 * behind and its freshness window never lapses, rarely enough that
-	 * training is not a request per tick.
-	 */
-	private boolean shouldSend(int structural, int experience)
-	{
-		if (!haveSent)
-		{
-			return true;
-		}
-		if (structural != lastStructural)
-		{
-			return true;
-		}
-		if (experience == lastExperience)
-		{
-			return false;
-		}
-		return Duration.between(lastPushAt, Instant.now()).compareTo(EXPERIENCE_PUSH_INTERVAL) >= 0;
-	}
-
-	/**
-	 * What the sidebar says about the push.
-	 *
-	 * Configuration states are computed fresh each time rather than cached,
-	 * because a token pasted into settings must show as fixed on the next
-	 * render rather than on the next successful request.
-	 */
-	private SyncStatus syncStatus()
-	{
-		if (!config.syncEnabled())
-		{
-			return SyncStatus.of(SyncStatus.State.DISABLED);
-		}
-		if (config.pairingToken() == null || config.pairingToken().isEmpty())
-		{
-			return SyncStatus.of(SyncStatus.State.NO_TOKEN);
-		}
-		SyncStatus outcome = lastSyncOutcome;
-		return outcome == null ? SyncStatus.of(SyncStatus.State.WAITING) : outcome;
 	}
 
 	/**

@@ -40,7 +40,7 @@ import static com.vinnyvangogh.questpath.Ui.*;
  * caching values locally, so it always agrees with whatever RuneLite's own
  * config panel shows -- there is exactly one source of truth for each key,
  * and it is not this class. The same goes for the words: every control's
- * tooltip, and the third-party warning on {@code syncEnabled}, is the
+ * tooltip, and any third-party warning, is the
  * {@code @ConfigItem}'s own description and warning, read off the config
  * descriptor RuneLite builds for its own panel, so the two surfaces cannot
  * drift.
@@ -50,7 +50,7 @@ import static com.vinnyvangogh.questpath.Ui.*;
  * once they know it's set the way they want. Collapsing is view state only
  * -- it never calls {@code ConfigManager}.
  *
- * <p>The outer level is named sections -- SYNC, SHARED, OVERLAYS, EXTRAS --
+ * <p>The outer level is named sections -- PARTY, SHARED, OVERLAYS, EXTRAS --
  * each headed by a plain uppercase label with no checkbox of its own, since
  * a section groups several toggles rather than gating one. They always start
  * expanded regardless of what their children start as.
@@ -101,7 +101,7 @@ class OverlaySettingsPanel extends JPanel
 		setBorder(BorderFactory.createEmptyBorder(8, 8, 24, 8));
 		setAlignmentX(LEFT_ALIGNMENT);
 
-		add(syncSection(config));
+		add(partySection(config));
 		add(spacer());
 		add(sharedGroup(config));
 		add(spacer());
@@ -112,27 +112,14 @@ class OverlaySettingsPanel extends JPanel
 		populating = false;
 	}
 
-	/**
-	 * The SYNC section: the settings that leave the client at all. {@code
-	 * serverUrl} and {@code pairingToken} are deliberately never duplicated
-	 * here -- a URL and a secret token are exactly the free-text and masked
-	 * controls RuneLite's own config panel already renders correctly, and
-	 * {@link OverlaySettingsPanelConfigParityTest} enforces that exemption by
-	 * name.
-	 */
-	private CollapsibleGroup syncSection(QuestpathConfig config)
+	/** The PARTY section: what is shared with the RuneLite party, which is the only thing that leaves the client. */
+	private CollapsibleGroup partySection(QuestpathConfig config)
 	{
 		JPanel panel = column();
-		panel.add(toggle("Send my account state", config.syncEnabled(), "syncEnabled"));
-		panel.add(spacer(6));
 		panel.add(toggle("Share with my party", config.partyShare(), "partyShare"));
 		panel.add(spacer(6));
 		panel.add(toggle("Group needs in shop alerts", config.groupShopAlert(), "groupShopAlert"));
-		panel.add(spacer(6));
-		panel.add(note("The address to push to, and the pairing token"
-			+ " from the Quest Route server, are set in RuneLite's own Configuration panel for this"
-			+ " plugin -- not duplicated here.", ColorScheme.LIGHT_GRAY_COLOR));
-		return sectionGroup("Sync", panel);
+		return sectionGroup("Party", panel);
 	}
 
 	/** The SHARED section: the settings every overlay follows unless it overrides its own. */

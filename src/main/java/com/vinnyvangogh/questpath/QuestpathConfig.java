@@ -97,14 +97,6 @@ public interface QuestpathConfig extends Config
 	String lampSection = "lamps";
 
 	@ConfigSection(
-		name = "Quest Route sync",
-		description = "Push this account's state to your own Quest Route server",
-		position = 0,
-		closedByDefault = true
-	)
-	String syncSection = "sync";
-
-	@ConfigSection(
 		name = "Quests tab",
 		description = "Which half of the achievement-diary/quest split the Quests tab, and the"
 			+ " route overlays it drives, currently shows.",
@@ -237,53 +229,6 @@ public interface QuestpathConfig extends Config
 		// fresh install's diary overlay off exactly like before, without
 		// this plugin having to carry a second, now-redundant toggle for it.
 		return QuestJournalFilter.QUESTS;
-	}
-
-	@ConfigItem(
-		keyName = "syncEnabled",
-		name = "Send my account state",
-		description = "Push quest completion, levels and diaries to your Quest Route server when they change."
-			+ " Quest Route then stops polling WikiSync for this account.",
-		warning = "This feature submits your IP address to a 3rd-party server not controlled or verified by RuneLite developers",
-		section = syncSection,
-		position = 1
-	)
-	default boolean syncEnabled()
-	{
-		// Off by default, and it stays that way. RuneLite requires opt-in for
-		// anything touching a third-party server, and the panel is fully
-		// useful without this.
-		return false;
-	}
-
-	@ConfigItem(
-		keyName = "serverUrl",
-		name = "Quest Route address",
-		description = "Optional. Where your Quest Route server is listening, e.g. an address on your own machine or network."
-			+ " Leave blank (the default) to use Quest Route on its own: nothing is sent anywhere.",
-		section = syncSection,
-		position = 2
-	)
-	default String serverUrl()
-	{
-		// Blank on purpose. The plugin is local-first: with no address it
-		// never opens a connection, and no chat line complains about it.
-		return "";
-	}
-
-	@ConfigItem(
-		keyName = "pairingToken",
-		name = "Pairing token",
-		description = "From your Quest Route server. It both authenticates the push and selects which account it writes.",
-		secret = true,
-		section = syncSection,
-		position = 3
-	)
-	default String pairingToken()
-	{
-		// No default. There is no such thing as a sensible shared secret, and
-		// an empty token means the push is off however the toggle is set.
-		return "";
 	}
 
 	// ------------------------------------------------------------------

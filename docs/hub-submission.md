@@ -10,15 +10,14 @@ File `plugins/quest-route` in a fork of `runelite/plugin-hub`, no extension:
 ```
 repository=https://github.com/VinnyVanGogh/questpath-plugin.git
 commit=<full 40-char hash of the merged main commit>
-warning=This plugin submits your IP address to a server not controlled or verified by the RuneLite developers.
 ```
 
 - `repository=` changes if the GitHub repo is renamed (the Board's call; the
   repo is still `questpath-plugin`).
-- `warning=` is the `temple-osrs` wording. Two config items reach the
-  questpath server, both off by default and both carrying RuneLite's in-plugin
-  `warning =` string: `syncEnabled` (`QuestpathConfig.java:172`) and
-  `fetchQuestGraph` (`QuestpathConfig.java:217`).
+- No `warning=` line: the server sync was removed for the first release (see
+  section 5), so nothing in the plugin contacts a third-party server. Add the
+  line back, with the in-plugin `warning =` on the config item, when sync
+  returns.
 - Slug `quest-route`: `plugins/quest-route` returned HTTP 404 on
   `raw.githubusercontent.com/runelite/plugin-hub/master` on 2026-11-14, and no
   plugin-hub PR title matches it. **Recheck immediately before submitting.**
@@ -33,7 +32,7 @@ warning=This plugin submits your IP address to a server not controlled or verifi
 | Zero non-RuneLite dependencies | yes | `build.gradle`: `compileOnly client`, `lombok` (compileOnly + annotationProcessor, the template's own), test-only `junit`, `jshell` |
 | No reflection / forbidden language features | yes | `NoReflectionTest` scans `src/main`; `QuestHelperBridge` removed |
 | No agent scaffolding in the published tree | **NO — Board** | still tracked: `AGENTS.md`, `CLAUDE.md`, `docs/prompts/build-guard-standalone.md`. Removing them changes how agent runs on this repo are briefed, so it is not done in this PR |
-| No third-party names in screenshots | **check — Board** | player names visible: `VinnyWanGogh` (`ge-collected.jpg`), `Ship Wrek` (`passing-a-shop.jpg`, `tab-sync.jpg`). Confirm both are your own accounts. Not reviewed: `ground-items`, `shop-open`, `tab-combat`, `tab-items`, `tab-quests`, `tab-skills` |
+| No third-party names in screenshots | **check — Board** | player names visible: `VinnyWanGogh` (`ge-collected.jpg`), `Ship Wrek` (`passing-a-shop.jpg`). Confirm both are your own accounts. Not reviewed: `ground-items`, `shop-open`, `tab-combat`, `tab-items`, `tab-quests`, `tab-skills` |
 | Screenshots show the new name | **NO — Board** | old name "Quest Path" visible in `bank-tab.jpg`, `ge-buy-list.jpg`, `ge-collected.jpg`, `passing-a-shop.jpg`. Retaking needs a logged-in client, which only you can do |
 | Config group and keys settled | yes | group `questroute`; Quest Helper keys removed so none freeze with no feature behind them |
 
@@ -73,13 +72,13 @@ would change what that plugin is.
 - What the next combat level costs per stat in real XP; locked-gear max hits.
 - Experience lamp advisor; achievement diary route.
 - Optional Group tab over RuneLite's own party service.
+- Runs entirely locally: setup asks account type and quest types, and the route
+  comes from the bundled graph and the Java planner.
 
 **Compliance.**
-- *Network:* only to a server the user hosts and configures. Two toggles,
-  `syncEnabled` and `fetchQuestGraph` (a hidden developer toggle, no UI), both
-  off by default, both with the RuneLite third-party warning; the manifest carries `warning=`. The payload is
-  the local player's own account only. OkHttp `enqueue`, never on the client
-  thread.
+- *Network:* none. The plugin makes no HTTP requests and does not use OkHttp;
+  the quest graph and planner are bundled. `StartUpThreadingTest` fails the
+  build if `src/main` imports `okhttp3`.
 - *Party:* "Share with my party" is off by default and uses `PartyService`
   only.
 - *Grand Exchange:* the buy list writes the plugin's own sentinel into the
@@ -111,3 +110,42 @@ current selection until Quest Helper also emits one. **This repo's PR #12**
 on main because it edits the removed `QuestHelperBridge`) is the input for the
 quest-name mapping that version needs; the removed code is in git history at
 `ee638ff`.
+
+## 5. Server sync: how it comes back
+
+Removed for the first Hub release (RUNELITE-499) so the plugin makes no network
+calls and needs no third-party-server warning. The full sync code is kept on the
+branch **`feature/server-sync`**, cut from `main` at `9b961f0`, the commit just
+before the removal.
+
+What was removed: the Sync tab (`PanelSections.SYNC`, `Tab.SYNC`, `syncBlock`),
+the "Sync with Quest Route" button, the `syncEnabled`, `serverUrl` and
+`pairingToken` config items and the "Quest Route sync" config section,
+`AccountState`, `AccountStateSender`, `SyncStatus`, `SyncSettings`,
+`AccountReport`, `QuestGraphFetcher`, `QuestpathPlugin.maybeSync` / `syncNow` /
+`syncStatus` and the `VarbitChanged` subscriber that only drove it, and the
+Quick settings "Server mode" row. `PushResponse` is kept as the data shape for
+the diary and item-plan fields; nothing writes to the plugin fields that held
+the pushed state (`buildRules`, `constraints`, `routeOrder`, `partialRuns`,
+`knownItems`, `itemPlan`, `diaryPush`), so they stay empty.
+
+To bring it back, once a public server exists:
+
+1. Branch from current `main`, then restore from the saved branch, e.g.
+   `git checkout feature/server-sync -- <files>` for the classes above, or
+   `git merge feature/server-sync` and resolve against the newer `main`.
+   `git diff 9b961f0 main -- src/main` shows what changed since the cut.
+2. Re-add the three config items and the `syncSection` with
+   `warning = "This feature submits your IP address to a 3rd-party server not controlled or verified by RuneLite developers"`
+   on the toggle, off by default. Never rename `syncEnabled`, `serverUrl` or
+   `pairingToken`: they were never published, but the saved key names match the
+   branch.
+3. Add `warning=` back to the Hub manifest (section 1) and the *Network* bullet
+   back to the PR body; replace the `src/main` OkHttp check in
+   `StartUpThreadingTest` (`mainCodeMakesNoHttpRequests`) with one that allows
+   only the sync classes.
+4. Point the default server address at the public server, keep push opt-in, and
+   keep the plugin's two-minute experience re-push inside the server's
+   five-minute freshness window (see `CLAUDE.md`).
+5. Re-run `tools/tokcount.py`; the sync code was roughly 6,000 tokens of the
+   Hub's 200,000-token main-code limit.

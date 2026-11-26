@@ -42,14 +42,31 @@ public class StartUpThreadingTest
 	}
 
 	@Test
-	public void graphFetchIsNotASavedSettingAnyMore()
+	public void noServerSyncSettingExists()
 	{
 		for (java.lang.reflect.Method method : QuestpathConfig.class.getMethods())
 		{
-			assertFalse("a saved setting must not be able to switch on a localhost fetch",
-				method.getName().equals("fetchQuestGraph"));
+			String name = method.getName();
+			assertFalse(name + " would reconnect Quest Route to a server",
+				name.equals("fetchQuestGraph") || name.equals("syncEnabled")
+					|| name.equals("serverUrl") || name.equals("pairingToken"));
 		}
-		assertFalse("developer flag is off unless set on the JVM",
-			Boolean.getBoolean(QuestpathPlugin.DEV_FETCH_PROPERTY));
+	}
+
+	@Test
+	public void mainCodeMakesNoHttpRequests() throws java.io.IOException
+	{
+		try (java.util.stream.Stream<java.nio.file.Path> files =
+			java.nio.file.Files.walk(java.nio.file.Paths.get("src/main/java")))
+		{
+			for (java.nio.file.Path file : (Iterable<java.nio.file.Path>) files.filter(
+				p -> p.toString().endsWith(".java"))::iterator)
+			{
+				String source = new String(java.nio.file.Files.readAllBytes(file),
+					java.nio.charset.StandardCharsets.UTF_8);
+				assertFalse(file + " imports OkHttp; this build is local-only",
+					source.contains("import okhttp3"));
+			}
+		}
 	}
 }

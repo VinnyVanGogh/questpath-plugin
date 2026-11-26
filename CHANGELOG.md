@@ -13,6 +13,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - The web app's per-quest route marks in the sidebar: right-click a quest on the Quests tab to refuse it (never do it; it and whatever needs it leave the route, and it lists under "Refused"), pin it to the front of the route, or do it later; a "Hide quests your build has closed off" filter. Saved per account in the local profile (`refused_quests`, `pinned_quests`, `deferred_quests`, `hide_blocked`), applied by `LocalRoute` the way the web planner applies pins and defers: only among the quests legal at that point (RUNELITE-468).
 - A headless scenario test for the bank button's click sequence (`BankTabState`, `BankTabScenarioTest`): "Hide tab" leaves the tab, the op-listener echo on the same tick does not reopen it, and a real tab's click leaves ours without being consumed (RUNELITE-468).
 
+### Removed
+
+- The Quest Route server sync, for the Plugin Hub launch: the Sync tab, the "Sync with Quest Route" button, the `syncEnabled`, `serverUrl` and `pairingToken` settings and their config section, the Quick settings "Server mode" row, the account-state push and the quest-graph fetch (and with them every OkHttp call). The plugin makes no network requests. The code is kept on the `feature/server-sync` branch; `docs/hub-submission.md` §5 says how it comes back (RUNELITE-499).
+
 ### Changed
 
 - Main code trimmed under the Plugin Hub's 200,000-token review limit (`staypoint runelite preflight`: 205,880 before, 198,234 after, every feature kept): one `Ui` helper class for the sidebar's labels, buttons and combos; the settings tab reads every tooltip and the third-party warning from the config descriptor instead of restating them; the plugin folds its chat, account-snapshot and clear-on-logout code into one place each (RUNELITE-468).
