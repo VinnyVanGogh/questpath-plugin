@@ -125,18 +125,4 @@ public class QuickSettingsPanelTest
 		}
 		assertTrue("the whole panel fits", panel.getPreferredSize().width <= sidebarWidth);
 	}
-
-	@Test
-	public void serverModeCarriesTheThirdPartyWarning()
-	{
-		for (QuickSettingsPanel.Row row : QuickSettingsPanel.rows(new QuestpathConfig() {}))
-		{
-			if (row.keyName.equals("syncEnabled"))
-			{
-				assertEquals(QuickSettingsPanel.SYNC_WARNING, row.warning);
-				return;
-			}
-		}
-		throw new AssertionError("syncEnabled is not a quick setting");
-	}
 }

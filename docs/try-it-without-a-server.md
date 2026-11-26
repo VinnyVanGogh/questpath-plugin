@@ -16,13 +16,12 @@ Where it keeps things: RuneLite's own settings, one saved value per account
 (your account type, quest types, progress, route). No files are written. Tick
 **Reset account setup** in the plugin settings (it asks first) to start over.
 
-Leave the **questpath address** setting empty. With nothing there the plugin
-makes no network requests and says nothing in chat. The website is an optional
-extra: put its address in that setting and turn on sync if you run it.
+The plugin makes no network requests of its own: the server sync was taken out
+for the Plugin Hub launch (see `docs/hub-submission.md` for how it comes back).
 
 ## Known limits at this launch
 
 - Setup runs once. To change it, use **Reset account setup**.
 - The route is prerequisites-first, then alphabetical. It does not optimise
-  for time or cost; questpath's own planner does, if you sync with it.
+  for time or cost.
 - Account types are recorded but do not yet change the route.

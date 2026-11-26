@@ -53,14 +53,12 @@ class BuildRulesOverlay extends QuestpathOverlay
 		List<BuildRule> rules = snapshot.buildRules();
 		if (rules.isEmpty())
 		{
-			// Never "unconstrained" -- the plugin learns rules only from an
-			// accepted questpath push, so empty is silence, not a clean bill
-			// of health. Telling a pure their build has no limits when
-			// nobody has said so yet is the one wrong answer this panel
+			// Never "unconstrained": empty means no rule has been entered, not
+			// a clean bill of health. Telling a pure their build has no limits
+			// when nobody has said so yet is the one wrong answer this panel
 			// could give.
 			return Collections.singletonList(OverlayRow.note(
-				"No build rules yet. Quest Route sends these when a push is "
-					+ "accepted, so turn sync on.",
+				"No build rules yet. Add them in the Combat tab.",
 				OverlayTheme.MUTED));
 		}
 

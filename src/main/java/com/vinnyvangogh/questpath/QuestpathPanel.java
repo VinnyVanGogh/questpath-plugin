@@ -303,6 +303,15 @@ class QuestpathPanel extends PluginPanel
 	private final ShortestPathBridge shortestPathBridge;
 
 	/**
+	 * Whether a diary or group-shop route from this panel went out and has not
+	 * been stopped since. Gates the "Stop path" button: a stop beside a start
+	 * that was never pressed does nothing. Shortest Path clears itself on
+	 * arrival with no event we can see, so this can outlive the line on the
+	 * ground; pressing Stop then is a harmless extra clear.
+	 */
+	private volatile boolean pathStartedHere;
+
+	/**
 	 * Shows a clicked item in the Grand Exchange's own search results.
 	 * Only ever reachable for an account {@link #geAvailable} reports true
 	 * for -- see {@link GrandExchangeAccounts}'s own doc.
@@ -350,12 +359,6 @@ class QuestpathPanel extends PluginPanel
 	 */
 	/** Calls off a running shop trip -- see QuestpathPlugin#cancelShopRoute. */
 	private final Runnable onCancelShopRoute;
-
-	/**
-	 * Pushes to questpath right now. See QuestpathPlugin#syncNow for why the
-	 * automatic gate is the wrong thing to hang a button on.
-	 */
-	private final Runnable onSyncNow;
 
 	/**
 	 * Where the player is, so the trip can be ordered from there.
@@ -524,7 +527,7 @@ class QuestpathPanel extends PluginPanel
 		Function<String, WorldPoint> dropLocator,
 		Supplier<WorldPoint> playerLocation, Runnable onShopRouteSent,
 		Runnable onCancelShopRoute,
-		BooleanSupplier shopRouteActive, Runnable onSyncNow,
+		BooleanSupplier shopRouteActive,
 		ShopItemSkips shopItemSkips,
 		Supplier<List<QuestGraph.DiaryTask>> diaryGraphTasks,
 		Supplier<PushResponse.Diary> diaryPush,
@@ -534,7 +537,6 @@ class QuestpathPanel extends PluginPanel
 		this.localBuildRules = localBuildRules;
 		this.onRulesEdited = onRulesEdited;
 		this.lockedGearActions = lockedGearActions;
-		this.onSyncNow = onSyncNow;
 		this.config = config;
 		this.configManager = configManager;
 		this.overlaySettings = overlaySettings;
@@ -879,14 +881,12 @@ class QuestpathPanel extends PluginPanel
 	 * thread: it hops to the EDT itself, because Swing state must only be
 	 * touched there and every caller here is a game event.
 	 */
-	void update(CombatStats stats, SkillXp xp, SyncStatus sync,
-		List<BuildRule> rules, List<String> unmatchedQuests, QuestVerdicts verdicts, QuestItems items,
-		NextQuestStatus nextQuest, RouteWork routeWork, SyncSettings settings, AccountReport report,
-		LockedGear lockedGear)
+	void update(CombatStats stats, SkillXp xp,
+		List<BuildRule> rules, QuestVerdicts verdicts, QuestItems items,
+		NextQuestStatus nextQuest, RouteWork routeWork, LockedGear lockedGear)
 	{
 		SwingUtilities.invokeLater(() ->
-			renderBody(stats, xp, sync, rules, unmatchedQuests, verdicts, items, nextQuest, routeWork,
-				settings, report, lockedGear));
+			renderBody(stats, xp, rules, verdicts, items, nextQuest, routeWork, lockedGear));
 	}
 
 	/**
@@ -945,7 +945,6 @@ class QuestpathPanel extends PluginPanel
 				body(Tab.VIEW).add(overlaySettings);
 			}
 			body(Tab.COMBAT).add(muted("Log in to see your levels."));
-			body(Tab.SYNC).add(muted("Log in to sync."));
 			body(Tab.QUESTS).add(muted("Log in to judge your quests."));
 			body(Tab.ITEMS).add(muted("Log in to check your bank."));
 			body(Tab.GROUP).add(muted("Log in to plan with your group."));
@@ -961,13 +960,10 @@ class QuestpathPanel extends PluginPanel
 		});
 	}
 
-	private void renderBody(CombatStats stats, SkillXp xp, SyncStatus sync,
-		List<BuildRule> rules, List<String> unmatchedQuests, QuestVerdicts verdicts, QuestItems items,
-		NextQuestStatus nextQuest, RouteWork routeWork, SyncSettings settings, AccountReport report,
-		LockedGear lockedGear)
+	private void renderBody(CombatStats stats, SkillXp xp,
+		List<BuildRule> rules, QuestVerdicts verdicts, QuestItems items,
+		NextQuestStatus nextQuest, RouteWork routeWork, LockedGear lockedGear)
 	{
-		clearBodies(Tab.SYNC);
-
 		lastStats = stats;
 		lastXp = xp;
 		lastRules = rules;
@@ -980,10 +976,6 @@ class QuestpathPanel extends PluginPanel
 			rebuildCombatTab();
 			lastCombatSignature = combatSignature;
 		}
-
-		JPanel syncBody = body(Tab.SYNC);
-		syncBody.add(heading(PanelSections.SYNC.title()));
-		syncBody.add(syncBlock(sync, unmatchedQuests, settings, report));
 
 		// Independent of the combat signature above: the skill plan does not
 		// care about xp.signature() (it prices levels, not current xp) or
@@ -1051,8 +1043,6 @@ class QuestpathPanel extends PluginPanel
 			showBodies(Tab.ITEMS);
 		}
 
-		renderPlannedSectionsFor(Tab.SYNC);
-		showBodies(Tab.SYNC);
 		repaintAll();
 	}
 
@@ -1078,11 +1068,6 @@ class QuestpathPanel extends PluginPanel
 
 		clearBodies(Tab.COMBAT);
 		JPanel combat = body(Tab.COMBAT);
-		// The panel opens on this tab, so the button people reach for
-		// most lives here as well as on Sync. Two call sites, one
-		// behaviour -- see syncNowButton.
-		combat.add(syncNowButton());
-		combat.add(gap(10));
 		section(combat, PanelSections.COMBAT, combatBlock(stats));
 		section(combat, PanelSections.LOCKED_GEAR, lockedGearSection(lastLockedGear));
 		section(combat, PanelSections.CEILING, ceilingBlock(stats, xp, ceiling));
@@ -1208,7 +1193,7 @@ class QuestpathPanel extends PluginPanel
 				? "Sharing your quests, levels, build rules, route, account type and quest-item counts with"
 					+ " your party."
 				: "Not sharing. Your party sees nothing from you; turn on \"Share with my party\" in the"
-					+ " View tab's Sync section to let them plan with you."));
+					+ " View tab's Party section to let them plan with you."));
 			body.add(gap(6));
 			switch (view.state())
 			{
@@ -1493,6 +1478,7 @@ class QuestpathPanel extends PluginPanel
 		}
 		body.add(gap(6));
 		body.add(groupShopRouteButton(view, lines));
+		addStopPathButton(body);
 		groupShopFootnotes(body, list);
 	}
 
@@ -1648,7 +1634,32 @@ class QuestpathPanel extends PluginPanel
 		}
 		int count = destinations.size();
 		return routeButton(" (group shops)", event -> shortestPathBridge.route(destinations, outcome ->
-			SwingUtilities.invokeLater(() -> reportRouteOutcome(outcome, count))));
+		{
+			if (outcome == ShortestPathBridge.RouteOutcome.SENT)
+			{
+				pathStartedHere = true;
+			}
+			SwingUtilities.invokeLater(() -> reportRouteOutcome(outcome, count));
+		}));
+	}
+
+	/** Adds "Stop path" to {@code parent} while a route started from here may still be drawn. */
+	private void addStopPathButton(JPanel parent)
+	{
+		if (pathStartedHere && shortestPathBridge != null)
+		{
+			parent.add(stopPathButton());
+		}
+	}
+
+	private JButton stopPathButton()
+	{
+		return button("Stop path", event ->
+		{
+			pathStartedHere = false;
+			shortestPathBridge.clear();
+			repaintAll();
+		});
 	}
 
 	private static JButton disabled(String text)
@@ -2202,8 +2213,8 @@ class QuestpathPanel extends PluginPanel
 			// state where it matters most: with no rules at all the guard is
 			// off everywhere and off silently, so the way to fix that has to
 			// sit directly under the sentence admitting it.
-			panel.add(muted("Quest Route has not been told your rules. Sync sends them"
-				+ " when it is on, or write them here -- with none, nothing is guarded."));
+			panel.add(muted("Quest Route has not been told your rules. Write them here"
+				+ " -- with none, nothing is guarded."));
 			panel.add(buildRulesEditorBlock());
 			return panel;
 		}
@@ -2794,27 +2805,6 @@ class QuestpathPanel extends PluginPanel
 	 * interface opening, and neither of those is the player changing their
 	 * mind about the whole errand.
 	 */
-	/**
-	 * "Sync with questpath" -- one press, both directions.
-	 *
-	 * <p>Both directions is the part worth saying on the button, because the
-	 * reason to press it is almost always the second one: a push is answered
-	 * with this account's build rules, its plan and what questpath holds for
-	 * it, so pressing this is how a plan you just changed on the website
-	 * reaches the client. Calling it "send" would describe half of what it
-	 * does and the less useful half.
-	 */
-	private JButton syncNowButton()
-	{
-		JButton button = button("Sync with Quest Route", event -> onSyncNow.run());
-		button.setToolTipText("<html><body style='width:220px'>Pushes this account to Quest Route"
-			+ " and applies whatever comes back -- build rules, your saved plan, and the items"
-			+ " Quest Route holds for you.<br><br>Automatic sync only fires when something changes"
-			+ " in-game, so this is how a plan you edited on the website arrives without waiting"
-			+ " for your next level-up.</body></html>");
-		return button;
-	}
-
 	private JButton cancelShopRouteButton()
 	{
 		return button("Stop the shop route", event ->
@@ -3414,7 +3404,7 @@ class QuestpathPanel extends PluginPanel
 		PushResponse.Diary diary = diaryPush.get();
 		if (diary == null)
 		{
-			panel.add(muted("Diary route needs a Quest Route sync."));
+			panel.add(muted("Diary progress is not tracked in this version of Quest Route."));
 			return panel;
 		}
 
@@ -3430,7 +3420,7 @@ class QuestpathPanel extends PluginPanel
 			// DiaryRouteOverlay#rows for the same distinction made in the
 			// overlay.
 			panel.add(muted(DiaryJournal.progressNeverSynced(diary)
-				? "Diary progress not synced yet."
+				? "Diary progress is not tracked in this version."
 				: "No outstanding diary tasks this account can currently act on."));
 			return panel;
 		}
@@ -3459,6 +3449,7 @@ class QuestpathPanel extends PluginPanel
 		{
 			panel.add(gap(6));
 			panel.add(diaryRouteButton(stops.get(0)));
+			addStopPathButton(panel);
 		}
 
 		for (QuestGraph.DiaryTask task : locationUnknown)
@@ -3491,7 +3482,14 @@ class QuestpathPanel extends PluginPanel
 		JButton button = routeButton("", event ->
 		{
 			WorldPoint point = new WorldPoint(destination.x(), destination.y(), destination.plane());
-			shortestPathBridge.route(Set.of(point), outcome -> repaintAll());
+			shortestPathBridge.route(Set.of(point), outcome ->
+			{
+				if (outcome == ShortestPathBridge.RouteOutcome.SENT)
+				{
+					pathStartedHere = true;
+				}
+				repaintAll();
+			});
 		});
 		if (button.isEnabled())
 		{
@@ -3528,11 +3526,8 @@ class QuestpathPanel extends PluginPanel
 		PushResponse.Diary diary = diaryPush.get();
 		if (DiaryJournal.progressNeverSynced(diary))
 		{
-			panel.add(muted(diary == null
-				? "Diary progress not synced yet -- push this account's state from a Quest Route"
-					+ " that supports diary routing."
-				: "Diary progress not synced yet -- Quest Route has not read this account's"
-					+ " per-task diary progress."));
+			panel.add(muted("Diary progress is not tracked in this version of Quest Route;"
+				+ " the tasks are listed without completion."));
 			panel.add(gap(6));
 		}
 
@@ -3742,7 +3737,7 @@ class QuestpathPanel extends PluginPanel
 			// below is "as far as I know". A pure's quest list rendered as a
 			// main's is exactly the mistake this plugin exists to prevent.
 			panel.add(note("No build rules yet, so nothing can be"
-				+ " judged against them. Turn on sync to get them from Quest Route.", PROGRESS_ERROR_COLOR));
+				+ " judged against them. Add your build rules in the Combat tab.", PROGRESS_ERROR_COLOR));
 			panel.add(gap(6));
 		}
 
@@ -4607,108 +4602,6 @@ class QuestpathPanel extends PluginPanel
 			return "";
 		}
 		return "  ·  " + XpTable.format(cost) + " xp";
-	}
-
-	/**
-	 * Whether the account-state push is working, in the words that tell the
-	 * difference between the ways it can fail.
-	 *
-	 * The push is deliberately silent in game, which leaves no way to tell
-	 * "working" from "wrong token" from "questpath is closed". Two of those
-	 * three are things only the player can fix, and neither is discoverable
-	 * without being told.
-	 */
-	/**
-	 * Non-static so it can carry the sync button, which needs the plugin's own
-	 * callback. Everything else in here is still a pure function of its
-	 * arguments.
-	 */
-	private JPanel syncBlock(SyncStatus sync, List<String> unmatchedQuests,
-		SyncSettings settings, AccountReport report)
-	{
-		JPanel panel = column();
-
-		panel.add(syncNowButton());
-		panel.add(gap(6));
-
-		panel.add(tinted(wrap(sync.describe(Instant.now())),
-			sync.needsAttention() ? PROGRESS_ERROR_COLOR : LIGHT_GRAY_COLOR));
-
-		if (sync.state() == SyncStatus.State.NO_TOKEN)
-		{
-			panel.add(note("Get this token from your Quest Route server", LIGHT_GRAY_COLOR));
-		}
-
-		// The settings themselves, not only their effect. RuneLite's config
-		// panel is several clicks away and behind a different icon, and
-		// "sent 3m ago" does not say which server it went to -- which is the
-		// first thing anyone checks when it went somewhere unexpected.
-		if (settings != null)
-		{
-			panel.add(gap(8));
-			JPanel grid = grid();
-			addRow(grid, "Sending", settings.enabled() ? "on" : "off",
-				settings.enabled() ? PROGRESS_COMPLETE_COLOR : LIGHT_GRAY_COLOR);
-			addRow(grid, "Server", settings.serverUrl(), LIGHT_GRAY_COLOR);
-			addRow(grid, "Token", settings.hasToken() ? "set" : "not set",
-				settings.hasToken() ? PROGRESS_COMPLETE_COLOR : PROGRESS_ERROR_COLOR);
-			panel.add(grid);
-			panel.add(note("Change these under Settings, Quest Route.", MEDIUM_GRAY_COLOR));
-		}
-
-		// Who is being sent, and what. The tab used to be able to say only
-		// whether the last push worked, which answers "is it on" and nothing
-		// about which account it wrote -- and that is the question that
-		// matters. Three pushes once wrote one character's quest states over
-		// another account's, and every one of them looked like an ordinary
-		// sync from inside the game.
-		if (report != null)
-		{
-			panel.add(gap(10));
-			JLabel who = tinted(wrap(report.characterName()), Color.WHITE);
-			who.setFont(BOLD);
-			panel.add(who);
-			panel.add(note("This is the account every push is attributed to.", MEDIUM_GRAY_COLOR));
-			panel.add(gap(6));
-			JPanel sent = grid();
-			addRow(sent, "Combat", String.valueOf(report.combatLevel()), LIGHT_GRAY_COLOR);
-			addRow(sent, "Quest points", String.valueOf(report.questPoints()), LIGHT_GRAY_COLOR);
-			addRow(sent, "Total level", String.valueOf(report.totalLevel()), LIGHT_GRAY_COLOR);
-			addRow(sent, "Total xp", XpTable.format(report.totalXp()), LIGHT_GRAY_COLOR);
-			addRow(sent, "Quests done", report.questsComplete() + " of " + report.questsKnown(),
-				LIGHT_GRAY_COLOR);
-			addRow(sent, "Quests started", String.valueOf(report.questsInProgress()),
-				LIGHT_GRAY_COLOR);
-			// Two facts, not one. Zero stacks with the bank seen is an empty
-			// bank; zero stacks without it is a bank nobody has opened, and
-			// questpath's item answers are working from an older upload until
-			// they are.
-			addRow(sent, "Item stacks", String.valueOf(report.itemStacks()),
-				report.itemStacks() > 0 ? LIGHT_GRAY_COLOR : MEDIUM_GRAY_COLOR);
-			addRow(sent, "Bank", report.bankSeen() ? "seen this session" : "not opened yet",
-				report.bankSeen() ? PROGRESS_COMPLETE_COLOR : PROGRESS_INPROGRESS_COLOR);
-			panel.add(sent);
-
-			if (!report.bankSeen())
-			{
-				panel.add(note("Open your bank once and the item lists fill in.", MEDIUM_GRAY_COLOR));
-			}
-		}
-
-		// A quest name this plugin sends that questpath cannot resolve is a
-		// real disagreement between the two. Counting them would hide which,
-		// and which is the only part that leads anywhere.
-		if (!unmatchedQuests.isEmpty())
-		{
-			panel.add(gap(6));
-			panel.add(note(unmatchedQuests.size() + " quest names Quest Route did not recognise:",
-				PROGRESS_INPROGRESS_COLOR));
-			for (String name : unmatchedQuests)
-			{
-				panel.add(small(name, LIGHT_GRAY_COLOR));
-			}
-		}
-		return panel;
 	}
 
 	/**
