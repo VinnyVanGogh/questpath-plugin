@@ -138,7 +138,7 @@ class QuickSettingsPanel extends JPanel
 			box.setFont(smallFont());
 			box.setFocusPainted(false);
 			box.setAlignmentX(LEFT_ALIGNMENT);
-			box.setMaximumSize(new Dimension(Integer.MAX_VALUE, 22));
+			box.setMaximumSize(new Dimension(Integer.MAX_VALUE, box.getPreferredSize().height));
 			box.addActionListener(e -> onClick(row, box));
 			boxes.add(box);
 			add(box);
