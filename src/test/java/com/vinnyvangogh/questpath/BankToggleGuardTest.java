@@ -30,15 +30,6 @@ public class BankToggleGuardTest
 	}
 
 	@Test
-	public void hideTabIsHandledEvenWhenTheFlagAlreadyDropped()
-	{
-		assertTrue(BankToggleGuard.handles(false, true, BankButton.ACTION_HIDE));
-		assertFalse(BankToggleGuard.handles(false, true, "View tab"));
-		assertFalse(BankToggleGuard.handles(false, false, BankButton.ACTION_HIDE));
-		assertTrue(BankToggleGuard.handles(true, false, "View tab"));
-	}
-
-	@Test
 	public void openingWhileShownIsNeverSuppressed()
 	{
 		BankToggleGuard guard = new BankToggleGuard();

@@ -100,12 +100,6 @@ class LocalBuildRules
 		return save(rules == null ? Collections.<BuildRule>emptyList() : rules);
 	}
 
-	/** Removes every rule this account has written here. */
-	synchronized List<BuildRule> clearAll()
-	{
-		return save(Collections.emptyList());
-	}
-
 	private List<BuildRule> save(List<BuildRule> rules)
 	{
 		if (configManager == null || configManager.getRSProfileKey() == null)

@@ -21,8 +21,8 @@ import net.runelite.client.ui.ColorScheme;
 import net.runelite.client.ui.FontManager;
 
 /**
- * The handful of settings players change most, as checkboxes at the top of the
- * sidebar's settings tab, with an "All settings" link down to the full panel.
+ * The handful of settings players change most, as checkboxes in a folding
+ * block at the top of the sidebar, with an "All settings" link to the full panel.
  *
  * <p>Each checkbox writes the real config key through {@link Store}, the same
  * key {@link OverlaySettingsPanel} and RuneLite's own config panel use, so the
@@ -46,15 +46,10 @@ import net.runelite.client.ui.FontManager;
  * bank features.</li>
  * <li>{@code voiceEnabled}: spoken prompts, the setting most likely to be
  * muted on short notice.</li>
- * <li>{@code syncEnabled}: server or local mode. Turning it on is gated by
- * the same third-party-server warning RuneLite's config panel shows.</li>
  * </ul>
  */
 class QuickSettingsPanel extends JPanel
 {
-	static final String SYNC_WARNING = "This feature submits your IP address to a 3rd-party server not"
-		+ " controlled or verified by RuneLite developers.\n\nTurn it on anyway?";
-
 	/** Where a toggle writes to; {@code ConfigManager} in the plugin, a map in tests. */
 	interface Store
 	{
@@ -98,9 +93,6 @@ class QuickSettingsPanel extends JPanel
 			"Highlight the items you need in your bank.", config::bankHighlight, null));
 		rows.add(new Row("voiceEnabled", "Spoken prompts",
 			"Speak shop and floor item prompts aloud.", config::voiceEnabled, null));
-		rows.add(new Row("syncEnabled", "Server mode (send account state)",
-			"Push quest completion, levels and diaries to your Quest Route server. Off keeps"
-				+ " everything local.", config::syncEnabled, SYNC_WARNING));
 		return Collections.unmodifiableList(rows);
 	}
 
@@ -134,15 +126,8 @@ class QuickSettingsPanel extends JPanel
 		this.store = store;
 		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 		setBackground(ColorScheme.DARK_GRAY_COLOR);
-		setBorder(BorderFactory.createEmptyBorder(8, 8, 0, 8));
+		setBorder(BorderFactory.createEmptyBorder(4, 8, 4, 8));
 		setAlignmentX(LEFT_ALIGNMENT);
-
-		JLabel heading = new JLabel("QUICK SETTINGS");
-		heading.setFont(smallFont().deriveFont(Font.BOLD));
-		heading.setForeground(ColorScheme.BRAND_ORANGE);
-		heading.setAlignmentX(LEFT_ALIGNMENT);
-		add(heading);
-		add(Box.createRigidArea(new Dimension(0, 4)));
 
 		for (Row row : rows)
 		{

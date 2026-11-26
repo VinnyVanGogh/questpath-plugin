@@ -45,9 +45,11 @@ and runs the planner. This plugin is not its remote control:
   it a plugin rather than a client, and it is what makes it publishable. The
   combat panel needs no server; the quest planner will run off a bundled quest
   graph, not a live query.
-- The state push to questpath is **opt-in and off by default**, and it will
-  carry the same payload shape WikiSync uses so the Go side reuses its existing
-  apply path rather than growing a parallel one.
+- **The state push to questpath is removed for the Hub launch** (RUNELITE-499):
+  no OkHttp, no sync config, no Sync tab. The code lives on the
+  `feature/server-sync` branch; `docs/hub-submission.md` §5 says how it comes
+  back. When it does, it stays opt-in and off by default, and carries the same
+  payload shape WikiSync uses.
 
 ## Two implementations of the same rules
 
@@ -77,18 +79,15 @@ is silent — both sides render confidently.
   `PanelSectionsTest` fails if one carries no explanation. That distinction is
   the point: "questpath looked and found nothing" and "questpath cannot answer
   this yet" are different claims.
-- `AccountState` / `AccountStateSender` / `SyncStatus` — the opt-in push. Two
-  fingerprints, deliberately: quests and levels earn an immediate push,
-  experience gets a two-minute timer. Folding xp into the structural
-  fingerprint means a request every few seconds while training; leaving it out
-  means questpath's stored xp only moves on level-up.
+- `PushResponse` survives as the data shape for diary and item-plan fields, but
+  nothing fills them in now that the push is gone (see `docs/hub-submission.md` §5).
 - The nav-button icon is drawn in code, not loaded from a resource.
   `icon.png` at the repo root (48x48) is the Plugin Hub listing icon only;
   it is not packaged into the jar.
 
-## Two numbers that have to stay in step
+## Two numbers that have to stay in step (only once sync returns)
 
-The plugin re-pushes for experience every **two minutes**. questpath treats a
+The plugin re-pushed for experience every **two minutes**. questpath treats a
 push as live for **five**, and stands its WikiSync poll and hiscores fetch down
 for that long. If the plugin's interval ever exceeds questpath's window, the
 window lapses mid-session and a poll overwrites the plugin's fresher data with

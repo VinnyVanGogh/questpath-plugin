@@ -6,8 +6,7 @@ glance, and a warning before a build rule ends the account.
 
 > **Name.** This plugin was called *questpath* during development. That name is
 > taken on the Plugin Hub by another author's plugin, so it ships as **Quest
-> Route**. The optional server it can sync with is still the
-> [questpath](https://github.com/VinnyVanGogh) web app.
+> Route**.
 
 > **Early development.** Most overlays are opt-in, and features marked
 > *(in progress)* are partly built or next up.
@@ -30,10 +29,10 @@ For an ironman it removes the chore around every quest: gathering. Instead of a
 side quest before the quest, you get one list for your whole plan, one trip to
 collect it, and a shout when you walk past something on it.
 
-**It works without a server.** The plugin ships its own copy of the quest graph
-and a Java port of the [questpath](https://github.com/VinnyVanGogh) planner,
-tested against the same 218 quest verdicts as the website. Your route, build
-rules and diaries arrive when you sync.
+**It runs entirely on your computer.** The plugin ships its own copy of the
+quest graph and a Java port of the [questpath](https://github.com/VinnyVanGogh)
+planner, tested against the same 218 quest verdicts as the website. It makes no
+network requests of its own.
 
 First run, a sidebar setup asks your account type and which quests to route,
 then shows the route; it is saved under `.runelite/questroute/`. See
@@ -137,7 +136,6 @@ the quest that wanted it.
 | **Skills** | What a level costs: XP from quests now, later, or never on this build, and what's left to train |
 | **Quests** | Next on your route with progress, your whole route in order, "Still needs work", "Start, never finish", and every quest's verdict, searchable |
 | **Items** | Get while you're here, the shop route buttons, skipped items, and everything you need counted against what you hold |
-| **Sync** | Whether the last push went out, the account it's attributed to, and what was sent |
 | **Group** | Party members and their quest counts, quests you can do together next, quests that break a member's build, per-quest item split with hand-overs, party-wide group shopping, and quests done by only some of the group |
 | **View** | Every setting, grouped and readable, instead of a 225px config column |
 
@@ -160,13 +158,9 @@ the quest that wanted it.
 
 ![The Items tab: get while you are here, shop route buttons, skipped items, and everything you need](docs/screenshots/tab-items.jpg)
 
-**Sync**
-
-![The Sync tab: push status, server and token, the account attributed, and what was sent](docs/screenshots/tab-sync.jpg)
-
 **View**
 
-![The View tab: sync, shared display settings, and each overlay with its own width and length](docs/screenshots/tab-view.jpg)
+![The View tab: shared display settings, and each overlay with its own width and length](docs/screenshots/tab-view.jpg)
 
 </details>
 
@@ -191,32 +185,13 @@ the quest that wanted it.
   your live levels, with style, prayer, spell, melee strength potion, the next
   level that raises each max hit, and what prayer and potion each contribute.
 - **Build rules.** How much room is left before a rule breaks, editable per
-  account in the sidebar and merged over synced rules. No-XP and hard caps
+  account in the sidebar. No-XP and hard caps
   escalate as you close in; soft caps and goals never do.
 - **Lamp advisor.** When an experience lamp or tome opens, blocked skills are
   greyed out, the top three targets are boxed, and hovering any skill explains
   why.
 
 ---
-
-## Syncing with a Quest Route server
-
-Off by default, and the setting that reaches the server carries RuneLite's
-warning: **this feature submits your IP address to a 3rd-party server not
-controlled or verified by RuneLite developers.** With sync on, the plugin pushes your quests, levels, XP, bank,
-inventory and equipment to a [questpath](https://github.com/VinnyVanGogh)
-instance you host, so it stops polling third-party services for data your own
-client already has.
-
-- The pairing token both authenticates the push and names the account it writes
-  to. Get it with `go run ./cmd/questpath -plugin-token` on the server.
-  *(Issuing it from the settings page: in progress.)*
-- Every push returns your build rules, constraints, route order, partial runs,
-  owned items and diary tasks.
-- The Sync tab says whether the last push was accepted, refused or never
-  answered. A wrong token says so rather than failing quietly.
-- A "Sync with Quest Route" button pulls a plan you just edited on the site
-  straight into the game.
 
 What ships in the bundle: 314 shops, 125 monster drop locations, 205 quest start
 points, and 492 diary tasks with 376 of them placed on the map.
@@ -229,7 +204,7 @@ For Group Ironman teams, or anyone questing together in a RuneLite party. It
 uses RuneLite's own Party service only: no questpath server, no third party,
 no uploads.
 
-- **Off by default.** Turn on "Share with my party" (View tab → Sync, or the
+- **Off by default.** Turn on "Share with my party" (View tab → Party, or the
   "Group (party)" config section). While it is off this client sends nothing.
   Turning it off sends one "forget me" message that carries no account data.
 - **What is shared:** finished and started quests, levels, experience, your

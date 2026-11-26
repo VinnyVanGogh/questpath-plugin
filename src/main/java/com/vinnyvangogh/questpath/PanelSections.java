@@ -42,12 +42,6 @@ enum PanelSections
 		Status.LIVE,
 		null),
 
-	SYNC(
-		Tab.SYNC,
-		"Quest Route sync",
-		Status.LIVE,
-		null),
-
 	BUILD_RULES(
 		Tab.COMBAT,
 		"Build rules",
@@ -167,7 +161,7 @@ enum PanelSections
 		//
 		// These replaced a set of borrowed skill icons. Four of the six were
 		// metaphors that had to be learned -- a slayer helm for quests, a
-		// needle for items, a rune for sync -- which is the one thing an icon
+		// needle for items -- which is the one thing an icon
 		// must not be. Where the game has the actual icon for a concept, that
 		// is the icon: the quest diary, the inventory, the options wrench.
 		//
@@ -183,13 +177,6 @@ enum PanelSections
 		// reads as intentional and nobody goes looking for where "combat"
 		// went.
 		//
-		// Sync is the only one with no interface equivalent, because pushing
-		// your account somewhere is not a thing the game does. Wind surge is
-		// the stand-in: a surge is the closest the spellbook comes to "send
-		// this outward", and it is at least a picture nobody will mistake for
-		// one of the others. SPELL_TELE_BLOCK (352) is the alternative and is
-		// one constant away.
-		//
 		// The label survives as the tooltip either way -- an icon that has to
 		// be learned needs a way to be learned, and it is also the fallback
 		// when a sprite cannot be produced.
@@ -203,7 +190,6 @@ enum PanelSections
 		SKILLS("Skills", 1197),         // OrbXp.ACTIVATED, the experience orb
 		QUESTS("Quests", 776),          // TAB_QUESTS, the quest diary
 		ITEMS("Items", 777),            // RS2_TAB_INVENTORY, the backpack
-		SYNC("Sync", 362),              // SPELL_WIND_SURGE
 		GROUP("Group", 781),            // RS2_TAB_FRIENDS_CHAT, the party/chat-channel tab
 		VIEW("View", 785);              // RS2_TAB_OPTIONS, the wrench
 

@@ -47,26 +47,19 @@ public class OverlaySettingsPanelConfigParityTest
 	 * here, deliberately, not something that falls out of a rule nobody
 	 * notices growing.
 	 *
-	 * <p>{@code serverUrl} and {@code pairingToken}: a URL and a secret
-	 * token are exactly the free-text and masked-field controls RuneLite's
-	 * own config panel already renders correctly, and {@link
-	 * OverlaySettingsPanel} deliberately never duplicates either -- see its
-	 * {@code syncSection} method's own doc. {@code syncEnabled} itself is
-	 * NOT in this list: it is a plain on/off switch, exactly the shape every
-	 * other toggle in that panel already is, so it gets one too.
-	 *
-	 * <p>{@code buildRulesShowAll} is exempt for a different reason: its
+	 * <p>{@code buildRulesShowAll} is exempt: its
 	 * control does not belong on the Settings tab at all. It lives inline in
 	 * the Combat tab's own Build rules section, next to the rules it
 	 * filters, the same way the quest search box and status filter live next
 	 * to the quest list rather than on a settings screen. See {@code
 	 * QuestpathPanel}'s build-rules-block rendering.
 	 */
-	private static final Set<String> EXEMPT_KEYS = Set.of("serverUrl", "pairingToken", "buildRulesShowAll",
-		// Update notes: a chat toggle and a replay switch that live in
-		// RuneLite's config panel next to the other chat settings, plus two
-		// hidden bookkeeping values the plugin writes itself.
-		"showUpdateNotes", "showWhatsNew", "lastSeenVersion", "lastSeenBuild");
+	private static final Set<String> EXEMPT_KEYS = Set.of("buildRulesShowAll",
+		// Update notes: a chat toggle that lives in RuneLite's config panel
+		// next to the other chat settings (the replay is the sidebar's own
+		// What's new button), plus two hidden bookkeeping values the plugin
+		// writes itself.
+		"showUpdateNotes", "lastSeenVersion", "lastSeenBuild");
 
 	private static final Path PANEL_SOURCE =
 		Path.of("src/main/java/com/vinnyvangogh/questpath/OverlaySettingsPanel.java");

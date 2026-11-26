@@ -14,12 +14,6 @@ final class BankToggleGuard
 {
 	private int leftTick = -1;
 
-	/** Whether a menu click is ours to look at: tab on, or our "Hide tab". */
-	static boolean handles(boolean shown, boolean ours, String o)
-	{
-		return shown || ours && BankButton.ACTION_HIDE.equals(o);
-	}
-
 	/** Records that the tab was left by the button on this client tick. */
 	void left(int tick)
 	{

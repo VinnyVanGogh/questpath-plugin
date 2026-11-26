@@ -74,7 +74,7 @@ class DiaryRouteOverlay extends QuestpathOverlay
 		{
 			// Absent, not empty -- see this class's own doc and
 			// PushResponse#hasDiary()'s.
-			return List.of(OverlayRow.note("Diary route needs a Quest Route sync.", OverlayTheme.MUTED));
+			return List.of(OverlayRow.note("Diary progress is not tracked in this version.", OverlayTheme.MUTED));
 		}
 
 		List<DiaryRouteStops.Stop> stops =
@@ -90,7 +90,7 @@ class DiaryRouteOverlay extends QuestpathOverlay
 			// both surfaces draw the same line between the two.
 			if (DiaryJournal.progressNeverSynced(diary))
 			{
-				return List.of(OverlayRow.note("Diary progress not synced yet.", OverlayTheme.MUTED));
+				return List.of(OverlayRow.note("Diary progress is not tracked in this version.", OverlayTheme.MUTED));
 			}
 			return List.of(OverlayRow.note(
 				"No actionable diary task with a known location right now.", OverlayTheme.MUTED));

@@ -54,6 +54,19 @@ public final class LockedGear
 		int mdmg();
 	}
 
+	/** A plain {@link ItemStatsView}: what the plugin's adapter hands over, and the one shared unknown. */
+	@lombok.Value
+	@lombok.experimental.Accessors(fluent = true)
+	public static class ItemStats implements ItemStatsView
+	{
+		public static final ItemStats UNKNOWN = new ItemStats(false, 0, 0, 0);
+
+		boolean known;
+		int str;
+		int rstr;
+		int mdmg;
+	}
+
 	/** Which of four distinct shapes this snapshot is in. */
 	public enum Shape
 	{
