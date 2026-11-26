@@ -1099,6 +1099,29 @@ public interface QuestpathConfig extends Config
 		return true;
 	}
 
+	@ConfigItem(
+		keyName = "questWarnings",
+		name = "Warn about quests you can't finish",
+		description = "Popup and chat line when you pick or start a quest you lack requirements for.",
+		section = chatSection,
+		position = 3
+	)
+	default boolean questWarnings()
+	{
+		return true;
+	}
+
+	@ConfigItem(
+		keyName = "questWarningMuted",
+		name = "",
+		description = "",
+		hidden = true
+	)
+	default String questWarningMuted()
+	{
+		return "";
+	}
+
 	/** The last version whose update notes were handled; written by the plugin, never shown. */
 	@ConfigItem(
 		keyName = LAST_SEEN_VERSION,

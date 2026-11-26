@@ -605,13 +605,7 @@ class QuestItems
 	 * and letting a stale record raise it would resurrect items that have
 	 * since been spent.
 	 */
-	static Map<String, Long> effectiveHeldForTest(Map<String, Long> held, boolean bankSeen,
-		Map<String, Long> knownItems)
-	{
-		return effectiveHeld(held, bankSeen, knownItems);
-	}
-
-	private static Map<String, Long> effectiveHeld(Map<String, Long> held, boolean bankSeen,
+	static Map<String, Long> effectiveHeld(Map<String, Long> held, boolean bankSeen,
 		Map<String, Long> knownItems)
 	{
 		if (bankSeen || knownItems == null || knownItems.isEmpty())

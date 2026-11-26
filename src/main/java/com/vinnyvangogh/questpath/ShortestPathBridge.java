@@ -98,48 +98,16 @@ import net.runelite.client.events.PluginMessage;
  * shows an unconditional assertion that it is already running on the client
  * thread, with nothing to get itself there if it is not, and {@code
  * EventBus#post} invokes every subscriber synchronously on whatever thread
- * called {@code post} itself. A bare {@code eventBus::post} reference used
- * to be wired in here, straight from a Swing button's action listener, and
- * every click threw {@code AssertionError} out of Shortest Path's handler
- * before {@link #route} ever returned -- fixed by building {@link
- * #eventPoster} with {@link #clientThreadEventPoster} instead, see that
- * method's own doc for the shape of the fix and {@code
- * QuestpathPlugin#startUp} for where it is actually wired. That {@code
- * AssertionError} is also the reason {@link #route}'s catch
- * below is not narrowed to {@code RuntimeException} alone: {@code
- * AssertionError} extends {@code Error}, not {@code Exception}, so a bare
- * {@code catch (RuntimeException e)} never saw it. Confirmed the same way
- * everything else in this class was: {@code javap -c} against {@code
- * EventBus.post} in the installed jar shows its per-subscriber exception
- * table covers only {@code java.lang.Exception} -- so {@link
- * RouteOutcome#SENT}'s own doc, which describes {@code post} swallowing a
- * subscriber's thrown exception, was correspondingly narrower than it read:
- * true for anything under {@code Exception}, never true for an {@code
- * Error}, which is exactly the class {@code AssertionError} belongs to and
- * exactly why this one reached all the way up to RuneLite's own top-level
- * uncaught-exception handler instead of being quietly absorbed.
+ * called {@code post} itself. A bare {@code eventBus::post} once threw
+ * {@code AssertionError} out of Shortest Path's handler on every click; use
+ * {@link #clientThreadEventPoster}. {@code AssertionError} is an {@code Error},
+ * and {@code EventBus.post} only absorbs {@code Exception}, so {@link #route}'s
+ * catch below is deliberately wider than {@code RuntimeException}.
  *
- * <p><b>Shortest Path clears its own path on arrival, on its own, with no
- * event this plugin could react to even if it wanted to.</b> A report:
- * talking to an NPC (the Brimhaven bartender) appeared to clear the active
- * path. Checked rather than assumed -- {@code javap -c -p} against the
- * installed jar's {@code ShortestPathPlugin.onGameTick} shows it comparing
- * the player's live position against every current target every tick and
- * calling {@code setTarget(-1)} (its own internal "clear" call) the moment
- * any one of them is within {@code ShortestPathConfig#reachedDistance()}
- * tiles (5, by default) -- with no reference to menu actions, dialogue, or
- * any interaction at all. {@code onMenuOptionClicked} is the only other path
- * clearer in that jar, and it only fires on an explicit right-click "Clear"
- * on the path itself, matched by literal option and target text. There is
- * no {@code onInteractingChanged}, no chat listener, and nothing else
- * subscribed that could react to talking to an NPC. Walking up to talk to
- * someone standing near wherever Shortest Path's own target was is, by
- * construction, walking within a few tiles of that target -- so the path
- * clearing at that moment is Shortest Path's own arrival detection doing
- * exactly what it is built to do, coincident with the interaction rather
- * than caused by it. This plugin posts a target set and nothing else; it
- * has no path of its own to clear and nothing here reacts to arrival,
- * interaction, or dialogue in any way.
+ * <p>Shortest Path clears its own path on arrival (within its
+ * {@code reachedDistance}, checked every tick, per {@code javap} of
+ * {@code onGameTick}); a path vanishing while talking to a nearby NPC is that,
+ * not this plugin, which only posts a target set.
  */
 @Slf4j
 class ShortestPathBridge
@@ -439,13 +407,11 @@ class ShortestPathBridge
 	{
 		if (availability() != Availability.AVAILABLE)
 		{
-			log.debug("Not clearing the Shortest Path route -- {}", availability());
 			return false;
 		}
 		try
 		{
 			eventPoster.accept(new PluginMessage(CONFIG_GROUP, CLEAR_MESSAGE_NAME, Map.of()));
-			log.debug("Cleared the Shortest Path route");
 			return true;
 		}
 		catch (RuntimeException | AssertionError e)
@@ -461,13 +427,11 @@ class ShortestPathBridge
 	{
 		if (availability() != Availability.AVAILABLE)
 		{
-			log.debug("Not sending a shop route to Shortest Path -- {}", availability());
 			onOutcome.accept(RouteOutcome.UNAVAILABLE);
 			return;
 		}
 		if (destinations == null || destinations.isEmpty())
 		{
-			log.debug("Not sending a shop route to Shortest Path -- no destinations to send");
 			onOutcome.accept(RouteOutcome.NO_DESTINATIONS);
 			return;
 		}
@@ -490,8 +454,7 @@ class ShortestPathBridge
 		// problem far bigger than "Shortest Path didn't get the route".
 		catch (RuntimeException | AssertionError e)
 		{
-			log.warn("Posting PluginMessage(\"{}\", \"{}\", ...) with {} destination(s) failed"
-				+ " -- Shortest Path may be out of date", CONFIG_GROUP, MESSAGE_NAME, destinations.size(), e);
+			log.warn("Posting the Shortest Path route failed", e);
 			onOutcome.accept(RouteOutcome.CALL_FAILED);
 			return;
 		}
@@ -505,8 +468,6 @@ class ShortestPathBridge
 		// RuneLite's own EventBus before it ever reaches this method's catch
 		// block, so SENT here means "the event went out", never "Shortest
 		// Path definitely acted on it".
-		log.debug("Sent {} destination(s) to Shortest Path via PluginMessage(\"{}\", \"{}\", ...)",
-			destinations.size(), CONFIG_GROUP, MESSAGE_NAME);
 		onOutcome.accept(RouteOutcome.SENT);
 	}
 

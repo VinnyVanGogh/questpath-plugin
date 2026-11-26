@@ -159,9 +159,9 @@ public class VoiceLinesTest
 	@Test
 	public void keysMatchWhateverTheCase()
 	{
-		assertTrue(voice.hasItem("AIR RUNE"));
-		assertTrue(voice.hasPlural("air rune"));
-		assertTrue(voice.hasShop("Blue Moon Inn"));
+		assertTrue(voice.has("item", "AIR RUNE"));
+		assertTrue(voice.has("plural", "air rune"));
+		assertTrue(voice.has("shop", "Blue Moon Inn"));
 		assertEquals(Arrays.asList(VoiceLines.path("item-bucket"), VoiceLines.path("nearby")),
 			voice.floorLine("bUcKeT", ALL).clips);
 	}

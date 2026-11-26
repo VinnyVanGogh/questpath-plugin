@@ -51,7 +51,6 @@ public class DropRegionPolicyTest
 
 		assertEquals(DropRegionPolicy.Verdict.WARNED,
 			DropRegionPolicy.of("wilderness", declared));
-		assertEquals(" (wilderness)", DropRegionPolicy.noteFor("wilderness", declared));
 	}
 
 	/** FATAL is not offered at all. */
@@ -62,8 +61,6 @@ public class DropRegionPolicyTest
 
 		assertEquals(DropRegionPolicy.Verdict.BLOCKED,
 			DropRegionPolicy.of("wilderness", declared));
-		assertEquals("a blocked region is not warned about, it is simply not offered",
-			"", DropRegionPolicy.noteFor("wilderness", declared));
 	}
 
 	/** A switched-off declaration is not a declaration. */
@@ -144,7 +141,5 @@ public class DropRegionPolicyTest
 		assertEquals(3, response.constraints().size());
 		assertEquals(DropRegionPolicy.Verdict.WARNED,
 			DropRegionPolicy.of("wilderness", response.constraints()));
-		assertEquals("this account said warn, not block",
-			" (wilderness)", DropRegionPolicy.noteFor("wilderness", response.constraints()));
 	}
 }

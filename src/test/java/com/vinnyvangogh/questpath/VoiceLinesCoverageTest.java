@@ -84,7 +84,7 @@ public class VoiceLinesCoverageTest
 		List<String> missing = new ArrayList<>();
 		for (String name : spokenItems(false))
 		{
-			if (!voice.hasItem(name))
+			if (!voice.has("item", name))
 			{
 				missing.add(name);
 			}
@@ -98,7 +98,7 @@ public class VoiceLinesCoverageTest
 		List<String> missing = new ArrayList<>();
 		for (String name : spokenItems(true))
 		{
-			if (!voice.hasPlural(name))
+			if (!voice.has("plural", name))
 			{
 				missing.add(name);
 			}
@@ -112,7 +112,7 @@ public class VoiceLinesCoverageTest
 		List<String> missing = new ArrayList<>();
 		for (QuestGraph.Shop shop : graph.shops())
 		{
-			if (!voice.hasShop(shop.name()))
+			if (!voice.has("shop", shop.name()))
 			{
 				missing.add(shop.name());
 			}

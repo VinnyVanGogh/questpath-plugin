@@ -59,7 +59,11 @@ public class OverlaySettingsPanelConfigParityTest
 		// next to the other chat settings (the replay is the sidebar's own
 		// What's new button), plus two hidden bookkeeping values the plugin
 		// writes itself.
-		"showUpdateNotes", "lastSeenVersion", "lastSeenBuild");
+		"showUpdateNotes", "lastSeenVersion", "lastSeenBuild",
+			// Quest warning: a toggle in RuneLite's config panel beside the
+			// chat settings, plus the hidden list the popup's "don't warn
+			// again" writes.
+			"questWarnings", "questWarningMuted");
 
 	private static final Path PANEL_SOURCE =
 		Path.of("src/main/java/com/vinnyvangogh/questpath/OverlaySettingsPanel.java");

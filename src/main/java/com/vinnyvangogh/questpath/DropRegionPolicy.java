@@ -83,16 +83,4 @@ final class DropRegionPolicy
 		}
 		return worst;
 	}
-
-	/**
-	 * The region worth mentioning beside a destination, or empty when there
-	 * is nothing to say.
-	 *
-	 * <p>Only a warned region is named. Saying "(general)" beside every
-	 * ordinary monster would make the one label that matters invisible.
-	 */
-	static String noteFor(String region, List<PlayerConstraint> constraints)
-	{
-		return of(region, constraints) == Verdict.WARNED ? " (" + region + ")" : "";
-	}
 }
